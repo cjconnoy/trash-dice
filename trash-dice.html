@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Trash Dice</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --yellow:      #f5c800;
+  --yellow-dark: #c9a000;
+  --yellow-pip:  #1a5c1a;
+  --green:       #1e6b1e;
+  --green-light: #2a9a2a;
+  --green-pip:   #f5c800;
+  --bg:          #111;
+  --surface:     #1e1e1e;
+  --board-rim:   #5a5a5a;
+  --board-bg:    #444;
+  --slot-empty:  #2e2e2e;
+  --text:        #f0f0f0;
+  --trash-red:   #d93030;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.4rem 0.5rem;
+  gap: 0.35rem;
+  min-height: 100dvh;
+}
+
+/* ── GRAFFITI TITLE ── */
+.title-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.05em;
+  position: relative;
+  padding: 0.1rem 0.5rem;
+  z-index: 10;
+}
+.title-wrap.big {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.5rem 1rem 0.3rem;
+}
+.title-trash {
+  font-family: 'Bangers', 'Impact', sans-serif;
+  font-size: clamp(2.2rem, 8vw, 3.8rem);
+  color: #5ee85e;
+  -webkit-text-stroke: 2px #1a5c1a;
+  text-shadow:
+    0 0 0 #1a5c1a,
+    3px 3px 0 #1a7a1a,
+    5px 5px 0 #0a3a0a,
+    1px 1px 8px rgba(0,0,0,0.7);
+  transform: rotate(-5deg) translateY(4px);
+  display: inline-block;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.title-dice {
+  font-family: 'Bangers', 'Impact', sans-serif;
+  font-size: clamp(2.6rem, 9.5vw, 4.5rem);
+  color: #1a1a2a;
+  -webkit-text-stroke: 2.5px #5ee85e;
+  text-shadow:
+    3px 3px 0 #2a9a2a,
+    5px 5px 0 #0a3a0a,
+    6px 7px 10px rgba(0,0,0,0.65);
+  transform: rotate(-2deg);
+  display: inline-block;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.title-wrap.big .title-trash {
+  font-size: clamp(4rem, 18vw, 7rem);
+  -webkit-text-stroke: 3.5px #1a5c1a;
+  transform: rotate(-6deg) translateY(6px);
+}
+.title-wrap.big .title-dice {
+  font-size: clamp(4.8rem, 22vw, 8.5rem);
+  -webkit-text-stroke: 4px #5ee85e;
+}
+.splatter {
+  position: absolute;
+  border-radius: 52% 48% 60% 40% / 55% 45% 58% 42%;
+  pointer-events: none;
+  opacity: 0.72;
+  z-index: 0;
+}
+.sp-y { background: #f5c800; }
+.sp-g { background: #5ee85e; }
+
+.tagline {
+  font-size: clamp(0.55rem, 1.8vw, 0.75rem);
+  color: var(--green-pip);
+  letter-spacing: 0.22em;
+  text-align: center;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 0.25rem 1rem;
+  font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+  letter-spacing: 0.07em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.turn-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.25s;
+}
+
+/* ── GAME AREA ── */
+.game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── PLAYER PANELS — horizontal strips ── */
+.player-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 480px;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+.player-label {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  letter-spacing: 0.08em;
+  min-width: 2.5rem;
+}
+.player-label.p1 { color: var(--yellow); }
+.player-label.p2 { color: var(--green-light); }
+
+/* dice-pool-visual no longer used in panels — piles live on the mat */
+.mini-die {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+  transition: opacity 0.2s;
+}
+.mini-die.p1 { background: var(--yellow); }
+.mini-die.p2 { background: var(--green-light); }
+
+.pool-count {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  line-height: 1;
+  min-width: 2rem;
+  text-align: right;
+}
+.pool-count.p1 { color: var(--yellow); }
+.pool-count.p2 { color: var(--green-light); }
+
+.pool-sublabel { display: none; }
+
+/* ── BOARD ── */
+.board-wrap {
+  position: relative;
+  width:  clamp(220px, 58vw, 320px);
+  height: clamp(220px, 58vw, 320px);
+  flex-shrink: 0;
+  background: transparent;
+}
+
+/* ── SVG SLOT ANIMATIONS ── */
+.anim-place { animation: svgPlace 0.38s ease-out; }
+.anim-trash { animation: svgTrash 0.38s ease-out; }
+@keyframes svgPlace {
+  0%   { filter: brightness(0.4); }
+  55%  { filter: brightness(1.6); }
+  100% { filter: brightness(1); }
+}
+@keyframes svgTrash {
+  0%,100% { filter: none; }
+  50%     { filter: brightness(1.7) saturate(2.5) hue-rotate(290deg); }
+}
+
+/* ── BOARD DIV (no extra styling — SVG handles all visuals) ── */
+.board-wrap { background: transparent; }
+
+/* ── DIE ── */
+.die-wrap {
+  position: relative;
+  width:  clamp(96px, 26vw, 130px);
+  height: clamp(96px, 26vw, 130px);
+  margin: 0.2rem 0;
+}
+.die {
+  width: 100%; height: 100%;
+  border-radius: clamp(16px, 4.5vw, 22px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: clamp(10px, 3vw, 15px);
+  gap: 3px;
+  transition: background 0.2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.die.p1 {
+  background: linear-gradient(148deg, #ffe84a 0%, #f5c800 28%, #ddb000 62%, #b88e00 100%);
+  box-shadow:
+    8px 8px 0 0 #9a7400,
+    14px 14px 0 0 rgba(0,0,0,0.4),
+    0 12px 30px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(255,255,255,0.2);
+  transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
+}
+.die.p2 {
+  background: linear-gradient(148deg, #30b030 0%, #1e7a1e 30%, #155515 65%, #0a380a 100%);
+  box-shadow:
+    8px 8px 0 0 #062806,
+    14px 14px 0 0 rgba(0,0,0,0.45),
+    0 12px 30px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(255,255,255,0.1);
+  transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
+}
+.die.idle {
+  background: linear-gradient(145deg,#444,#222);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  transform: none;
+}
+.die { position: relative; overflow: visible; }
+/* Oval gloss highlight */
+.die::after {
+  content: '';
+  position: absolute;
+  top: 6%; left: 8%;
+  width: 60%; height: 38%;
+  background: radial-gradient(ellipse at 38% 28%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.1) 55%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+}
+.die.rolling { animation: dieRoll 1.5s ease-in-out; }
+.die.trashed { animation: dieTrash 0.55s ease-in forwards; }
+@keyframes dieRoll {
+  0%   { transform: perspective(500px) rotateX(-10deg) rotateY(10deg) scale(1); }
+  8%   { transform: perspective(500px) rotateX(-30deg) rotateY(-20deg) scale(0.82); }
+  22%  { transform: perspective(500px) rotateX(20deg)  rotateY(25deg)  scale(1.18); }
+  38%  { transform: perspective(500px) rotateX(-18deg) rotateY(-12deg) scale(0.88); }
+  55%  { transform: perspective(500px) rotateX(14deg)  rotateY(18deg)  scale(1.10); }
+  70%  { transform: perspective(500px) rotateX(-8deg)  rotateY(12deg)  scale(0.95); }
+  84%  { transform: perspective(500px) rotateX(-12deg) rotateY(8deg)   scale(1.03); }
+  100% { transform: perspective(500px) rotateX(-10deg) rotateY(10deg)  scale(1); }
+}
+@keyframes dieTrash {
+  0%   { transform: perspective(500px) rotateX(-10deg) rotateY(10deg) scale(1); opacity: 1; }
+  30%  { transform: perspective(500px) rotateX(20deg) rotateY(-20deg) scale(1.1); opacity: 1; }
+  100% { transform: perspective(500px) rotateX(60deg) rotateY(40deg) scale(0.15) translateY(30px); opacity: 0; }
+}
+
+.dot-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dot {
+  width:  clamp(15px, 4.2vw, 20px);
+  height: clamp(15px, 4.2vw, 20px);
+  border-radius: 50%;
+  background: var(--yellow-pip);
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.45), 0 1px 1px rgba(255,255,255,0.12);
+}
+.die.p2 .dot { background: var(--green-pip); }
+.die.idle .dot { background: #555; }
+
+/* ── ROLL BUTTON ── */
+.roll-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 12px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+}
+.roll-btn.p1 {
+  background: linear-gradient(180deg, var(--yellow) 0%, var(--yellow-dark) 100%);
+  color: var(--yellow-pip);
+  box-shadow: 0 5px 0 #8a6a00, 0 8px 18px rgba(0,0,0,0.4);
+}
+.roll-btn.p1:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #8a6a00, 0 4px 8px rgba(0,0,0,0.3);
+}
+.roll-btn.p2 {
+  background: linear-gradient(180deg, var(--green-light) 0%, var(--green) 100%);
+  color: var(--green-pip);
+  box-shadow: 0 5px 0 #0e400e, 0 8px 18px rgba(0,0,0,0.4);
+}
+.roll-btn.p2:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #0e400e, 0 4px 8px rgba(0,0,0,0.3);
+}
+.roll-btn:disabled { opacity: 0.4; cursor: not-allowed; animation: none; }
+
+/* ── ROLL BUTTON PULSE ── */
+@keyframes rollPulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 5px 0 #8a6a00, 0 8px 18px rgba(0,0,0,0.4), 0 0 0px rgba(245,200,0,0); }
+  50%       { transform: scale(1.06); box-shadow: 0 5px 0 #8a6a00, 0 10px 28px rgba(0,0,0,0.35), 0 0 28px rgba(245,200,0,0.55); }
+}
+.roll-btn.p1:not(:disabled) { animation: rollPulse 1.4s ease-in-out infinite; }
+.roll-btn.p1:active:not(:disabled) { animation: none; }
+
+/* ── MESSAGE ── */
+.message {
+  min-height: 1.3rem;
+  font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+.message.ok    { color: #88ee88; }
+.message.trash { color: var(--trash-red); }
+.message.win   { color: var(--yellow); }
+
+/* ── ROUND FLASH ── */
+.round-flash {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+.round-flash.p1 { animation: flashY 0.9s ease-out forwards; }
+.round-flash.p2 { animation: flashG 0.9s ease-out forwards; }
+@keyframes flashY {
+  0%   { background: rgba(245,200,0,0);    opacity: 1; }
+  20%  { background: rgba(245,200,0,0.28); }
+  100% { background: rgba(245,200,0,0);    opacity: 0; }
+}
+@keyframes flashG {
+  0%   { background: rgba(30,107,30,0);    opacity: 1; }
+  20%  { background: rgba(30,107,30,0.32); }
+  100% { background: rgba(30,107,30,0);    opacity: 0; }
+}
+
+/* ── BOARD SCENE ── */
+.board-scene {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 1.2rem 0.5rem;
+  flex-shrink: 0;
+  overflow: visible;
+}
+.board-blob {
+  position: absolute;
+  inset: 0;
+  background: #c5d400;
+  border-radius: 71% 29% 58% 42% / 44% 63% 37% 56%;
+  z-index: 0;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+}
+.board-ring-text {
+  position: absolute;
+  /* centered on the board-wrap; sized relative to board */
+  width:  clamp(276px, 74vw, 410px);
+  height: clamp(276px, 74vw, 410px);
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.board-wrap { z-index: 1; }
+
+/* ── DICE PILES (on the mat) ── */
+.dice-pile {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: clamp(50px, 14vw, 72px);
+  align-content: center;
+  justify-content: center;
+}
+.mini-die {
+  position: relative;
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+  overflow: hidden;
+}
+.mini-die.p1 { background: var(--yellow); }
+.mini-die.p2 { background: var(--green-light); }
+.mini-pip {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.mini-die.p1 .mini-pip { background: var(--yellow-pip); }
+.mini-die.p2 .mini-pip { background: var(--green-pip); }
+
+/* Turn tag — inline in player panel */
+.turn-tag {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.turn-tag.active { opacity: 1; }
+.turn-tag.p1 { color: var(--yellow); }
+.turn-tag.p2 { color: var(--green-light); }
+/* pile inside player panel — takes remaining width */
+.panel-pile {
+  flex: 1;
+  width: auto;
+  align-content: center;
+  gap: 2px;
+}
+
+/* scattered pile look */
+.dice-pile .mini-die:nth-child(7n)   { transform: rotate(18deg); }
+.dice-pile .mini-die:nth-child(7n+1) { transform: rotate(-12deg); }
+.dice-pile .mini-die:nth-child(7n+2) { transform: rotate(7deg); }
+.dice-pile .mini-die:nth-child(7n+3) { transform: rotate(-5deg); }
+.dice-pile .mini-die:nth-child(7n+4) { transform: rotate(14deg); }
+.dice-pile .mini-die:nth-child(7n+5) { transform: rotate(-9deg); }
+.dice-pile .mini-die:nth-child(7n+6) { transform: rotate(3deg); }
+
+/* ── START OVERLAY ── */
+.start-overlay {
+  position: fixed; inset: 0;
+  background: #c8d400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 30;
+  transition: opacity 0.5s;
+}
+.start-overlay.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.start-blob-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(200px, 55vw, 280px);
+  height: clamp(200px, 55vw, 280px);
+}
+.start-blob {
+  position: absolute; inset: 0;
+  background: #c5d400;
+  border-radius: 55% 45% 60% 40% / 48% 58% 42% 52%;
+}
+.start-dice-row {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.start-die {
+  width: clamp(60px, 16vw, 78px);
+  height: clamp(60px, 16vw, 78px);
+  border-radius: clamp(12px, 3.5vw, 18px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: clamp(8px, 2.5vw, 12px);
+  gap: 3px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+}
+.start-die.yellow {
+  background: linear-gradient(148deg, #ffe84a 0%, #f5c800 30%, #ddb000 65%, #b88e00 100%);
+  box-shadow: 7px 7px 0 0 #9a7400, 12px 12px 0 0 rgba(0,0,0,0.4), 0 10px 24px rgba(0,0,0,0.5);
+  transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
+}
+.start-die.green {
+  background: linear-gradient(148deg, #30b030 0%, #1e7a1e 30%, #155515 65%, #0a380a 100%);
+  box-shadow: 7px 7px 0 0 #062806, 12px 12px 0 0 rgba(0,0,0,0.45), 0 10px 24px rgba(0,0,0,0.5);
+  transform: perspective(500px) rotateX(-10deg) rotateY(-10deg);
+}
+.start-die .dot { background: var(--yellow-pip); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.4); }
+.start-die.green .dot { background: var(--green-pip); }
+.start-tagline {
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--text);
+  opacity: 0.85;
+}
+.start-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.42);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  animation: startPulse 1.3s ease-in-out infinite;
+}
+@keyframes startPulse {
+  0%,100% { opacity: 0.72; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.05); }
+}
+
+/* ── GAME OVER OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.overlay-title {
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 var(--green);
+  text-align: center;
+}
+.overlay-sub {
+  font-size: clamp(0.85rem, 2.8vw, 1.1rem);
+  opacity: 0.75;
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+.overlay-stats {
+  font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+  opacity: 0.55;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.play-again-btn {
+  background: var(--yellow);
+  color: var(--yellow-pip);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 2.2rem;
+  font-family: inherit;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  margin-top: 0.3rem;
+  box-shadow: 0 4px 0 var(--yellow-dark);
+}
+</style>
+</head>
+<body>
+
+<div class="title-wrap">
+  <span class="title-trash">TRASH</span><span class="title-dice">DICE</span>
+</div>
+<div class="tagline">roll · win · avoid the bin</div>
+
+<div class="status-bar">
+  <div class="turn-dot" id="turnDot"></div>
+  <span id="statusText">—</span>
+</div>
+
+<div class="game-area">
+
+  <!-- CPU panel — TOP -->
+  <div class="player-panel">
+    <div class="player-label p2">CPU</div>
+    <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
+    <div class="dice-pile panel-pile" id="p2Pile"></div>
+    <div class="pool-count p2" id="p2Pool">20</div>
+    <span class="turn-tag p2" id="p2TurnTag">CPU'S TURN</span>
+  </div>
+
+  <!-- Board scene: blob mat + piles + board — MIDDLE -->
+  <div class="board-scene">
+    <div class="board-blob"></div>
+    <svg class="board-ring-text" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <path id="textRing" d="M 150,150 m -108,0 a 108,108 0 1,1 216,0 a 108,108 0 1,1 -216,0"/>
+        <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="rgba(0,0,0,0.6)"/>
+        </filter>
+      </defs>
+      <text fill="white" font-family="Bangers, Arial Black, sans-serif" font-size="22" letter-spacing="6" filter="url(#textShadow)">
+        <textPath href="#textRing" startOffset="4%">COMPETE TO COMPLETE</textPath>
+      </text>
+    </svg>
+    <div class="board-wrap" id="boardWrap">
+      <!-- SVG lid injected by buildSlots() -->
+    </div>
+  </div>
+
+  <!-- Your panel — BOTTOM -->
+  <div class="player-panel">
+    <div class="player-label p1">You</div>
+    <div class="die-wrap"><div class="die idle" id="p1Die"></div></div>
+    <div class="dice-pile panel-pile" id="p1Pile"></div>
+    <div class="pool-count p1" id="p1Pool">20</div>
+    <button class="roll-btn p1" id="rollBtn">ROLL</button>
+    <span class="turn-tag p1" id="p1TurnTag">YOUR TURN</span>
+  </div>
+
+</div>
+
+<div class="message" id="message">Your turn — tap ROLL</div>
+
+<!-- Start overlay -->
+<div class="start-overlay" id="startOverlay">
+  <div class="title-wrap big">
+    <div class="splatter sp-y" style="width:70px;height:44px;top:-8px;left:2%;transform:rotate(18deg)"></div>
+    <div class="splatter sp-g" style="width:50px;height:32px;bottom:0;right:4%;transform:rotate(-14deg)"></div>
+    <span class="title-trash">TRASH</span>
+    <span class="title-dice">DICE</span>
+  </div>
+  <div class="start-blob-wrap">
+    <div class="start-blob"></div>
+    <div class="start-dice-row">
+      <div class="start-die yellow">
+        <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
+        <div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"><div class="dot"></div></div>
+        <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
+      </div>
+      <div class="start-die green">
+        <div class="dot-cell"></div><div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div>
+        <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
+        <div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div><div class="dot-cell"></div>
+      </div>
+    </div>
+    <button class="start-btn" id="startBtn">TAP TO START</button>
+  </div>
+  <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
+</div>
+
+<!-- Flash + overlay -->
+<div class="round-flash" id="roundFlash"></div>
+<div class="overlay" id="overlay">
+  <div class="overlay-title" id="overlayTitle">Player 1 Wins!</div>
+  <div class="overlay-sub"   id="overlaySub">Player 2 ran out of dice</div>
+  <div class="overlay-stats" id="overlayStats"></div>
+  <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+</div>
+
+<script>
+(function () {
+
+  // ── MINI DIE PIP POSITIONS ([top%, left%]) ───────────────────
+  const MINI_DOTS = [
+    [],
+    [[50,50]],
+    [[25,75],[75,25]],
+    [[25,75],[50,50],[75,25]],
+    [[25,25],[25,75],[75,25],[75,75]],
+    [[25,25],[25,75],[50,50],[75,25],[75,75]],
+    [[25,25],[25,75],[50,25],[50,75],[75,25],[75,75]],
+  ];
+
+  // ── DOT PATTERNS (3×3 grid, [row,col]) ──────────────────────
+  const DOTS = [
+    [],
+    [[1,1]],
+    [[0,2],[2,0]],
+    [[0,2],[1,1],[2,0]],
+    [[0,0],[0,2],[2,0],[2,2]],
+    [[0,0],[0,2],[1,1],[2,0],[2,2]],
+    [[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]],
+  ];
+
+  // ── STATE ────────────────────────────────────────────────────
+  let board;       // null | 'p1' | 'p2', length 6, index = face-1
+  let pools;       // {p1, p2}
+  let trashed;     // {p1, p2}
+  let onBoard;     // {p1, p2} — dice currently placed on shared board
+  let current;     // 'p1' | 'p2'
+  let round;
+  let busy;
+  let totalRolls;
+
+  // ── REFS ─────────────────────────────────────────────────────
+  const boardWrap   = document.getElementById('boardWrap');
+  const p1Die       = document.getElementById('p1Die');
+  const p2Die       = document.getElementById('p2Die');
+  const rollBtn     = document.getElementById('rollBtn');
+  function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
+  const msgEl       = document.getElementById('message');
+  const statusText  = document.getElementById('statusText');
+  const turnDot     = document.getElementById('turnDot');
+  const p1PoolEl    = document.getElementById('p1Pool');
+  const p2PoolEl    = document.getElementById('p2Pool');
+  const p1Pile      = document.getElementById('p1Pile');
+  const p2Pile      = document.getElementById('p2Pile');
+  const p1TurnTag   = document.getElementById('p1TurnTag');
+  const p2TurnTag   = document.getElementById('p2TurnTag');
+  let   roundHubEl  = null;   // SVG text element in center hub
+  const roundFlash  = document.getElementById('roundFlash');
+  const overlay     = document.getElementById('overlay');
+  const overlayTitle= document.getElementById('overlayTitle');
+  const overlaySub  = document.getElementById('overlaySub');
+  const overlayStats= document.getElementById('overlayStats');
+  const playAgainBtn= document.getElementById('playAgainBtn');
+
+  let slotEls  = [];  // SVG <path> elements
+  let labelEls = [];  // SVG <text> elements (numbers)
+
+  // ── BUILD SVG LID ────────────────────────────────────────────
+  function buildSlots() {
+    const old = boardWrap.querySelector('svg.lid-svg');
+    if (old) old.remove();
+    slotEls = []; labelEls = []; roundHubEl = null;
+
+    const NS  = 'http://www.w3.org/2000/svg';
+    const S   = 200;
+    const cx  = 100, cy = 100;
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${S} ${S}`);
+    svg.setAttribute('width',  '100%');
+    svg.setAttribute('height', '100%');
+    svg.classList.add('lid-svg');
+    svg.style.cssText = 'position:absolute;inset:0;overflow:visible;';
+
+    // ── Defs: radial gradient for rim ──
+    const defs = document.createElementNS(NS, 'defs');
+    const rg   = document.createElementNS(NS, 'radialGradient');
+    rg.setAttribute('id', 'rimG'); rg.setAttribute('cx','35%'); rg.setAttribute('cy','30%');
+    const rs1 = document.createElementNS(NS, 'stop');
+    rs1.setAttribute('offset','0%');   rs1.setAttribute('stop-color','#b0b0b0');
+    const rs2 = document.createElementNS(NS, 'stop');
+    rs2.setAttribute('offset','100%'); rs2.setAttribute('stop-color','#606060');
+    rg.appendChild(rs1); rg.appendChild(rs2); defs.appendChild(rg);
+
+    const pg = document.createElementNS(NS, 'radialGradient');
+    pg.setAttribute('id', 'plateG'); pg.setAttribute('cx','40%'); pg.setAttribute('cy','35%');
+    const ps1 = document.createElementNS(NS, 'stop');
+    ps1.setAttribute('offset','0%');   ps1.setAttribute('stop-color','#a8a8a8');
+    const ps2 = document.createElementNS(NS, 'stop');
+    ps2.setAttribute('offset','100%'); ps2.setAttribute('stop-color','#7a7a7a');
+    pg.appendChild(ps1); pg.appendChild(ps2); defs.appendChild(pg);
+    svg.appendChild(defs);
+
+    // ── Outer rim ──
+    const rim = document.createElementNS(NS, 'circle');
+    rim.setAttribute('cx',cx); rim.setAttribute('cy',cy); rim.setAttribute('r',98);
+    rim.setAttribute('fill','url(#rimG)');
+    rim.setAttribute('filter','drop-shadow(0 6px 12px rgba(0,0,0,0.6))');
+    svg.appendChild(rim);
+
+    // ── Inner plate ──
+    const plate = document.createElementNS(NS, 'circle');
+    plate.setAttribute('cx',cx); plate.setAttribute('cy',cy); plate.setAttribute('r',90);
+    plate.setAttribute('fill','url(#plateG)');
+    svg.appendChild(plate);
+
+    // ── 6 pie-slice compartments ──
+    const rO = 82, rI = 22, gap = 5;
+    for (let i = 0; i < 6; i++) {
+      const val      = i + 1;
+      const sDeg     = i * 60 - 90 + gap;
+      const eDeg     = (i + 1) * 60 - 90 - gap;
+      const sRad     = sDeg * Math.PI / 180;
+      const eRad     = eDeg * Math.PI / 180;
+      const ox1 = cx + rO * Math.cos(sRad), oy1 = cy + rO * Math.sin(sRad);
+      const ox2 = cx + rO * Math.cos(eRad), oy2 = cy + rO * Math.sin(eRad);
+      const ix1 = cx + rI * Math.cos(sRad), iy1 = cy + rI * Math.sin(sRad);
+      const ix2 = cx + rI * Math.cos(eRad), iy2 = cy + rI * Math.sin(eRad);
+      const d = `M${f(ix1)} ${f(iy1)} L${f(ox1)} ${f(oy1)} A${rO} ${rO} 0 0 1 ${f(ox2)} ${f(oy2)} L${f(ix2)} ${f(iy2)} A${rI} ${rI} 0 0 0 ${f(ix1)} ${f(iy1)}Z`;
+
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', '#5e5e5e');
+      path.setAttribute('stroke', '#a0a0a0');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+
+      // Number label
+      const midRad = ((sDeg + eDeg) / 2) * Math.PI / 180;
+      const rL = (rO + rI) / 2;
+      const tx = cx + rL * Math.cos(midRad), ty = cy + rL * Math.sin(midRad);
+      const txt = document.createElementNS(NS, 'text');
+      txt.setAttribute('x', f(tx)); txt.setAttribute('y', f(ty));
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dominant-baseline', 'central');
+      txt.setAttribute('fill', 'rgba(255,255,255,0.38)');
+      txt.setAttribute('font-family', 'Fredoka One, Arial Black, sans-serif');
+      txt.setAttribute('font-size', '14');
+      txt.setAttribute('pointer-events', 'none');
+      txt.textContent = val;
+      svg.appendChild(txt);
+
+      slotEls.push(path);
+      labelEls.push(txt);
+    }
+
+    // ── Raised divider lines (spokes) ──
+    for (let i = 0; i < 6; i++) {
+      const ang  = (i * 60 - 90) * Math.PI / 180;
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', f(cx + rI * Math.cos(ang)));
+      line.setAttribute('y1', f(cy + rI * Math.sin(ang)));
+      line.setAttribute('x2', f(cx + rO * Math.cos(ang)));
+      line.setAttribute('y2', f(cy + rO * Math.sin(ang)));
+      line.setAttribute('stroke', '#a8a8a8');
+      line.setAttribute('stroke-width', '3');
+      line.setAttribute('pointer-events', 'none');
+      svg.appendChild(line);
+    }
+
+    // ── Center hub ──
+    const hub = document.createElementNS(NS, 'circle');
+    hub.setAttribute('cx',cx); hub.setAttribute('cy',cy); hub.setAttribute('r',20);
+    hub.setAttribute('fill','url(#rimG)');
+    hub.setAttribute('stroke','#b0b0b0'); hub.setAttribute('stroke-width','1.5');
+    svg.appendChild(hub);
+
+    // Round label in hub
+    const hubTxt = document.createElementNS(NS, 'text');
+    hubTxt.setAttribute('x',cx); hubTxt.setAttribute('y',cy);
+    hubTxt.setAttribute('text-anchor','middle'); hubTxt.setAttribute('dominant-baseline','central');
+    hubTxt.setAttribute('fill','rgba(255,255,255,0.55)');
+    hubTxt.setAttribute('font-family','Fredoka One, sans-serif');
+    hubTxt.setAttribute('font-size','9');
+    hubTxt.setAttribute('pointer-events','none');
+    hubTxt.textContent = 'R' + (round || 1);
+    svg.appendChild(hubTxt);
+    roundHubEl = hubTxt;
+
+    boardWrap.appendChild(svg);
+  }
+
+  function f(n) { return n.toFixed(2); }
+
+  // ── POOL VISUAL — mini dice with random pip values ──────────
+  function updatePoolVisual(player) {
+    const el    = player === 'p1' ? p1Pile : p2Pile;
+    const count = pools[player];
+    el.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const val = Math.floor(Math.random() * 6) + 1;
+      const d   = document.createElement('div');
+      d.className = 'mini-die ' + player;
+      (MINI_DOTS[val] || []).forEach(([top, left]) => {
+        const pip = document.createElement('div');
+        pip.className = 'mini-pip';
+        pip.style.top  = top  + '%';
+        pip.style.left = left + '%';
+        d.appendChild(pip);
+      });
+      el.appendChild(d);
+    }
+  }
+
+  // ── AUDIO ENGINE ─────────────────────────────────────────────
+  const Audio = (() => {
+    let ctx = null;
+    function getCtx() {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return ctx;
+    }
+    function tone(freq, type, gain, start, dur, dest) {
+      const c = getCtx();
+      const osc = c.createOscillator();
+      const g   = c.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.001, c.currentTime + start);
+      g.gain.linearRampToValueAtTime(gain, c.currentTime + start + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
+      osc.connect(g).connect(dest || c.destination);
+      osc.start(c.currentTime + start);
+      osc.stop(c.currentTime + start + dur + 0.05);
+    }
+    return {
+      // Punchy start-game fanfare — ascending brass stab
+      startFanfare() {
+        const c = getCtx();
+        // Snare hit
+        const buf = c.createBuffer(1, c.sampleRate * 0.15, c.sampleRate);
+        const d   = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 3);
+        const snare = c.createBufferSource(); snare.buffer = buf;
+        const sg = c.createGain(); sg.gain.value = 0.25;
+        snare.connect(sg).connect(c.destination); snare.start(c.currentTime + 0.05);
+        // Ascending brass hits
+        [[196, 0.0], [247, 0.1], [294, 0.2], [392, 0.3], [523, 0.4]].forEach(([fr, t]) => {
+          tone(fr, 'sawtooth', 0.18, t, 0.28, c.destination);
+          tone(fr * 1.5, 'square', 0.06, t, 0.22, c.destination);
+        });
+        // Bass thud
+        tone(65, 'sine', 0.35, 0.0, 0.5, c.destination);
+        tone(98, 'sine', 0.18, 0.4, 0.4, c.destination);
+      },
+      // Round start — sharp 3-note "ready" sting
+      roundFanfare() {
+        const c = getCtx();
+        [[330, 0.0], [392, 0.12], [523, 0.24]].forEach(([fr, t]) => {
+          tone(fr, 'triangle', 0.2, t, 0.28, c.destination);
+        });
+        tone(130, 'sine', 0.22, 0.0, 0.35, c.destination);
+      },
+      // Place tone — 3x punchy hit
+      placeTone() {
+        const c = getCtx();
+        // Snare crack
+        const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.09), c.sampleRate);
+        const bd  = buf.getChannelData(0);
+        for (let i = 0; i < bd.length; i++) bd[i] = (Math.random()*2-1) * Math.pow(1-i/bd.length, 2.2);
+        const sn = c.createBufferSource(); sn.buffer = buf;
+        const sg = c.createGain(); sg.gain.value = 0.28;
+        sn.connect(sg).connect(c.destination); sn.start(c.currentTime);
+        // 3-note ascending punch
+        [[523,0.0,0.30],[659,0.10,0.28],[784,0.20,0.32]].forEach(([fr,t,dur]) => {
+          tone(fr, 'triangle', 0.24, t, dur, c.destination);
+          tone(fr*0.5, 'sine',   0.10, t, dur+0.1, c.destination);
+        });
+        // Bass thud
+        tone(130, 'sine', 0.32, 0.0, 0.4, c.destination);
+      },
+      // Round WON — 20x massive fanfare
+      roundWonFanfare() {
+        const c = getCtx(); const now = c.currentTime;
+        function snareHit(t, vol) {
+          const buf = c.createBuffer(1, Math.floor(c.sampleRate*0.14), c.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.6);
+          const s=c.createBufferSource(); s.buffer=buf;
+          const g=c.createGain(); g.gain.value=vol;
+          s.connect(g).connect(c.destination); s.start(now+t);
+        }
+        // 3 snare hits — intro punch
+        snareHit(0.00, 0.38); snareHit(0.22, 0.32); snareHit(0.44, 0.42);
+        // 7-note full ascending run — triangle + sine harmonic each
+        [[262,0.0],[330,0.10],[392,0.20],[523,0.31],[659,0.42],[784,0.53],[1047,0.65]].forEach(([fr,t]) => {
+          tone(fr,     'triangle', 0.26, t,      0.55, c.destination);
+          tone(fr*1.5, 'sine',     0.09, t+0.02, 0.40, c.destination);
+        });
+        // Big bass hits
+        tone(65,  'sine', 0.45, 0.00, 0.90, c.destination);
+        tone(98,  'sine', 0.35, 0.44, 0.70, c.destination);
+        tone(130, 'sine', 0.28, 0.65, 0.60, c.destination);
+        // Sustain chord at peak
+        [523,659,784,1047].forEach(fr => tone(fr,'sine',0.14,0.65,1.0,c.destination));
+        // High shimmer
+        tone(2093,'sine',0.06,0.65,0.8,c.destination);
+      },
+      // Win
+      winFanfare() {
+        const c = getCtx();
+        [[262, 0.0],[330, 0.08],[392, 0.16],[523, 0.25],[659, 0.35],[784, 0.45]].forEach(([fr, t]) => {
+          tone(fr, 'triangle', 0.18, t, 0.5, c.destination);
+        });
+        tone(131, 'sine', 0.3, 0.0, 0.8, c.destination);
+        tone(196, 'sine', 0.2, 0.45, 0.6, c.destination);
+      },
+      // Trash fanfare — big dramatic womp + crash
+      trashSting() {
+        const c = getCtx();
+        const now = c.currentTime;
+        // Crash noise burst
+        const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.35), c.sampleRate);
+        const bd  = buf.getChannelData(0);
+        for (let i = 0; i < bd.length; i++) bd[i] = (Math.random()*2-1) * Math.pow(1 - i/bd.length, 0.6);
+        const nb = c.createBufferSource(); nb.buffer = buf;
+        const ng = c.createGain(); ng.gain.value = 0.28;
+        nb.connect(ng).connect(c.destination); nb.start(now);
+        // Descending womp womp
+        [[220,0.0,0.22],[185,0.14,0.22],[155,0.28,0.22],[130,0.42,0.30],[98,0.58,0.40]].forEach(([fr,t,dur]) => {
+          tone(fr, 'sawtooth', 0.20, t, dur, c.destination);
+        });
+        // Low thud
+        tone(55, 'sine', 0.35, 0.0, 0.5, c.destination);
+        // High accent blip
+        tone(880, 'triangle', 0.10, 0.02, 0.08, c.destination);
+      }
+    };
+  })();
+
+  // ── DIE RENDERING ────────────────────────────────────────────
+  function renderDie(value, player) {
+    const el = getDie(player);
+    el.className = 'die ' + player;
+    el.innerHTML = '';
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'dot-cell';
+        const hasDot = (DOTS[value] || []).some(([dr,dc]) => dr===r && dc===c);
+        if (hasDot) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          cell.appendChild(dot);
+        }
+        el.appendChild(cell);
+      }
+    }
+  }
+
+  // Update pips only — does NOT reset class/animation
+  function setPips(value, player) {
+    const el = getDie(player);
+    el.innerHTML = '';
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const cell = document.createElement('div');
+        cell.className = 'dot-cell';
+        if ((DOTS[value] || []).some(([dr,dc]) => dr===row && dc===col)) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          cell.appendChild(dot);
+        }
+        el.appendChild(cell);
+      }
+    }
+  }
+
+  function clearDie(player) {
+    const targets = player ? [getDie(player)] : [p1Die, p2Die];
+    targets.forEach(el => {
+      el.className = 'die idle';
+      el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
+    });
+  }
+
+  // ── UI SYNC ──────────────────────────────────────────────────
+  function syncUI() {
+    p1PoolEl.textContent = pools.p1;
+    p2PoolEl.textContent = pools.p2;
+    if (roundHubEl) roundHubEl.textContent = 'R' + round;
+    p1TurnTag.classList.toggle('active', current === 'p1');
+    p2TurnTag.classList.toggle('active', current === 'p2');
+    updatePoolVisual('p1');
+    updatePoolVisual('p2');
+
+    const isP1 = current === 'p1';
+    statusText.textContent = isP1 ? "Your Turn" : "CPU's Turn";
+    turnDot.style.background = isP1 ? '#f5c800' : '#2a9a2a';
+    rollBtn.className = 'roll-btn ' + current;
+  }
+
+  function setMsg(text, type) {
+    msgEl.textContent = text;
+    msgEl.className   = 'message' + (type ? ' ' + type : '');
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────
+  function init() {
+    board     = Array(6).fill(null);
+    pools     = { p1: 20, p2: 20 };
+    trashed   = { p1: 0,  p2: 0  };
+    onBoard   = { p1: 0,  p2: 0  };
+    current   = 'p1';
+    round     = 1;
+    busy      = false;
+    totalRolls= 0;
+
+    overlay.classList.remove('show');
+
+    requestAnimationFrame(() => {
+      buildSlots();
+      clearDie(null);
+      syncUI();
+      setMsg('Your turn — tap ROLL');
+      rollBtn.disabled = false;
+    });
+  }
+
+  // ── ROLL ─────────────────────────────────────────────────────
+  rollBtn.addEventListener('click', doRoll);
+  playAgainBtn.addEventListener('click', init);
+
+  function doRoll() {
+    if (busy) return;
+    if (current === 'p1' && rollBtn.disabled) return; // only block human; CPU rolls freely
+    busy = true;
+    rollBtn.disabled = true;
+    totalRolls++;
+
+    const value = Math.floor(Math.random() * 6) + 1;
+
+    // Start tumble + spinning pip values
+    const activeDie = getDie(current);
+    activeDie.className = 'die ' + current + ' rolling';
+    activeDie.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
+
+    // Fast phase (80–1000ms every 85ms) then slow phase (1100–1430ms every 165ms)
+    const spinAt = [];
+    for (let t = 80;  t <= 1000; t += 85)  spinAt.push(t);
+    for (let t = 1100; t <= 1430; t += 165) spinAt.push(t);
+    const spinHandles = spinAt.map(t =>
+      setTimeout(() => setPips(Math.floor(Math.random() * 6) + 1, current), t)
+    );
+
+    setTimeout(() => {
+      spinHandles.forEach(clearTimeout);
+      renderDie(value, current);
+      const idx   = value - 1;
+      const taken = board[idx] !== null;
+      taken ? handleTrash(value, idx) : handlePlace(value, idx);
+    }, 1550);
+  }
+
+  function handlePlace(value, idx) {
+    board[idx] = current;
+    pools[current]--;
+    onBoard[current]++;
+
+    const slot  = slotEls[idx];
+    const label = labelEls[idx];
+    const fill  = current === 'p1' ? '#f5c800' : '#1e6b1e';
+    const strk  = current === 'p1' ? '#c9a000' : '#145014';
+    const ltxt  = current === 'p1' ? '#1a5c1a' : '#f5c800';
+    slot.setAttribute('fill', fill);
+    slot.setAttribute('stroke', strk);
+    label.setAttribute('fill', ltxt);
+    slot.classList.add('anim-place');
+    slot.addEventListener('animationend', () => slot.classList.remove('anim-place'), { once: true });
+
+    setMsg(current === 'p1' ? `You placed a ${value}!` : `CPU placed a ${value}`, 'ok');
+    if (current === 'p1') Audio.placeTone();
+    syncUI();
+
+    const filled = board.filter(s => s !== null).length;
+    if (filled === 6) {
+      setTimeout(endRound, 550);
+    } else {
+      setTimeout(nextTurn, 750);
+    }
+  }
+
+  function handleTrash(value, idx) {
+    pools[current]--;
+    trashed[current]++;
+
+    const activeDie = getDie(current);
+    activeDie.classList.remove('rolling');
+    void activeDie.offsetWidth;
+    activeDie.classList.add('trashed');
+
+    const slot = slotEls[idx];
+    slot.classList.add('anim-trash');
+    slot.addEventListener('animationend', () => slot.classList.remove('anim-trash'), { once:true });
+
+    const owner = board[idx] === 'p1' ? 'your slot' : "CPU's slot";
+    setMsg(current === 'p1'
+      ? `You rolled a ${value} — ${owner}! TRASHED 🗑️`
+      : `CPU rolled a ${value} — ${owner}! TRASHED 🗑️`, 'trash');
+    Audio.trashSting();
+    syncUI();
+
+    if (pools[current] <= 0) {
+      const winner = current === 'p1' ? 'p2' : 'p1';
+      setTimeout(() => gameOver(winner), 950);
+      return;
+    }
+
+    setTimeout(nextTurn, 1050);
+  }
+
+  // ── DICE FLY TO POOL ─────────────────────────────────────────
+  function animateDiceToPool(winner) {
+    const pileEl  = winner === 'p1' ? p1Pile : p2Pile;
+    const pileR   = pileEl.getBoundingClientRect();
+    const tx = pileR.left + pileR.width  / 2;
+    const ty = pileR.top  + pileR.height / 2;
+    const color = winner === 'p1' ? '#f5c800' : '#2a9a2a';
+
+    slotEls.forEach((slot, i) => {
+      if (board[i] !== winner) return;
+      const sr = slot.getBoundingClientRect();
+      const sx = sr.left + sr.width  / 2;
+      const sy = sr.top  + sr.height / 2;
+
+      const el = document.createElement('div');
+      el.style.cssText = `position:fixed;width:14px;height:14px;border-radius:3px;background:${color};`
+        + `left:${sx}px;top:${sy}px;transform:translate(-50%,-50%);pointer-events:none;z-index:50;`
+        + `transition:left .55s ease-in,top .55s ease-in,transform .55s ease-in,opacity .15s ease-in .48s;`;
+      document.body.appendChild(el);
+
+      const delay = i * 55;
+      setTimeout(() => {
+        el.style.left      = tx + 'px';
+        el.style.top       = ty + 'px';
+        el.style.transform = 'translate(-50%,-50%) scale(0.3)';
+        el.style.opacity   = '0';
+      }, delay + 40);
+      setTimeout(() => el.remove(), delay + 750);
+    });
+  }
+
+  // ── ROUND WIN ────────────────────────────────────────────────
+  function endRound() {
+    const winner = current;
+    const wLabel = winner === 'p1' ? 'You fill' : 'CPU fills';
+
+    setMsg(`${wLabel} the board — Round ${round} done! 🎉`, 'win');
+
+    // Flash
+    roundFlash.className = '';
+    void roundFlash.offsetWidth;
+    roundFlash.className = 'round-flash ' + winner;
+
+    // Fly animation — winner's dice return to their pile
+    animateDiceToPool(winner);
+
+    // Update pool counts after dice "arrive"
+    setTimeout(() => {
+      pools.p1  += onBoard.p1;
+      pools.p2  += onBoard.p2;
+      onBoard.p1 = 0;
+      onBoard.p2 = 0;
+      board = Array(6).fill(null);
+      round++;
+      syncUI();
+    }, 650);
+
+    setTimeout(() => {
+      slotEls.forEach((s, i) => {
+        s.setAttribute('fill',   '#5e5e5e');
+        s.setAttribute('stroke', '#a0a0a0');
+        s.classList.remove('anim-place', 'anim-trash');
+        labelEls[i].setAttribute('fill', 'rgba(255,255,255,0.38)');
+      });
+
+      if (pools.p1 <= 0) { gameOver('p2'); return; }
+      if (pools.p2 <= 0) { gameOver('p1'); return; }
+
+      current = winner;
+      clearDie(null);
+      syncUI();
+      Audio.roundWonFanfare();
+      if (current === 'p2') {
+        rollBtn.disabled = true;
+        setTimeout(() => { busy = false; doRoll(); }, 800);
+      } else {
+        setMsg(`Round ${round} — Your turn!`);
+        rollBtn.disabled = false;
+        busy = false;
+      }
+    }, 1600);
+  }
+
+  // ── GAME OVER ────────────────────────────────────────────────
+  function gameOver(winner) {
+    overlayTitle.textContent = winner === 'p1' ? 'You Win! 🎉' : 'CPU Wins!';
+    overlaySub.textContent   = winner === 'p1' ? 'CPU ran out of dice' : 'You ran out of dice';
+    overlayStats.textContent = `${round - 1} rounds · ${totalRolls} rolls`;
+    overlay.classList.add('show');
+    Audio.winFanfare();
+  }
+
+  // ── NEXT TURN ────────────────────────────────────────────────
+  function nextTurn() {
+    current = current === 'p1' ? 'p2' : 'p1';
+
+    if (pools[current] <= 0) {
+      const winner = current === 'p1' ? 'p2' : 'p1';
+      gameOver(winner);
+      return;
+    }
+
+    clearDie(current);
+    syncUI();
+    if (current === 'p2') {
+      rollBtn.disabled = true;
+      setTimeout(() => { busy = false; doRoll(); }, 300);
+    } else {
+      setMsg('Your turn — tap ROLL');
+      rollBtn.disabled = false;
+      busy = false;
+    }
+  }
+
+  // ── BOOT ─────────────────────────────────────────────────────
+  document.getElementById('startBtn').addEventListener('click', () => {
+    const so = document.getElementById('startOverlay');
+    so.classList.add('hide');
+    setTimeout(() => { so.style.display = 'none'; }, 520);
+    Audio.startFanfare();
+    init();
+  });
+
+  window.addEventListener('load', () => {
+    // Pre-build slots so board is visible behind start overlay
+    requestAnimationFrame(buildSlots);
+  });
+  window.addEventListener('resize', () => {
+    if (!slotEls.length) return;
+    buildSlots();
+    board.forEach((owner, i) => {
+      if (owner) {
+        const fill = owner === 'p1' ? '#f5c800' : '#1e6b1e';
+        const strk = owner === 'p1' ? '#c9a000' : '#145014';
+        const ltxt = owner === 'p1' ? '#1a5c1a' : '#f5c800';
+        slotEls[i].setAttribute('fill', fill);
+        slotEls[i].setAttribute('stroke', strk);
+        labelEls[i].setAttribute('fill', ltxt);
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
