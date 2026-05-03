@@ -1547,6 +1547,14 @@ body.fast-preview .trash-can svg {
     0 0 80px rgba(245,200,0,0.25);
   animation: victoryLidBackdropSpin 24s linear infinite;
 }
+body.fast-preview .victory-lid-backdrop {
+  opacity: 0.36;
+  transform: translate(-50%, -50%) rotate(18deg) scale(1);
+  animation: none;
+  box-shadow:
+    inset 0 0 0 max(1.6vw, 18px) rgba(185,198,198,0.2),
+    inset 0 0 0 max(2.7vw, 30px) rgba(62,73,75,0.24);
+}
 .victory-lid-hero {
   position: fixed;
   left: 50%;
@@ -1561,6 +1569,12 @@ body.fast-preview .trash-can svg {
     drop-shadow(0 0 34px rgba(245,200,0,0.42))
     drop-shadow(0 0 64px rgba(94,232,94,0.22));
   animation: victoryRealLidSpin 18s linear infinite;
+}
+body.fast-preview .victory-lid-hero {
+  opacity: 0.24;
+  transform: translate(-50%, -50%) scale(0.96) rotate(18deg);
+  filter: drop-shadow(0 0 22px rgba(245,200,0,0.24));
+  animation: none;
 }
 .victory-lid-hero .lid-svg {
   position: relative !important;
@@ -1627,6 +1641,12 @@ body.fast-preview .trash-can svg {
   animation: victoryCanHeroPop 1.45s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDance 5.6s cubic-bezier(.38,.02,.2,1) 1.45s infinite;
 }
+body.fast-preview .victory-can-hero {
+  animation: victoryCanHeroPop 1.05s cubic-bezier(.14,.86,.17,1) both;
+  filter:
+    drop-shadow(0 15px 18px rgba(0,0,0,0.32))
+    drop-shadow(0 0 14px var(--winner-glow, rgba(245,200,0,0.3)));
+}
 .victory-can-hero svg {
   display: block;
   width: 100%;
@@ -1667,6 +1687,10 @@ body.fast-preview .trash-can svg {
   z-index: 2;
   transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
   animation: victoryFloorDieBob 2.4s ease-in-out var(--d, 0ms) infinite alternate;
+}
+body.fast-preview .victory-dice-floor,
+body.fast-preview .mini-die.victory-settled-die {
+  display: none;
 }
 .mini-die.victory-cannon-die .mini-pip,
 .mini-die.victory-settled-die .mini-pip,
@@ -1735,6 +1759,8 @@ body.fast-preview .mini-die.victory-rain-die {
   height: clamp(12px, 2.25vw, 19px);
   will-change: transform, opacity;
   animation-name: victoryDiceRainFast;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
   outline: none;
   box-shadow:
     2px 2.2px 0 var(--rain-edge, rgba(0,0,0,0.42)),
@@ -1923,7 +1949,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
-  min-height: clamp(70px, 19vw, 108px);
+  min-height: clamp(76px, 20.5vw, 116px);
   align-self: stretch;
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
@@ -1946,13 +1972,13 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   flex: none;
   width: 100%;
   min-width: 0;
-  max-height: clamp(48px, 13vw, 68px);
-  overflow: hidden;
+  min-height: clamp(58px, 15vw, 78px);
+  overflow: visible;
   align-content: flex-start;
   align-items: center;
   justify-content: flex-start;
   gap: 2px;
-  padding: 4px 0;
+  padding: 7px 0 10px;
   filter: drop-shadow(0 3px 2px rgba(35,30,21,0.13));
 }
 .panel-pile .mini-die {
@@ -3696,7 +3722,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     overlay.appendChild(rain);
 
     const diceCount = FAST_PREVIEW_ENABLED
-      ? Math.round(clamp(86 + totalTrashedDice() * 0.9, 96, 150))
+      ? Math.round(clamp(28 + totalTrashedDice() * 0.32, 34, 58))
       : Math.round(clamp(220 + totalTrashedDice() * 2.4, 240, 340));
     const winnerGreenBias = winner === 'p2' ? 0.66 : 0.42;
     const run = ++victoryRainRun;
@@ -3727,7 +3753,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     function appendRainBatch() {
       if (run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
-      const batchSize = FAST_PREVIEW_ENABLED ? 18 : 34;
+      const batchSize = FAST_PREVIEW_ENABLED ? 12 : 34;
       const end = Math.min(i + batchSize, diceCount);
       for (; i < end; i++) frag.appendChild(makeRainDie());
       rain.appendChild(frag);
