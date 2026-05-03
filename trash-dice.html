@@ -372,22 +372,71 @@ body.debug-p0 .debug-badge { display: block; }
 
 /* ── PLAYER PANELS — horizontal strips ── */
 .player-panel {
+  --panel-accent: #f5c800;
+  --panel-accent-dark: #8b6900;
+  --panel-glow: rgba(245,200,0,0.2);
   position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: clamp(0.25rem, 1.4vw, 0.5rem);
   width: 100%;
-  max-width: 500px;
-  padding: 0.25rem 0.5rem;
+  max-width: 520px;
+  padding: clamp(0.42rem, 1.5vw, 0.56rem) clamp(0.52rem, 2vw, 0.76rem);
   background:
-    linear-gradient(90deg, rgba(255,255,255,0.34), rgba(255,255,255,0.62) 45%, rgba(255,255,255,0.26));
-  border: 1px solid rgba(65,79,70,0.08);
+    radial-gradient(ellipse at 30% 8%, rgba(255,255,255,0.58), transparent 42%),
+    radial-gradient(ellipse at 78% 106%, var(--panel-glow), transparent 54%),
+    linear-gradient(180deg, rgba(243,246,238,0.92), rgba(203,211,204,0.84) 54%, rgba(143,157,151,0.72));
+  border: 1px solid rgba(255,255,255,0.72);
   border-radius: 8px;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.65),
-    0 7px 18px rgba(98,82,61,0.11);
+    inset 0 1px 0 rgba(255,255,255,0.88),
+    inset 0 -2px 0 rgba(65,78,73,0.18),
+    inset 0 0 0 1px rgba(55,67,62,0.09),
+    0 8px 0 rgba(88,97,91,0.18),
+    0 16px 28px rgba(72,60,43,0.16);
   overflow: visible;
+}
+.player-panel.green-panel {
+  --panel-accent: #0f6f39;
+  --panel-accent-dark: #05331a;
+  --panel-glow: rgba(15,95,50,0.22);
+}
+.player-panel.yellow-panel {
+  --panel-accent: #f5c800;
+  --panel-accent-dark: #8b6900;
+  --panel-glow: rgba(245,200,0,0.22);
+}
+.player-panel::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(43,58,52,0.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.62),
+    inset 0 -2px 5px rgba(35,45,41,0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+.player-panel::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), var(--panel-accent) 42%, var(--panel-accent-dark));
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,0.35),
+    0 0 12px var(--panel-glow);
+  pointer-events: none;
+  z-index: 1;
+}
+.player-panel > * {
+  position: relative;
+  z-index: 2;
 }
 .player-label {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
@@ -407,9 +456,10 @@ body.debug-p0 .debug-badge { display: block; }
   align-items: center;
   justify-content: center;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.36),
-    0 3px 0 rgba(0,0,0,0.18),
-    0 8px 16px rgba(64,54,36,0.12);
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    0 3px 0 var(--panel-accent-dark),
+    0 8px 16px rgba(64,54,36,0.13);
 }
 .player-label.p1 {
   color: var(--yellow-pip);
@@ -504,6 +554,25 @@ body.debug-p0 .debug-badge { display: block; }
   height: var(--roll-die-size);
   aspect-ratio: 1 / 1;
   margin: 0.2rem clamp(0.65rem, 2.4vw, 1rem) 0.2rem clamp(0.2rem, 1vw, 0.45rem);
+}
+.die-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 34% 18%, rgba(255,255,255,0.28), transparent 34%),
+    linear-gradient(145deg, rgba(59,70,68,0.28), rgba(26,34,32,0.12) 62%, rgba(255,255,255,0.22));
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.28),
+    inset 0 -4px 8px rgba(22,31,28,0.18),
+    0 7px 10px rgba(72,61,43,0.14);
+  z-index: 0;
+}
+.die-wrap .die,
+.die-wrap .roll-btn {
+  position: relative;
+  z-index: 1;
 }
 .die {
   width: 100%; height: 100%;
@@ -1742,6 +1811,15 @@ body.debug-p0 .debug-badge { display: block; }
   grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
   column-gap: clamp(0.45rem, 1.6vw, 0.72rem);
+  padding: clamp(0.26rem, 1vw, 0.42rem) clamp(0.42rem, 1.4vw, 0.62rem);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 34% 18%, rgba(255,255,255,0.42), transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,0.34), rgba(92,110,103,0.12) 52%, rgba(46,58,54,0.13));
+  border: 1px solid rgba(48,62,56,0.12);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.36),
+    inset 0 -4px 7px rgba(40,52,47,0.13);
 }
 .inventory-cluster.has-status {
   padding-top: 0;
@@ -1756,7 +1834,8 @@ body.debug-p0 .debug-badge { display: block; }
   align-items: center;
   justify-content: flex-start;
   gap: 2px;
-  padding: 3px 0;
+  padding: 4px 0;
+  filter: drop-shadow(0 3px 2px rgba(35,30,21,0.13));
 }
 .panel-pile .mini-die {
   width: clamp(12px, 3.2vw, 16px);
@@ -2156,7 +2235,7 @@ body.debug-p0 .debug-badge { display: block; }
 <div class="game-area">
 
   <!-- Green dice panel — TOP -->
-  <div class="player-panel">
+  <div class="player-panel green-panel">
     <div class="player-label p2">Green Dice</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="inventory-cluster">
@@ -2301,7 +2380,7 @@ body.debug-p0 .debug-badge { display: block; }
   </div>
 
   <!-- Yellow dice panel — BOTTOM -->
-  <div class="player-panel">
+  <div class="player-panel yellow-panel">
     <div class="player-label p1">Yellow Dice</div>
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
     <div class="inventory-cluster has-status">
