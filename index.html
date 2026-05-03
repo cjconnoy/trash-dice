@@ -743,18 +743,22 @@ body.debug-p0 .debug-badge { display: block; }
   position: absolute;
   inset: 0;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: clamp(16px, 4.5vw, 22px);
   background: transparent;
   color: #ff2424;
   font-family: 'Bangers', sans-serif;
-  font-size: clamp(2.4rem, 10.5vw, 4.1rem);
+  font-size: clamp(2.08rem, 8.9vw, 3.55rem);
   line-height: 0.85;
   letter-spacing: 0.02em;
+  padding: 0 0 0.02em;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transform: rotate(-8deg);
+  transform: rotate(-7deg);
   text-shadow:
     2px 2px 0 #760909,
     0 0 10px rgba(255,36,36,0.35);
@@ -773,7 +777,7 @@ body.debug-p0 .debug-badge { display: block; }
   animation: none;
 }
 .roll-btn:active:not(:disabled) {
-  transform: rotate(-8deg) scale(0.94);
+  transform: rotate(-7deg) scale(0.94);
 }
 .roll-btn:focus-visible {
   outline: 3px solid rgba(245,200,0,0.9);
@@ -784,12 +788,12 @@ body.debug-p0 .debug-badge { display: block; }
 @keyframes rollInkPulse {
   0%,100% {
     opacity: 0.82;
-    transform: rotate(-8deg) scale(0.96);
+    transform: rotate(-7deg) scale(0.96);
     text-shadow: 2px 2px 0 #760909, 0 0 8px rgba(255,36,36,0.25);
   }
   48% {
     opacity: 1;
-    transform: rotate(-8deg) scale(1.08);
+    transform: rotate(-7deg) scale(1.08);
     text-shadow: 2px 2px 0 #760909, 0 0 23px rgba(255,36,36,0.82), 0 0 34px rgba(245,200,0,0.42);
   }
 }
@@ -4306,6 +4310,14 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     }
   };
 
+  function clearOneShotQaPreviewUrl() {
+    try {
+      window.history.replaceState(null, '', window.location.pathname);
+    } catch (error) {
+      // Non-critical: the QA scene still works if history replacement is blocked.
+    }
+  }
+
   window.addEventListener('load', () => {
     // Pre-build slots so board is visible behind start overlay
     requestAnimationFrame(buildSlots);
@@ -4313,11 +4325,13 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     if (QA_ENABLED && URL_OPTIONS.has('gamewin')) {
       const forcedWinner = URL_OPTIONS.get('gamewin') === 'p2' ? 'p2' : 'p1';
       setTimeout(() => window.TrashDiceQA.gameWin(forcedWinner), 120);
+      clearOneShotQaPreviewUrl();
       return;
     }
     if (QA_ENABLED && URL_OPTIONS.has('roundwin')) {
       const forcedWinner = URL_OPTIONS.get('roundwin') === 'p2' ? 'p2' : 'p1';
       setTimeout(() => window.TrashDiceQA.roundWin(forcedWinner), 120);
+      clearOneShotQaPreviewUrl();
       return;
     }
     if (P0_START_ENABLED) {
