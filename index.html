@@ -286,47 +286,37 @@ body.debug-p0 .debug-badge { display: block; }
 }
 .player-label {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.56rem, 1.9vw, 0.8rem);
-  letter-spacing: 0.075em;
+  font-size: clamp(0.62rem, 2vw, 0.86rem);
+  letter-spacing: 0.045em;
   line-height: 1.05;
-  text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
-  min-width: clamp(5.7rem, 19vw, 7.2rem);
-  padding: 0.34rem 0.4rem;
+  min-width: clamp(6rem, 19vw, 7.4rem);
+  min-height: 1.38rem;
+  padding: 0.32rem 0.54rem;
   border-radius: 7px;
   position: relative;
   z-index: 4;
   transform: rotate(-1deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.36),
     0 3px 0 rgba(0,0,0,0.18),
     0 8px 16px rgba(64,54,36,0.12);
 }
-.player-label::before {
-  content: "";
-  display: inline-block;
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 50%;
-  margin-right: 0.34rem;
-  vertical-align: 0.03rem;
-  background: currentColor;
-  box-shadow:
-    0.62rem 0 currentColor,
-    inset 0.8px 0.8px 1px rgba(0,0,0,0.46);
-}
 .player-label.p1 {
   color: var(--yellow-pip);
   background: linear-gradient(180deg, #ffe05b, #f5c800 62%, #d8a900);
   border: 1px solid rgba(15,95,50,0.32);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.28);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.36);
 }
 .player-label.p2 {
   color: var(--green-pip);
   background: linear-gradient(180deg, #1f8a49, #0f6b37 62%, #084421);
   border: 1px solid rgba(245,200,0,0.28);
-  text-shadow: 0 1px 0 rgba(0,0,0,0.28);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
 }
 
 /* dice-pool-visual no longer used in panels — piles live on the mat */
