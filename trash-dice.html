@@ -365,6 +365,21 @@ body.debug-p0 .debug-badge { display: block; }
 }
 .pool-count.p1 { color: var(--yellow); }
 .pool-count.p2 { color: var(--green-light); }
+.pool-count.payout-tick {
+  animation: poolPayoutTick 0.34s cubic-bezier(.13,.86,.15,1);
+}
+@keyframes poolPayoutTick {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: none;
+  }
+  42% {
+    transform: translateY(-4px) scale(1.24);
+    filter:
+      drop-shadow(0 0 8px rgba(245,200,0,0.62))
+      drop-shadow(0 3px 0 rgba(15,95,50,0.42));
+  }
+}
 
 .pool-sublabel { display: none; }
 
@@ -2581,6 +2596,25 @@ body.debug-p0 .debug-badge { display: block; }
     return d;
   }
 
+  function renderPoolCounts() {
+    p1PoolEl.textContent = totalDice('p1');
+    p2PoolEl.textContent = totalDice('p2');
+  }
+
+  function pulsePoolCount(player) {
+    const el = player === 'p1' ? p1PoolEl : p2PoolEl;
+    el.classList.remove('payout-tick');
+    void el.offsetWidth;
+    el.classList.add('payout-tick');
+    el.addEventListener('animationend', () => el.classList.remove('payout-tick'), { once: true });
+  }
+
+  function appendPoolDieVisual(player, die) {
+    const pileEl = player === 'p1' ? p1Pile : p2Pile;
+    const value = clamp(Math.floor(die.value || 1), 1, 6);
+    pileEl.appendChild(makeMiniDie(die.color, value));
+  }
+
   function renderCanLoad() {
     if (!canLoadPile) return;
     canLoadPile.innerHTML = '';
@@ -3181,8 +3215,7 @@ body.debug-p0 .debug-badge { display: block; }
 
   // ── UI SYNC ──────────────────────────────────────────────────
   function syncUI() {
-    p1PoolEl.textContent = totalDice('p1');
-    p2PoolEl.textContent = totalDice('p2');
+    renderPoolCounts();
     p1TurnTag.classList.toggle('active', current === 'p1');
     p2TurnTag.classList.toggle('active', current === 'p2');
     updatePoolVisual('p1');
@@ -3398,7 +3431,7 @@ body.debug-p0 .debug-badge { display: block; }
     return clamp(1300 + count * 520 + Math.max(0, count - 6) * 180, 1600, 9000);
   }
 
-  function animateCanPourToPool(winner, lidDice, spillDuration = spillDurationForDice(lidDice.length), spillLoad = lidDice.length) {
+  function animateCanPourToPool(winner, lidDice, spillDuration = spillDurationForDice(lidDice.length), spillLoad = lidDice.length, onDieArrive = null) {
     const pileEl  = winner === 'p1' ? p1Pile : p2Pile;
     const pileR   = pileEl.getBoundingClientRect();
     const canR = trashCan.getBoundingClientRect();
@@ -3440,6 +3473,9 @@ body.debug-p0 .debug-badge { display: block; }
       el.style.setProperty('--r2', (180 + i * 23) + 'deg');
       el.style.setProperty('--r3', (220 + i * 29) + 'deg');
       document.body.appendChild(el);
+      if (typeof onDieArrive === 'function') {
+        setTimeout(() => onDieArrive(die, i), Math.round(delay + travelMs * 0.82));
+      }
       setTimeout(() => el.remove(), delay + travelMs + pourTailMs);
     });
 
@@ -3497,11 +3533,15 @@ body.debug-p0 .debug-badge { display: block; }
 
     // Trash can empties the claimed set into the winner's pile.
     showClaimBadge(winner, claimedDice, spillDuration);
-    animateCanPourToPool(winner, claimedDice, spillDuration, spillLoad);
+    animateCanPourToPool(winner, claimedDice, spillDuration, spillLoad, die => {
+      pools[winner][die.color]++;
+      renderPoolCounts();
+      appendPoolDieVisual(winner, die);
+      pulsePoolCount(winner);
+    });
 
-    // Update pool counts after dice "arrive"
+    // Reset the board only after the full bounty spill finishes.
     setTimeout(() => {
-      claimedDice.forEach(die => pools[winner][die.color]++);
       board = Array(6).fill(null);
       trashDice = [];
       round++;
