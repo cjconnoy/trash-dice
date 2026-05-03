@@ -2602,21 +2602,23 @@ body.debug-p0 .debug-badge { display: block; }
     g.setAttribute('transform', `translate(${f(info.x)} ${f(info.y)}) rotate(${f(info.angle + 8)})`);
     g.setAttribute('pointer-events', 'none');
 
-    const size = 23.5;
+    const size = 27.5;
+    const pipGap = size * 0.285;
+    const pipRadius = size * 0.125;
     const side = document.createElementNS(NS, 'rect');
-    side.setAttribute('x', f(-size / 2 + 3)); side.setAttribute('y', f(-size / 2 + 4));
+    side.setAttribute('x', f(-size / 2 + 3.3)); side.setAttribute('y', f(-size / 2 + 4.4));
     side.setAttribute('width', size); side.setAttribute('height', size);
-    side.setAttribute('rx', '5.2'); side.setAttribute('fill', colors.side);
+    side.setAttribute('rx', '5.9'); side.setAttribute('fill', colors.side);
     side.setAttribute('opacity', '0.9');
     g.appendChild(side);
 
     const face = document.createElementNS(NS, 'rect');
     face.setAttribute('x', f(-size / 2)); face.setAttribute('y', f(-size / 2));
     face.setAttribute('width', size); face.setAttribute('height', size);
-    face.setAttribute('rx', '5.1');
+    face.setAttribute('rx', '5.8');
     face.setAttribute('fill', colors.fill);
     face.setAttribute('stroke', colors.stroke);
-    face.setAttribute('stroke-width', '1.4');
+    face.setAttribute('stroke-width', '1.5');
     face.setAttribute('filter', 'drop-shadow(0 2px 1px rgba(0,0,0,0.28))');
     g.appendChild(face);
 
@@ -2629,11 +2631,11 @@ body.debug-p0 .debug-badge { display: block; }
     shine.setAttribute('pointer-events', 'none');
     g.appendChild(shine);
 
-    (DOTS[idx + 1] || []).forEach(([row, col]) => {
+    (DOTS[die.value || idx + 1] || []).forEach(([row, col]) => {
       const pip = document.createElementNS(NS, 'circle');
-      pip.setAttribute('cx', f((col - 1) * 6.7));
-      pip.setAttribute('cy', f((row - 1) * 6.7));
-      pip.setAttribute('r', '2.8');
+      pip.setAttribute('cx', f((col - 1) * pipGap));
+      pip.setAttribute('cy', f((row - 1) * pipGap));
+      pip.setAttribute('r', f(pipRadius));
       pip.setAttribute('fill', colors.label);
       pip.setAttribute('filter', 'drop-shadow(0 0.9px 0 rgba(0,0,0,0.58))');
       g.appendChild(pip);
