@@ -1659,57 +1659,63 @@ body.debug-p0 .debug-badge { display: block; }
   position: absolute;
   left: var(--rain-left, 50%);
   top: -12vh;
-  width: clamp(13px, 2.55vw, 22px);
-  height: clamp(13px, 2.55vw, 22px);
+  width: clamp(14px, 2.75vw, 24px);
+  height: clamp(14px, 2.75vw, 24px);
   z-index: 1;
   opacity: 0;
   pointer-events: none;
   border-radius: 24%;
   overflow: visible;
   transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
   transform: translate3d(0, -18vh, 0) rotateX(var(--rx, 18deg)) rotateY(var(--ry, -12deg)) rotate(var(--r0, 0deg)) scale(var(--s, 1));
   animation: victoryDiceRain var(--fall-duration, 5200ms) linear var(--fall-delay, 0ms) infinite;
+  outline: 0.6px solid rgba(255,255,255,0.32);
   box-shadow:
-    1.6px 1.7px 0 rgba(0,0,0,0.46),
-    0 5px 10px rgba(0,0,0,0.25),
-    inset 0 1.2px 0 rgba(255,255,255,0.46),
-    inset -3px -2.8px 5px rgba(0,0,0,0.2);
+    2.8px 3px 0 var(--rain-edge, rgba(0,0,0,0.46)),
+    0 7px 12px rgba(0,0,0,0.3),
+    inset 0 1.4px 0 rgba(255,255,255,0.54),
+    inset -4px -3.8px 6px rgba(0,0,0,0.22),
+    inset 2px 2px 5px rgba(255,255,255,0.14);
 }
 .mini-die.victory-rain-die::before,
 .mini-die.victory-rain-die::after {
   content: '';
   position: absolute;
   pointer-events: none;
-  opacity: 0.86;
+  opacity: 0.94;
   z-index: -1;
 }
 .mini-die.victory-rain-die::before {
-  left: 77%;
-  top: 13%;
-  width: 24%;
-  height: 83%;
-  border-radius: 0 36% 34% 0;
-  background: linear-gradient(90deg, var(--rain-side-mid, #a07700), var(--rain-side-dark, #5a4300));
-  transform: skewY(34deg) translateZ(-1px);
-  box-shadow: inset -1.5px 0 2px rgba(0,0,0,0.26);
+  left: 74%;
+  top: 10%;
+  width: 34%;
+  height: 91%;
+  border-radius: 0 38% 34% 0;
+  background: linear-gradient(90deg, var(--rain-side-hi, #e7bb24), var(--rain-side-mid, #a07700) 44%, var(--rain-side-dark, #5a4300));
+  transform: skewY(31deg) translateZ(-2px);
+  box-shadow: inset -2px 0 3px rgba(0,0,0,0.28), 1px 1px 2px rgba(0,0,0,0.18);
 }
 .mini-die.victory-rain-die::after {
-  left: 13%;
-  top: 76%;
-  width: 83%;
-  height: 25%;
-  border-radius: 0 0 34% 36%;
-  background: linear-gradient(180deg, var(--rain-side-mid, #a07700), var(--rain-side-dark, #5a4300));
-  transform: skewX(34deg) translateZ(-1px);
-  box-shadow: inset 0 -1.5px 2px rgba(0,0,0,0.26);
+  left: 10%;
+  top: 74%;
+  width: 91%;
+  height: 34%;
+  border-radius: 0 0 34% 38%;
+  background: linear-gradient(180deg, var(--rain-side-hi, #e7bb24), var(--rain-side-mid, #a07700) 42%, var(--rain-side-dark, #5a4300));
+  transform: skewX(31deg) translateZ(-2px);
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.28), 1px 1px 2px rgba(0,0,0,0.18);
 }
 .mini-die.victory-rain-die .mini-pip {
-  width: 24%;
-  height: 24%;
+  width: 25%;
+  height: 25%;
   z-index: 2;
+  transform: translateZ(2px);
   box-shadow:
-    inset 0.9px 0.9px 1.5px rgba(0,0,0,0.64),
-    0 0 1px rgba(255,255,255,0.18);
+    inset 1px 1px 1.8px rgba(0,0,0,0.66),
+    0 0 1px rgba(255,255,255,0.28),
+    0 0 2px rgba(0,0,0,0.22);
 }
 @keyframes victoryDiceRain {
   0% {
@@ -2544,6 +2550,8 @@ body.debug-p0 .debug-badge { display: block; }
   let forcedRolls = [];
   let p0Autoplay = false;
   let p0Timer = null;
+  let victoryRainFrame = null;
+  let victoryRainRun = 0;
 
   function totalDice(player) {
     return COLORS.reduce((sum, color) => sum + pools[player][color], 0);
@@ -3570,6 +3578,11 @@ body.debug-p0 .debug-badge { display: block; }
   }
 
   function clearVictoryEffects() {
+    victoryRainRun++;
+    if (victoryRainFrame !== null) {
+      cancelAnimationFrame(victoryRainFrame);
+      victoryRainFrame = null;
+    }
     document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-dice-floor, .victory-dice-rain, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
@@ -3582,7 +3595,10 @@ body.debug-p0 .debug-badge { display: block; }
 
     const diceCount = Math.round(clamp(220 + totalTrashedDice() * 2.4, 240, 340));
     const winnerGreenBias = winner === 'p2' ? 0.66 : 0.42;
-    for (let i = 0; i < diceCount; i++) {
+    const run = ++victoryRainRun;
+    let i = 0;
+
+    function makeRainDie() {
       const color = Math.random() < winnerGreenBias ? 'green' : 'yellow';
       const isGreen = color === 'green';
       const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-rain-die');
@@ -3593,14 +3609,31 @@ body.debug-p0 .debug-badge { display: block; }
       die.style.setProperty('--fall-duration', duration + 'ms');
       die.style.setProperty('--fall-delay', delay + 'ms');
       die.style.setProperty('--r0', Math.round(Math.random() * 360) + 'deg');
-      die.style.setProperty('--rx', Math.round(-16 + Math.random() * 32) + 'deg');
-      die.style.setProperty('--ry', Math.round(-20 + Math.random() * 40) + 'deg');
+      die.style.setProperty('--rx', Math.round(-38 + Math.random() * 76) + 'deg');
+      die.style.setProperty('--ry', Math.round(-44 + Math.random() * 88) + 'deg');
       die.style.setProperty('--spin', Math.round((Math.random() < 0.5 ? -1 : 1) * (420 + Math.random() * 900)) + 'deg');
       die.style.setProperty('--s', (0.58 + Math.random() * 0.78).toFixed(2));
+      die.style.setProperty('--rain-side-hi', isGreen ? '#17884a' : '#ffe153');
       die.style.setProperty('--rain-side-mid', isGreen ? '#0a5b2f' : '#c99b00');
       die.style.setProperty('--rain-side-dark', isGreen ? '#042b17' : '#725400');
-      rain.appendChild(die);
+      die.style.setProperty('--rain-edge', isGreen ? 'rgba(2,33,18,0.72)' : 'rgba(117,80,0,0.68)');
+      return die;
     }
+
+    function appendRainBatch() {
+      if (run !== victoryRainRun || !rain.isConnected) return;
+      const frag = document.createDocumentFragment();
+      const end = Math.min(i + 34, diceCount);
+      for (; i < end; i++) frag.appendChild(makeRainDie());
+      rain.appendChild(frag);
+      if (i < diceCount) {
+        victoryRainFrame = requestAnimationFrame(appendRainBatch);
+      } else {
+        victoryRainFrame = null;
+      }
+    }
+
+    appendRainBatch();
   }
 
   function triggerGameWinCelebration(winner) {
