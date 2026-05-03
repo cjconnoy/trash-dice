@@ -78,6 +78,17 @@ body {
   width: clamp(270px, 76vw, 430px);
   filter: drop-shadow(5px 7px 0 rgba(15,95,50,0.82)) drop-shadow(0 7px 10px rgba(60,48,30,0.25));
 }
+.title-hero-glint {
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.title-glint-word {
+  font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
+  fill: url(#topTitleGlintG);
+  stroke: none;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
 .logo-word {
   font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
   fill: #ff8f52;
@@ -1868,6 +1879,18 @@ body.debug-p0 .debug-badge { display: block; }
 
 <div class="title-wrap" aria-label="Trash Dice">
   <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
+    <defs>
+      <linearGradient id="topTitleGlintG" gradientUnits="userSpaceOnUse" x1="-190" y1="0" x2="-75" y2="0">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="34%" stop-color="#ffffff" stop-opacity="0.05"/>
+        <stop offset="48%" stop-color="#fff7ae" stop-opacity="0.98"/>
+        <stop offset="55%" stop-color="#ffffff" stop-opacity="0.88"/>
+        <stop offset="68%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        <animate attributeName="x1" values="-190;-190;330;330" keyTimes="0;0.58;0.76;1" dur="6.4s" repeatCount="indefinite"/>
+        <animate attributeName="x2" values="-75;-75;445;445" keyTimes="0;0.58;0.76;1" dur="6.4s" repeatCount="indefinite"/>
+      </linearGradient>
+    </defs>
     <g transform="rotate(-5 160 76)">
       <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
       <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
@@ -1878,6 +1901,10 @@ body.debug-p0 .debug-badge { display: block; }
       <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
       <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
       <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
+      <g class="title-hero-glint" aria-hidden="true">
+        <text class="title-glint-word" x="17" y="69" font-size="79" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+        <text class="title-glint-word" x="45" y="135" font-size="85" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+      </g>
     </g>
   </svg>
 </div>
