@@ -2539,14 +2539,17 @@ body.debug-p0 .debug-badge { display: block; }
   const COLORS = ['yellow', 'green'];
   const COLOR_CLASS = { yellow: 'p1', green: 'p2' };
   const PLAYER_NAME = { p1: 'Yellow', p2: 'Green' };
-  const ROLL_ANIMATION_MS = 850;
-  const ROLL_REVEAL_HOLD_MS = 650;
-  const TURN_HANDOFF_MS = 950;
-  const CPU_START_MS = 650;
   const URL_OPTIONS = new URLSearchParams(window.location.search);
-  const QA_ENABLED = URL_OPTIONS.has('qa') || window.location.hash.includes('qa');
-  const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || window.location.hash.toLowerCase().includes('p0') || window.location.hash.toLowerCase().includes('p-0');
-  const P0_AUTOPLAY_MS = 720;
+  const URL_HASH = window.location.hash.toLowerCase();
+  const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
+  const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
+  const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
+  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
+  const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
+  const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
+  const TURN_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 340 : 950;
+  const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
+  const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
   let forcedRolls = [];
   let p0Autoplay = false;
   let p0Timer = null;
@@ -3593,7 +3596,9 @@ body.debug-p0 .debug-badge { display: block; }
     rain.className = 'victory-dice-rain';
     overlay.appendChild(rain);
 
-    const diceCount = Math.round(clamp(220 + totalTrashedDice() * 2.4, 240, 340));
+    const diceCount = FAST_PREVIEW_ENABLED
+      ? Math.round(clamp(135 + totalTrashedDice() * 1.5, 150, 230))
+      : Math.round(clamp(220 + totalTrashedDice() * 2.4, 240, 340));
     const winnerGreenBias = winner === 'p2' ? 0.66 : 0.42;
     const run = ++victoryRainRun;
     let i = 0;
@@ -3623,7 +3628,8 @@ body.debug-p0 .debug-badge { display: block; }
     function appendRainBatch() {
       if (run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
-      const end = Math.min(i + 34, diceCount);
+      const batchSize = FAST_PREVIEW_ENABLED ? 26 : 34;
+      const end = Math.min(i + batchSize, diceCount);
       for (; i < end; i++) frag.appendChild(makeRainDie());
       rain.appendChild(frag);
       if (i < diceCount) {
