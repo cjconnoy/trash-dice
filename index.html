@@ -1097,7 +1097,9 @@ body.debug-p0 .debug-badge { display: block; }
   pointer-events: none;
   transform: translate(-50%, -50%);
   transform-origin: 50% 46%;
-  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45));
+  filter:
+    drop-shadow(0 10px 12px rgba(0,0,0,0.48))
+    drop-shadow(0 18px 18px rgba(52,43,32,0.14));
   --can-feed-scale: 3;
   --can-feed-glow: 34px;
   --can-feed-duration: 720ms;
@@ -1106,11 +1108,11 @@ body.debug-p0 .debug-badge { display: block; }
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 5%;
-  width: 78%;
-  height: 12%;
+  bottom: 3%;
+  width: 92%;
+  height: 16%;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(42,38,31,0.28) 0%, rgba(42,38,31,0.14) 50%, transparent 80%);
+  background: radial-gradient(ellipse at center, rgba(42,38,31,0.36) 0%, rgba(42,38,31,0.18) 46%, transparent 78%);
   transform: translateX(-50%);
   z-index: -1;
   pointer-events: none;
@@ -1119,6 +1121,8 @@ body.debug-p0 .debug-badge { display: block; }
   width: 100%;
   height: 100%;
   overflow: visible;
+  transform: perspective(520px) rotateY(-4deg);
+  transform-origin: 50% 54%;
 }
 .trash-can::after {
   content: '';
@@ -2183,11 +2187,14 @@ body.debug-p0 .debug-badge { display: block; }
       <svg viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="canBodyG" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stop-color="#6f7c7f"/>
-            <stop offset="15%" stop-color="#aeb8b8"/>
-            <stop offset="46%" stop-color="#859194"/>
-            <stop offset="62%" stop-color="#cad1d0"/>
-            <stop offset="100%" stop-color="#556063"/>
+            <stop offset="0%" stop-color="#485356"/>
+            <stop offset="9%" stop-color="#78868a"/>
+            <stop offset="18%" stop-color="#b6c0c0"/>
+            <stop offset="39%" stop-color="#879397"/>
+            <stop offset="56%" stop-color="#d3dad9"/>
+            <stop offset="71%" stop-color="#818c8f"/>
+            <stop offset="91%" stop-color="#586467"/>
+            <stop offset="100%" stop-color="#374144"/>
           </linearGradient>
           <linearGradient id="canRimG" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stop-color="#dce3e3"/>
@@ -2217,14 +2224,21 @@ body.debug-p0 .debug-badge { display: block; }
           <filter id="labelShadow" x="-24%" y="-24%" width="148%" height="148%">
             <feDropShadow dx="1.2" dy="1.5" stdDeviation="0.9" flood-color="rgba(0,0,0,0.42)"/>
           </filter>
+          <filter id="canBodyDepth" x="-16%" y="-12%" width="132%" height="124%">
+            <feDropShadow dx="-1.5" dy="1" stdDeviation="1.1" flood-color="rgba(255,255,255,0.3)"/>
+            <feDropShadow dx="2.2" dy="2.8" stdDeviation="1.6" flood-color="rgba(0,0,0,0.34)"/>
+          </filter>
         </defs>
 
         <ellipse cx="60" cy="154" rx="44" ry="6" fill="#465153" opacity="0.45"/>
-        <path d="M14 29 C14 24 106 24 106 29 L106 149 C106 158 14 158 14 149 Z" fill="url(#canBodyG)" stroke="#dfe7e6" stroke-width="2"/>
+        <path d="M14 29 C14 24 106 24 106 29 L106 149 C106 158 14 158 14 149 Z" fill="url(#canBodyG)" stroke="#dfe7e6" stroke-width="2" filter="url(#canBodyDepth)"/>
         <g clip-path="url(#canClip)">
-          <rect x="19" y="30" width="82" height="124" fill="rgba(255,255,255,0.06)"/>
-          <rect x="58" y="30" width="5" height="124" fill="rgba(255,255,255,0.15)"/>
-          <rect x="99" y="32" width="5" height="118" fill="rgba(0,0,0,0.12)"/>
+          <path d="M14 30 C25 35 28 46 28 90 C28 132 24 147 16 154 L14 154 Z" fill="rgba(0,0,0,0.18)"/>
+          <path d="M106 30 C94 36 92 50 92 91 C92 132 96 148 104 154 L106 154 Z" fill="rgba(0,0,0,0.22)"/>
+          <path d="M22 31 C34 35 38 46 38 89 C38 132 34 146 24 153" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="3.6" opacity="0.5"/>
+          <path d="M58 29 C64 44 64 133 59 154" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="5" opacity="0.65"/>
+          <path d="M68 30 C73 48 73 132 68 153" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2.4" opacity="0.7"/>
+          <path d="M95 34 C91 52 91 128 99 149" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="4.4" opacity="0.78"/>
 
           <path d="M14 43 C29 48 91 48 106 43" fill="none" stroke="#4d5a5d" stroke-width="3.2"/>
           <path d="M14 49 C29 54 91 54 106 49" fill="none" stroke="#9eaaab" stroke-width="1.4" opacity="0.7"/>
@@ -2234,6 +2248,9 @@ body.debug-p0 .debug-badge { display: block; }
           <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.1"/>
           <g clip-path="url(#labelClip)">
             <rect x="14" y="64" width="92" height="62" fill="rgba(255,255,255,0.08)"/>
+            <rect x="14" y="64" width="10" height="62" fill="rgba(0,0,0,0.18)"/>
+            <rect x="96" y="64" width="10" height="62" fill="rgba(0,0,0,0.22)"/>
+            <path d="M53 64 C58 76 59 111 53 126" stroke="rgba(255,255,255,0.22)" stroke-width="5.5" fill="none" opacity="0.42"/>
             <path d="M6 101 C29 86 74 88 113 104" stroke="#0f5f32" stroke-width="11" opacity="0.82" fill="none"/>
             <path d="M7 112 C29 101 78 101 113 115" stroke="#10491f" stroke-width="9" opacity="0.95" fill="none"/>
             <g fill="#0f5f32">
@@ -2268,13 +2285,16 @@ body.debug-p0 .debug-badge { display: block; }
 
         <ellipse cx="60" cy="26" rx="48" ry="16" fill="url(#canMouthG)"/>
         <path d="M11 25 C11 12 109 12 109 25 L109 37 C109 49 11 49 11 37 Z" fill="url(#canRimG)" stroke="#dce4e4" stroke-width="2.2"/>
-        <ellipse cx="60" cy="24" rx="43" ry="12.5" fill="#2c373a" opacity="0.88"/>
+        <path d="M15 28 C29 38 91 38 105 28 L105 38 C91 49 29 49 15 38 Z" fill="rgba(48,57,60,0.42)"/>
+        <ellipse cx="60" cy="23" rx="44" ry="13" fill="#202b2e" opacity="0.94"/>
+        <ellipse cx="60" cy="21.5" rx="37" ry="9" fill="#3c484b" opacity="0.38"/>
         <path class="can-lid-piece" d="M24 24 C35 16 85 16 96 24 C87 29 33 29 24 24 Z" fill="url(#canLidG)" stroke="#6a7679" stroke-width="1.8"/>
         <path class="can-lid-piece" d="M32 24 C41 20 79 20 88 24" fill="none" stroke="#c7d0d0" stroke-width="1" opacity="0.75"/>
         <path class="can-lid-piece" d="M45 18 L45 12 C45 9 75 9 75 12 L75 18" fill="none" stroke="#657174" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/>
         <path class="can-lid-piece" d="M47 17 L47 13 C47 12 73 12 73 13 L73 17" fill="none" stroke="#bcc6c6" stroke-width="1.4" stroke-linecap="round"/>
-        <ellipse cx="60" cy="36" rx="48" ry="10" fill="none" stroke="#516064" stroke-width="2.6"/>
-        <ellipse cx="60" cy="25" rx="49" ry="16" fill="none" stroke="#eff5f4" stroke-width="1.5" opacity="0.85"/>
+        <ellipse cx="60" cy="36" rx="48" ry="10" fill="none" stroke="#435154" stroke-width="3.2"/>
+        <path d="M15 24 C28 11 92 11 105 24" fill="none" stroke="#eff5f4" stroke-width="2.2" opacity="0.88"/>
+        <path d="M17 30 C31 39 89 39 103 30" fill="none" stroke="#c9d2d2" stroke-width="1.5" opacity="0.62"/>
       </svg>
       <div class="can-load-pile" id="canLoadPile"></div>
     </div>
