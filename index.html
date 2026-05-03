@@ -3386,11 +3386,13 @@ body.debug-p0 .debug-badge { display: block; }
   }
 
   function clearDie(player) {
-    const targets = player ? [getDie(player)] : [p1Die, p2Die];
-    targets.forEach(el => {
-      el.className = 'die idle';
-      el.style.opacity = '';
-      el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
+    const targets = player
+      ? [{ el: getDie(player), player }]
+      : [{ el: p1Die, player: 'p1' }, { el: p2Die, player: 'p2' }];
+    targets.forEach(target => {
+      target.el.className = `die idle ready-${target.player}`;
+      target.el.style.opacity = '';
+      target.el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
     });
   }
 
