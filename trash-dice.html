@@ -1982,6 +1982,10 @@ body.debug-p0 .debug-badge { display: block; }
   --winner-shadow: var(--green);
   --winner-glow: rgba(245,200,0,0.66);
   --winner-button-low: #b58a00;
+  --winner-title-face: var(--yellow);
+  --winner-title-stroke: #0a4a29;
+  --winner-title-shadow: #0f5f32;
+  --winner-title-deep: rgba(0,0,0,0.58);
   background:
     radial-gradient(circle at 50% 43%, rgba(245,200,0,0.22), transparent 31%),
     radial-gradient(circle at 50% 58%, rgba(15,95,50,0.30), transparent 48%),
@@ -2007,6 +2011,10 @@ body.debug-p0 .debug-badge { display: block; }
   --winner-shadow: var(--green);
   --winner-glow: rgba(245,200,0,0.72);
   --winner-button-low: #b58a00;
+  --winner-title-face: var(--yellow);
+  --winner-title-stroke: #0a4a29;
+  --winner-title-shadow: #0f5f32;
+  --winner-title-deep: rgba(0,0,0,0.58);
 }
 .overlay.winner-green {
   --winner-main: var(--green);
@@ -2014,6 +2022,10 @@ body.debug-p0 .debug-badge { display: block; }
   --winner-shadow: var(--yellow);
   --winner-glow: rgba(38,190,91,0.72);
   --winner-button-low: #063919;
+  --winner-title-face: #fff4a8;
+  --winner-title-stroke: #06391e;
+  --winner-title-shadow: #f5c800;
+  --winner-title-deep: rgba(0,0,0,0.72);
 }
 .overlay.victory {
   background:
@@ -2078,16 +2090,22 @@ body.debug-p0 .debug-badge { display: block; }
   gap: clamp(0.04rem, 0.8vw, 0.24rem);
   font-size: clamp(2.6rem, 10vw, 6.3rem);
   line-height: 0.78;
-  color: var(--winner-main);
-  -webkit-text-stroke: 1px rgba(0,0,0,0.18);
+  color: var(--winner-title-face);
+  -webkit-text-stroke: clamp(1.3px, 0.24vw, 2.2px) var(--winner-title-stroke);
   text-shadow:
-    3px 3px 0 var(--winner-shadow),
-    7px 8px 0 rgba(0,0,0,0.52),
-    0 0 10px rgba(0,0,0,0.74),
-    0 0 30px var(--winner-glow);
+    0 3px 0 var(--winner-title-shadow),
+    4px 6px 0 var(--winner-title-deep),
+    0 0 12px rgba(0,0,0,0.84),
+    0 0 34px var(--winner-glow),
+    0 0 58px rgba(255,255,255,0.16);
   text-align: center;
   letter-spacing: 0.02em;
   transform: rotate(-2deg);
+}
+.overlay.winner-green .overlay-title {
+  filter:
+    drop-shadow(0 0 11px rgba(255,244,168,0.32))
+    drop-shadow(0 10px 16px rgba(0,0,0,0.52));
 }
 .overlay-title .win-line {
   display: block;
