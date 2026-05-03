@@ -5,22 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Trash Dice</title>
 <link rel="icon" href="data:,">
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Chewy&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
 :root {
   --yellow:      #f5c800;
   --yellow-dark: #c9a000;
   --yellow-pip:  #1a5c1a;
-  --green:       #1e6b1e;
-  --green-light: #2a9a2a;
+  --green:       #0f5f32;
+  --green-light: #15783f;
   --green-pip:   #f5c800;
-  --bg:          #111;
-  --surface:     #1e1e1e;
+  --bg:          #eee9dd;
+  --surface:     #f7f3ea;
   --board-rim:   #5a5a5a;
   --board-bg:    #444;
   --slot-empty:  #2e2e2e;
-  --text:        #f0f0f0;
+  --text:        #17361f;
   --trash-red:   #d93030;
+  --plastic-hi:   #d9dfdf;
+  --plastic-mid:  #8f9a9a;
+  --plastic-low:  #515a5c;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -42,6 +45,9 @@ body {
   padding: 0.4rem 0.5rem;
   gap: 0.35rem;
   min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255,255,255,0.95), rgba(245,242,234,0.86) 42%, rgba(214,205,190,0.72) 78%, rgba(184,174,160,0.88) 100%),
+    linear-gradient(180deg, #faf8f2 0%, #ddd5c8 100%);
 }
 
 /* ── GRAFFITI TITLE ── */
@@ -61,15 +67,67 @@ body {
   gap: 0.05rem;
   padding: 0.5rem 1rem 0.3rem;
 }
+.title-logo {
+  width: clamp(208px, 45vw, 318px);
+  height: auto;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(4px 6px 0 rgba(15,95,50,0.78)) drop-shadow(0 4px 5px rgba(60,48,30,0.24));
+}
+.title-wrap.big .title-logo {
+  width: clamp(270px, 76vw, 430px);
+  filter: drop-shadow(5px 7px 0 rgba(15,95,50,0.82)) drop-shadow(0 7px 10px rgba(60,48,30,0.25));
+}
+.logo-word {
+  font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
+  fill: #ff8f52;
+  stroke: #0f5f32;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.logo-word.backing {
+  fill: none;
+  stroke: #f5c800;
+  opacity: 0.92;
+}
+.logo-kicker {
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  fill: #fff3b0;
+  stroke: #0f5f32;
+  stroke-width: 0.9;
+  paint-order: stroke fill;
+  letter-spacing: 0.04em;
+}
+.logo-outer {
+  font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
+  fill: none;
+  stroke: #08632d;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.logo-warm-shadow {
+  font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
+  fill: #ef7040;
+  stroke: #08632d;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.logo-face {
+  font-family: 'Chewy', 'Cooper Black', 'Cooper Std Black', 'Fredoka One', 'Arial Black', sans-serif;
+  fill: #ffb53c;
+  stroke: #08632d;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
 .title-trash {
   font-family: 'Bangers', 'Impact', sans-serif;
   font-size: clamp(2.2rem, 8vw, 3.8rem);
-  color: #5ee85e;
-  -webkit-text-stroke: 2px #1a5c1a;
+  color: #ff8a3c;
+  -webkit-text-stroke: 2px #23621d;
   text-shadow:
-    0 0 0 #1a5c1a,
-    3px 3px 0 #1a7a1a,
-    5px 5px 0 #0a3a0a,
+    0 0 0 #23621d,
+    3px 3px 0 #f5c800,
+    5px 5px 0 #0f5f32,
     1px 1px 8px rgba(0,0,0,0.7);
   transform: rotate(-5deg) translateY(4px);
   display: inline-block;
@@ -79,11 +137,11 @@ body {
 .title-dice {
   font-family: 'Bangers', 'Impact', sans-serif;
   font-size: clamp(2.6rem, 9.5vw, 4.5rem);
-  color: #1a1a2a;
-  -webkit-text-stroke: 2.5px #5ee85e;
+  color: #ff8a3c;
+  -webkit-text-stroke: 2.5px #23621d;
   text-shadow:
-    3px 3px 0 #2a9a2a,
-    5px 5px 0 #0a3a0a,
+    3px 3px 0 #f5c800,
+    5px 5px 0 #0f5f32,
     6px 7px 10px rgba(0,0,0,0.65);
   transform: rotate(-2deg);
   display: inline-block;
@@ -111,16 +169,17 @@ body {
 
 .tagline {
   font-size: clamp(0.55rem, 1.8vw, 0.75rem);
-  color: var(--green-pip);
+  color: #0f5f32;
   letter-spacing: 0.22em;
   text-align: center;
   text-transform: uppercase;
-  opacity: 0.8;
+  opacity: 0.86;
 }
 
 /* ── STATUS BAR ── */
 .status-bar {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.58);
+  border: 1px solid rgba(46,70,57,0.1);
   border-radius: 20px;
   padding: 0.25rem 1rem;
   font-size: clamp(0.75rem, 2.5vw, 0.9rem);
@@ -128,12 +187,66 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  box-shadow: 0 2px 10px rgba(82,69,51,0.12);
+  transition: background 0.22s, border-color 0.22s, box-shadow 0.22s;
+}
+.status-bar.yellow-turn {
+  background: rgba(245,200,0,0.2);
+  border-color: rgba(15,95,50,0.26);
+  box-shadow: 0 2px 10px rgba(201,160,0,0.16);
+}
+.status-bar.green-turn {
+  background: rgba(15,95,50,0.16);
+  border-color: rgba(15,95,50,0.28);
+  box-shadow: 0 2px 10px rgba(15,95,50,0.14);
+}
+.status-bar.green-turn #statusText {
+  color: var(--green);
+}
+.status-bar.yellow-turn #statusText {
+  color: var(--yellow-pip);
 }
 .turn-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
   transition: background 0.25s;
+}
+
+.debug-badge {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  z-index: 140;
+  display: none;
+  padding: 0.28rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(245,200,0,0.94);
+  color: #123418;
+  font-family: 'Fredoka One', Arial Black, sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 7px 18px rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+body.debug-p0 .debug-badge { display: block; }
+.milestone-badge {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 140;
+  padding: 0.28rem 0.52rem;
+  border-radius: 6px;
+  background: rgba(15,95,50,0.92);
+  color: #fff3b0;
+  border: 1px solid rgba(245,200,0,0.78);
+  font-family: 'Fredoka One', Arial Black, sans-serif;
+  font-size: clamp(0.52rem, 1.8vw, 0.68rem);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 16px rgba(68,53,30,0.24);
+  pointer-events: none;
 }
 
 /* ── GAME AREA ── */
@@ -154,19 +267,43 @@ body {
   align-items: center;
   gap: clamp(0.25rem, 1.4vw, 0.5rem);
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   padding: 0.25rem 0.5rem;
-  background: rgba(255,255,255,0.04);
-  border-radius: 10px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.34), rgba(255,255,255,0.62) 45%, rgba(255,255,255,0.26));
+  border: 1px solid rgba(65,79,70,0.08);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.65),
+    0 7px 18px rgba(98,82,61,0.11);
+  overflow: visible;
 }
 .player-label {
-  font-family: 'Bangers', sans-serif;
-  font-size: clamp(1rem, 3.5vw, 1.4rem);
-  letter-spacing: 0.08em;
-  min-width: clamp(2rem, 8vw, 2.5rem);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.56rem, 1.9vw, 0.8rem);
+  letter-spacing: 0.075em;
+  line-height: 1.05;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  min-width: clamp(5.7rem, 19vw, 7.2rem);
+  padding: 0.34rem 0.4rem;
+  border-radius: 7px;
+  position: relative;
+  z-index: 4;
 }
-.player-label.p1 { color: var(--yellow); }
-.player-label.p2 { color: var(--green-light); }
+.player-label.p1 {
+  color: var(--yellow-pip);
+  background: linear-gradient(180deg, #ffe05b, #f5c800 62%, #d8a900);
+  border: 1px solid rgba(15,95,50,0.32);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 3px 0 rgba(116,84,0,0.18);
+}
+.player-label.p2 {
+  color: var(--green-pip);
+  background: linear-gradient(180deg, #1f8a49, #0f6b37 62%, #084421);
+  border: 1px solid rgba(245,200,0,0.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 3px 0 rgba(0,44,22,0.2);
+}
 
 /* dice-pool-visual no longer used in panels — piles live on the mat */
 .mini-die {
@@ -194,23 +331,26 @@ body {
 /* ── BOARD ── */
 .board-wrap {
   position: relative;
-  width:  clamp(220px, 58vw, 320px);
-  height: clamp(220px, 58vw, 320px);
+  width:  clamp(210px, 52vw, 292px);
+  height: clamp(210px, 52vw, 292px);
   flex-shrink: 0;
   background: transparent;
 }
 
 /* ── SVG SLOT ANIMATIONS ── */
-.anim-place { animation: svgPlace 0.38s ease-out; }
-.anim-trash { animation: svgTrash 0.38s ease-out; }
+.anim-place { animation: svgPlace 0.68s cubic-bezier(.14,.86,.18,1); }
+.anim-trash { animation: svgTrash 0.46s cubic-bezier(.14,.86,.18,1); }
 @keyframes svgPlace {
-  0%   { filter: brightness(0.4); }
-  55%  { filter: brightness(1.6); }
-  100% { filter: brightness(1); }
+  0%   { filter: brightness(0.7) drop-shadow(0 0 0 rgba(0,0,0,0)); }
+  20%  { filter: brightness(0.82) drop-shadow(0 4px 0 rgba(0,0,0,0.55)); }
+  48%  { filter: brightness(1.65) saturate(1.22) drop-shadow(0 0 14px rgba(255,255,255,0.72)); }
+  72%  { filter: brightness(1.18) saturate(1.08) drop-shadow(0 2px 7px rgba(255,255,255,0.32)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0)); }
 }
 @keyframes svgTrash {
   0%,100% { filter: none; }
-  50%     { filter: brightness(1.7) saturate(2.5) hue-rotate(290deg); }
+  35%     { filter: brightness(0.65) saturate(1.4); }
+  68%     { filter: brightness(1.35) saturate(1.7) hue-rotate(310deg); }
 }
 
 /* ── BOARD DIV (no extra styling — SVG handles all visuals) ── */
@@ -218,17 +358,17 @@ body {
 
 /* ── DIE ── */
 .die-wrap {
-  --roll-die-size: clamp(76px, 22vw, 124px);
+  --roll-die-size: clamp(70px, 19vw, 108px);
   position: relative;
   flex: 0 0 var(--roll-die-size);
   width: var(--roll-die-size);
   height: var(--roll-die-size);
   aspect-ratio: 1 / 1;
-  margin: 0.2rem 0;
+  margin: 0.2rem clamp(0.65rem, 2.4vw, 1rem) 0.2rem clamp(0.2rem, 1vw, 0.45rem);
 }
 .die {
   width: 100%; height: 100%;
-  border-radius: clamp(16px, 4.5vw, 22px);
+  border-radius: 22%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -238,36 +378,79 @@ body {
   box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 .die.p1 {
-  background: linear-gradient(148deg, #ffe84a 0%, #f5c800 28%, #ddb000 62%, #b88e00 100%);
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.88), rgba(255,255,255,0.22) 19%, transparent 34%),
+    linear-gradient(148deg, #ffe86a 0%, #f5c800 34%, #dbad00 69%, #9f7600 100%);
   box-shadow:
-    8px 8px 0 0 #9a7400,
-    14px 14px 0 0 rgba(0,0,0,0.4),
+    7px 8px 0 0 #9a7400,
+    13px 14px 0 0 rgba(0,0,0,0.4),
     0 12px 30px rgba(0,0,0,0.55),
-    inset 0 0 0 1px rgba(255,255,255,0.2);
+    inset 0 0 0 2px rgba(255,255,255,0.18),
+    inset -12px -13px 18px rgba(88,62,0,0.25);
   transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
 }
 .die.p2 {
-  background: linear-gradient(148deg, #30b030 0%, #1e7a1e 30%, #155515 65%, #0a380a 100%);
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.58), rgba(255,255,255,0.13) 20%, transparent 35%),
+    linear-gradient(148deg, #18864a 0%, #0f6a37 33%, #0a4a29 69%, #052916 100%);
   box-shadow:
-    8px 8px 0 0 #062806,
-    14px 14px 0 0 rgba(0,0,0,0.45),
+    7px 8px 0 0 #042612,
+    13px 14px 0 0 rgba(0,0,0,0.45),
     0 12px 30px rgba(0,0,0,0.55),
-    inset 0 0 0 1px rgba(255,255,255,0.1);
+    inset 0 0 0 2px rgba(255,255,255,0.09),
+    inset -12px -13px 18px rgba(0,0,0,0.28);
   transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
 }
 .die.idle {
-  background: linear-gradient(145deg,#444,#222);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.58), rgba(255,255,255,0.08) 32%, transparent 44%),
+    linear-gradient(145deg,#4f5353,#222728 72%, #151718);
+  box-shadow:
+    7px 8px 0 rgba(0,0,0,0.52),
+    0 14px 26px rgba(0,0,0,0.42),
+    inset -10px -12px 18px rgba(0,0,0,0.28);
   transform: none;
 }
+.die.idle.ready-p1 {
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.78), rgba(255,255,255,0.2) 26%, transparent 42%),
+    linear-gradient(145deg, #ffe86a 0%, #f5c800 52%, #ad8500 100%);
+  box-shadow:
+    7px 8px 0 #8f6900,
+    0 14px 26px rgba(0,0,0,0.42),
+    inset -10px -12px 18px rgba(86,59,0,0.2);
+}
+.die.idle.ready-p2 {
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.54), rgba(255,255,255,0.12) 28%, transparent 44%),
+    linear-gradient(145deg, #18864a 0%, #0f5f32 58%, #052916 100%);
+  box-shadow:
+    7px 8px 0 #042612,
+    0 14px 26px rgba(0,0,0,0.44),
+    inset -10px -12px 18px rgba(0,0,0,0.28);
+}
 .die { position: relative; overflow: visible; }
+.die::before {
+  content: '';
+  position: absolute;
+  inset: 11% -10% -12% 18%;
+  border-radius: 21%;
+  z-index: -1;
+  transform: skewY(5deg);
+  opacity: 0.92;
+}
+.die.p1::before { background: linear-gradient(135deg, #c59b00, #6f5200); }
+.die.p2::before { background: linear-gradient(135deg, #083f20, #02180c); }
+.die.idle::before { background: linear-gradient(135deg, #303637, #111); }
+.die.idle.ready-p1::before { background: linear-gradient(135deg, #c59b00, #6f5200); }
+.die.idle.ready-p2::before { background: linear-gradient(135deg, #083f20, #02180c); }
 /* Oval gloss highlight */
 .die::after {
   content: '';
   position: absolute;
-  top: 6%; left: 8%;
-  width: 60%; height: 38%;
-  background: radial-gradient(ellipse at 38% 28%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.1) 55%, transparent 100%);
+  top: 7%; left: 9%;
+  width: 58%; height: 36%;
+  background: radial-gradient(ellipse at 38% 28%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.15) 54%, transparent 100%);
   border-radius: 50%;
   pointer-events: none;
   z-index: 3;
@@ -277,7 +460,7 @@ body {
   transform-origin: 50% 50%;
 }
 .die.roll-resolved {
-  animation: dieResolvePulse 0.38s cubic-bezier(.18,.9,.22,1) both;
+  animation: dieResolvePulse 0.42s cubic-bezier(.18,.9,.22,1) both;
   transform-origin: 50% 50%;
 }
 .die.trashed { animation: dieTrash 0.55s ease-in forwards; }
@@ -318,13 +501,13 @@ body {
     transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(1);
     filter: brightness(1);
   }
-  42% {
-    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(1.18);
-    filter: brightness(1.28);
+  28% {
+    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(1.12,0.9) translateY(5px);
+    filter: brightness(1.18);
   }
-  72% {
-    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(0.96);
-    filter: brightness(1.08);
+  58% {
+    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(0.96,1.08) translateY(-3px);
+    filter: brightness(1.24);
   }
   100% {
     transform: perspective(540px) rotateX(-10deg) rotateY(10deg) scale(1);
@@ -347,7 +530,10 @@ body {
   height: clamp(15px, 4.2vw, 20px);
   border-radius: 50%;
   background: var(--yellow-pip);
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.45), 0 1px 1px rgba(255,255,255,0.12);
+  box-shadow:
+    inset 1px 1px 3px rgba(0,0,0,0.55),
+    inset -1px -1px 2px rgba(255,255,255,0.08),
+    0 1px 1px rgba(255,255,255,0.12);
 }
 .die.p2 .dot { background: var(--green-pip); }
 .die.idle .dot { background: #555; }
@@ -415,10 +601,12 @@ body {
   letter-spacing: 0.06em;
   text-align: center;
   padding: 0 0.5rem;
+  color: #17361f;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.72);
 }
-.message.ok    { color: #88ee88; }
+.message.ok    { color: #0f6b37; }
 .message.trash { color: var(--trash-red); }
-.message.win   { color: var(--yellow); }
+.message.win   { color: #a88500; }
 
 /* ── ROUND FLASH ── */
 .round-flash {
@@ -487,8 +675,8 @@ body {
 
 /* ── BOARD SCENE ── */
 .board-scene {
-  --lid-offset: clamp(-60px, -15vw, -34px);
-  --can-offset: clamp(118px, 31vw, 190px);
+  --lid-offset: clamp(-88px, -16vw, -46px);
+  --can-offset: clamp(124px, 27vw, 164px);
   position: relative;
   display: flex;
   flex-direction: row;
@@ -496,17 +684,41 @@ body {
   justify-content: center;
   gap: 0.4rem;
   width: 100%;
-  padding: 1.2rem 0.5rem clamp(2.3rem, 7vw, 4.8rem);
+  padding: 1.05rem 0.5rem clamp(2.1rem, 6vw, 4.2rem);
   flex-shrink: 0;
   overflow: visible;
+  cursor: none;
+}
+.board-scene * {
+  cursor: none;
+}
+.board-scene.lid-weight-hit {
+  animation: sceneLidWeight 0.38s cubic-bezier(.15,.82,.16,1);
+}
+.board-scene.can-weight-hit {
+  animation: sceneCanWeight 0.52s cubic-bezier(.15,.82,.16,1);
+}
+@keyframes sceneLidWeight {
+  0%,100% { transform: translate3d(0,0,0); }
+  22% { transform: translate3d(0,3px,0); }
+  48% { transform: translate3d(0,-1px,0); }
+}
+@keyframes sceneCanWeight {
+  0%,100% { transform: translate3d(0,0,0); }
+  16% { transform: translate3d(-3px,4px,0); }
+  31% { transform: translate3d(4px,-2px,0); }
+  48% { transform: translate3d(-2px,2px,0); }
+  68% { transform: translate3d(1px,-1px,0); }
 }
 .board-blob {
   position: absolute;
-  inset: 0;
-  background: #c5d400;
-  border-radius: 71% 29% 58% 42% / 44% 63% 37% 56%;
+  inset: 20% 9% 17%;
+  background:
+    radial-gradient(ellipse at 48% 50%, rgba(45,42,36,0.11) 0%, rgba(45,42,36,0.065) 46%, rgba(45,42,36,0.025) 70%, transparent 100%);
+  border-radius: 50% / 42%;
+  opacity: 0.72;
   z-index: 0;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  box-shadow: none;
 }
 .board-ring-text {
   position: absolute;
@@ -523,14 +735,101 @@ body {
 .board-wrap {
   z-index: 4;
   transform: translateX(var(--lid-offset));
+  --lid-place-color: rgba(245,200,0,0.78);
+  --lid-place-glow: rgba(245,200,0,0.68);
+}
+.board-wrap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 92%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(42,38,31,0.36) 0%, rgba(42,38,31,0.18) 48%, transparent 78%);
+  transform: translateX(-50%);
+  z-index: -1;
+  pointer-events: none;
 }
 .board-wrap.lid-win-pulse {
   z-index: 85;
   animation: lidWinPulse 0.92s cubic-bezier(.13,.85,.16,1);
 }
+.board-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -9%;
+  border-radius: 50%;
+  border: clamp(3px, 1vw, 6px) solid var(--lid-place-color);
+  opacity: 0;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 15px var(--lid-place-glow))
+    drop-shadow(0 15px 12px rgba(0,0,0,0.24));
+}
+.board-wrap.lid-place-pulse {
+  animation: lidPlaceBump 0.82s cubic-bezier(.15,.88,.16,1);
+}
+.board-wrap.lid-place-pulse::after {
+  animation: lidPlaceRing 1s cubic-bezier(.12,.82,.18,1);
+}
 .board-wrap.game-win-spin {
   z-index: 120;
   animation: boardGameWinSpin 2.45s cubic-bezier(.09,.82,.12,1);
+}
+@keyframes lidPlaceBump {
+  0%,100% { transform: translateX(var(--lid-offset)) translateY(0) scale(1); filter: drop-shadow(0 5px 9px rgba(0,0,0,0.42)); }
+  15% { transform: translateX(var(--lid-offset)) translateY(6px) scale(0.952); filter: drop-shadow(0 15px 8px rgba(0,0,0,0.48)); }
+  38% { transform: translateX(var(--lid-offset)) translateY(-5px) scale(1.105); filter: drop-shadow(0 0 28px var(--lid-place-glow)); }
+  62% { transform: translateX(var(--lid-offset)) translateY(2px) scale(0.982); filter: drop-shadow(0 9px 10px rgba(0,0,0,0.36)); }
+  82% { transform: translateX(var(--lid-offset)) translateY(-1px) scale(1.018); }
+}
+@keyframes lidPlaceRing {
+  0% { opacity: 0.94; transform: scale(0.68); }
+  34% { opacity: 0.72; transform: scale(1.05); }
+  68% { opacity: 0.34; transform: scale(1.3); }
+  100% { opacity: 0; transform: scale(1.52); }
+}
+.lid-place-burst {
+  position: fixed;
+  left: var(--burst-x);
+  top: var(--burst-y);
+  width: clamp(126px, 22vw, 210px);
+  height: clamp(62px, 11vw, 106px);
+  z-index: 96;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.62) 0 9%, var(--burst-color) 10% 18%, transparent 20%),
+    radial-gradient(ellipse at 50% 50%, var(--burst-glow) 0 34%, transparent 68%);
+  filter:
+    drop-shadow(0 6px 10px rgba(0,0,0,0.22))
+    drop-shadow(0 0 22px var(--burst-glow));
+  animation: lidPlaceBurst 0.96s cubic-bezier(.12,.84,.12,1) forwards;
+}
+.lid-place-burst::before {
+  content: '';
+  position: absolute;
+  inset: 30% 12%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.68) 0 11%, var(--burst-color) 12% 23%, transparent 25%);
+  opacity: 0.7;
+  transform: scaleX(1.35);
+}
+.lid-place-burst::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border: clamp(3px, 0.7vw, 5px) solid var(--burst-color);
+  border-radius: 50%;
+  opacity: 0.78;
+}
+@keyframes lidPlaceBurst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.42) rotate(-4deg); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(0.92) rotate(2deg); }
+  48% { opacity: 0.76; transform: translate(-50%, -50%) scale(1.42) rotate(4deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.12) rotate(6deg); }
 }
 @keyframes lidWinPulse {
   0%,100% {
@@ -577,9 +876,9 @@ body {
 .trash-can {
   position: absolute;
   left: calc(50% + var(--can-offset));
-  top: calc(50% + clamp(8px, 4vw, 26px));
-  width: clamp(126px, 29vw, 190px);
-  height: clamp(156px, 36vw, 226px);
+  top: calc(50% + clamp(18px, 4vw, 32px));
+  width: clamp(118px, 26vw, 170px);
+  height: clamp(173px, 38vw, 250px);
   z-index: 2;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -589,14 +888,55 @@ body {
   --can-feed-glow: 34px;
   --can-feed-duration: 720ms;
 }
+.trash-can::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  width: 78%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(42,38,31,0.28) 0%, rgba(42,38,31,0.14) 50%, transparent 80%);
+  transform: translateX(-50%);
+  z-index: -1;
+  pointer-events: none;
+}
 .trash-can svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
+.trash-can::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  border: clamp(4px, 1.1vw, 7px) solid rgba(217,48,48,0.78);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.78);
+  filter:
+    drop-shadow(0 0 14px rgba(217,48,48,0.82))
+    drop-shadow(0 0 26px rgba(245,200,0,0.42));
+}
+.can-static-dice { display: none; }
+.can-load-pile {
+  position: absolute;
+  left: 50%;
+  top: -5%;
+  width: 84%;
+  height: 40%;
+  z-index: 4;
+  transform: translateX(-50%);
+  pointer-events: none;
+  overflow: visible;
+}
 .trash-can.flash {
   z-index: 90;
   animation: canFlash var(--can-feed-duration) cubic-bezier(.12,.82,.2,1);
+}
+.trash-can.flash::after {
+  animation: canImpactRing var(--can-feed-duration) cubic-bezier(.12,.82,.18,1);
 }
 .trash-can.pour {
   animation: canPour 1.05s ease-in-out;
@@ -607,10 +947,17 @@ body {
 }
 @keyframes canFlash {
   0%,100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45)); }
-  16%     { transform: translate(-50%, -54%) rotate(-6deg) scale(var(--can-feed-scale)); filter: drop-shadow(0 0 var(--can-feed-glow) rgba(217,48,48,0.95)); }
-  34%     { transform: translate(-50%, -48%) rotate(5deg) scale(1.22); filter: drop-shadow(0 16px 18px rgba(0,0,0,0.65)); }
-  52%     { transform: translate(-50%, -51%) rotate(-3deg) scale(1.52); filter: drop-shadow(0 0 24px rgba(245,200,0,0.55)); }
-  74%     { transform: translate(-50%, -50%) rotate(2deg) scale(0.96); }
+  10%     { transform: translate(-50%, -48%) rotate(2deg) scale(1.04,0.88); filter: drop-shadow(0 15px 11px rgba(0,0,0,0.56)); }
+  22%     { transform: translate(-50%, -57%) rotate(-7deg) scale(var(--can-feed-scale)); filter: drop-shadow(0 0 var(--can-feed-glow) rgba(217,48,48,0.72)); }
+  42%     { transform: translate(-50%, -43%) rotate(6deg) scale(1.14,0.9); filter: drop-shadow(0 22px 19px rgba(0,0,0,0.68)); }
+  62%     { transform: translate(-50%, -52%) rotate(-4deg) scale(1.2); filter: drop-shadow(0 0 18px rgba(245,200,0,0.42)); }
+  82%     { transform: translate(-50%, -49%) rotate(2deg) scale(0.98); }
+}
+@keyframes canImpactRing {
+  0%   { opacity: 0; transform: scale(0.72); }
+  15%  { opacity: 0.95; transform: scale(0.9); }
+  42%  { opacity: 0.72; transform: scale(1.24); }
+  100% { opacity: 0; transform: scale(1.72); }
 }
 @keyframes canPour {
   0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45)); }
@@ -633,16 +980,58 @@ body {
   margin: 0;
   pointer-events: none;
   z-index: 70;
-  transition:
-    left 0.58s cubic-bezier(.19,.92,.28,1.02),
-    top 0.58s cubic-bezier(.19,.92,.28,1.02),
-    width 0.58s ease,
-    height 0.58s ease,
-    transform 0.58s ease,
-    opacity 0.18s ease 0.5s;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
 }
-.travelling-die.to-trash {
-  opacity: 0;
+.travelling-die.to-slot-physical {
+  animation: dieArcToLid 0.66s cubic-bezier(.13,.77,.2,1) forwards;
+}
+.travelling-die.to-trash-physical {
+  animation: dieArcToCan 0.68s cubic-bezier(.16,.72,.16,1) forwards;
+}
+@keyframes dieArcToLid {
+  0% {
+    opacity: 1;
+    transform: translate(0,0) rotate(0deg) scale(1);
+    filter: brightness(1);
+  }
+  42% {
+    opacity: 1;
+    transform: translate(var(--mx), var(--my)) rotate(var(--r1)) scale(0.92);
+    filter: brightness(1.1);
+  }
+  82% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--r2)) scale(var(--squash));
+    filter: brightness(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--r3)) scale(var(--final-scale));
+    filter: brightness(1);
+  }
+}
+@keyframes dieArcToCan {
+  0% {
+    opacity: 1;
+    transform: translate(0,0) rotate(0deg) scale(1);
+    filter: brightness(1);
+  }
+  34% {
+    opacity: 1;
+    transform: translate(var(--mx), var(--my)) rotate(var(--r1)) scale(0.82);
+    filter: brightness(1.04);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--r2)) scale(var(--final-scale));
+    filter: brightness(0.74);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), calc(var(--ty) + 18px)) rotate(var(--r3)) scale(0.08);
+    filter: brightness(0.45);
+  }
 }
 .can-pour-die {
   position: fixed;
@@ -652,51 +1041,78 @@ body {
   pointer-events: none;
   z-index: 72;
   box-shadow:
-    1px 1px 0 rgba(0,0,0,0.5),
-    0 0 12px rgba(255,255,255,0.64),
-    -12px -6px 18px rgba(255,45,85,0.56),
-    10px 7px 18px rgba(53,210,255,0.48),
-    inset 0 1px 0 rgba(255,255,255,0.24);
-  animation: canPourRainbow 0.62s linear infinite;
-  transition:
-    left 0.72s cubic-bezier(.16,.86,.22,1),
-    top 0.72s cubic-bezier(.16,.86,.22,1),
-    transform 0.72s ease,
-    opacity 0.18s ease 0.58s;
+    2px 2px 0 rgba(0,0,0,0.48),
+    0 8px 14px rgba(67,52,29,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    inset -3px -3px 5px rgba(0,0,0,0.18);
+  animation: payoutDieArc var(--payout-duration, 900ms) cubic-bezier(.12,.75,.2,1) forwards;
+  animation-delay: var(--payout-delay, 0ms);
+  opacity: 0;
 }
 .can-pour-die::after {
-  content: '';
-  position: absolute;
-  left: -18px;
-  top: 45%;
-  width: 24px;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), rgba(245,200,0,0.85), rgba(94,232,94,0.72));
-  transform: translateY(-50%) rotate(-18deg);
-  opacity: 0.72;
+  content: none;
 }
-@keyframes canPourRainbow {
-  0%   { filter: hue-rotate(0deg) brightness(1.12); }
-  50%  { filter: hue-rotate(120deg) brightness(1.34); }
-  100% { filter: hue-rotate(240deg) brightness(1.12); }
+@keyframes payoutDieArc {
+  0% {
+    opacity: 0;
+    transform: translate(-50%,-50%) rotate(var(--r0, -30deg)) scale(0.62);
+    filter: brightness(0.9);
+  }
+  8% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) rotate(var(--r1, 120deg)) scale(1.22);
+    filter: brightness(1.18);
+  }
+  82% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--r2, 260deg)) scale(0.74);
+    filter: brightness(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty) + 6px)) rotate(var(--r3, 300deg)) scale(0.52);
+    filter: brightness(0.94);
+  }
 }
 .victory-cannon-die {
   position: fixed;
-  width: clamp(15px, 3.8vw, 24px);
-  height: clamp(15px, 3.8vw, 24px);
+  width: clamp(20px, 4.8vw, 34px);
+  height: clamp(20px, 4.8vw, 34px);
   overflow: visible;
-  z-index: 125;
+  z-index: 12;
   pointer-events: none;
   transform: translate(-50%, -50%);
   animation: victoryCannonDie var(--cannon-duration, 1500ms) cubic-bezier(.1,.84,.1,1) var(--cannon-delay, 0ms) forwards;
+  outline: 1px solid rgba(255,255,255,0.32);
   box-shadow:
-    2px 2px 0 rgba(0,0,0,0.54),
-    0 0 18px rgba(255,255,255,0.74),
-    0 0 30px rgba(245,200,0,0.42);
+    3px 3px 0 rgba(0,0,0,0.52),
+    0 9px 14px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.victory-persist-die {
+  z-index: 12;
+  animation: victoryPersistDie var(--cannon-duration, 1900ms) cubic-bezier(.1,.84,.1,1) var(--cannon-delay, 0ms) forwards;
+}
+.victory-settled-die {
+  position: fixed;
+  width: clamp(22px, 5.2vw, 40px);
+  height: clamp(22px, 5.2vw, 40px);
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.98;
+  outline: 1px solid rgba(255,255,255,0.42);
+  box-shadow:
+    3px 3px 0 rgba(0,0,0,0.48),
+    0 8px 13px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.32);
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
+  animation: victorySettledDie 3.2s ease-in-out var(--d, 0ms) infinite alternate;
 }
 .victory-cannon-die::after {
-  content: '';
+  content: none;
   position: absolute;
   left: -22px;
   top: 50%;
@@ -728,10 +1144,109 @@ body {
     filter: hue-rotate(240deg) brightness(1.1);
   }
 }
+@keyframes victoryPersistDie {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.36) rotate(0deg);
+    filter: brightness(1.7) saturate(1.25);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.45) rotate(58deg);
+  }
+  42% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(1.18) rotate(calc(var(--rot) * 0.56));
+    filter: brightness(1.25) saturate(1.2);
+  }
+  100% {
+    opacity: 0.96;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--final-scale, 0.88)) rotate(var(--rot));
+    filter: brightness(1.06) saturate(1.08);
+  }
+}
+@keyframes victorySettledDie {
+  0% {
+    transform: translate(-50%, -50%) translateY(-3px) rotate(var(--r, 0deg)) scale(var(--s, 1));
+    filter: brightness(1.08) saturate(1.08);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(4px) rotate(calc(var(--r, 0deg) + 10deg)) scale(var(--s, 1));
+    filter: brightness(1.2) saturate(1.12);
+  }
+}
+.victory-lid-backdrop {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: max(130vw, 130vh);
+  height: max(130vw, 130vh);
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0.32;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.28) 0 8%, rgba(93,103,105,0.5) 9% 13%, transparent 14%),
+    conic-gradient(from 0deg, rgba(100,112,114,0.82) 0 8deg, rgba(190,198,198,0.36) 9deg 11deg, rgba(82,93,95,0.9) 12deg 58deg, rgba(190,198,198,0.36) 59deg 61deg, rgba(100,112,114,0.82) 62deg 70deg, rgba(82,93,95,0.9) 71deg 120deg, rgba(190,198,198,0.36) 121deg 123deg, rgba(100,112,114,0.82) 124deg 132deg, rgba(82,93,95,0.9) 133deg 180deg, rgba(190,198,198,0.36) 181deg 183deg, rgba(100,112,114,0.82) 184deg 192deg, rgba(82,93,95,0.9) 193deg 240deg, rgba(190,198,198,0.36) 241deg 243deg, rgba(100,112,114,0.82) 244deg 252deg, rgba(82,93,95,0.9) 253deg 300deg, rgba(190,198,198,0.36) 301deg 303deg, rgba(100,112,114,0.82) 304deg 312deg, rgba(82,93,95,0.9) 313deg 360deg);
+  box-shadow:
+    inset 0 0 0 max(1.6vw, 18px) rgba(185,198,198,0.28),
+    inset 0 0 0 max(2.7vw, 30px) rgba(62,73,75,0.34),
+    0 0 80px rgba(245,200,0,0.25);
+  animation: victoryLidBackdropSpin 14s linear infinite;
+}
+.victory-lid-hero {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: min(132vw, 132vh);
+  height: min(132vw, 132vh);
+  z-index: 2;
+  opacity: 0.24;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  filter:
+    drop-shadow(0 0 34px rgba(245,200,0,0.42))
+    drop-shadow(0 0 64px rgba(94,232,94,0.22));
+  animation: victoryRealLidSpin 10s linear infinite;
+}
+.victory-lid-hero .lid-svg {
+  position: relative !important;
+  inset: auto !important;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+@keyframes victoryRealLidSpin {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.42) rotate(0deg);
+    filter: drop-shadow(0 0 22px rgba(245,200,0,0.26));
+  }
+  10% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(0.86) rotate(210deg);
+    filter:
+      drop-shadow(0 0 44px rgba(245,200,0,0.62))
+      drop-shadow(0 0 70px rgba(94,232,94,0.32));
+  }
+  100% {
+    opacity: 0.26;
+    transform: translate(-50%, -50%) scale(1.02) rotate(1650deg);
+    filter:
+      drop-shadow(0 0 36px rgba(245,200,0,0.42))
+      drop-shadow(0 0 60px rgba(94,232,94,0.26));
+  }
+}
+@keyframes victoryLidBackdropSpin {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.72); }
+  18% { opacity: 0.42; transform: translate(-50%, -50%) rotate(220deg) scale(1); }
+  100% { transform: translate(-50%, -50%) rotate(1440deg) scale(1); }
+}
 .victory-screen-burst {
   position: fixed;
   inset: 0;
-  z-index: 118;
+  z-index: 8;
   pointer-events: none;
   opacity: 0;
   background:
@@ -759,29 +1274,50 @@ body {
 }
 .mini-die {
   position: relative;
-  width: 14px; height: 14px;
-  border-radius: 3px;
+  width: 15px; height: 15px;
+  border-radius: 22%;
   flex-shrink: 0;
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+  box-shadow:
+    1.8px 2px 0 rgba(0,0,0,0.46),
+    0 4px 7px rgba(67,52,29,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    inset -2.5px -2.5px 4.5px rgba(0,0,0,0.18);
   overflow: hidden;
 }
-.mini-die.p1 { background: var(--yellow); }
-.mini-die.p2 { background: var(--green-light); }
+.mini-die.p1 {
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.72), transparent 36%),
+    linear-gradient(145deg, #ffe86a, var(--yellow) 54%, #b58a00);
+}
+.mini-die.p2 {
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.44), transparent 36%),
+    linear-gradient(145deg, #1b8e4f, var(--green) 58%, #052c18);
+}
 .mini-pip {
   position: absolute;
-  width: 3px; height: 3px;
+  width: 3.4px; height: 3.4px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
+  box-shadow: inset 0.5px 0.5px 1px rgba(0,0,0,0.55);
 }
 .mini-die.p1 .mini-pip { background: var(--yellow-pip); }
 .mini-die.p2 .mini-pip { background: var(--green-pip); }
 
 /* Turn tag — inline in player panel */
 .turn-tag {
+  display: none;
   font-family: 'Bangers', sans-serif;
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
-  letter-spacing: 0.1em;
+  flex: 0 1 clamp(52px, 13vw, 76px);
+  max-width: clamp(52px, 13vw, 76px);
+  min-width: 0;
+  font-size: clamp(0.62rem, 2vw, 0.88rem);
+  line-height: 1;
+  letter-spacing: 0.055em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s;
@@ -791,34 +1327,62 @@ body {
 .turn-tag.p2 { color: var(--green-light); }
 /* pile inside player panel — takes remaining width */
 .panel-pile {
-  flex: 1 1 clamp(62px, 17vw, 132px);
+  flex: 1 1 clamp(96px, 29vw, 205px);
   width: auto;
-  min-width: clamp(62px, 17vw, 132px);
-  max-height: clamp(36px, 11vw, 54px);
+  min-width: clamp(96px, 29vw, 205px);
+  max-height: clamp(48px, 13vw, 68px);
   overflow: hidden;
-  align-content: center;
+  align-content: flex-start;
   align-items: center;
   justify-content: flex-start;
   gap: 2px;
+  padding: 3px 0;
 }
 .panel-pile .mini-die {
-  width: clamp(9px, 2.7vw, 13px);
-  height: clamp(9px, 2.7vw, 13px);
-  border-radius: 2px;
+  width: clamp(12px, 3.2vw, 16px);
+  height: clamp(12px, 3.2vw, 16px);
+  border-radius: 22%;
 }
 .panel-pile .mini-pip {
-  width: 2px;
-  height: 2px;
+  width: clamp(2.4px, 0.72vw, 3.35px);
+  height: clamp(2.4px, 0.72vw, 3.35px);
+}
+.mini-die.can-load-die,
+.mini-die.can-pour-die {
+  width: clamp(18px, 3.9vw, 27px);
+  height: clamp(18px, 3.9vw, 27px);
+  border-radius: 24%;
+}
+.mini-die.can-load-die {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
+  z-index: var(--z, 1);
+}
+.mini-die.can-pour-die {
+  position: fixed;
+  margin: 0;
+  pointer-events: none;
+  z-index: 72;
+  transition:
+    left 0.72s cubic-bezier(.16,.86,.22,1),
+    top 0.72s cubic-bezier(.16,.86,.22,1),
+    transform 0.72s ease,
+    opacity 0.18s ease 0.58s;
+}
+.mini-die.can-load-die .mini-pip,
+.mini-die.can-pour-die .mini-pip {
+  width: clamp(3px, 0.8vw, 4px);
+  height: clamp(3px, 0.8vw, 4px);
 }
 
 /* scattered pile look */
-.dice-pile .mini-die:nth-child(7n)   { transform: rotate(18deg); }
-.dice-pile .mini-die:nth-child(7n+1) { transform: rotate(-12deg); }
-.dice-pile .mini-die:nth-child(7n+2) { transform: rotate(7deg); }
-.dice-pile .mini-die:nth-child(7n+3) { transform: rotate(-5deg); }
-.dice-pile .mini-die:nth-child(7n+4) { transform: rotate(14deg); }
-.dice-pile .mini-die:nth-child(7n+5) { transform: rotate(-9deg); }
-.dice-pile .mini-die:nth-child(7n+6) { transform: rotate(3deg); }
+.dice-pile .mini-die:nth-child(7n)   { transform: translateY(3px) rotate(18deg); }
+.dice-pile .mini-die:nth-child(7n+1) { transform: translateY(-2px) rotate(-12deg); }
+.dice-pile .mini-die:nth-child(7n+2) { transform: translateY(1px) rotate(7deg); }
+.dice-pile .mini-die:nth-child(7n+3) { transform: translateY(4px) rotate(-5deg); }
+.dice-pile .mini-die:nth-child(7n+4) { transform: translateY(-1px) rotate(14deg); }
+.dice-pile .mini-die:nth-child(7n+5) { transform: translateY(2px) rotate(-9deg); }
+.dice-pile .mini-die:nth-child(7n+6) { transform: translateY(-3px) rotate(3deg); }
 
 /* ── START OVERLAY ── */
 .start-overlay {
@@ -914,56 +1478,136 @@ body {
 /* ── GAME OVER OVERLAY ── */
 .overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.88);
+  background:
+    radial-gradient(circle at 50% 43%, rgba(245,200,0,0.22), transparent 31%),
+    radial-gradient(circle at 50% 58%, rgba(15,95,50,0.30), transparent 48%),
+    rgba(6,10,8,0.92);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.9rem;
-  z-index: 20;
+  gap: clamp(0.65rem, 2.4vw, 1rem);
+  padding: 1.1rem;
+  text-align: center;
+  z-index: 132;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s;
+  overflow: hidden;
+  isolation: isolate;
 }
 .overlay.show { opacity: 1; pointer-events: all; }
 .overlay.victory {
   background:
-    radial-gradient(circle at 50% 42%, rgba(245,200,0,0.18), transparent 34%),
-    rgba(0,0,0,0.86);
+    radial-gradient(circle at 50% 40%, rgba(245,200,0,0.32), transparent 30%),
+    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.22), transparent 48%),
+    rgba(5,12,7,0.88);
 }
-.overlay.victory .overlay-title {
+.overlay.loss {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255,126,50,0.28), transparent 31%),
+    radial-gradient(circle at 48% 58%, rgba(217,48,48,0.24), transparent 50%),
+    rgba(8,7,5,0.91);
+}
+.overlay.victory .overlay-title,
+.overlay.loss .overlay-title {
   animation: victoryTitlePunch 1.08s cubic-bezier(.13,.85,.16,1) 0.12s both;
 }
+.overlay-title,
+.overlay-sub,
+.overlay-stats,
+.play-again-btn {
+  position: relative;
+  z-index: 40;
+}
+.overlay-content {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100%;
+  min-height: 100dvh;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.65rem, 2.4vw, 1rem);
+  pointer-events: none;
+}
+.overlay-content > * {
+  pointer-events: auto;
+}
 .overlay-title {
-  font-size: clamp(1.8rem, 7vw, 3rem);
+  width: min(94vw, 640px);
+  font-size: clamp(2.4rem, 10vw, 5.6rem);
+  line-height: 0.82;
   color: var(--yellow);
-  text-shadow: 3px 3px 0 var(--green);
+  text-shadow:
+    3px 3px 0 var(--green),
+    7px 8px 0 rgba(0,0,0,0.38),
+    0 0 30px rgba(245,200,0,0.72);
   text-align: center;
+  letter-spacing: 0.02em;
+  transform: rotate(-2deg);
+}
+.overlay.loss .overlay-title {
+  color: #ff8f52;
+  text-shadow:
+    3px 3px 0 #f5c800,
+    7px 8px 0 #0f5f32,
+    0 0 30px rgba(255,126,50,0.72);
 }
 .overlay-sub {
-  font-size: clamp(0.85rem, 2.8vw, 1.1rem);
-  opacity: 0.75;
+  width: min(90vw, 520px);
+  font-size: clamp(1rem, 3.6vw, 1.55rem);
+  opacity: 0.94;
   text-align: center;
   letter-spacing: 0.06em;
+  color: #fff3a4;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.55);
+  background: rgba(15,95,50,0.72);
+  border: 2px solid rgba(245,200,0,0.75);
+  border-radius: 999px;
+  padding: 0.45rem 1rem 0.52rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 0 24px rgba(245,200,0,0.22);
 }
 .overlay-stats {
-  font-size: clamp(0.7rem, 2.2vw, 0.85rem);
-  opacity: 0.55;
-  letter-spacing: 0.08em;
+  width: min(90vw, 360px);
+  font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+  opacity: 0;
+  letter-spacing: 0.06em;
   text-align: center;
+  color: rgba(255,255,255,0.86);
+  min-height: 0;
+  pointer-events: none;
+}
+.overlay-stats:not(:empty) {
+  opacity: 0.48;
+  font-size: clamp(0.62rem, 1.9vw, 0.78rem);
 }
 .play-again-btn {
-  background: var(--yellow);
+  z-index: 44;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, #ffe45a, var(--yellow) 56%, #cda000);
   color: var(--yellow-pip);
-  border: none;
-  border-radius: 10px;
-  padding: 0.6rem 2.2rem;
+  border: 3px solid rgba(255,255,255,0.22);
+  border-radius: 14px;
+  padding: 0.72rem 2.5rem 0.78rem;
   font-family: inherit;
-  font-size: 1.1rem;
+  font-size: clamp(1.05rem, 3vw, 1.38rem);
   letter-spacing: 0.1em;
   cursor: pointer;
   margin-top: 0.3rem;
-  box-shadow: 0 4px 0 var(--yellow-dark);
+  box-shadow:
+    0 5px 0 var(--yellow-dark),
+    0 0 28px rgba(245,200,0,0.36);
+  transform: rotate(-1deg);
 }
 @keyframes victoryTitlePunch {
   0%   { transform: scale(0.68) rotate(-4deg); filter: brightness(1); }
@@ -974,11 +1618,24 @@ body {
 </style>
 </head>
 <body>
+<div class="milestone-badge">1st Playable Work In Progress</div>
 
-<div class="title-wrap">
-  <span class="title-trash">TRASH</span><span class="title-dice">DICE</span>
+<div class="title-wrap" aria-label="Trash Dice">
+  <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
+    <g transform="rotate(-5 160 76)">
+      <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
+      <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
+      <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+      <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+      <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+      <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+      <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+      <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+      <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
+    </g>
+  </svg>
 </div>
-<div class="tagline">roll · win · avoid the bin</div>
+<div class="tagline">ROLL, WIN, AVOID THE BIN!</div>
 
 <div class="status-bar">
   <div class="turn-dot" id="turnDot"></div>
@@ -987,13 +1644,13 @@ body {
 
 <div class="game-area">
 
-  <!-- CPU panel — TOP -->
+  <!-- Green dice panel — TOP -->
   <div class="player-panel">
-    <div class="player-label p2">CPU</div>
+    <div class="player-label p2">Green Dice</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="dice-pile panel-pile" id="p2Pile"></div>
     <div class="pool-count p2" id="p2Pool">20</div>
-    <span class="turn-tag p2" id="p2TurnTag">CPU'S TURN</span>
+    <span class="turn-tag p2" id="p2TurnTag">TURN</span>
   </div>
 
   <!-- Board scene: blob mat + piles + board — MIDDLE -->
@@ -1017,111 +1674,150 @@ body {
       <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="canBodyG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#cfd5d4"/>
-            <stop offset="22%" stop-color="#aeb7b7"/>
-            <stop offset="58%" stop-color="#7c8686"/>
-            <stop offset="100%" stop-color="#596162"/>
+            <stop offset="0%" stop-color="#d7dddd"/>
+            <stop offset="28%" stop-color="#aeb8b8"/>
+            <stop offset="68%" stop-color="#747f81"/>
+            <stop offset="100%" stop-color="#566062"/>
           </linearGradient>
-          <linearGradient id="canSideG" x1="0" x2="1">
-            <stop offset="0%" stop-color="#dce2e1"/>
-            <stop offset="48%" stop-color="#9ba5a5"/>
-            <stop offset="100%" stop-color="#596162"/>
+          <linearGradient id="canLipG" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#edf2f1"/>
+            <stop offset="55%" stop-color="#a9b4b4"/>
+            <stop offset="100%" stop-color="#687274"/>
+          </linearGradient>
+          <linearGradient id="canInsideG" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#4f5a5c"/>
+            <stop offset="100%" stop-color="#202728"/>
           </linearGradient>
           <linearGradient id="labelG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#ffe95a"/>
-            <stop offset="58%" stop-color="#f5c800"/>
-            <stop offset="100%" stop-color="#cfa000"/>
+            <stop offset="0%" stop-color="#ffe86a"/>
+            <stop offset="55%" stop-color="#f4c70d"/>
+            <stop offset="100%" stop-color="#d19c00"/>
           </linearGradient>
           <clipPath id="canClip">
-            <path d="M16 27 C16 18 94 18 94 27 L94 134 C94 144 16 144 16 134 Z"/>
+            <path d="M15 29 C15 19 95 19 95 29 L95 134 C95 146 15 146 15 134 Z"/>
           </clipPath>
           <clipPath id="labelClip">
-            <path d="M20 58 C32 63 78 63 90 58 L90 105 C78 111 32 111 20 105 Z"/>
+            <path d="M20 58 C31 63 79 63 90 58 L90 106 C78 113 32 113 20 106 Z"/>
           </clipPath>
-          <filter id="labelShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="1.4" dy="1.6" stdDeviation="1.1" flood-color="rgba(0,0,0,0.45)"/>
+          <filter id="labelShadow" x="-24%" y="-24%" width="148%" height="148%">
+            <feDropShadow dx="1.3" dy="1.6" stdDeviation="1.0" flood-color="rgba(0,0,0,0.48)"/>
           </filter>
-          <filter id="canTextShadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="1.2" dy="1.2" stdDeviation="0.6" flood-color="#184a12"/>
-          </filter>
-          <linearGradient id="lidG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#e4e9e8"/>
-            <stop offset="60%" stop-color="#9aa4a4"/>
-            <stop offset="100%" stop-color="#697273"/>
-          </linearGradient>
         </defs>
-        <path d="M16 27 C16 18 94 18 94 27 L94 134 C94 144 16 144 16 134 Z" fill="url(#canBodyG)" stroke="#e6ebea" stroke-width="2.5"/>
+
+        <path d="M15 29 C15 19 95 19 95 29 L95 134 C95 146 15 146 15 134 Z" fill="url(#canBodyG)" stroke="#edf2f1" stroke-width="2.6"/>
         <g clip-path="url(#canClip)">
-          <rect x="20" y="31" width="70" height="103" fill="rgba(255,255,255,0.08)"/>
-          <path d="M20 32 C32 38 78 38 90 32" fill="none" stroke="#707a7b" stroke-width="3"/>
-          <path d="M20 39 C32 45 78 45 90 39" fill="none" stroke="#707a7b" stroke-width="2"/>
-          <path d="M20 46 C32 52 78 52 90 46" fill="none" stroke="#707a7b" stroke-width="2"/>
-          <path d="M20 116 C32 122 78 122 90 116" fill="none" stroke="#707a7b" stroke-width="2.5"/>
-          <path d="M20 124 C32 130 78 130 90 124" fill="none" stroke="#707a7b" stroke-width="2.5"/>
-          <path d="M20 133 C32 139 78 139 90 133" fill="none" stroke="#707a7b" stroke-width="2"/>
-          <path d="M20 60 C32 66 78 66 90 60 L90 104 C78 112 32 112 20 104 Z" fill="url(#labelG)" stroke="#275f1d" stroke-width="2.2"/>
-          <g clip-path="url(#labelClip)" opacity="0.9">
-            <circle cx="28" cy="65" r="10" fill="#145014"/>
-            <circle cx="83" cy="65" r="11" fill="#145014"/>
-            <circle cx="33" cy="103" r="10" fill="#145014"/>
-            <circle cx="77" cy="101" r="9" fill="#145014"/>
-            <circle cx="26" cy="78" r="2.2" fill="#f5c800"/>
-            <circle cx="34" cy="69" r="2.2" fill="#f5c800"/>
-            <circle cx="82" cy="74" r="2.2" fill="#f5c800"/>
-            <circle cx="74" cy="96" r="2.2" fill="#f5c800"/>
-            <circle cx="40" cy="107" r="2.2" fill="#f5c800"/>
-            <path d="M18 89 C35 80 72 83 92 93" stroke="#6ddf55" stroke-width="4" opacity="0.45" fill="none"/>
+          <rect x="20" y="31" width="70" height="105" fill="rgba(255,255,255,0.08)"/>
+          <rect x="54" y="31" width="5" height="106" fill="rgba(255,255,255,0.16)"/>
+          <path d="M18 35 C31 41 79 41 92 35" fill="none" stroke="#6d787a" stroke-width="3"/>
+          <path d="M18 42 C31 48 79 48 92 42" fill="none" stroke="#6d787a" stroke-width="2.1"/>
+          <path d="M18 49 C31 55 79 55 92 49" fill="none" stroke="#6d787a" stroke-width="2.1"/>
+          <path d="M18 117 C31 123 79 123 92 117" fill="none" stroke="#6d787a" stroke-width="2.6"/>
+          <path d="M18 125 C31 131 79 131 92 125" fill="none" stroke="#6d787a" stroke-width="2.6"/>
+          <path d="M18 134 C31 140 79 140 92 134" fill="none" stroke="#6d787a" stroke-width="2.2"/>
+
+          <path d="M20 58 C31 63 79 63 90 58 L90 106 C78 113 32 113 20 106 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.3"/>
+          <g clip-path="url(#labelClip)">
+            <rect x="20" y="58" width="70" height="51" fill="rgba(255,255,255,0.08)"/>
+            <path d="M16 94 C31 83 70 84 95 96" stroke="#0f5f32" stroke-width="9" opacity="0.82" fill="none"/>
+            <path d="M17 103 C30 96 72 96 94 107" stroke="#10491f" stroke-width="8" opacity="0.95" fill="none"/>
+            <circle cx="28" cy="64" r="9" fill="#0f5f32"/>
+            <circle cx="84" cy="65" r="10" fill="#0f5f32"/>
+            <circle cx="33" cy="103" r="10" fill="#0f5f32"/>
+            <circle cx="78" cy="101" r="9" fill="#0f5f32"/>
+            <g fill="#f5c800" opacity="0.94">
+              <circle cx="25" cy="72" r="1.9"/><circle cx="32" cy="66" r="1.9"/><circle cx="36" cy="73" r="1.9"/>
+              <circle cx="80" cy="70" r="1.9"/><circle cx="87" cy="76" r="1.9"/><circle cx="75" cy="96" r="1.9"/>
+              <circle cx="42" cy="107" r="1.9"/><circle cx="31" cy="99" r="1.9"/>
+            </g>
+            <path d="M25 58 C38 62 72 62 86 58" fill="none" stroke="#195322" stroke-width="2.4" opacity="0.72"/>
+            <text x="55" y="63.5" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="3.2" fill="#fff3b0" stroke="#17451d" stroke-width="0.25" letter-spacing="0.12">BY MIKE SZALAJKO &amp; ALEX MACKEY</text>
           </g>
           <g filter="url(#labelShadow)">
-            <text x="55" y="80" text-anchor="middle" font-family="Bangers, Arial Black, sans-serif" font-size="27" fill="#ff7f39" stroke="#27631d" stroke-width="1.6" letter-spacing="1">TRASH</text>
-            <text x="55" y="103" text-anchor="middle" font-family="Bangers, Arial Black, sans-serif" font-size="28" fill="#ff7f39" stroke="#27631d" stroke-width="1.6" letter-spacing="1">DICE</text>
-            <path d="M33 110 C44 113 66 113 77 110" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+            <g transform="translate(15 63) rotate(-4 40 24)">
+              <text class="logo-outer" x="1" y="20" font-size="27" stroke-width="5.1" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-warm-shadow" x="2.4" y="21.5" font-size="27" stroke-width="2.2" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-face" x="1" y="20" font-size="27" stroke-width="1.8" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-outer" x="13" y="44" font-size="30" stroke-width="5.3" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
+              <text class="logo-warm-shadow" x="14.5" y="45.6" font-size="30" stroke-width="2.3" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
+              <text class="logo-face" x="13" y="44" font-size="30" stroke-width="1.85" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
+            </g>
+            <text x="55" y="111" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="5.2" fill="#fff3b0" stroke="#245d1d" stroke-width="0.3" letter-spacing="0.25">ROLL, WIN, AVOID THE BIN!</text>
           </g>
         </g>
-        <g>
-          <ellipse cx="55" cy="27" rx="40" ry="14" fill="#d5dcdb" stroke="#eef3f2" stroke-width="2.6"/>
-          <ellipse cx="55" cy="28" rx="34" ry="10.5" fill="#8d9898" stroke="#687374" stroke-width="2.2"/>
-          <ellipse cx="55" cy="27" rx="28" ry="7" fill="#aeb8b8" opacity="0.72"/>
-          <g opacity="0.98">
-            <rect x="31" y="19" width="13" height="13" rx="2.5" fill="#f5c800" stroke="#1a5c1a" stroke-width="1.2" transform="rotate(-18 37.5 25.5)"/>
-            <circle cx="35" cy="23" r="1.2" fill="#1a5c1a"/>
-            <circle cx="39" cy="27" r="1.2" fill="#1a5c1a"/>
-            <rect x="45" y="15" width="14" height="14" rx="2.8" fill="#1e7a1e" stroke="#f5c800" stroke-width="1.1" transform="rotate(10 52 22)"/>
-            <circle cx="49" cy="20" r="1.15" fill="#f5c800"/>
-            <circle cx="54" cy="23" r="1.15" fill="#f5c800"/>
-            <rect x="59" y="18" width="13" height="13" rx="2.5" fill="#f5c800" stroke="#1a5c1a" stroke-width="1.2" transform="rotate(18 65.5 24.5)"/>
-            <circle cx="63" cy="22" r="1.15" fill="#1a5c1a"/>
-            <circle cx="67" cy="26" r="1.15" fill="#1a5c1a"/>
-            <rect x="72" y="23" width="11" height="11" rx="2.3" fill="#1e7a1e" stroke="#f5c800" stroke-width="1" transform="rotate(-12 77.5 28.5)"/>
-            <circle cx="76" cy="27" r="1" fill="#f5c800"/>
+
+        <ellipse cx="55" cy="28" rx="42" ry="15" fill="url(#canLipG)" stroke="#f1f5f4" stroke-width="2.4"/>
+        <ellipse cx="55" cy="29" rx="35" ry="11" fill="url(#canInsideG)" stroke="#5d686a" stroke-width="2.1"/>
+        <g class="can-static-dice" opacity="0.98">
+          <g transform="translate(34 20) rotate(-18)">
+            <rect x="-7" y="-5" width="17" height="17" rx="3.8" fill="#805f00" opacity="0.7" transform="translate(2.3 2.5)"/>
+            <rect x="-8" y="-8" width="17" height="17" rx="3.8" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
+            <ellipse cx="-3" cy="-5" rx="4.1" ry="2.4" fill="rgba(255,255,255,0.44)"/>
+            <g fill="#0f5f32"><circle cx="-3.5" cy="-3.5" r="1.55"/><circle cx="3.5" cy="-3.5" r="1.55"/><circle cx="-3.5" cy="3.5" r="1.55"/><circle cx="3.5" cy="3.5" r="1.55"/></g>
           </g>
-          <ellipse cx="55" cy="28" rx="37" ry="12" fill="none" stroke="#9ea8a8" stroke-width="5" opacity="0.86"/>
-          <ellipse cx="55" cy="28" rx="40" ry="14" fill="none" stroke="#f0f4f3" stroke-width="1.4" opacity="0.9"/>
+          <g transform="translate(48 14) rotate(8)">
+            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#062c18" opacity="0.75" transform="translate(2.3 2.5)"/>
+            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#0f6f38" stroke="#0a4c28" stroke-width="0.75"/>
+            <ellipse cx="-3" cy="-6" rx="4.3" ry="2.4" fill="rgba(255,255,255,0.28)"/>
+            <g fill="#f5c800"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="-4" r="1.55"/><circle cx="-4" cy="0" r="1.55"/><circle cx="4" cy="0" r="1.55"/><circle cx="-4" cy="4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
+          </g>
+          <g transform="translate(63 18) rotate(19)">
+            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#805f00" opacity="0.7" transform="translate(2.4 2.4)"/>
+            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
+            <ellipse cx="-3" cy="-6" rx="4.2" ry="2.5" fill="rgba(255,255,255,0.44)"/>
+            <g fill="#0f5f32"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
+          </g>
+          <g transform="translate(75 24) rotate(-13)">
+            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#062c18" opacity="0.75" transform="translate(2.4 2.5)"/>
+            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#0f6f38" stroke="#0a4c28" stroke-width="0.75"/>
+            <ellipse cx="-3" cy="-6" rx="4.2" ry="2.5" fill="rgba(255,255,255,0.27)"/>
+            <g fill="#f5c800"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="-4" r="1.55"/><circle cx="0" cy="0" r="1.55"/><circle cx="-4" cy="4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
+          </g>
+          <g transform="translate(52 31) rotate(-7)">
+            <rect x="-7" y="-5" width="17" height="17" rx="3.8" fill="#805f00" opacity="0.72" transform="translate(2.3 2.5)"/>
+            <rect x="-8" y="-8" width="17" height="17" rx="3.8" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
+            <ellipse cx="-3" cy="-5" rx="4.1" ry="2.4" fill="rgba(255,255,255,0.42)"/>
+            <g fill="#0f5f32"><circle cx="-4" cy="-4" r="1.5"/><circle cx="4" cy="-4" r="1.5"/><circle cx="0" cy="0" r="1.5"/><circle cx="-4" cy="4" r="1.5"/><circle cx="4" cy="4" r="1.5"/></g>
+          </g>
         </g>
+        <ellipse cx="55" cy="28" rx="38" ry="12" fill="none" stroke="#98a3a4" stroke-width="5" opacity="0.9"/>
+        <ellipse cx="55" cy="28" rx="42" ry="15" fill="none" stroke="#f2f6f5" stroke-width="1.5" opacity="0.92"/>
       </svg>
+      <div class="can-load-pile" id="canLoadPile"></div>
     </div>
   </div>
 
-  <!-- Your panel — BOTTOM -->
+  <!-- Yellow dice panel — BOTTOM -->
   <div class="player-panel">
-    <div class="player-label p1">You</div>
-    <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll your die">ROLL</button></div>
+    <div class="player-label p1">Yellow Dice</div>
+    <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
     <div class="dice-pile panel-pile" id="p1Pile"></div>
     <div class="pool-count p1" id="p1Pool">20</div>
-    <span class="turn-tag p1" id="p1TurnTag">YOUR TURN</span>
+    <span class="turn-tag p1" id="p1TurnTag">TURN</span>
   </div>
 
 </div>
 
-<div class="message" id="message">Your turn — tap ROLL</div>
+<div class="message" id="message">Yellow Turn - tap ROLL</div>
+<div class="debug-badge" id="debugBadge">P-0 Autoplay</div>
 
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
   <div class="title-wrap big">
     <div class="splatter sp-y" style="width:70px;height:44px;top:-8px;left:2%;transform:rotate(18deg)"></div>
     <div class="splatter sp-g" style="width:50px;height:32px;bottom:0;right:4%;transform:rotate(-14deg)"></div>
-    <span class="title-trash">TRASH</span>
-    <span class="title-dice">DICE</span>
+    <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
+      <g transform="rotate(-5 160 76)">
+        <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
+        <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
+        <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+        <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+        <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+        <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+        <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+        <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+        <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
+      </g>
+    </svg>
   </div>
   <div class="start-blob-wrap">
     <div class="start-blob"></div>
@@ -1145,10 +1841,12 @@ body {
 <!-- Flash + overlay -->
 <div class="round-flash" id="roundFlash"></div>
 <div class="overlay" id="overlay">
-  <div class="overlay-title" id="overlayTitle">Player 1 Wins!</div>
-  <div class="overlay-sub"   id="overlaySub">Player 2 ran out of dice</div>
-  <div class="overlay-stats" id="overlayStats"></div>
-  <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+  <div class="overlay-content">
+    <div class="overlay-title" id="overlayTitle">Player 1 Wins!</div>
+    <div class="overlay-sub"   id="overlaySub">Player 2 ran out of dice</div>
+    <div class="overlay-stats" id="overlayStats"></div>
+    <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+  </div>
 </div>
 
 <script>
@@ -1180,6 +1878,7 @@ body {
   let board;       // null | { player, color }, length 6, index = face-1
   let pools;       // { p1:{yellow,green}, p2:{yellow,green} }
   let trashed;     // {p1, p2}
+  let trashDice;   // dice currently visible inside the can this round
   let current;     // 'p1' | 'p2'
   let round;
   let busy;
@@ -1188,18 +1887,25 @@ body {
 
   const COLORS = ['yellow', 'green'];
   const COLOR_CLASS = { yellow: 'p1', green: 'p2' };
-  const PLAYER_NAME = { p1: 'You', p2: 'CPU' };
+  const PLAYER_NAME = { p1: 'Yellow', p2: 'Green' };
   const ROLL_ANIMATION_MS = 850;
   const ROLL_REVEAL_HOLD_MS = 650;
   const TURN_HANDOFF_MS = 950;
   const CPU_START_MS = 650;
+  const URL_OPTIONS = new URLSearchParams(window.location.search);
+  const QA_ENABLED = URL_OPTIONS.has('qa') || window.location.hash.includes('qa');
+  const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || window.location.hash.toLowerCase().includes('p0') || window.location.hash.toLowerCase().includes('p-0');
+  const P0_AUTOPLAY_MS = 720;
+  let forcedRolls = [];
+  let p0Autoplay = false;
+  let p0Timer = null;
 
   function totalDice(player) {
     return COLORS.reduce((sum, color) => sum + pools[player][color], 0);
   }
 
   function totalTrashedDice() {
-    return trashed.p1 + trashed.p2;
+    return Array.isArray(trashDice) ? trashDice.length : (trashed.p1 + trashed.p2);
   }
 
   function chooseDieColor(player) {
@@ -1224,8 +1930,8 @@ body {
 
   function slotColors(color) {
     return color === 'yellow'
-      ? { fill: '#f5c800', stroke: '#c9a000', label: '#1a5c1a' }
-      : { fill: '#1e6b1e', stroke: '#145014', label: '#f5c800' };
+      ? { fill: '#f5c800', hi: '#ffe86a', low: '#b78c00', stroke: '#987300', label: '#1a5c1a', side: '#8f6900' }
+      : { fill: '#0f5f32', hi: '#1d8b50', low: '#052d18', stroke: '#06361c', label: '#f5c800', side: '#032112' };
   }
 
   function paintSlot(idx, die) {
@@ -1246,30 +1952,40 @@ body {
     g.setAttribute('transform', `translate(${f(info.x)} ${f(info.y)}) rotate(${f(info.angle + 8)})`);
     g.setAttribute('pointer-events', 'none');
 
-    const size = 27;
+    const size = 23.5;
     const side = document.createElementNS(NS, 'rect');
     side.setAttribute('x', f(-size / 2 + 3)); side.setAttribute('y', f(-size / 2 + 4));
     side.setAttribute('width', size); side.setAttribute('height', size);
-    side.setAttribute('rx', '5'); side.setAttribute('fill', die.color === 'yellow' ? '#9a7400' : '#063006');
-    side.setAttribute('opacity', '0.75');
+    side.setAttribute('rx', '5.2'); side.setAttribute('fill', colors.side);
+    side.setAttribute('opacity', '0.9');
     g.appendChild(side);
 
     const face = document.createElementNS(NS, 'rect');
     face.setAttribute('x', f(-size / 2)); face.setAttribute('y', f(-size / 2));
     face.setAttribute('width', size); face.setAttribute('height', size);
-    face.setAttribute('rx', '5.2');
+    face.setAttribute('rx', '5.1');
     face.setAttribute('fill', colors.fill);
     face.setAttribute('stroke', colors.stroke);
     face.setAttribute('stroke-width', '1.4');
+    face.setAttribute('filter', 'drop-shadow(0 2px 1px rgba(0,0,0,0.28))');
     g.appendChild(face);
+
+    const shine = document.createElementNS(NS, 'ellipse');
+    shine.setAttribute('cx', f(-size * 0.18));
+    shine.setAttribute('cy', f(-size * 0.28));
+    shine.setAttribute('rx', f(size * 0.28));
+    shine.setAttribute('ry', f(size * 0.17));
+    shine.setAttribute('fill', 'rgba(255,255,255,0.38)');
+    shine.setAttribute('pointer-events', 'none');
+    g.appendChild(shine);
 
     (DOTS[idx + 1] || []).forEach(([row, col]) => {
       const pip = document.createElementNS(NS, 'circle');
-      pip.setAttribute('cx', f((col - 1) * 7.1));
-      pip.setAttribute('cy', f((row - 1) * 7.1));
-      pip.setAttribute('r', '2.25');
+      pip.setAttribute('cx', f((col - 1) * 6.2));
+      pip.setAttribute('cy', f((row - 1) * 6.2));
+      pip.setAttribute('r', '2.05');
       pip.setAttribute('fill', colors.label);
-      pip.setAttribute('filter', 'drop-shadow(0 0.6px 0 rgba(0,0,0,0.45))');
+      pip.setAttribute('filter', 'drop-shadow(0 0.7px 0 rgba(0,0,0,0.55))');
       g.appendChild(pip);
     });
 
@@ -1295,6 +2011,7 @@ body {
   const rollBtn     = document.getElementById('rollBtn');
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   const msgEl       = document.getElementById('message');
+  const statusBar   = document.querySelector('.status-bar');
   const statusText  = document.getElementById('statusText');
   const turnDot     = document.getElementById('turnDot');
   const p1PoolEl    = document.getElementById('p1Pool');
@@ -1302,6 +2019,8 @@ body {
   const p1Pile      = document.getElementById('p1Pile');
   const p2Pile      = document.getElementById('p2Pile');
   const trashCan    = document.getElementById('trashCan');
+  const canLoadPile = document.getElementById('canLoadPile');
+  const boardScene  = document.querySelector('.board-scene');
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
   const roundFlash  = document.getElementById('roundFlash');
@@ -1317,7 +2036,7 @@ body {
   let slotInfo = [];
 
   // ── BUILD SVG LID ────────────────────────────────────────────
-  function buildSlots() {
+  function buildSlotsBlockoutLegacy() {
     const old = boardWrap.querySelector('svg.lid-svg');
     if (old) old.remove();
     slotEls = []; labelEls = [];
@@ -1430,7 +2149,7 @@ body {
     boardWrap.appendChild(svg);
   }
 
-  buildSlots = function() {
+  function buildSlots() {
     const old = boardWrap.querySelector('svg.lid-svg');
     if (old) old.remove();
     slotEls = []; labelEls = []; slotDiceEls = []; slotInfo = [];
@@ -1449,86 +2168,157 @@ body {
     svg.style.cssText = 'position:absolute;inset:0;overflow:visible;';
 
     const defs = make('defs');
-    const rimG = make('radialGradient', { id:'rimG', cx:'35%', cy:'28%' });
-    rimG.appendChild(make('stop', { offset:'0%', 'stop-color':'#c9d0d0' }));
-    rimG.appendChild(make('stop', { offset:'55%', 'stop-color':'#8f9899' }));
-    rimG.appendChild(make('stop', { offset:'100%', 'stop-color':'#4c5456' }));
+    const rimG = make('radialGradient', { id:'rimG', cx:'34%', cy:'26%' });
+    rimG.appendChild(make('stop', { offset:'0%', 'stop-color':'#d8dfdf' }));
+    rimG.appendChild(make('stop', { offset:'48%', 'stop-color':'#9aa4a5' }));
+    rimG.appendChild(make('stop', { offset:'100%', 'stop-color':'#465052' }));
     defs.appendChild(rimG);
-    const plateG = make('radialGradient', { id:'plateG', cx:'40%', cy:'30%' });
-    plateG.appendChild(make('stop', { offset:'0%', 'stop-color':'#a9b1b2' }));
-    plateG.appendChild(make('stop', { offset:'64%', 'stop-color':'#7c8586' }));
-    plateG.appendChild(make('stop', { offset:'100%', 'stop-color':'#5d6668' }));
+    const plateG = make('radialGradient', { id:'plateG', cx:'42%', cy:'31%' });
+    plateG.appendChild(make('stop', { offset:'0%', 'stop-color':'#bbc4c4' }));
+    plateG.appendChild(make('stop', { offset:'56%', 'stop-color':'#828d8e' }));
+    plateG.appendChild(make('stop', { offset:'100%', 'stop-color':'#586163' }));
     defs.appendChild(plateG);
     const pocketG = make('linearGradient', { id:'pocketG', x1:'0', x2:'1', y1:'0', y2:'1' });
-    pocketG.appendChild(make('stop', { offset:'0%', 'stop-color':'#899293' }));
-    pocketG.appendChild(make('stop', { offset:'100%', 'stop-color':'#596163' }));
+    pocketG.appendChild(make('stop', { offset:'0%', 'stop-color':'#a3acad' }));
+    pocketG.appendChild(make('stop', { offset:'42%', 'stop-color':'#747f80' }));
+    pocketG.appendChild(make('stop', { offset:'100%', 'stop-color':'#4a5355' }));
     defs.appendChild(pocketG);
+    const slotInset = make('filter', { id:'slotInset', x:'-28%', y:'-28%', width:'156%', height:'156%' });
+    slotInset.appendChild(make('feDropShadow', { dx:'0', dy:'2.1', stdDeviation:'1.35', 'flood-color':'rgba(0,0,0,0.56)' }));
+    defs.appendChild(slotInset);
     svg.appendChild(defs);
 
-    svg.appendChild(make('circle', { cx, cy, r:98, fill:'url(#rimG)', filter:'drop-shadow(0 6px 12px rgba(0,0,0,0.58))' }));
-    svg.appendChild(make('circle', { cx, cy, r:88, fill:'#6e7778' }));
-    svg.appendChild(make('circle', { cx, cy, r:80, fill:'url(#plateG)', stroke:'#454d4f', 'stroke-width':'2.5' }));
+    const shadow = make('ellipse', { cx, cy:'104', rx:'93', ry:'90', fill:'rgba(0,0,0,0.28)', opacity:'0.72' });
+    svg.appendChild(shadow);
+    svg.appendChild(make('circle', { cx, cy, r:98, fill:'url(#rimG)', filter:'drop-shadow(0 5px 9px rgba(0,0,0,0.54))' }));
+    svg.appendChild(make('circle', { cx, cy, r:91, fill:'#778384', stroke:'#d0d8d8', 'stroke-width':'2.2' }));
+    svg.appendChild(make('circle', { cx, cy, r:84, fill:'url(#plateG)', stroke:'#3f494b', 'stroke-width':'2.7' }));
+    svg.appendChild(make('circle', { cx, cy, r:75.5, fill:'none', stroke:'#b8c1c1', 'stroke-width':'1.45', opacity:'0.42' }));
+    svg.appendChild(make('circle', { cx, cy, r:65.5, fill:'none', stroke:'#465153', 'stroke-width':'1.45', opacity:'0.52' }));
 
-    for (let i = 0; i < 6; i++) {
-      const ang = (-90 + i * 60 + 30) * Math.PI / 180;
-      svg.appendChild(make('line', {
-        x1:f(cx + 18 * Math.cos(ang)), y1:f(cy + 18 * Math.sin(ang)),
-        x2:f(cx + 74 * Math.cos(ang)), y2:f(cy + 74 * Math.sin(ang)),
-        stroke:'#4d5658', 'stroke-width':'2.8', 'stroke-linecap':'round', opacity:'0.75',
-        'pointer-events':'none'
-      }));
-      svg.appendChild(make('line', {
-        x1:f(cx + 21 * Math.cos(ang)), y1:f(cy + 21 * Math.sin(ang)),
-        x2:f(cx + 70 * Math.cos(ang)), y2:f(cy + 70 * Math.sin(ang)),
-        stroke:'#9ea7a8', 'stroke-width':'1.1', 'stroke-linecap':'round', opacity:'0.72',
-        'pointer-events':'none'
-      }));
-    }
-
-    const slotR = 55;
-    for (let i = 0; i < 6; i++) {
-      const val = i + 1;
-      const midDeg = -90 + i * 60;
-      const midRad = midDeg * Math.PI / 180;
-      const tx = cx + slotR * Math.cos(midRad);
-      const ty = cy + slotR * Math.sin(midRad);
-      const angle = midDeg + 90;
-
+    [
+      { x:100, y:11, w:26, h:5, a:0 },
+      { x:100, y:189, w:26, h:5, a:0 },
+      { x:11, y:100, w:5, h:25, a:0 },
+      { x:189, y:100, w:5, h:25, a:0 }
+    ].forEach(tab => {
       svg.appendChild(make('rect', {
-        x:'-18', y:'-14', width:'36', height:'28', rx:'5',
-        fill:'#3f4749', opacity:'0.65',
-        transform:`translate(${f(tx + 2)} ${f(ty + 3)}) rotate(${f(angle)})`,
+        x:f(tab.x - tab.w / 2), y:f(tab.y - tab.h / 2), width:f(tab.w), height:f(tab.h), rx:'2.2',
+        fill:'#596365', stroke:'#9da7a8', 'stroke-width':'0.8', opacity:'0.72',
+        transform:`rotate(${tab.a} ${tab.x} ${tab.y})`, 'pointer-events':'none'
+      }));
+    });
+
+    const ridge = (x1, y1, x2, y2, w = 5.8) => {
+      svg.appendChild(make('line', {
+        x1:f(x1), y1:f(y1), x2:f(x2), y2:f(y2),
+        stroke:'#3f494b', 'stroke-width':f(w), 'stroke-linecap':'round', opacity:'0.78',
         'pointer-events':'none'
       }));
+      svg.appendChild(make('line', {
+        x1:f(x1), y1:f(y1), x2:f(x2), y2:f(y2),
+        stroke:'#aeb8b8', 'stroke-width':f(Math.max(1.25, w * 0.32)), 'stroke-linecap':'round', opacity:'0.48',
+        'pointer-events':'none'
+      }));
+    };
 
-      const slot = make('rect', {
-        x:'-18', y:'-14', width:'36', height:'28', rx:'5',
-        fill:'url(#pocketG)', stroke:'#aeb6b6', 'stroke-width':'2',
-        transform:`translate(${f(tx)} ${f(ty)}) rotate(${f(angle)})`
-      });
-      svg.appendChild(slot);
+    ridge(60, 36, 83, 76);
+    ridge(140, 36, 117, 76);
+    ridge(35, 100, 83, 100);
+    ridge(165, 100, 117, 100);
+    ridge(61, 164, 84, 124);
+    ridge(139, 164, 116, 124);
+    ridge(91, 35, 91, 165, 3.6);
+    ridge(109, 35, 109, 165, 3.6);
 
+    const chute = make('path', {
+      d:'M82 33 L118 33 L118 80 C112 88 109 94 109 100 C109 106 112 112 118 120 L118 167 L82 167 L82 120 C88 112 91 106 91 100 C91 94 88 88 82 80 Z',
+      fill:'#697475', stroke:'#434d4f', 'stroke-width':'2', opacity:'0.82',
+      'pointer-events':'none'
+    });
+    svg.appendChild(chute);
+    svg.appendChild(make('path', {
+      d:'M94 38 L94 82 M106 38 L106 82 M94 118 L94 162 M106 118 L106 162',
+      fill:'none', stroke:'#303a3c', 'stroke-width':'1.4', opacity:'0.38', 'stroke-linecap':'round',
+      'pointer-events':'none'
+    }));
+
+    const addLabel = (val, x, y, angle, size = 18) => {
       const txt = make('text', {
-        x:f(tx), y:f(ty + 0.5), 'text-anchor':'middle', 'dominant-baseline':'central',
-        fill:'rgba(45,50,51,0.52)', stroke:'rgba(185,193,193,0.38)', 'stroke-width':'0.8',
-        'font-family':'Fredoka One, Arial Black, sans-serif', 'font-size':'17',
-        transform:`rotate(${f(angle)} ${f(tx)} ${f(ty)})`,
+        x:f(x), y:f(y), 'text-anchor':'middle', 'dominant-baseline':'central',
+        fill:'rgba(36,43,45,0.54)', stroke:'rgba(196,204,204,0.36)', 'stroke-width':'0.7',
+        'font-family':'Arial Black, Impact, sans-serif', 'font-size':String(size),
+        transform:`rotate(${f(angle)} ${f(x)} ${f(y)})`,
         'pointer-events':'none'
       });
       txt.textContent = val;
       svg.appendChild(txt);
+      return txt;
+    };
 
+    const addRectSlot = ({ val, x, y, w, h, angle, textAngle, fontSize }) => {
+      svg.appendChild(make('rect', {
+        x:f(-w / 2 - 2.8), y:f(-h / 2 - 2.8), width:f(w + 5.6), height:f(h + 5.6), rx:'6.6',
+        fill:'#30393b', opacity:'0.52',
+        transform:`translate(${f(x + 2.2)} ${f(y + 3.1)}) rotate(${f(angle)})`,
+        'pointer-events':'none'
+      }));
+      svg.appendChild(make('rect', {
+        x:f(-w / 2 - 1.8), y:f(-h / 2 - 1.8), width:f(w + 3.6), height:f(h + 3.6), rx:'6.4',
+        fill:'#7f898a', stroke:'#465052', 'stroke-width':'1.5',
+        transform:`translate(${f(x)} ${f(y)}) rotate(${f(angle)})`,
+        'pointer-events':'none'
+      }));
+      const slot = make('rect', {
+        x:f(-w / 2), y:f(-h / 2), width:f(w), height:f(h), rx:'5.4',
+        fill:'url(#pocketG)', stroke:'#bbc4c4', 'stroke-width':'1.9',
+        filter:'url(#slotInset)',
+        transform:`translate(${f(x)} ${f(y)}) rotate(${f(angle)})`
+      });
+      svg.appendChild(slot);
+      const label = addLabel(val, x, y + 0.5, textAngle ?? angle, fontSize ?? 18);
+      return { slot, label, info:{ x, y, angle } };
+    };
+
+    const addPathSlot = ({ val, d, labelX, labelY, textAngle, infoX, infoY, angle, fontSize }) => {
+      const backing = make('path', {
+        d, fill:'#30393b', opacity:'0.42', transform:'translate(2.2 3.1)',
+        'pointer-events':'none'
+      });
+      svg.appendChild(backing);
+      const lip = make('path', {
+        d, fill:'#7f898a', stroke:'#465052', 'stroke-width':'1.55',
+        'pointer-events':'none'
+      });
+      svg.appendChild(lip);
+      const slot = make('path', {
+        d, fill:'url(#pocketG)', stroke:'#bbc4c4', 'stroke-width':'1.9',
+        filter:'url(#slotInset)'
+      });
+      svg.appendChild(slot);
+      const label = addLabel(val, labelX, labelY, textAngle, fontSize ?? 16);
+      return { slot, label, info:{ x:infoX, y:infoY, angle } };
+    };
+
+    const slots = [];
+    slots[0] = addRectSlot({ val:1, x:100, y:48, w:40, h:34, angle:0, textAngle:0, fontSize:18 });
+    slots[1] = addRectSlot({ val:2, x:134, y:77, w:39, h:34, angle:28, textAngle:28, fontSize:17 });
+    slots[2] = addRectSlot({ val:3, x:134, y:126, w:39, h:34, angle:-38, textAngle:-38, fontSize:17 });
+    slots[3] = addRectSlot({ val:4, x:100, y:153, w:42, h:34, angle:0, textAngle:180, fontSize:18 });
+    slots[4] = addRectSlot({ val:5, x:66, y:126, w:39, h:34, angle:38, textAngle:38, fontSize:17 });
+    slots[5] = addRectSlot({ val:6, x:58, y:77, w:39, h:34, angle:-38, textAngle:-38, fontSize:17 });
+
+    slots.forEach(({ slot, label, info }) => {
       slotEls.push(slot);
-      labelEls.push(txt);
+      labelEls.push(label);
       slotDiceEls.push(null);
-      slotInfo.push({ x: tx, y: ty, angle });
-    }
+      slotInfo.push(info);
+    });
 
-    svg.appendChild(make('circle', { cx, cy, r:24, fill:'#697273', stroke:'#aeb6b6', 'stroke-width':'2' }));
-    svg.appendChild(make('circle', { cx, cy, r:17, fill:'url(#rimG)', stroke:'#4e5658', 'stroke-width':'1.2', opacity:'0.92' }));
+    svg.appendChild(make('path', { d:'M86 26 C91 24 98 25 103 29', fill:'none', stroke:'#d5dddd', 'stroke-width':'1.7', opacity:'0.55', 'stroke-linecap':'round', 'pointer-events':'none' }));
 
     boardWrap.appendChild(svg);
-  };
+  }
 
   function f(n) { return n.toFixed(2); }
 
@@ -1555,6 +2345,33 @@ body {
       d.appendChild(pip);
     });
     return d;
+  }
+
+  function renderCanLoad() {
+    if (!canLoadPile) return;
+    canLoadPile.innerHTML = '';
+    if (!Array.isArray(trashDice) || trashDice.length === 0) return;
+
+    const slots = [
+      [50, 60, -8, 1.02], [33, 58, 13, 0.96], [67, 57, -16, 0.96],
+      [48, 44, 8, 1.08], [27, 45, -21, 0.94], [75, 42, 18, 0.94],
+      [39, 29, 19, 1.06], [60, 28, -13, 1.06], [51, 17, -3, 1.12],
+      [28, 24, 10, 0.92], [73, 21, -19, 0.92], [41, 8, -11, 1.0],
+      [62, 5, 17, 1.0], [51, -7, 6, 1.08], [33, -5, -18, 0.9],
+      [70, -6, 14, 0.9], [44, -17, 20, 0.88], [58, -19, -14, 0.88]
+    ];
+    const visible = trashDice.slice(-slots.length);
+    visible.forEach((die, i) => {
+      const [left, top, rot, scale] = slots[i];
+      const value = clamp(Math.floor(die.value || ((i % 6) + 1)), 1, 6);
+      const el = makeMiniDie(die.color, value, 'can-load-die');
+      el.style.left = left + '%';
+      el.style.top = top + '%';
+      el.style.setProperty('--r', rot + 'deg');
+      el.style.setProperty('--s', scale.toFixed(2));
+      el.style.setProperty('--z', String(i + 1));
+      canLoadPile.appendChild(el);
+    });
   }
 
   // ── AUDIO ENGINE ─────────────────────────────────────────────
@@ -1633,10 +2450,26 @@ body {
       },
       placeClink() {
         const c = getCtx();
-        noiseBurst(0.045, 0.0, 0.075, 2.8, 2300, 'highpass');
-        tone(1320, 'sine', 0.12, 0.0, 0.12, c.destination);
-        tone(1760, 'triangle', 0.07, 0.025, 0.10, c.destination);
-        tone(410, 'sine', 0.04, 0.0, 0.09, c.destination);
+        noiseBurst(0.06, 0.0, 0.12, 2.6, 2600, 'highpass');
+        noiseBurst(0.075, 0.012, 0.055, 2.2, 1180, 'bandpass');
+        tone(1320, 'sine', 0.16, 0.0, 0.15, c.destination);
+        tone(1760, 'triangle', 0.11, 0.025, 0.13, c.destination);
+        tone(2348, 'sine', 0.045, 0.075, 0.16, c.destination);
+        tone(246, 'sine', 0.075, 0.0, 0.12, c.destination);
+      },
+      placeFanfare(color = 'yellow') {
+        const c = getCtx();
+        const root = color === 'green' ? 392 : 523;
+        noiseBurst(0.095, 0.0, 0.13, 2.1, 2850, 'highpass');
+        noiseBurst(0.11, 0.055, 0.07, 2.7, 3800, 'highpass');
+        [[root,0.00],[root * 1.25,0.052],[root * 1.5,0.105],[root * 2,0.18],[root * 2.5,0.29]].forEach(([fr,t], i) => {
+          tone(fr, i < 3 ? 'triangle' : 'sine', 0.18 - i * 0.018, t, 0.23, c.destination);
+          tone(fr * 0.5, 'sine', 0.07, t, 0.3, c.destination);
+        });
+        tone(root * 0.75, 'triangle', 0.085, 0.14, 0.34, c.destination);
+        tone(root * 1.875, 'sine', 0.045, 0.36, 0.28, c.destination);
+        tone(104, 'sine', 0.24, 0.0, 0.34, c.destination);
+        tone(156, 'sine', 0.12, 0.12, 0.26, c.destination);
       },
       trashCrash(intensity = 1) {
         const c = getCtx();
@@ -1891,48 +2724,79 @@ body {
     const { clone, source, rect } = makeDieClone(player, color);
     const target = slotEls[idx].getBoundingClientRect();
     const size = Math.max(26, Math.min(rect.width * 0.62, target.width * 0.42));
+    const startCx = rect.left + rect.width / 2;
+    const startCy = rect.top + rect.height / 2;
+    const endCx = target.left + target.width / 2;
+    const endCy = target.top + target.height / 2;
+    const dx = endCx - startCx;
+    const dy = endCy - startCy;
+    const arc = clamp(Math.abs(dx) * 0.12 + Math.abs(dy) * 0.18, 44, 130);
+    clone.style.setProperty('--tx', dx.toFixed(1) + 'px');
+    clone.style.setProperty('--ty', dy.toFixed(1) + 'px');
+    clone.style.setProperty('--mx', (dx * 0.48).toFixed(1) + 'px');
+    clone.style.setProperty('--my', (dy * 0.48 - arc).toFixed(1) + 'px');
+    clone.style.setProperty('--r1', (idx % 2 ? -168 : 168) + 'deg');
+    clone.style.setProperty('--r2', (idx % 2 ? -306 : 306) + 'deg');
+    clone.style.setProperty('--r3', (idx % 2 ? -292 : 292) + 'deg');
+    clone.style.setProperty('--squash', `${(size / rect.width * 1.14).toFixed(3)},${(size / rect.width * 0.88).toFixed(3)}`);
+    clone.style.setProperty('--final-scale', (size / rect.width).toFixed(3));
     requestAnimationFrame(() => {
-      clone.style.left = (target.left + target.width / 2 - size / 2) + 'px';
-      clone.style.top = (target.top + target.height / 2 - size / 2) + 'px';
-      clone.style.width = size + 'px';
-      clone.style.height = size + 'px';
-      clone.style.transform = 'rotate(18deg) scale(0.92)';
+      clone.classList.add('to-slot-physical');
     });
     setTimeout(() => {
       clone.remove();
       source.style.opacity = '';
       clearDie(player);
       done();
-    }, 640);
+    }, 720);
   }
 
   function travelRolledDieToTrash(player, color, done) {
     const { clone, source, rect } = makeDieClone(player, color);
     const target = trashCan.getBoundingClientRect();
     const size = Math.max(18, Math.min(rect.width * 0.48, target.width * 0.34));
+    const startCx = rect.left + rect.width / 2;
+    const startCy = rect.top + rect.height / 2;
+    const endCx = target.left + target.width / 2;
+    const endCy = target.top + target.height * 0.28;
+    const dx = endCx - startCx;
+    const dy = endCy - startCy;
+    const arc = clamp(Math.abs(dx) * 0.10 + Math.abs(dy) * 0.16, 38, 118);
+    clone.style.setProperty('--tx', dx.toFixed(1) + 'px');
+    clone.style.setProperty('--ty', dy.toFixed(1) + 'px');
+    clone.style.setProperty('--mx', (dx * 0.44).toFixed(1) + 'px');
+    clone.style.setProperty('--my', (dy * 0.44 - arc).toFixed(1) + 'px');
+    clone.style.setProperty('--r1', (player === 'p1' ? 190 : -190) + 'deg');
+    clone.style.setProperty('--r2', (player === 'p1' ? 420 : -420) + 'deg');
+    clone.style.setProperty('--r3', (player === 'p1' ? 610 : -610) + 'deg');
+    clone.style.setProperty('--final-scale', (size / rect.width).toFixed(3));
     requestAnimationFrame(() => {
-      clone.classList.add('to-trash');
-      clone.style.left = (target.left + target.width / 2 - size / 2) + 'px';
-      clone.style.top = (target.top + target.height * 0.3 - size / 2) + 'px';
-      clone.style.width = size + 'px';
-      clone.style.height = size + 'px';
-      clone.style.transform = 'rotate(34deg) scale(0.34)';
+      clone.classList.add('to-trash-physical');
     });
     setTimeout(() => {
       clone.remove();
       source.style.opacity = '';
       clearDie(player);
       done();
-    }, 640);
+    }, 740);
+  }
+
+  function pulseBoardScene(className, duration = 620) {
+    if (!boardScene) return;
+    boardScene.classList.remove(className);
+    void boardScene.offsetWidth;
+    boardScene.classList.add(className);
+    setTimeout(() => boardScene.classList.remove(className), duration);
   }
 
   function triggerTrashCanImpact(load) {
-    trashCan.style.setProperty('--can-feed-scale', clamp(2.85 + load * 0.2, 3, 4.85).toFixed(2));
-    trashCan.style.setProperty('--can-feed-glow', Math.round(clamp(34 + load * 4.2, 34, 112)) + 'px');
-    trashCan.style.setProperty('--can-feed-duration', Math.round(clamp(650 + load * 34, 720, 1320)) + 'ms');
+    trashCan.style.setProperty('--can-feed-scale', clamp(1.72 + load * 0.07, 1.82, 3.05).toFixed(2));
+    trashCan.style.setProperty('--can-feed-glow', Math.round(clamp(20 + load * 3.1, 24, 82)) + 'px');
+    trashCan.style.setProperty('--can-feed-duration', Math.round(clamp(620 + load * 28, 680, 1180)) + 'ms');
     trashCan.classList.remove('flash');
     void trashCan.offsetWidth;
     trashCan.classList.add('flash');
+    pulseBoardScene('can-weight-hit', 620);
   }
 
   function triggerLidWinPulse() {
@@ -1943,23 +2807,61 @@ body {
     Audio.lidWinFanfare();
   }
 
+  function triggerLidPlacePulse(color, idx) {
+    if (boardWrap.classList.contains('lid-win-pulse')) return;
+    const isYellow = color === 'yellow';
+    const burstColor = isYellow ? 'rgba(245,200,0,0.88)' : 'rgba(21,120,63,0.9)';
+    const burstGlow = isYellow ? 'rgba(245,200,0,0.78)' : 'rgba(21,120,63,0.8)';
+    boardWrap.style.setProperty('--lid-place-color', burstColor);
+    boardWrap.style.setProperty('--lid-place-glow', burstGlow);
+    boardWrap.classList.remove('lid-place-pulse');
+    void boardWrap.offsetWidth;
+    boardWrap.classList.add('lid-place-pulse');
+    boardWrap.addEventListener('animationend', () => boardWrap.classList.remove('lid-place-pulse'), { once: true });
+    pulseBoardScene('lid-weight-hit', 650);
+
+    const info = Number.isInteger(idx) ? slotInfo[idx] : null;
+    if (info) {
+      const r = boardWrap.getBoundingClientRect();
+      const burst = document.createElement('div');
+      burst.className = 'lid-place-burst';
+      burst.style.setProperty('--burst-x', (r.left + r.width * info.x / 200).toFixed(1) + 'px');
+      burst.style.setProperty('--burst-y', (r.top + r.height * info.y / 200).toFixed(1) + 'px');
+      burst.style.setProperty('--burst-color', burstColor);
+      burst.style.setProperty('--burst-glow', burstGlow);
+      document.body.appendChild(burst);
+      setTimeout(() => burst.remove(), 1150);
+    }
+  }
+
   function clearVictoryEffects() {
-    document.querySelectorAll('.victory-cannon-die, .victory-screen-burst').forEach(el => el.remove());
+    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero').forEach(el => el.remove());
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
   }
 
   function triggerGameWinCelebration(winner) {
     clearVictoryEffects();
-    if (winner !== 'p1') {
-      Audio.winFanfare();
-      return;
-    }
-
     const burst = document.createElement('div');
     burst.className = 'victory-screen-burst';
-    document.body.appendChild(burst);
+    overlay.appendChild(burst);
     setTimeout(() => burst.remove(), 1700);
+
+    const lidBackdrop = document.createElement('div');
+    lidBackdrop.className = 'victory-lid-backdrop';
+    overlay.insertBefore(lidBackdrop, overlay.firstChild);
+
+    let lidSvg = boardWrap.querySelector('svg.lid-svg');
+    if (!lidSvg) {
+      buildSlots();
+      lidSvg = boardWrap.querySelector('svg.lid-svg');
+    }
+    if (lidSvg) {
+      const lidHero = document.createElement('div');
+      lidHero.className = 'victory-lid-hero';
+      lidHero.appendChild(lidSvg.cloneNode(true));
+      overlay.insertBefore(lidHero, overlay.firstChild);
+    }
 
     boardWrap.classList.remove('game-win-spin');
     void boardWrap.offsetWidth;
@@ -1971,22 +2873,27 @@ body {
     trashCan.classList.add('victory-erupt');
     trashCan.addEventListener('animationend', () => trashCan.classList.remove('victory-erupt'), { once: true });
 
-    Audio.megaWinFanfare();
+    if (winner === 'p1') {
+      Audio.megaWinFanfare();
+    } else {
+      Audio.trashCrash(Math.max(9, totalTrashedDice()));
+      Audio.megaWinFanfare();
+    }
 
     const canR = trashCan.getBoundingClientRect();
     const sx = canR.left + canR.width * 0.5;
     const sy = canR.top + canR.height * 0.23;
-    const burstCount = Math.round(clamp(40 + totalTrashedDice() * 2.4, 46, 88));
+    const burstCount = Math.round(clamp(142 + totalTrashedDice() * 3.2, 160, 240));
     for (let i = 0; i < burstCount; i++) {
-      const color = Math.random() < 0.52 ? 'yellow' : 'green';
-      const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-cannon-die');
-      const spread = (Math.random() - 0.5) * window.innerWidth * 1.18;
-      const targetX = clamp(sx + spread, 14, window.innerWidth - 14);
-      const targetY = clamp(sy - window.innerHeight * (0.18 + Math.random() * 0.52) + Math.random() * 120, 12, window.innerHeight - 14);
+      const greenChance = winner === 'p2' ? 0.68 : 0.46;
+      const color = Math.random() < greenChance ? 'green' : 'yellow';
+      const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-cannon-die victory-persist-die');
+      const targetX = clamp(18 + Math.random() * (window.innerWidth - 36), 18, window.innerWidth - 18);
+      const targetY = clamp(20 + Math.random() * (window.innerHeight - 40), 18, window.innerHeight - 18);
       const midX = (targetX - sx) * (0.34 + Math.random() * 0.22);
       const midY = -window.innerHeight * (0.24 + Math.random() * 0.34);
-      const duration = Math.round(1200 + Math.random() * 980);
-      const delay = Math.round(i * 14 + Math.random() * 110);
+      const duration = Math.round(760 + Math.random() * 840);
+      const delay = Math.round(i * 2 + Math.random() * 58);
 
       die.style.left = sx + 'px';
       die.style.top = sy + 'px';
@@ -1997,8 +2904,21 @@ body {
       die.style.setProperty('--rot', Math.round(540 + Math.random() * 1260) + 'deg');
       die.style.setProperty('--cannon-duration', duration + 'ms');
       die.style.setProperty('--cannon-delay', delay + 'ms');
-      document.body.appendChild(die);
-      setTimeout(() => die.remove(), duration + delay + 260);
+      die.style.setProperty('--final-scale', (0.72 + Math.random() * 0.5).toFixed(2));
+      overlay.appendChild(die);
+    }
+
+    const settledCount = Math.round(clamp(104 + totalTrashedDice() * 1.7, 126, 180));
+    for (let i = 0; i < settledCount; i++) {
+      const greenChance = winner === 'p2' ? 0.68 : 0.46;
+      const color = Math.random() < greenChance ? 'green' : 'yellow';
+      const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-settled-die');
+      die.style.left = clamp(24 + Math.random() * (window.innerWidth - 48), 24, window.innerWidth - 24) + 'px';
+      die.style.top = clamp(24 + Math.random() * (window.innerHeight - 48), 24, window.innerHeight - 24) + 'px';
+      die.style.setProperty('--r', Math.round(Math.random() * 360) + 'deg');
+      die.style.setProperty('--s', (0.72 + Math.random() * 0.52).toFixed(2));
+      die.style.setProperty('--d', Math.round(Math.random() * 1200) + 'ms');
+      overlay.appendChild(die);
     }
   }
 
@@ -2012,14 +2932,61 @@ body {
     updatePoolVisual('p2');
 
     const isP1 = current === 'p1';
-    statusText.textContent = isP1 ? "Your Turn" : "CPU's Turn";
+    statusText.textContent = isP1 ? "Yellow Turn" : "Green Turn";
+    statusBar.classList.toggle('yellow-turn', isP1);
+    statusBar.classList.toggle('green-turn', !isP1);
     turnDot.style.background = isP1 ? '#f5c800' : '#2a9a2a';
     rollBtn.className = 'roll-btn ' + current;
+    p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
+    p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
+    renderCanLoad();
   }
 
   function setMsg(text, type) {
     msgEl.textContent = text;
     msgEl.className   = 'message' + (type ? ' ' + type : '');
+  }
+
+  function clearP0Timer() {
+    if (p0Timer) {
+      clearTimeout(p0Timer);
+      p0Timer = null;
+    }
+  }
+
+  function scheduleP0Autoplay(delay = P0_AUTOPLAY_MS) {
+    clearP0Timer();
+    if (!p0Autoplay || !gameStarted || busy || overlay.classList.contains('show')) return;
+    if (current !== 'p1' || rollBtn.disabled || totalDice('p1') <= 0) return;
+    p0Timer = setTimeout(() => {
+      p0Timer = null;
+      if (!p0Autoplay || busy || current !== 'p1' || rollBtn.disabled || overlay.classList.contains('show')) return;
+      doRoll();
+    }, delay);
+  }
+
+  function setP0Autoplay(enabled, announce = true) {
+    p0Autoplay = !!enabled;
+    document.body.classList.toggle('debug-p0', p0Autoplay);
+    if (p0Autoplay) {
+      if (announce && gameStarted) setMsg('P-0 autoplay: yellow and green are rolling.');
+      scheduleP0Autoplay();
+    } else {
+      clearP0Timer();
+      if (announce && gameStarted && current === 'p1') setMsg('Yellow Turn - tap ROLL');
+    }
+    return p0Autoplay;
+  }
+
+  function startGameFromOverlay(playAudio = true) {
+    if (gameStarted) return;
+    const so = document.getElementById('startOverlay');
+    const startBtn = document.getElementById('startBtn');
+    startBtn.disabled = true;
+    so.classList.add('hide');
+    setTimeout(() => { so.style.display = 'none'; }, 520);
+    if (playAudio) Audio.startFanfare();
+    init();
   }
 
   function openingRoll() {
@@ -2034,9 +3001,16 @@ body {
 
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
+    const so = document.getElementById('startOverlay');
+    if (so) {
+      so.classList.add('hide');
+      so.style.display = 'none';
+    }
+
     board     = Array(6).fill(null);
     pools     = { p1: { yellow: 20, green: 0 }, p2: { yellow: 0, green: 20 } };
     trashed   = { p1: 0,  p2: 0  };
+    trashDice = [];
     current   = 'p1';
     round     = 1;
     busy      = false;
@@ -2044,7 +3018,7 @@ body {
     gameStarted = true;
 
     clearVictoryEffects();
-    overlay.classList.remove('show', 'victory');
+    overlay.classList.remove('show', 'victory', 'loss');
 
     requestAnimationFrame(() => {
       buildSlots();
@@ -2054,10 +3028,11 @@ body {
       renderDie(opener.p1, 'p1', 'yellow');
       renderDie(opener.p2, 'p2', 'green');
       syncUI();
-      setMsg(`Opening roll: You ${opener.p1}, CPU ${opener.p2} - ${PLAYER_NAME[current]} start${current === 'p1' ? '' : 's'}.`);
+      setMsg(`Opening roll: Yellow ${opener.p1}, Green ${opener.p2} - ${PLAYER_NAME[current]} starts.`);
       if (current === 'p1') clearDie('p1');
       rollBtn.disabled = current !== 'p1';
       if (current === 'p2') setTimeout(() => doRoll(), 1150);
+      scheduleP0Autoplay(1200);
     });
   }
 
@@ -2066,8 +3041,9 @@ body {
   playAgainBtn.addEventListener('click', init);
 
   function doRoll() {
+    clearP0Timer();
     if (busy) return;
-    if (current === 'p1' && rollBtn.disabled) return; // only block human; CPU rolls freely
+    if (current === 'p1' && rollBtn.disabled) return; // only block human; green rolls freely
     busy = true;
     rollBtn.disabled = true;
     totalRolls++;
@@ -2078,7 +3054,7 @@ body {
       return;
     }
 
-    const value = Math.floor(Math.random() * 6) + 1;
+    const value = forcedRolls.length ? forcedRolls.shift() : Math.floor(Math.random() * 6) + 1;
 
     // Start tumble + spinning pip values
     const activeDie = getDie(current);
@@ -2101,7 +3077,7 @@ body {
       Audio.rollResolve(value);
       const idx   = value - 1;
       const taken = board[idx] !== null;
-      setMsg(current === 'p1' ? `You rolled a ${value}...` : `CPU rolled a ${value}...`);
+      setMsg(`${PLAYER_NAME[current]} rolled a ${value}...`);
       setTimeout(() => {
         taken
           ? travelRolledDieToTrash(current, rollColor, () => handleTrash(value, idx, rollColor))
@@ -2111,21 +3087,26 @@ body {
   }
 
   function handlePlace(value, idx, color) {
-    board[idx] = { player: current, color };
+    board[idx] = { player: current, color, value };
 
     const slot  = slotEls[idx];
     paintSlot(idx, board[idx]);
     slot.classList.add('anim-place');
     slot.addEventListener('animationend', () => slot.classList.remove('anim-place'), { once: true });
 
-    setMsg(current === 'p1' ? `You placed a ${value} on the lid!` : `CPU placed a ${value} on the lid`, 'ok');
+    setMsg(`${PLAYER_NAME[current]} placed a ${value} on the lid!`, 'ok');
     Audio.placeClink();
+    Audio.placeFanfare(color);
+    triggerLidPlacePulse(color, idx);
     syncUI();
 
     const filled = board.filter(s => s !== null).length;
     if (filled === 6) {
       triggerLidWinPulse();
       setTimeout(endRound, TURN_HANDOFF_MS);
+    } else if (totalDice(current) <= 0) {
+      const winner = current === 'p1' ? 'p2' : 'p1';
+      setTimeout(() => gameOver(winner), 520);
     } else {
       setTimeout(nextTurn, TURN_HANDOFF_MS);
     }
@@ -2133,15 +3114,14 @@ body {
 
   function handleTrash(value, idx, color) {
     trashed[current]++;
+    trashDice.push({ player: current, color, value });
 
     const slot = slotEls[idx];
     slot.classList.add('anim-trash');
     slot.addEventListener('animationend', () => slot.classList.remove('anim-trash'), { once:true });
 
-    const owner = board[idx].player === 'p1' ? 'your die' : "CPU's die";
-    setMsg(current === 'p1'
-      ? `You rolled a ${value} — that space has ${owner}! TRASHED 🗑️`
-      : `CPU rolled a ${value} — that space has ${owner}! TRASHED 🗑️`, 'trash');
+    const owner = board[idx].player === 'p1' ? 'a yellow die' : 'a green die';
+    setMsg(`${PLAYER_NAME[current]} rolled a ${value} - that space has ${owner}! TRASHED!`, 'trash');
     const canLoad = totalTrashedDice();
     triggerTrashCanImpact(canLoad);
     Audio.trashCrash(canLoad);
@@ -2172,40 +3152,49 @@ body {
     const pourLeadInMs = 220;
     const pourTailMs = 360;
     const canShakeMs = clamp(spillDuration * 0.92, 1300, 8500);
+    const canDrainCount = Array.isArray(trashDice) ? trashDice.length : 0;
+    const canDrainSpan = Math.max(0, spillDuration - travelMs - pourLeadInMs - pourTailMs);
     trashCan.classList.remove('pour');
     void trashCan.offsetWidth;
     trashCan.style.animationDuration = canShakeMs + 'ms';
     trashCan.classList.add('pour');
 
     lidDice.forEach((die, i) => {
-      const fill = slotColors(die.color).fill;
       const sx = canR.left + canR.width * (0.35 + Math.random() * 0.3);
       const sy = canR.top + canR.height * (0.25 + Math.random() * 0.1);
       const tx = pileR.left + pileR.width * (0.25 + Math.random() * 0.5);
       const ty = pileR.top + pileR.height * (0.25 + Math.random() * 0.5);
-      const el = document.createElement('div');
-      el.className = 'can-pour-die';
-      el.style.background = fill;
-      el.style.left = sx + 'px';
-      el.style.top = sy + 'px';
-      el.style.transform = `translate(-50%,-50%) rotate(${i * 17 - 42}deg) scale(1.15)`;
-      el.style.transition =
-        `left ${travelMs}ms cubic-bezier(.16,.86,.22,1), ` +
-        `top ${travelMs}ms cubic-bezier(.16,.86,.22,1), ` +
-        `transform ${travelMs}ms ease, ` +
-        `opacity 180ms ease ${Math.max(0, travelMs - 180)}ms`;
-      document.body.appendChild(el);
-
+      const dieValue = clamp(Math.floor(die.value || ((i % 6) + 1)), 1, 6);
+      const el = makeMiniDie(die.color, dieValue, 'can-pour-die');
       const available = Math.max(0, spillDuration - travelMs - pourLeadInMs - pourTailMs);
       const delay = pourLeadInMs + (diceWon === 1 ? 0 : i * (available / (diceWon - 1)));
-      setTimeout(() => {
-        el.style.left = tx + 'px';
-        el.style.top = ty + 'px';
-        el.style.transform = `translate(-50%,-50%) rotate(${160 + i * 23}deg) scale(0.42)`;
-        el.style.opacity = '0';
-      }, delay + 40);
+      const dx = tx - sx;
+      const dy = ty - sy;
+      const arc = clamp(125 + visualLoad * 4 + Math.random() * 56, 140, 300);
+      el.style.left = sx + 'px';
+      el.style.top = sy + 'px';
+      el.style.setProperty('--payout-duration', travelMs + 'ms');
+      el.style.setProperty('--payout-delay', Math.round(delay) + 'ms');
+      el.style.setProperty('--mx', (dx * (0.35 + Math.random() * 0.22)).toFixed(1) + 'px');
+      el.style.setProperty('--my', (dy * 0.35 - arc).toFixed(1) + 'px');
+      el.style.setProperty('--tx', dx.toFixed(1) + 'px');
+      el.style.setProperty('--ty', dy.toFixed(1) + 'px');
+      el.style.setProperty('--r0', (i * 17 - 42) + 'deg');
+      el.style.setProperty('--r1', (80 + i * 19) + 'deg');
+      el.style.setProperty('--r2', (180 + i * 23) + 'deg');
+      el.style.setProperty('--r3', (220 + i * 29) + 'deg');
+      document.body.appendChild(el);
       setTimeout(() => el.remove(), delay + travelMs + pourTailMs);
     });
+
+    for (let i = 0; i < canDrainCount; i++) {
+      const delay = pourLeadInMs + (canDrainCount === 1 ? 0 : i * (canDrainSpan / (canDrainCount - 1)));
+      setTimeout(() => {
+        if (!Array.isArray(trashDice) || trashDice.length === 0) return;
+        trashDice = trashDice.slice(0, -1);
+        renderCanLoad();
+      }, delay + 40);
+    }
 
     setTimeout(() => {
       trashCan.classList.remove('pour');
@@ -2217,15 +3206,14 @@ body {
   function showClaimBadge(winner, lidDice, spillDuration = 1450) {
     const pileEl = winner === 'p1' ? p1Pile : p2Pile;
     const r = pileEl.getBoundingClientRect();
-    const mix = diceMix(lidDice);
     const badge = document.createElement('div');
     const main = document.createElement('div');
     const sub = document.createElement('div');
     badge.className = 'claim-badge ' + winner;
     main.className = 'claim-main';
     sub.className = 'claim-sub';
-    main.textContent = `+${lidDice.length} DICE`;
-    sub.textContent = `${mix.yellow} yellow · ${mix.green} green`;
+    main.textContent = `WINNER +${lidDice.length}`;
+    sub.textContent = winner === 'p1' ? 'DICE TO YELLOW PILE' : 'DICE TO GREEN PILE';
     badge.appendChild(main);
     badge.appendChild(sub);
     badge.style.left = clamp(r.left + r.width / 2, 82, window.innerWidth - 82) + 'px';
@@ -2238,12 +3226,12 @@ body {
   function endRound() {
     const winner = current;
     const lidDice = board.filter(Boolean);
-    const wLabel = winner === 'p1' ? 'You complete' : 'CPU completes';
-    const mix = diceMix(lidDice);
-    const spillLoad = lidDice.length + totalTrashedDice();
+    const canDice = Array.isArray(trashDice) ? trashDice.slice() : [];
+    const claimedDice = lidDice.concat(canDice);
+    const spillLoad = claimedDice.length;
     const spillDuration = spillDurationForDice(spillLoad);
 
-    setMsg(`${wLabel} the lid and claim all ${lidDice.length} dice (${mix.yellow}Y/${mix.green}G)! 🎉`, 'win');
+    setMsg(`${PLAYER_NAME[winner]} wins the round - ${claimedDice.length} dice spill into ${PLAYER_NAME[winner].toLowerCase()} pile!`, 'win');
 
     // Flash
     roundFlash.className = '';
@@ -2252,13 +3240,14 @@ body {
     Audio.roundWonFanfare(spillDuration);
 
     // Trash can empties the claimed set into the winner's pile.
-    showClaimBadge(winner, lidDice, spillDuration);
-    animateCanPourToPool(winner, lidDice, spillDuration, spillLoad);
+    showClaimBadge(winner, claimedDice, spillDuration);
+    animateCanPourToPool(winner, claimedDice, spillDuration, spillLoad);
 
     // Update pool counts after dice "arrive"
     setTimeout(() => {
-      lidDice.forEach(die => pools[winner][die.color]++);
+      claimedDice.forEach(die => pools[winner][die.color]++);
       board = Array(6).fill(null);
+      trashDice = [];
       round++;
       syncUI();
     }, spillDuration);
@@ -2285,21 +3274,84 @@ body {
         rollBtn.disabled = true;
         setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
       } else {
-        setMsg(`Round ${round} — Your turn!`);
+        setMsg(`Round ${round} - Yellow Turn!`);
         rollBtn.disabled = false;
         busy = false;
+        scheduleP0Autoplay();
       }
     }, spillDuration + 260);
   }
 
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
-    overlayTitle.textContent = winner === 'p1' ? 'You Win! 🎉' : 'CPU Wins!';
-    overlaySub.textContent   = winner === 'p1' ? 'CPU has no dice left' : 'You have no dice left';
-    overlayStats.textContent = `${round - 1} rounds · ${totalRolls} rolls · trashed ${trashed.p1}/${trashed.p2}`;
-    overlay.classList.toggle('victory', winner === 'p1');
+    clearP0Timer();
+    const playerWon = winner === 'p1';
+    overlayTitle.innerHTML = playerWon ? 'YELLOW WINS!' : 'GREEN WINS!';
+    overlaySub.textContent = playerWon ? 'Roll. Collect. Avoid the trash.' : 'ROLL, WIN, AVOID THE BIN!';
+    overlayStats.textContent = '';
+    overlay.classList.remove('victory', 'loss');
+    overlay.classList.add(playerWon ? 'victory' : 'loss');
     overlay.classList.add('show');
     triggerGameWinCelebration(winner);
+  }
+
+  function installQaHooks() {
+    if (!QA_ENABLED) return;
+    function ensureQaGame() {
+      if (!gameStarted) init();
+    }
+    window.TrashDiceQA = {
+      queueRolls(values) {
+        forcedRolls = values.map(v => clamp(Math.floor(v), 1, 6));
+        return forcedRolls.slice();
+      },
+      trashLoad(count = 8) {
+        ensureQaGame();
+        const load = Math.max(0, Math.floor(count));
+        trashed.p1 = Math.ceil(load / 2);
+        trashed.p2 = Math.floor(load / 2);
+        trashDice = Array.from({ length: load }, (_, i) => ({
+          player: i % 2 ? 'p2' : 'p1',
+          color: i % 2 ? 'green' : 'yellow',
+          value: (i % 6) + 1
+        }));
+        renderCanLoad();
+        triggerTrashCanImpact(totalTrashedDice());
+        Audio.trashCrash(totalTrashedDice());
+        return { trashed: { ...trashed }, total: totalTrashedDice() };
+      },
+      roundWin(winner = 'p1') {
+        ensureQaGame();
+        current = winner === 'p2' ? 'p2' : 'p1';
+        board = Array.from({ length: 6 }, (_, i) => ({
+          player: i % 2 ? 'p2' : 'p1',
+          color: i % 2 ? 'green' : 'yellow',
+          value: i + 1
+        }));
+        buildSlots();
+        board.forEach((die, i) => paintSlot(i, die));
+        syncUI();
+        triggerLidWinPulse();
+        setTimeout(endRound, TURN_HANDOFF_MS);
+        return { current, board: board.map(Boolean) };
+      },
+      gameWin(winner = 'p1') {
+        ensureQaGame();
+        gameOver(winner === 'p2' ? 'p2' : 'p1');
+        return winner;
+      },
+      state() {
+        return {
+          current,
+          round,
+          pools: JSON.parse(JSON.stringify(pools)),
+          trashed: { ...trashed },
+          trashDice: trashDice ? trashDice.slice() : [],
+          board: board.map(Boolean),
+          forcedRolls: forcedRolls.slice()
+        };
+      }
+    };
   }
 
   // ── NEXT TURN ────────────────────────────────────────────────
@@ -2318,26 +3370,56 @@ body {
       rollBtn.disabled = true;
       setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
     } else {
-      setMsg('Your turn — tap ROLL');
+      setMsg('Yellow Turn - tap ROLL');
       rollBtn.disabled = false;
       busy = false;
+      scheduleP0Autoplay();
     }
   }
 
   // ── BOOT ─────────────────────────────────────────────────────
-  document.getElementById('startBtn').addEventListener('click', () => {
-    if (gameStarted) return;
-    const so = document.getElementById('startOverlay');
-    document.getElementById('startBtn').disabled = true;
-    so.classList.add('hide');
-    setTimeout(() => { so.style.display = 'none'; }, 520);
-    Audio.startFanfare();
-    init();
+  document.getElementById('startBtn').addEventListener('click', () => startGameFromOverlay(true));
+
+  let debugKeyBuffer = '';
+  document.addEventListener('keydown', (event) => {
+    const key = event.key.toLowerCase();
+    if (!/^[a-z0-9]$/.test(key)) return;
+    debugKeyBuffer = (debugKeyBuffer + key).slice(-2);
+    if (debugKeyBuffer === 'p0') {
+      if (!gameStarted) startGameFromOverlay(true);
+      setP0Autoplay(!p0Autoplay);
+      debugKeyBuffer = '';
+    }
   });
+
+  window.TrashDiceDebug = {
+    p0(enabled) {
+      if (!gameStarted) startGameFromOverlay(false);
+      return setP0Autoplay(typeof enabled === 'boolean' ? enabled : !p0Autoplay);
+    },
+    state() {
+      return { p0Autoplay, current, busy, round, totalRolls };
+    }
+  };
 
   window.addEventListener('load', () => {
     // Pre-build slots so board is visible behind start overlay
     requestAnimationFrame(buildSlots);
+    installQaHooks();
+    if (QA_ENABLED && URL_OPTIONS.has('gamewin')) {
+      const forcedWinner = URL_OPTIONS.get('gamewin') === 'p2' ? 'p2' : 'p1';
+      setTimeout(() => window.TrashDiceQA.gameWin(forcedWinner), 120);
+      return;
+    }
+    if (QA_ENABLED && URL_OPTIONS.has('roundwin')) {
+      const forcedWinner = URL_OPTIONS.get('roundwin') === 'p2' ? 'p2' : 'p1';
+      setTimeout(() => window.TrashDiceQA.roundWin(forcedWinner), 120);
+      return;
+    }
+    if (P0_START_ENABLED) {
+      setP0Autoplay(true, false);
+      startGameFromOverlay(false);
+    }
   });
   window.addEventListener('resize', () => {
     if (!slotEls.length) return;
