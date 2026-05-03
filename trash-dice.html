@@ -176,8 +176,13 @@ body {
   opacity: 0.86;
 }
 
-/* ── STATUS BAR ── */
+/* ── CONTEXTUAL TURN BADGES ── */
 .status-bar {
+  position: absolute;
+  left: 50%;
+  top: 0.12rem;
+  z-index: 12;
+  transform: translate(-50%, -40%) scale(0.94);
   background: rgba(255,255,255,0.58);
   border: 1px solid rgba(46,70,57,0.1);
   border-radius: 20px;
@@ -188,8 +193,22 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  opacity: 0;
+  pointer-events: none;
   box-shadow: 0 2px 10px rgba(82,69,51,0.12);
-  transition: background 0.22s, border-color 0.22s, box-shadow 0.22s;
+  transition: opacity 0.18s, transform 0.22s, background 0.22s, border-color 0.22s, box-shadow 0.22s;
+}
+.status-bar.active {
+  opacity: 1;
+  transform: translate(-50%, -40%) scale(1);
+}
+.player-panel:first-of-type .status-bar {
+  left: 63%;
+  top: 0.46rem;
+  transform: translate(-50%, 0) scale(0.94);
+}
+.player-panel:first-of-type .status-bar.active {
+  transform: translate(-50%, 0) scale(1);
 }
 .status-bar.yellow-turn {
   background: rgba(245,200,0,0.2);
@@ -201,10 +220,10 @@ body {
   border-color: rgba(15,95,50,0.28);
   box-shadow: 0 2px 10px rgba(15,95,50,0.14);
 }
-.status-bar.green-turn #statusText {
+.status-bar.green-turn .status-text {
   color: var(--green);
 }
-.status-bar.yellow-turn #statusText {
+.status-bar.yellow-turn .status-text {
   color: var(--yellow-pip);
 }
 .turn-dot {
@@ -264,6 +283,7 @@ body.debug-p0 .debug-badge { display: block; }
 
 /* ── PLAYER PANELS — horizontal strips ── */
 .player-panel {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1788,15 +1808,14 @@ body.debug-p0 .debug-badge { display: block; }
 </div>
 <div class="tagline">ROLL, WIN, AVOID THE BIN!</div>
 
-<div class="status-bar">
-  <div class="turn-dot" id="turnDot"></div>
-  <span id="statusText">—</span>
-</div>
-
 <div class="game-area">
 
   <!-- Green dice panel — TOP -->
   <div class="player-panel">
+    <div class="status-bar green-turn" id="p2StatusBar">
+      <div class="turn-dot" id="p2TurnDot"></div>
+      <span class="status-text" id="p2StatusText">Green Turn</span>
+    </div>
     <div class="player-label p2">Green Dice</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="dice-pile panel-pile" id="p2Pile"></div>
@@ -1924,6 +1943,10 @@ body.debug-p0 .debug-badge { display: block; }
 
   <!-- Yellow dice panel — BOTTOM -->
   <div class="player-panel">
+    <div class="status-bar yellow-turn" id="p1StatusBar">
+      <div class="turn-dot" id="p1TurnDot"></div>
+      <span class="status-text" id="p1StatusText">Your Turn</span>
+    </div>
     <div class="player-label p1">Yellow Dice</div>
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
     <div class="dice-pile panel-pile" id="p1Pile"></div>
@@ -2147,9 +2170,10 @@ body.debug-p0 .debug-badge { display: block; }
   const rollBtn     = document.getElementById('rollBtn');
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   const msgEl       = document.getElementById('message');
-  const statusBar   = document.querySelector('.status-bar');
-  const statusText  = document.getElementById('statusText');
-  const turnDot     = document.getElementById('turnDot');
+  const p1StatusBar = document.getElementById('p1StatusBar');
+  const p2StatusBar = document.getElementById('p2StatusBar');
+  const p1TurnDot   = document.getElementById('p1TurnDot');
+  const p2TurnDot   = document.getElementById('p2TurnDot');
   const p1PoolEl    = document.getElementById('p1Pool');
   const p2PoolEl    = document.getElementById('p2Pool');
   const p1Pile      = document.getElementById('p1Pile');
@@ -3089,10 +3113,10 @@ body.debug-p0 .debug-badge { display: block; }
     updatePoolVisual('p2');
 
     const isP1 = current === 'p1';
-    statusText.textContent = isP1 ? "Yellow Turn" : "Green Turn";
-    statusBar.classList.toggle('yellow-turn', isP1);
-    statusBar.classList.toggle('green-turn', !isP1);
-    turnDot.style.background = isP1 ? '#f5c800' : '#2a9a2a';
+    p1StatusBar.classList.toggle('active', isP1);
+    p2StatusBar.classList.toggle('active', !isP1);
+    p1TurnDot.style.background = '#f5c800';
+    p2TurnDot.style.background = '#2a9a2a';
     rollBtn.className = 'roll-btn ' + current;
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
