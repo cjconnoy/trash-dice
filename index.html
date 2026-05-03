@@ -2529,6 +2529,10 @@ body.debug-p0 .debug-badge { display: block; }
     return COLOR_CLASS[color] || 'p1';
   }
 
+  function playerScoreColor(player) {
+    return player === 'p2' ? 'green' : 'yellow';
+  }
+
   function slotColors(color) {
     return color === 'yellow'
       ? { fill: '#f5c800', hi: '#ffe86a', low: '#b78c00', stroke: '#987300', label: '#1a5c1a', side: '#8f6900' }
@@ -3771,8 +3775,9 @@ body.debug-p0 .debug-badge { display: block; }
 
     setMsg(`LID ${value}!`, 'ok');
     Audio.placeClink();
-    Audio.placeFanfare(color);
-    triggerLidPlacePulse(color, idx);
+    const scoreColor = playerScoreColor(current);
+    Audio.placeFanfare(scoreColor);
+    triggerLidPlacePulse(scoreColor, idx);
     syncUI();
 
     const filled = board.filter(s => s !== null).length;
