@@ -1192,7 +1192,20 @@ body.debug-p0 .debug-badge { display: block; }
   will-change: transform;
 }
 body.fast-preview .trash-can svg {
-  animation-duration: 11.5s;
+  animation: none;
+  will-change: auto;
+}
+body.fast-preview .title-hero-glint,
+body.fast-preview .can-hero-glint,
+body.fast-preview .can-rim-glint {
+  animation: none;
+  opacity: 0;
+}
+body.fast-preview .lid-edge-glint,
+body.fast-preview .lid-inner-glint,
+body.fast-preview .roll-btn,
+body.fast-preview .start-btn {
+  animation: none !important;
 }
 .can-hero-glint,
 .can-rim-glint {
@@ -2669,10 +2682,12 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   const PLAYER_NAME = { p1: 'Yellow', p2: 'Green' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
+  const LOCAL_PREVIEW = ['127.0.0.1', 'localhost', '::1'].includes(window.location.hostname);
   const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
   const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
-  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
+  const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
+  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
   const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
@@ -2684,6 +2699,28 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   let p0Timer = null;
   let victoryRainFrame = null;
   let victoryRainRun = 0;
+  const runtimeTimers = new Set();
+
+  function runLater(callback, delay) {
+    const id = window.setTimeout(() => {
+      runtimeTimers.delete(id);
+      callback();
+    }, delay);
+    runtimeTimers.add(id);
+    return id;
+  }
+
+  function cancelRuntimeTimer(id) {
+    if (!id) return;
+    clearTimeout(id);
+    runtimeTimers.delete(id);
+  }
+
+  function clearRuntimeTimers() {
+    runtimeTimers.forEach(id => clearTimeout(id));
+    runtimeTimers.clear();
+    p0Timer = null;
+  }
 
   function totalDice(player) {
     return COLORS.reduce((sum, color) => sum + pools[player][color], 0);
@@ -3604,7 +3641,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     requestAnimationFrame(() => {
       clone.classList.add('to-slot-physical');
     });
-    setTimeout(() => {
+    runLater(() => {
       clone.remove();
       source.style.opacity = '';
       clearDie(player);
@@ -3634,7 +3671,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     requestAnimationFrame(() => {
       clone.classList.add('to-trash-physical');
     });
-    setTimeout(() => {
+    runLater(() => {
       clone.remove();
       source.style.opacity = '';
       clearDie(player);
@@ -3647,7 +3684,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     boardScene.classList.remove(className);
     void boardScene.offsetWidth;
     boardScene.classList.add(className);
-    setTimeout(() => boardScene.classList.remove(className), duration);
+    runLater(() => boardScene.classList.remove(className), duration);
   }
 
   function triggerTrashCanImpact(load) {
@@ -3705,7 +3742,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
       burst.style.setProperty('--burst-color', burstColor);
       burst.style.setProperty('--burst-glow', burstGlow);
       document.body.appendChild(burst);
-      setTimeout(() => burst.remove(), 1150);
+      runLater(() => burst.remove(), 1150);
     }
   }
 
@@ -3776,7 +3813,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     const burst = document.createElement('div');
     burst.className = 'victory-screen-burst';
     overlay.appendChild(burst);
-    setTimeout(() => burst.remove(), 1700);
+    runLater(() => burst.remove(), 1700);
 
     const lidBackdrop = document.createElement('div');
     lidBackdrop.className = 'victory-lid-backdrop';
@@ -3844,7 +3881,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   function clearP0Timer() {
     if (p0Timer) {
-      clearTimeout(p0Timer);
+      cancelRuntimeTimer(p0Timer);
       p0Timer = null;
     }
   }
@@ -3853,7 +3890,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     clearP0Timer();
     if (!p0Autoplay || !gameStarted || busy || overlay.classList.contains('show')) return;
     if (current !== 'p1' || rollBtn.disabled || totalDice('p1') <= 0) return;
-    p0Timer = setTimeout(() => {
+    p0Timer = runLater(() => {
       p0Timer = null;
       if (!p0Autoplay || busy || current !== 'p1' || rollBtn.disabled || overlay.classList.contains('show')) return;
       doRoll();
@@ -3879,7 +3916,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     const startBtn = document.getElementById('startBtn');
     startBtn.disabled = true;
     so.classList.add('hide');
-    setTimeout(() => { so.style.display = 'none'; }, 520);
+    runLater(() => { so.style.display = 'none'; }, 520);
     if (playAudio) Audio.startFanfare();
     init();
   }
@@ -3896,6 +3933,13 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
+    clearRuntimeTimers();
+    clearVictoryEffects();
+    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt');
+    trashCan.style.animationDuration = '';
+    boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
+
     const so = document.getElementById('startOverlay');
     if (so) {
       so.classList.add('hide');
@@ -3913,7 +3957,6 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     totalRolls= 0;
     gameStarted = true;
 
-    clearVictoryEffects();
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green');
 
     requestAnimationFrame(() => {
@@ -3927,7 +3970,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
       setMsg(`${PLAYER_NAME[current].toUpperCase()} STARTS`);
       if (current === 'p1') clearDie('p1');
       rollBtn.disabled = current !== 'p1';
-      if (current === 'p2') setTimeout(() => doRoll(), 1150);
+      if (current === 'p2') runLater(() => doRoll(), 1150);
       scheduleP0Autoplay(1200);
     });
   }
@@ -3963,18 +4006,18 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     for (let t = 55;  t <= 620; t += 65)  spinAt.push(t);
     for (let t = 700; t <= 805; t += 105) spinAt.push(t);
     const spinHandles = spinAt.map(t =>
-      setTimeout(() => setPips(Math.floor(Math.random() * 6) + 1, current), t)
+      runLater(() => setPips(Math.floor(Math.random() * 6) + 1, current), t)
     );
 
-    setTimeout(() => {
-      spinHandles.forEach(clearTimeout);
+    runLater(() => {
+      spinHandles.forEach(cancelRuntimeTimer);
       renderDie(value, current, rollColor);
       getDie(current).classList.add('roll-resolved');
       Audio.rollResolve(value);
       const idx   = value - 1;
       const taken = board[idx] !== null;
       setMsg(`ROLLED ${value}`);
-      setTimeout(() => {
+      runLater(() => {
         taken
           ? travelRolledDieToTrash(current, rollColor, () => handleTrash(value, idx, rollColor))
           : travelRolledDieToSlot(current, rollColor, idx, () => handlePlace(value, idx, rollColor));
@@ -4000,12 +4043,12 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     const filled = board.filter(s => s !== null).length;
     if (filled === 6) {
       triggerLidWinPulse();
-      setTimeout(endRound, TURN_HANDOFF_MS);
+      runLater(endRound, TURN_HANDOFF_MS);
     } else if (totalDice(current) <= 0) {
       const winner = current === 'p1' ? 'p2' : 'p1';
-      setTimeout(() => gameOver(winner), 520);
+      runLater(() => gameOver(winner), 520);
     } else {
-      setTimeout(nextTurn, TURN_HANDOFF_MS);
+      runLater(nextTurn, TURN_HANDOFF_MS);
     }
   }
 
@@ -4025,11 +4068,11 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
     if (totalDice(current) <= 0) {
       const winner = current === 'p1' ? 'p2' : 'p1';
-      setTimeout(() => gameOver(winner), 950);
+      runLater(() => gameOver(winner), 950);
       return;
     }
 
-    setTimeout(nextTurn, TURN_HANDOFF_MS + 250);
+    runLater(nextTurn, TURN_HANDOFF_MS + 250);
   }
 
   // ── DICE FLY TO POOL ─────────────────────────────────────────
@@ -4081,21 +4124,21 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
       el.style.setProperty('--r3', (220 + i * 29) + 'deg');
       document.body.appendChild(el);
       if (typeof onDieArrive === 'function') {
-        setTimeout(() => onDieArrive(die, i), Math.round(delay + travelMs * 0.82));
+        runLater(() => onDieArrive(die, i), Math.round(delay + travelMs * 0.82));
       }
-      setTimeout(() => el.remove(), delay + travelMs + pourTailMs);
+      runLater(() => el.remove(), delay + travelMs + pourTailMs);
     });
 
     for (let i = 0; i < canDrainCount; i++) {
       const delay = pourLeadInMs + (canDrainCount === 1 ? 0 : i * (canDrainSpan / (canDrainCount - 1)));
-      setTimeout(() => {
+      runLater(() => {
         if (!Array.isArray(trashDice) || trashDice.length === 0) return;
         trashDice = trashDice.slice(0, -1);
         renderCanLoad();
       }, delay + 40);
     }
 
-    setTimeout(() => {
+    runLater(() => {
       trashCan.classList.remove('pour');
       trashCan.style.animationDuration = '';
     }, canShakeMs + 80);
@@ -4118,7 +4161,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     badge.style.left = clamp(r.left + r.width / 2, 82, window.innerWidth - 82) + 'px';
     badge.style.top = clamp(r.top + r.height / 2, 58, window.innerHeight - 58) + 'px';
     document.body.appendChild(badge);
-    setTimeout(() => badge.remove(), clamp(spillDuration + 500, 1700, 9500));
+    runLater(() => badge.remove(), clamp(spillDuration + 500, 1700, 9500));
   }
 
   // ── ROUND WIN ────────────────────────────────────────────────
@@ -4149,14 +4192,14 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     });
 
     // Reset the board only after the full bounty spill finishes.
-    setTimeout(() => {
+    runLater(() => {
       board = Array(6).fill(null);
       trashDice = [];
       round++;
       syncUI();
     }, spillDuration);
 
-    setTimeout(() => {
+    runLater(() => {
       slotEls.forEach((s, i) => {
         s.setAttribute('fill',   'url(#pocketG)');
         s.setAttribute('stroke', '#aeb6b6');
@@ -4176,7 +4219,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
       syncUI();
       if (current === 'p2') {
         rollBtn.disabled = true;
-        setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
+        runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
       } else {
         setMsg('YELLOW ROLL');
         rollBtn.disabled = false;
@@ -4188,7 +4231,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
-    clearP0Timer();
+    clearRuntimeTimers();
     busy = true;
     const playerWon = winner === 'p1';
     overlayTitle.innerHTML = playerWon
@@ -4240,7 +4283,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
         board.forEach((die, i) => paintSlot(i, die));
         syncUI();
         triggerLidWinPulse();
-        setTimeout(endRound, TURN_HANDOFF_MS);
+        runLater(endRound, TURN_HANDOFF_MS);
         return { current, board: board.map(Boolean) };
       },
       gameWin(winner = 'p1') {
@@ -4276,7 +4319,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     syncUI();
     if (current === 'p2') {
       rollBtn.disabled = true;
-      setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
+      runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
     } else {
       setMsg('YELLOW ROLL');
       rollBtn.disabled = false;
@@ -4323,15 +4366,23 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     requestAnimationFrame(buildSlots);
     installQaHooks();
     if (QA_ENABLED && URL_OPTIONS.has('gamewin')) {
-      const forcedWinner = URL_OPTIONS.get('gamewin') === 'p2' ? 'p2' : 'p1';
-      setTimeout(() => window.TrashDiceQA.gameWin(forcedWinner), 120);
       clearOneShotQaPreviewUrl();
+      if (FORCE_QA_ENABLED) {
+        const forcedWinner = URL_OPTIONS.get('gamewin') === 'p2' ? 'p2' : 'p1';
+        runLater(() => window.TrashDiceQA.gameWin(forcedWinner), 120);
+        return;
+      }
+      overlay.classList.add('show');
       return;
     }
     if (QA_ENABLED && URL_OPTIONS.has('roundwin')) {
-      const forcedWinner = URL_OPTIONS.get('roundwin') === 'p2' ? 'p2' : 'p1';
-      setTimeout(() => window.TrashDiceQA.roundWin(forcedWinner), 120);
       clearOneShotQaPreviewUrl();
+      if (FORCE_QA_ENABLED) {
+        const forcedWinner = URL_OPTIONS.get('roundwin') === 'p2' ? 'p2' : 'p1';
+        runLater(() => window.TrashDiceQA.roundWin(forcedWinner), 120);
+        return;
+      }
+      overlay.classList.add('show');
       return;
     }
     if (P0_START_ENABLED) {
