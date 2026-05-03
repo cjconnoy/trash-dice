@@ -298,6 +298,45 @@ body {
   pointer-events: none;
 }
 body.debug-p0 .debug-badge { display: block; }
+.p0-review-toggle {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 180;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  min-height: 34px;
+  padding: 0.36rem 0.62rem 0.4rem;
+  border: 2px solid rgba(255,255,255,0.38);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0)),
+    rgba(15,95,50,0.94);
+  color: #fff3b0;
+  font-family: 'Fredoka One', Arial Black, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 7px 18px rgba(0,0,0,0.36);
+  cursor: pointer;
+}
+body.review-build .p0-review-toggle {
+  display: inline-flex;
+}
+body.p0-mode .p0-review-toggle {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0)),
+    rgba(245,200,0,0.95);
+  color: #123418;
+  border-color: rgba(15,95,50,0.74);
+}
+@media (hover: none), (pointer: coarse), (max-width: 899px) {
+  .p0-review-toggle {
+    display: none !important;
+  }
+}
 .milestone-badge {
   position: fixed;
   top: 8px;
@@ -2649,6 +2688,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 
 <div class="message" id="message">ROLL TO START</div>
 <div class="debug-badge" id="debugBadge">P-0 Autoplay</div>
+<button class="p0-review-toggle" id="p0ReviewToggle" type="button" hidden>P0 Demo</button>
 
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
@@ -2742,6 +2782,18 @@ body.fast-preview .overlay.victory .play-again-btn {
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
   const LOCAL_PREVIEW = ['127.0.0.1', 'localhost', '::1'].includes(window.location.hostname);
+  const MOBILE_REVIEW_DEVICE = /Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent)
+    || ('ontouchstart' in window && window.innerWidth < 900);
+  const LAN_PREVIEW = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(window.location.hostname);
+  const REVIEW_BUILD = !MOBILE_REVIEW_DEVICE && (
+    LOCAL_PREVIEW ||
+    LAN_PREVIEW ||
+    window.location.hostname === '' ||
+    window.location.protocol === 'file:' ||
+    URL_OPTIONS.has('review') ||
+    URL_OPTIONS.has('qa') ||
+    URL_HASH.includes('review')
+  );
   const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
   const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
@@ -2755,6 +2807,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
   let forcedRolls = [];
   let p0Autoplay = false;
+  let p0ReviewMode = false;
   let p0Timer = null;
   let victoryRainFrame = null;
   let victoryRainRun = 0;
@@ -2917,6 +2970,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   const overlaySub  = document.getElementById('overlaySub');
   const overlayStats= document.getElementById('overlayStats');
   const playAgainBtn= document.getElementById('playAgainBtn');
+  const p0ReviewToggle = document.getElementById('p0ReviewToggle');
 
   let slotEls  = [];  // SVG slot elements
   let labelEls = [];  // SVG number labels
@@ -3938,6 +3992,16 @@ body.fast-preview .overlay.victory .play-again-btn {
     msgEl.className   = 'message' + (type ? ' ' + type : '');
   }
 
+  function updateP0ReviewControl() {
+    document.body.classList.toggle('review-build', REVIEW_BUILD);
+    document.body.classList.toggle('p0-mode', p0ReviewMode);
+    if (!p0ReviewToggle) return;
+    p0ReviewToggle.hidden = !REVIEW_BUILD;
+    p0ReviewToggle.textContent = p0ReviewMode ? 'P1 Play' : 'P0 Demo';
+    p0ReviewToggle.setAttribute('aria-label', p0ReviewMode ? 'Switch to Player 1 play' : 'Switch to Player 0 demo');
+    p0ReviewToggle.setAttribute('aria-pressed', String(p0ReviewMode));
+  }
+
   function clearP0Timer() {
     if (p0Timer) {
       cancelRuntimeTimer(p0Timer);
@@ -3966,7 +4030,33 @@ body.fast-preview .overlay.victory .play-again-btn {
       clearP0Timer();
       if (announce && gameStarted && current === 'p1') setMsg('YELLOW ROLL');
     }
+    updateP0ReviewControl();
     return p0Autoplay;
+  }
+
+  function startP0Review() {
+    if (!REVIEW_BUILD || p0ReviewMode) return;
+    p0ReviewMode = true;
+    clearRuntimeTimers();
+    setP0Autoplay(true, false);
+    init();
+    setMsg('P0 DEMO');
+    updateP0ReviewControl();
+  }
+
+  function stopP0ToP1() {
+    if (!p0ReviewMode && !p0Autoplay) return;
+    p0ReviewMode = false;
+    clearRuntimeTimers();
+    setP0Autoplay(false, false);
+    init();
+    setMsg('YELLOW ROLL');
+    updateP0ReviewControl();
+  }
+
+  function toggleP0Review() {
+    if (!REVIEW_BUILD) return;
+    p0ReviewMode ? stopP0ToP1() : startP0Review();
   }
 
   function startGameFromOverlay(playAudio = true) {
@@ -4350,10 +4440,33 @@ body.fast-preview .overlay.victory .play-again-btn {
         gameOver(winner === 'p2' ? 'p2' : 'p1');
         return winner;
       },
+      p0ReviewAcceptance() {
+        const beforeRolls = totalRolls;
+        startP0Review();
+        const entered = p0ReviewMode && p0Autoplay && document.body.classList.contains('p0-mode');
+        board[0] = { player: 'p2', color: 'green', value: 1 };
+        totalRolls = beforeRolls + 7;
+        stopP0ToP1();
+        return {
+          reviewBuild: REVIEW_BUILD,
+          mobileReviewDevice: MOBILE_REVIEW_DEVICE,
+          buttonVisible: !!p0ReviewToggle && !p0ReviewToggle.hidden,
+          entered,
+          exited: !p0ReviewMode && !p0Autoplay,
+          freshBoard: board.every(slot => slot === null),
+          freshRollCount: totalRolls === 0,
+          noP0Timer: p0Timer === null
+        };
+      },
       state() {
         return {
           current,
           round,
+          p0ReviewMode,
+          p0Autoplay,
+          reviewBuild: REVIEW_BUILD,
+          mobileReviewDevice: MOBILE_REVIEW_DEVICE,
+          p0ButtonVisible: !!p0ReviewToggle && !p0ReviewToggle.hidden,
           pools: JSON.parse(JSON.stringify(pools)),
           trashed: { ...trashed },
           trashDice: trashDice ? trashDice.slice() : [],
@@ -4389,26 +4502,73 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   // ── BOOT ─────────────────────────────────────────────────────
   document.getElementById('startBtn').addEventListener('click', () => startGameFromOverlay(true));
+  if (p0ReviewToggle) {
+    p0ReviewToggle.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleP0Review();
+    });
+  }
+
+  document.addEventListener('pointerdown', event => {
+    if (!p0ReviewMode) return;
+    if (p0ReviewToggle && event.target === p0ReviewToggle) return;
+    event.preventDefault();
+    event.stopPropagation();
+    stopP0ToP1();
+  }, true);
 
   let debugKeyBuffer = '';
   document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && p0ReviewMode) {
+      event.preventDefault();
+      stopP0ToP1();
+      debugKeyBuffer = '';
+      return;
+    }
+    if (event.key === '0' || event.code === 'Digit0' || event.code === 'Numpad0') {
+      if (REVIEW_BUILD) {
+        event.preventDefault();
+        toggleP0Review();
+        debugKeyBuffer = '';
+        return;
+      }
+    }
     const key = event.key.toLowerCase();
     if (!/^[a-z0-9]$/.test(key)) return;
     debugKeyBuffer = (debugKeyBuffer + key).slice(-2);
     if (debugKeyBuffer === 'p0') {
-      if (!gameStarted) startGameFromOverlay(true);
-      setP0Autoplay(!p0Autoplay);
+      if (REVIEW_BUILD) {
+        toggleP0Review();
+      } else {
+        if (!gameStarted) startGameFromOverlay(true);
+        setP0Autoplay(!p0Autoplay);
+      }
       debugKeyBuffer = '';
     }
   });
 
   window.TrashDiceDebug = {
     p0(enabled) {
-      if (!gameStarted) startGameFromOverlay(false);
-      return setP0Autoplay(typeof enabled === 'boolean' ? enabled : !p0Autoplay);
+      const shouldEnable = typeof enabled === 'boolean' ? enabled : !p0Autoplay;
+      if (shouldEnable && REVIEW_BUILD) startP0Review();
+      else if (!shouldEnable) stopP0ToP1();
+      else {
+        if (!gameStarted) startGameFromOverlay(false);
+        setP0Autoplay(true);
+      }
+      return p0Autoplay;
+    },
+    p0Review(enabled) {
+      if (typeof enabled === 'boolean') {
+        enabled ? startP0Review() : stopP0ToP1();
+      } else {
+        toggleP0Review();
+      }
+      return { p0ReviewMode, p0Autoplay, gameStarted, current, totalRolls };
     },
     state() {
-      return { p0Autoplay, current, busy, round, totalRolls };
+      return { p0ReviewMode, p0Autoplay, reviewBuild: REVIEW_BUILD, mobileReviewDevice: MOBILE_REVIEW_DEVICE, current, busy, round, totalRolls };
     }
   };
 
@@ -4422,6 +4582,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   window.addEventListener('load', () => {
     // Pre-build slots so board is visible behind start overlay
+    updateP0ReviewControl();
     requestAnimationFrame(buildSlots);
     installQaHooks();
     if (QA_ENABLED && URL_OPTIONS.has('gamewin')) {
@@ -4444,9 +4605,13 @@ body.fast-preview .overlay.victory .play-again-btn {
       overlay.classList.add('show');
       return;
     }
-    if (P0_START_ENABLED) {
-      setP0Autoplay(true, false);
-      startGameFromOverlay(false);
+    if (P0_START_ENABLED && !MOBILE_REVIEW_DEVICE) {
+      if (REVIEW_BUILD) {
+        startP0Review();
+      } else {
+        setP0Autoplay(true, false);
+        startGameFromOverlay(false);
+      }
     }
   });
   let resizeFrame = null;
