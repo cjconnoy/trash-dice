@@ -569,6 +569,7 @@ body.debug-p0 .debug-badge { display: block; }
 .die {
   width: 100%; height: 100%;
   border-radius: 22%;
+  isolation: isolate;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -633,17 +634,17 @@ body.debug-p0 .debug-badge { display: block; }
 .die::before {
   content: '';
   position: absolute;
-  inset: 11% -10% -12% 18%;
+  inset: 10% -12% -14% 18%;
   border-radius: 21%;
   z-index: -1;
-  transform: skewY(5deg);
+  transform: skewY(5deg) translateZ(-1px);
   opacity: 0.92;
 }
-.die.p1::before { background: linear-gradient(135deg, #c59b00, #6f5200); }
-.die.p2::before { background: linear-gradient(135deg, #083f20, #02180c); }
-.die.idle::before { background: linear-gradient(135deg, #303637, #111); }
-.die.idle.ready-p1::before { background: linear-gradient(135deg, #c59b00, #6f5200); }
-.die.idle.ready-p2::before { background: linear-gradient(135deg, #083f20, #02180c); }
+.die.p1::before { background: linear-gradient(135deg, #d3a900 0%, #8a6800 54%, #5f4300 100%); }
+.die.p2::before { background: linear-gradient(135deg, #0b552b 0%, #062d16 54%, #021007 100%); }
+.die.idle::before { background: linear-gradient(135deg, #3d4546 0%, #222829 54%, #111 100%); }
+.die.idle.ready-p1::before { background: linear-gradient(135deg, #d3a900 0%, #8a6800 54%, #5f4300 100%); }
+.die.idle.ready-p2::before { background: linear-gradient(135deg, #0b552b 0%, #062d16 54%, #021007 100%); }
 /* Oval gloss highlight */
 .die::after {
   content: '';
@@ -654,6 +655,11 @@ body.debug-p0 .debug-badge { display: block; }
   border-radius: 50%;
   pointer-events: none;
   z-index: 3;
+}
+.dot-cell,
+.dot {
+  position: relative;
+  z-index: 2;
 }
 .die.rolling {
   animation: dieRoll 0.85s cubic-bezier(.16,.74,.25,1) both;
@@ -2303,6 +2309,43 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     0 0 18px var(--winner-glow);
   transform: rotate(-1deg);
 }
+.overlay.victory .overlay-title {
+  width: min(98vw, 960px);
+  gap: clamp(0.08rem, 1vw, 0.32rem);
+  font-size: clamp(2.2rem, 8.4vw, 7.05rem);
+  line-height: 0.75;
+  -webkit-text-stroke: clamp(1.7px, 0.34vw, 3px) var(--winner-title-stroke);
+  text-shadow:
+    0 4px 0 var(--winner-title-shadow),
+    0 8px 0 rgba(255,255,255,0.16),
+    6px 9px 0 var(--winner-title-deep),
+    0 0 18px rgba(0,0,0,0.9),
+    0 0 38px var(--winner-glow),
+    0 0 76px rgba(255,244,168,0.26);
+}
+.overlay.victory .overlay-title::before {
+  content: "GAME WIN";
+  display: block;
+  margin-bottom: clamp(0.16rem, 1.2vw, 0.42rem);
+  padding: 0.16em 0.68em 0.2em;
+  border: clamp(2px, 0.32vw, 4px) solid rgba(255,255,255,0.82);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)),
+    linear-gradient(90deg, var(--winner-main), var(--winner-title-shadow));
+  color: #12321d;
+  -webkit-text-stroke: 0;
+  font-size: clamp(0.78rem, 2.15vw, 1.55rem);
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.55),
+    0 3px 0 rgba(0,0,0,0.26);
+  box-shadow:
+    0 5px 0 rgba(0,0,0,0.34),
+    0 0 26px var(--winner-glow);
+  transform: rotate(2deg);
+}
 .overlay.loss .overlay-sub {
   background: rgba(15,95,50,0.72);
   border: 2px solid #ff8f52;
@@ -2349,6 +2392,9 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 }
 .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
+}
+body.fast-preview .overlay.victory .play-again-btn {
+  animation: none;
 }
 @keyframes winButtonPulse {
   0%,100% {
@@ -2490,6 +2536,13 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
           <filter id="labelShadow" x="-24%" y="-24%" width="148%" height="148%">
             <feDropShadow dx="1.2" dy="1.5" stdDeviation="0.9" flood-color="rgba(0,0,0,0.42)"/>
           </filter>
+          <linearGradient id="labelWrapG" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="rgba(0,0,0,0.34)"/>
+            <stop offset="18%" stop-color="rgba(255,255,255,0.12)"/>
+            <stop offset="50%" stop-color="rgba(255,255,255,0.22)"/>
+            <stop offset="82%" stop-color="rgba(255,255,255,0.08)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0.38)"/>
+          </linearGradient>
           <filter id="canBodyDepth" x="-16%" y="-12%" width="132%" height="124%">
             <feDropShadow dx="-1.5" dy="1" stdDeviation="1.1" flood-color="rgba(255,255,255,0.3)"/>
             <feDropShadow dx="2.2" dy="2.8" stdDeviation="1.6" flood-color="rgba(0,0,0,0.34)"/>
@@ -2517,9 +2570,14 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
           <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.1"/>
           <g clip-path="url(#labelClip)">
             <rect x="14" y="64" width="92" height="62" fill="rgba(255,255,255,0.08)"/>
+            <path d="M14 64 C30 70 90 70 106 64 L106 122 C90 129 30 129 14 122 Z" fill="url(#labelWrapG)" opacity="0.72"/>
+            <path d="M18 69 C34 73 86 73 102 69" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2.2" opacity="0.78"/>
+            <path d="M18 119 C34 124 86 124 102 119" fill="none" stroke="rgba(90,53,0,0.34)" stroke-width="2.6" opacity="0.9"/>
             <rect x="14" y="64" width="10" height="62" fill="rgba(0,0,0,0.18)"/>
             <rect x="96" y="64" width="10" height="62" fill="rgba(0,0,0,0.22)"/>
-            <path d="M53 64 C58 76 59 111 53 126" stroke="rgba(255,255,255,0.22)" stroke-width="5.5" fill="none" opacity="0.42"/>
+            <path d="M46 66 C50 78 51 111 46 125" stroke="rgba(255,255,255,0.12)" stroke-width="6.6" fill="none" opacity="0.55"/>
+            <path d="M59 65 C65 79 65 112 59 126" stroke="rgba(255,255,255,0.28)" stroke-width="5.8" fill="none" opacity="0.62"/>
+            <path d="M82 66 C77 81 77 111 83 124" stroke="rgba(0,0,0,0.16)" stroke-width="7" fill="none" opacity="0.58"/>
             <path d="M6 101 C29 86 74 88 113 104" stroke="#0f5f32" stroke-width="11" opacity="0.82" fill="none"/>
             <path d="M7 112 C29 101 78 101 113 115" stroke="#10491f" stroke-width="9" opacity="0.95" fill="none"/>
             <g fill="#0f5f32">
@@ -2532,6 +2590,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
               <circle cx="28" cy="111" r="1.9"/><circle cx="92" cy="111" r="1.9"/>
             </g>
             <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
+            <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.28)" stroke-width="1.4" opacity="0.68"/>
             <text x="60" y="70.5" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="3.6" fill="#fff3b0" stroke="#17451d" stroke-width="0.25" letter-spacing="0.12">BY MIKE SZALAJKO &amp; ALEX MACKEY</text>
           </g>
           <g filter="url(#labelShadow)">
@@ -4390,12 +4449,17 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
       startGameFromOverlay(false);
     }
   });
+  let resizeFrame = null;
   window.addEventListener('resize', () => {
     if (!slotEls.length) return;
-    buildSlots();
-    if (!Array.isArray(board)) return;
-    board.forEach((die, i) => {
-      if (die) paintSlot(i, die);
+    if (resizeFrame !== null) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = null;
+      buildSlots();
+      if (!Array.isArray(board)) return;
+      board.forEach((die, i) => {
+        if (die) paintSlot(i, die);
+      });
     });
   });
 
