@@ -440,12 +440,12 @@ body.debug-p0 .debug-badge { display: block; }
 }
 .player-label {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.62rem, 2vw, 0.86rem);
+  font-size: clamp(0.58rem, 1.85vw, 0.82rem);
   letter-spacing: 0.045em;
   line-height: 1.05;
   text-transform: uppercase;
   white-space: nowrap;
-  min-width: clamp(6rem, 19vw, 7.4rem);
+  min-width: clamp(7.15rem, 22vw, 8.85rem);
   min-height: 1.38rem;
   padding: 0.32rem 0.54rem;
   border-radius: 7px;
@@ -2083,12 +2083,12 @@ body.debug-p0 .debug-badge { display: block; }
   pointer-events: auto;
 }
 .overlay-title {
-  width: min(96vw, 760px);
+  width: min(96vw, 850px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: clamp(0.04rem, 0.8vw, 0.24rem);
-  font-size: clamp(2.6rem, 10vw, 6.3rem);
+  font-size: clamp(1.82rem, 6.8vw, 5.6rem);
   line-height: 0.78;
   color: var(--winner-title-face);
   -webkit-text-stroke: clamp(1.3px, 0.24vw, 2.2px) var(--winner-title-stroke);
@@ -2252,9 +2252,9 @@ body.debug-p0 .debug-badge { display: block; }
 
 <div class="game-area">
 
-  <!-- Green dice panel — TOP -->
+  <!-- Green player panel — TOP -->
   <div class="player-panel green-panel">
-    <div class="player-label p2">Green Dice</div>
+    <div class="player-label p2">Green Player</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="inventory-cluster">
       <div class="dice-pile panel-pile" id="p2Pile"></div>
@@ -2397,9 +2397,9 @@ body.debug-p0 .debug-badge { display: block; }
     </div>
   </div>
 
-  <!-- Yellow dice panel — BOTTOM -->
+  <!-- Yellow player panel — BOTTOM -->
   <div class="player-panel yellow-panel">
-    <div class="player-label p1">Yellow Dice</div>
+    <div class="player-label p1">Yellow Player</div>
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
     <div class="inventory-cluster has-status">
       <div class="status-bar yellow-turn" id="p1StatusBar">
@@ -3993,8 +3993,8 @@ body.debug-p0 .debug-badge { display: block; }
     busy = true;
     const playerWon = winner === 'p1';
     overlayTitle.innerHTML = playerWon
-      ? '<span class="win-line">YELLOW DICE</span><span class="win-line">WIN!</span>'
-      : '<span class="win-line">GREEN DICE</span><span class="win-line">WIN!</span>';
+      ? '<span class="win-line">YELLOW PLAYER</span><span class="win-line">WINS!</span>'
+      : '<span class="win-line">GREEN PLAYER</span><span class="win-line">WINS!</span>';
     overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
     overlayStats.textContent = '';
     playAgainBtn.textContent = 'PLAY AGAIN';
