@@ -72,9 +72,6 @@ body {
 .hero-title.round-win-title-fanfare .title-logo {
   animation: titleRoundWinGlow 1.18s cubic-bezier(.12,.86,.14,1) both;
 }
-.hero-title.round-win-title-fanfare::after {
-  animation: titleHeroBeamSweep 0.88s cubic-bezier(.12,.86,.14,1) 0.03s 2 both;
-}
 @keyframes titleRoundWinFanfare {
   0% {
     transform: translateY(0) scale(1) rotate(0deg);
@@ -110,46 +107,6 @@ body {
       drop-shadow(5px 8px 0 rgba(15,95,50,0.86))
       drop-shadow(0 0 18px rgba(255,235,105,0.74))
       drop-shadow(0 10px 18px rgba(60,48,30,0.28));
-  }
-}
-.title-wrap:not(.big)::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 12;
-  width: min(38vw, 168px);
-  height: min(25vw, 184px);
-  pointer-events: none;
-  opacity: 0;
-  background:
-    linear-gradient(104deg,
-      rgba(255,255,255,0) 0%,
-      rgba(255,255,255,0.04) 31%,
-      rgba(255,247,174,0.62) 47%,
-      rgba(255,255,255,0.78) 52%,
-      rgba(255,255,255,0.10) 65%,
-      rgba(255,255,255,0) 100%);
-  filter: blur(0.8px) drop-shadow(0 0 12px rgba(255,242,138,0.68));
-  mix-blend-mode: screen;
-  transform: translate(-245%, -50%) rotate(13deg);
-  animation: titleHeroBeamSweep 4.2s cubic-bezier(.16,.78,.18,1) infinite;
-}
-@keyframes titleHeroBeamSweep {
-  0%, 31% {
-    transform: translate(-245%, -50%) rotate(13deg);
-    opacity: 0;
-  }
-  37% {
-    opacity: 0.82;
-  }
-  56% {
-    transform: translate(145%, -50%) rotate(13deg);
-    opacity: 0.78;
-  }
-  64%, 100% {
-    transform: translate(145%, -50%) rotate(13deg);
-    opacity: 0;
   }
 }
 .title-wrap.big {
