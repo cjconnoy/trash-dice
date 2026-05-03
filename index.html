@@ -2476,6 +2476,7 @@ body.debug-p0 .debug-badge { display: block; }
   // ── STATE ────────────────────────────────────────────────────
   let board;       // null | { player, color }, length 6, index = face-1
   let pools;       // { p1:{yellow,green}, p2:{yellow,green} }
+  let poolFaces;   // stable visible pip faces for inventory dice
   let trashed;     // {p1, p2}
   let trashDice;   // dice currently visible inside the can this round
   let current;     // 'p1' | 'p2'
@@ -2520,6 +2521,7 @@ body.debug-p0 .debug-badge { display: block; }
     const color = chooseDieColor(player);
     if (!color) return null;
     pools[player][color]--;
+    takePoolFace(player, color);
     return color;
   }
 
@@ -2931,15 +2933,53 @@ body.debug-p0 .debug-badge { display: block; }
 
   function f(n) { return n.toFixed(2); }
 
-  // ── POOL VISUAL — mini dice with random pip values ──────────
+  // ── POOL VISUAL — stable mini dice faces ───────────────────
+  function seededPoolFace(player, color, index) {
+    const offset = player === 'p1'
+      ? (color === 'yellow' ? 0 : 2)
+      : (color === 'green' ? 3 : 5);
+    return ((index * 5 + offset) % 6) + 1;
+  }
+
+  function resetPoolFaces() {
+    poolFaces = { p1: { yellow: [], green: [] }, p2: { yellow: [], green: [] } };
+    ['p1', 'p2'].forEach(player => {
+      COLORS.forEach(color => {
+        for (let i = 0; i < pools[player][color]; i++) {
+          poolFaces[player][color].push(seededPoolFace(player, color, i));
+        }
+      });
+    });
+  }
+
+  function ensurePoolFaces(player, color) {
+    if (!poolFaces) resetPoolFaces();
+    const faces = poolFaces[player][color];
+    const target = pools[player][color];
+    while (faces.length > target) faces.pop();
+    while (faces.length < target) faces.push(seededPoolFace(player, color, faces.length));
+    return faces;
+  }
+
+  function takePoolFace(player, color) {
+    const faces = ensurePoolFaces(player, color);
+    if (faces.length === 0) return null;
+    return faces.pop();
+  }
+
+  function addPoolFace(player, die) {
+    const color = die.color;
+    const value = clamp(Math.floor(die.value || seededPoolFace(player, color, pools[player][color] - 1)), 1, 6);
+    poolFaces[player][color].push(value);
+    return value;
+  }
+
   function updatePoolVisual(player) {
     const el = player === 'p1' ? p1Pile : p2Pile;
     el.innerHTML = '';
     COLORS.forEach(color => {
-      for (let i = 0; i < pools[player][color]; i++) {
-      const val = Math.floor(Math.random() * 6) + 1;
-      el.appendChild(makeMiniDie(color, val));
-    }
+      const faces = ensurePoolFaces(player, color);
+      faces.forEach(value => el.appendChild(makeMiniDie(color, value)));
     });
   }
 
@@ -2971,7 +3011,7 @@ body.debug-p0 .debug-badge { display: block; }
 
   function appendPoolDieVisual(player, die) {
     const pileEl = player === 'p1' ? p1Pile : p2Pile;
-    const value = clamp(Math.floor(die.value || 1), 1, 6);
+    const value = addPoolFace(player, die);
     pileEl.appendChild(makeMiniDie(die.color, value));
   }
 
@@ -3643,6 +3683,7 @@ body.debug-p0 .debug-badge { display: block; }
 
     board     = Array(6).fill(null);
     pools     = { p1: { yellow: 20, green: 0 }, p2: { yellow: 0, green: 20 } };
+    resetPoolFaces();
     trashed   = { p1: 0,  p2: 0  };
     trashDice = [];
     current   = 'p1';
