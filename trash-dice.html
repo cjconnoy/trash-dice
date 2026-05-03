@@ -180,9 +180,9 @@ body {
 .status-bar {
   position: absolute;
   left: 50%;
-  top: 0.12rem;
+  top: 0.14rem;
   z-index: 12;
-  transform: translate(-50%, -40%) scale(0.94);
+  transform: translate(-50%, -50%) scale(0.94);
   background: rgba(255,255,255,0.58);
   border: 1px solid rgba(46,70,57,0.1);
   border-radius: 20px;
@@ -190,8 +190,11 @@ body {
   font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
   font-size: clamp(0.96rem, 2.9vw, 1.18rem);
   letter-spacing: 0.08em;
+  white-space: nowrap;
+  min-width: clamp(7.2rem, 23vw, 8.4rem);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   opacity: 0;
   pointer-events: none;
@@ -200,7 +203,7 @@ body {
 }
 .status-bar.active {
   opacity: 1;
-  transform: translate(-50%, -40%) scale(1);
+  transform: translate(-50%, -50%) scale(1);
 }
 .status-bar.yellow-turn {
   background: rgba(245,200,0,0.2);
@@ -333,9 +336,14 @@ body.debug-p0 .debug-badge { display: block; }
 .pool-count {
   font-family: 'Bangers', sans-serif;
   font-size: clamp(1.4rem, 5vw, 2rem);
-  line-height: 1;
-  min-width: 2rem;
+  line-height: 0.9;
+  min-width: clamp(2rem, 6vw, 2.45rem);
+  min-height: clamp(32px, 7vw, 42px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   text-align: right;
+  flex: 0 0 auto;
 }
 .pool-count.p1 { color: var(--yellow); }
 .pool-count.p2 { color: var(--green-light); }
@@ -1506,10 +1514,24 @@ body.debug-p0 .debug-badge { display: block; }
 .turn-tag.p1 { color: var(--yellow); }
 .turn-tag.p2 { color: var(--green-light); }
 /* pile inside player panel — takes remaining width */
+.inventory-cluster {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: clamp(70px, 19vw, 108px);
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: clamp(0.45rem, 1.6vw, 0.72rem);
+}
+.inventory-cluster.has-status {
+  padding-top: 0;
+}
 .panel-pile {
-  flex: 1 1 clamp(96px, 29vw, 205px);
-  width: auto;
-  min-width: clamp(96px, 29vw, 205px);
+  flex: none;
+  width: 100%;
+  min-width: 0;
   max-height: clamp(48px, 13vw, 68px);
   overflow: hidden;
   align-content: flex-start;
@@ -1867,8 +1889,10 @@ body.debug-p0 .debug-badge { display: block; }
   <div class="player-panel">
     <div class="player-label p2">Green Dice</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
-    <div class="dice-pile panel-pile" id="p2Pile"></div>
-    <div class="pool-count p2" id="p2Pool">20</div>
+    <div class="inventory-cluster">
+      <div class="dice-pile panel-pile" id="p2Pile"></div>
+      <div class="pool-count p2" id="p2Pool">20</div>
+    </div>
     <span class="turn-tag p2" id="p2TurnTag">TURN</span>
   </div>
 
@@ -1992,14 +2016,16 @@ body.debug-p0 .debug-badge { display: block; }
 
   <!-- Yellow dice panel — BOTTOM -->
   <div class="player-panel">
-    <div class="status-bar yellow-turn" id="p1StatusBar">
-      <div class="turn-dot" id="p1TurnDot"></div>
-      <span class="status-text" id="p1StatusText">Your Turn</span>
-    </div>
     <div class="player-label p1">Yellow Dice</div>
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
-    <div class="dice-pile panel-pile" id="p1Pile"></div>
-    <div class="pool-count p1" id="p1Pool">20</div>
+    <div class="inventory-cluster has-status">
+      <div class="status-bar yellow-turn" id="p1StatusBar">
+        <div class="turn-dot" id="p1TurnDot"></div>
+        <span class="status-text" id="p1StatusText">Your Turn</span>
+      </div>
+      <div class="dice-pile panel-pile" id="p1Pile"></div>
+      <div class="pool-count p1" id="p1Pool">20</div>
+    </div>
     <span class="turn-tag p1" id="p1TurnTag">TURN</span>
   </div>
 
