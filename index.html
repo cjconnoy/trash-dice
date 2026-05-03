@@ -202,26 +202,10 @@ body {
   opacity: 1;
   transform: translate(-50%, -40%) scale(1);
 }
-.player-panel:first-of-type .status-bar {
-  left: 63%;
-  top: 0.46rem;
-  transform: translate(-50%, 0) scale(0.94);
-}
-.player-panel:first-of-type .status-bar.active {
-  transform: translate(-50%, 0) scale(1);
-}
 .status-bar.yellow-turn {
   background: rgba(245,200,0,0.2);
   border-color: rgba(15,95,50,0.26);
   box-shadow: 0 2px 10px rgba(201,160,0,0.16);
-}
-.status-bar.green-turn {
-  background: rgba(15,95,50,0.16);
-  border-color: rgba(15,95,50,0.28);
-  box-shadow: 0 2px 10px rgba(15,95,50,0.14);
-}
-.status-bar.green-turn .status-text {
-  color: var(--green);
 }
 .status-bar.yellow-turn .status-text {
   color: var(--yellow-pip);
@@ -1891,10 +1875,6 @@ body.debug-p0 .debug-badge { display: block; }
 
   <!-- Green dice panel — TOP -->
   <div class="player-panel">
-    <div class="status-bar green-turn" id="p2StatusBar">
-      <div class="turn-dot" id="p2TurnDot"></div>
-      <span class="status-text" id="p2StatusText">Green Turn</span>
-    </div>
     <div class="player-label p2">Green Dice</div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="dice-pile panel-pile" id="p2Pile"></div>
@@ -2250,9 +2230,7 @@ body.debug-p0 .debug-badge { display: block; }
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   const msgEl       = document.getElementById('message');
   const p1StatusBar = document.getElementById('p1StatusBar');
-  const p2StatusBar = document.getElementById('p2StatusBar');
   const p1TurnDot   = document.getElementById('p1TurnDot');
-  const p2TurnDot   = document.getElementById('p2TurnDot');
   const p1PoolEl    = document.getElementById('p1Pool');
   const p2PoolEl    = document.getElementById('p2Pool');
   const p1Pile      = document.getElementById('p1Pile');
@@ -3223,9 +3201,7 @@ body.debug-p0 .debug-badge { display: block; }
 
     const isP1 = current === 'p1';
     p1StatusBar.classList.toggle('active', isP1);
-    p2StatusBar.classList.toggle('active', !isP1);
     p1TurnDot.style.background = '#f5c800';
-    p2TurnDot.style.background = '#2a9a2a';
     rollBtn.className = 'roll-btn ' + current;
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
