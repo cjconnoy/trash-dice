@@ -409,12 +409,74 @@ CJ direction addressed:
 Verification:
 - Remote target: `https://github.com/cjconnoy/trash-dice.git`.
 - Push and remote-head verification performed after commit.
+
+---
+
+## 2026-05-02 RETAIL CAN GEOMETRY PASS
+
+Event ID: `trash-dice-retail-can-geometry-pass-20260502`
+
+Approximate active elapsed: ~25 minutes for reference comparison, SVG can rebuild, proportion tuning, mirroring, and browser smoke.
+
+CJ direction addressed:
+- Rebuilt the trash can SVG away from the short cartoony cup read.
+- Added a straighter retail-style cylindrical body with a taller/slimmer proportion.
+- Added a thick molded top collar, dark recessed mouth, inset lid plane, raised handle, upper and lower horizontal molded bands, and subtler grey plastic shading.
+- Retained the gameplay can-fill overlay while repositioning it to fit the revised top geometry.
+
+Verification:
+- Inline script syntax check passed for `index.html` and `trash-dice.html`.
+- Mirrored `index.html` to `trash-dice.html`; SHA256 hashes matched after the pass.
+- In-app browser P-0 preview ran at `http://127.0.0.1:5174/index.html?p0` with no page console errors.
+
+---
+
+## 2026-05-02 RETAIL LID AND PIP SCALE PASS
+
+Event ID: `trash-dice-retail-lid-pip-scale-pass-20260502`
+
+Approximate active elapsed: ~25 minutes for reference comparison, lid SVG refactor, dice-pip scale tuning, mirroring, and browser smoke.
+
+CJ direction addressed:
+- Moved the lid geometry further away from a radial wheel and closer to the retail molded tray.
+- Added a stronger outer lip, recessed inner bowl, central vertical chute, molded side panels, and repositioned six die pockets around the tray.
+- Enlarged/thickened active-die, placed-die, inventory, can-fill, and payout dice pips to better match the chunky retail dice dots.
+
+Verification:
+- Inline script syntax check passed for `index.html` and `trash-dice.html`.
+- Mirrored `index.html` to `trash-dice.html`; SHA256 hashes matched after the pass.
+- In-app browser P-0 preview ran at `http://127.0.0.1:5174/index.html?p0` with no page console errors.
+- Observed placed dice and can-fill dice after autoplay; larger pips remained readable.
 - Mirrored `index.html` to `trash-dice.html`; SHA256 hashes matched after the pass.
 - In-app browser P-0 smoke ran at `http://127.0.0.1:5174/index.html?p0` with no page console errors.
 - Verified `Green Dice`, `Yellow Dice`, and `Yellow/Green Turn` copy appears in the live DOM, while old `CPU` / `You` HUD copy is absent.
 - In-app browser P-0 preview ran at `http://127.0.0.1:5174/index.html?p0` with no page console errors.
 - Observed the empty-board opening state with the revised six-pocket molded lid geometry.
 - Mirrored `index.html` to `trash-dice.html` after the geometry pass.
+
+---
+
+## 2026-05-02 FIRST PLAYABLE JACKPOT + RETAIL UI PASS
+
+Event ID: `trash-dice-first-playable-jackpot-retail-ui-pass-20260502`
+
+Approximate active elapsed: ~55 minutes for game-win rework, victory QA, live P-0 inspection, retail callout cleanup, color-label polish, file mirroring, and backup prep.
+
+CJ direction addressed:
+- Adopted the operating mode that clear 1st Playable recommendations should be executed directly until CJ approval, rather than held for approval.
+- Rebuilt the game-win presentation from a modal-style result into a visible dice-cannon jackpot: cloned spinning lid backdrop, visible can hero, full-screen persistent dice burst, bottom dice floor, and `ROLL AGAIN` affordance.
+- Changed game result framing to color competition: `YELLOW DICE WIN!` / `GREEN DICE WIN!`, with the retail-facing line `ROLL, WIN, AVOID THE BIN!`.
+- Fixed the victory dice sizing bug where jackpot dice inherited tiny inventory-die dimensions and read as sparse specks.
+- Added a soft result readability glow so the dice explosion can stay huge without burying the win copy.
+- Changed bottom gameplay messages from sentence/debug copy to short retail-style callouts like `ROLLED 4`, `LID 4!`, `TRASH 4!`, and `YELLOW WINS THE ROUND!`.
+- Upgraded `Green Dice` / `Yellow Dice` labels and the turn pill with chunkier toy-label styling and pip details.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser QA route `http://127.0.0.1:5174/index.html?qa&gamewin=p1` showed `YELLOW DICE WIN!`, `ROLL AGAIN`, the spinning lid backdrop, visible can hero, and no page console errors.
+- In-app browser QA route `http://127.0.0.1:5174/index.html?qa&gamewin=p2` showed `GREEN DICE WIN!`, `ROLL AGAIN`, the same jackpot treatment, and no page console errors.
+- In-app browser P-0 route `http://127.0.0.1:5174/index.html?p0` ran with no page console errors; observed the new compact gameplay callout and updated color labels.
 
 ---
 

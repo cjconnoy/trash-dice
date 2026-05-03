@@ -181,9 +181,10 @@ body {
   background: rgba(255,255,255,0.58);
   border: 1px solid rgba(46,70,57,0.1);
   border-radius: 20px;
-  padding: 0.25rem 1rem;
-  font-size: clamp(0.75rem, 2.5vw, 0.9rem);
-  letter-spacing: 0.07em;
+  padding: 0.27rem 1rem 0.24rem;
+  font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
+  font-size: clamp(0.96rem, 2.9vw, 1.18rem);
+  letter-spacing: 0.08em;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -211,6 +212,7 @@ body {
   border-radius: 50%;
   flex-shrink: 0;
   transition: background 0.25s;
+  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.34), 0 0 8px rgba(255,255,255,0.5);
 }
 
 .debug-badge {
@@ -291,18 +293,36 @@ body.debug-p0 .debug-badge { display: block; }
   border-radius: 7px;
   position: relative;
   z-index: 4;
+  transform: rotate(-1deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.36),
+    0 3px 0 rgba(0,0,0,0.18),
+    0 8px 16px rgba(64,54,36,0.12);
+}
+.player-label::before {
+  content: "";
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  margin-right: 0.34rem;
+  vertical-align: 0.03rem;
+  background: currentColor;
+  box-shadow:
+    0.62rem 0 currentColor,
+    inset 0.8px 0.8px 1px rgba(0,0,0,0.46);
 }
 .player-label.p1 {
   color: var(--yellow-pip);
   background: linear-gradient(180deg, #ffe05b, #f5c800 62%, #d8a900);
   border: 1px solid rgba(15,95,50,0.32);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 3px 0 rgba(116,84,0,0.18);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.28);
 }
 .player-label.p2 {
   color: var(--green-pip);
   background: linear-gradient(180deg, #1f8a49, #0f6b37 62%, #084421);
   border: 1px solid rgba(245,200,0,0.28);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 3px 0 rgba(0,44,22,0.2);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.28);
 }
 
 /* dice-pool-visual no longer used in panels — piles live on the mat */
@@ -526,14 +546,14 @@ body.debug-p0 .debug-badge { display: block; }
   justify-content: center;
 }
 .dot {
-  width:  clamp(15px, 4.2vw, 20px);
-  height: clamp(15px, 4.2vw, 20px);
+  width:  clamp(17px, 5vw, 24px);
+  height: clamp(17px, 5vw, 24px);
   border-radius: 50%;
   background: var(--yellow-pip);
   box-shadow:
-    inset 1px 1px 3px rgba(0,0,0,0.55),
-    inset -1px -1px 2px rgba(255,255,255,0.08),
-    0 1px 1px rgba(255,255,255,0.12);
+    inset 1.7px 1.7px 3.2px rgba(0,0,0,0.58),
+    inset -1px -1px 2px rgba(255,255,255,0.1),
+    0 1.2px 1px rgba(255,255,255,0.14);
 }
 .die.p2 .dot { background: var(--green-pip); }
 .die.idle .dot { background: #555; }
@@ -596,17 +616,28 @@ body.debug-p0 .debug-badge { display: block; }
 
 /* ── MESSAGE ── */
 .message {
-  min-height: 1.3rem;
-  font-size: clamp(0.7rem, 2.2vw, 0.85rem);
-  letter-spacing: 0.06em;
+  min-height: 1.75rem;
+  font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
+  font-size: clamp(1rem, 3.3vw, 1.32rem);
+  letter-spacing: 0.08em;
   text-align: center;
   padding: 0 0.5rem;
   color: #17361f;
   text-shadow: 0 1px 0 rgba(255,255,255,0.72);
+  text-transform: uppercase;
 }
-.message.ok    { color: #0f6b37; }
-.message.trash { color: var(--trash-red); }
-.message.win   { color: #a88500; }
+.message.ok {
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 var(--green), 0 2px 8px rgba(245,200,0,0.28);
+}
+.message.trash {
+  color: var(--trash-red);
+  text-shadow: 2px 2px 0 #6b0f0f, 0 2px 10px rgba(217,48,48,0.26);
+}
+.message.win {
+  color: #f5c800;
+  text-shadow: 2px 2px 0 #0f5f32, 0 2px 12px rgba(245,200,0,0.34);
+}
 
 /* ── ROUND FLASH ── */
 .round-flash {
@@ -877,8 +908,8 @@ body.debug-p0 .debug-badge { display: block; }
   position: absolute;
   left: calc(50% + var(--can-offset));
   top: calc(50% + clamp(18px, 4vw, 32px));
-  width: clamp(118px, 26vw, 170px);
-  height: clamp(173px, 38vw, 250px);
+  width: clamp(114px, 24.5vw, 160px);
+  height: clamp(180px, 40vw, 264px);
   z-index: 2;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -923,9 +954,9 @@ body.debug-p0 .debug-badge { display: block; }
 .can-load-pile {
   position: absolute;
   left: 50%;
-  top: -5%;
-  width: 84%;
-  height: 40%;
+  top: -2%;
+  width: 78%;
+  height: 34%;
   z-index: 4;
   transform: translateX(-50%);
   pointer-events: none;
@@ -1077,12 +1108,12 @@ body.debug-p0 .debug-badge { display: block; }
     filter: brightness(0.94);
   }
 }
-.victory-cannon-die {
+.mini-die.victory-cannon-die {
   position: fixed;
-  width: clamp(20px, 4.8vw, 34px);
-  height: clamp(20px, 4.8vw, 34px);
+  width: clamp(24px, 5.6vw, 42px);
+  height: clamp(24px, 5.6vw, 42px);
   overflow: visible;
-  z-index: 12;
+  z-index: 42;
   pointer-events: none;
   transform: translate(-50%, -50%);
   animation: victoryCannonDie var(--cannon-duration, 1500ms) cubic-bezier(.1,.84,.1,1) var(--cannon-delay, 0ms) forwards;
@@ -1092,15 +1123,15 @@ body.debug-p0 .debug-badge { display: block; }
     0 9px 14px rgba(0,0,0,0.28),
     inset 0 1px 0 rgba(255,255,255,0.3);
 }
-.victory-persist-die {
-  z-index: 12;
+.mini-die.victory-persist-die {
+  z-index: 42;
   animation: victoryPersistDie var(--cannon-duration, 1900ms) cubic-bezier(.1,.84,.1,1) var(--cannon-delay, 0ms) forwards;
 }
-.victory-settled-die {
+.mini-die.victory-settled-die {
   position: fixed;
-  width: clamp(22px, 5.2vw, 40px);
-  height: clamp(22px, 5.2vw, 40px);
-  z-index: 90;
+  width: clamp(24px, 5.8vw, 46px);
+  height: clamp(24px, 5.8vw, 46px);
+  z-index: 38;
   pointer-events: none;
   opacity: 0.98;
   outline: 1px solid rgba(255,255,255,0.42);
@@ -1111,7 +1142,7 @@ body.debug-p0 .debug-badge { display: block; }
   transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
   animation: victorySettledDie 3.2s ease-in-out var(--d, 0ms) infinite alternate;
 }
-.victory-cannon-die::after {
+.mini-die.victory-cannon-die::after {
   content: none;
   position: absolute;
   left: -22px;
@@ -1184,7 +1215,7 @@ body.debug-p0 .debug-badge { display: block; }
   z-index: 0;
   pointer-events: none;
   border-radius: 50%;
-  opacity: 0.32;
+  opacity: 0.46;
   transform: translate(-50%, -50%);
   background:
     radial-gradient(circle, rgba(255,255,255,0.28) 0 8%, rgba(93,103,105,0.5) 9% 13%, transparent 14%),
@@ -1193,22 +1224,22 @@ body.debug-p0 .debug-badge { display: block; }
     inset 0 0 0 max(1.6vw, 18px) rgba(185,198,198,0.28),
     inset 0 0 0 max(2.7vw, 30px) rgba(62,73,75,0.34),
     0 0 80px rgba(245,200,0,0.25);
-  animation: victoryLidBackdropSpin 14s linear infinite;
+  animation: victoryLidBackdropSpin 11s linear infinite;
 }
 .victory-lid-hero {
   position: fixed;
   left: 50%;
   top: 50%;
-  width: min(132vw, 132vh);
-  height: min(132vw, 132vh);
-  z-index: 2;
-  opacity: 0.24;
+  width: min(148vw, 148vh);
+  height: min(148vw, 148vh);
+  z-index: 4;
+  opacity: 0.32;
   pointer-events: none;
   transform: translate(-50%, -50%);
   filter:
     drop-shadow(0 0 34px rgba(245,200,0,0.42))
     drop-shadow(0 0 64px rgba(94,232,94,0.22));
-  animation: victoryRealLidSpin 10s linear infinite;
+  animation: victoryRealLidSpin 8s linear infinite;
 }
 .victory-lid-hero .lid-svg {
   position: relative !important;
@@ -1260,6 +1291,82 @@ body.debug-p0 .debug-badge { display: block; }
   16%  { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.8); filter: blur(12px); }
 }
+.victory-can-hero {
+  position: fixed;
+  right: clamp(0.45rem, 4vw, 4.5rem);
+  bottom: clamp(3.2rem, 6vh, 5rem);
+  width: clamp(156px, 25vw, 292px);
+  z-index: 32;
+  pointer-events: none;
+  transform-origin: 50% 72%;
+  filter:
+    drop-shadow(0 20px 22px rgba(0,0,0,0.42))
+    drop-shadow(0 0 22px var(--winner-glow, rgba(245,200,0,0.44)));
+  animation: victoryCanHeroPop 1.45s cubic-bezier(.14,.86,.17,1) both,
+             victoryCanHeroDance 1.2s ease-in-out 1.45s infinite alternate;
+}
+.victory-can-hero svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.victory-dice-floor {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(31vh, 230px);
+  z-index: 26;
+  pointer-events: none;
+  overflow: hidden;
+}
+.victory-dice-floor::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18%;
+  width: 122%;
+  height: 64%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.28), transparent 42%),
+    radial-gradient(ellipse at 50% 75%, rgba(0,0,0,0.62), transparent 70%);
+  opacity: 0.82;
+}
+.mini-die.victory-floor-die {
+  position: absolute;
+  width: clamp(28px, 6.4vw, 54px);
+  height: clamp(28px, 6.4vw, 54px);
+  z-index: 2;
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
+  animation: victoryFloorDieBob 2.4s ease-in-out var(--d, 0ms) infinite alternate;
+}
+.mini-die.victory-cannon-die .mini-pip,
+.mini-die.victory-settled-die .mini-pip,
+.mini-die.victory-floor-die .mini-pip {
+  width: 25%;
+  height: 25%;
+  box-shadow:
+    inset 1px 1px 1.8px rgba(0,0,0,0.64),
+    0 0 1px rgba(255,255,255,0.18);
+}
+@keyframes victoryCanHeroPop {
+  0%   { opacity: 0; transform: translateY(48px) scale(0.58) rotate(-8deg); }
+  26%  { opacity: 1; transform: translateY(-18px) scale(1.2) rotate(6deg); }
+  48%  { transform: translateY(6px) scale(0.95) rotate(-3deg); }
+  72%  { transform: translateY(-6px) scale(1.06) rotate(2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+@keyframes victoryCanHeroDance {
+  0%   { transform: translateY(0) rotate(-2deg) scale(1); }
+  100% { transform: translateY(-7px) rotate(2deg) scale(1.035); }
+}
+@keyframes victoryFloorDieBob {
+  0%   { transform: translate(-50%, -50%) translateY(0) rotate(var(--r, 0deg)) scale(var(--s, 1)); }
+  100% { transform: translate(-50%, -50%) translateY(-10px) rotate(calc(var(--r, 0deg) + 8deg)) scale(var(--s, 1)); }
+}
 
 /* ── DICE PILES (on the mat) ── */
 .dice-pile {
@@ -1296,10 +1403,10 @@ body.debug-p0 .debug-badge { display: block; }
 }
 .mini-pip {
   position: absolute;
-  width: 3.4px; height: 3.4px;
+  width: 4px; height: 4px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: inset 0.5px 0.5px 1px rgba(0,0,0,0.55);
+  box-shadow: inset 0.75px 0.75px 1.2px rgba(0,0,0,0.58);
 }
 .mini-die.p1 .mini-pip { background: var(--yellow-pip); }
 .mini-die.p2 .mini-pip { background: var(--green-pip); }
@@ -1344,8 +1451,8 @@ body.debug-p0 .debug-badge { display: block; }
   border-radius: 22%;
 }
 .panel-pile .mini-pip {
-  width: clamp(2.4px, 0.72vw, 3.35px);
-  height: clamp(2.4px, 0.72vw, 3.35px);
+  width: clamp(2.8px, 0.86vw, 4px);
+  height: clamp(2.8px, 0.86vw, 4px);
 }
 .mini-die.can-load-die,
 .mini-die.can-pour-die {
@@ -1371,8 +1478,8 @@ body.debug-p0 .debug-badge { display: block; }
 }
 .mini-die.can-load-die .mini-pip,
 .mini-die.can-pour-die .mini-pip {
-  width: clamp(3px, 0.8vw, 4px);
-  height: clamp(3px, 0.8vw, 4px);
+  width: clamp(3.8px, 1.05vw, 5.3px);
+  height: clamp(3.8px, 1.05vw, 5.3px);
 }
 
 /* scattered pile look */
@@ -1478,6 +1585,11 @@ body.debug-p0 .debug-badge { display: block; }
 /* ── GAME OVER OVERLAY ── */
 .overlay {
   position: fixed; inset: 0;
+  --winner-main: var(--yellow);
+  --winner-pip: var(--yellow-pip);
+  --winner-shadow: var(--green);
+  --winner-glow: rgba(245,200,0,0.66);
+  --winner-button-low: #b58a00;
   background:
     radial-gradient(circle at 50% 43%, rgba(245,200,0,0.22), transparent 31%),
     radial-gradient(circle at 50% 58%, rgba(15,95,50,0.30), transparent 48%),
@@ -1497,11 +1609,26 @@ body.debug-p0 .debug-badge { display: block; }
   isolation: isolate;
 }
 .overlay.show { opacity: 1; pointer-events: all; }
+.overlay.winner-yellow {
+  --winner-main: var(--yellow);
+  --winner-pip: var(--yellow-pip);
+  --winner-shadow: var(--green);
+  --winner-glow: rgba(245,200,0,0.72);
+  --winner-button-low: #b58a00;
+}
+.overlay.winner-green {
+  --winner-main: var(--green);
+  --winner-pip: var(--green-pip);
+  --winner-shadow: var(--yellow);
+  --winner-glow: rgba(38,190,91,0.72);
+  --winner-button-low: #063919;
+}
 .overlay.victory {
   background:
-    radial-gradient(circle at 50% 40%, rgba(245,200,0,0.32), transparent 30%),
+    radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 24%),
     radial-gradient(circle at 48% 58%, rgba(94,232,94,0.22), transparent 48%),
-    rgba(5,12,7,0.88);
+    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.18), transparent 44%),
+    rgba(5,12,7,0.94);
 }
 .overlay.loss {
   background:
@@ -1534,21 +1661,45 @@ body.debug-p0 .debug-badge { display: block; }
   gap: clamp(0.65rem, 2.4vw, 1rem);
   pointer-events: none;
 }
+.overlay-content::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(96vw, 820px);
+  height: clamp(245px, 39vh, 390px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0.62), rgba(5,12,7,0.34) 48%, transparent 74%);
+  filter: blur(2px);
+  z-index: 0;
+}
 .overlay-content > * {
   pointer-events: auto;
 }
 .overlay-title {
-  width: min(94vw, 640px);
-  font-size: clamp(2.4rem, 10vw, 5.6rem);
-  line-height: 0.82;
-  color: var(--yellow);
+  width: min(96vw, 760px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.04rem, 0.8vw, 0.24rem);
+  font-size: clamp(2.6rem, 10vw, 6.3rem);
+  line-height: 0.78;
+  color: var(--winner-main);
+  -webkit-text-stroke: 1px rgba(0,0,0,0.18);
   text-shadow:
-    3px 3px 0 var(--green),
-    7px 8px 0 rgba(0,0,0,0.38),
-    0 0 30px rgba(245,200,0,0.72);
+    3px 3px 0 var(--winner-shadow),
+    7px 8px 0 rgba(0,0,0,0.52),
+    0 0 10px rgba(0,0,0,0.74),
+    0 0 30px var(--winner-glow);
   text-align: center;
   letter-spacing: 0.02em;
   transform: rotate(-2deg);
+}
+.overlay-title .win-line {
+  display: block;
+  white-space: nowrap;
 }
 .overlay.loss .overlay-title {
   color: #ff8f52;
@@ -1566,12 +1717,12 @@ body.debug-p0 .debug-badge { display: block; }
   color: #fff3a4;
   text-shadow: 0 2px 0 rgba(0,0,0,0.55);
   background: rgba(15,95,50,0.72);
-  border: 2px solid rgba(245,200,0,0.75);
+  border: 2px solid var(--winner-main);
   border-radius: 999px;
   padding: 0.45rem 1rem 0.52rem;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.18),
-    0 0 24px rgba(245,200,0,0.22);
+    0 0 24px var(--winner-glow);
 }
 .overlay-stats {
   width: min(90vw, 360px);
@@ -1594,8 +1745,8 @@ body.debug-p0 .debug-badge { display: block; }
   align-items: center;
   justify-content: center;
   background:
-    linear-gradient(180deg, #ffe45a, var(--yellow) 56%, #cda000);
-  color: var(--yellow-pip);
+    linear-gradient(180deg, #fff27a, var(--winner-main) 56%, var(--winner-button-low));
+  color: var(--winner-pip);
   border: 3px solid rgba(255,255,255,0.22);
   border-radius: 14px;
   padding: 0.72rem 2.5rem 0.78rem;
@@ -1606,7 +1757,7 @@ body.debug-p0 .debug-badge { display: block; }
   margin-top: 0.3rem;
   box-shadow:
     0 5px 0 var(--yellow-dark),
-    0 0 28px rgba(245,200,0,0.36);
+    0 0 28px var(--winner-glow);
   transform: rotate(-1deg);
 }
 @keyframes victoryTitlePunch {
@@ -1671,116 +1822,101 @@ body.debug-p0 .debug-badge { display: block; }
       <!-- SVG lid injected by buildSlots() -->
     </div>
     <div class="trash-can" id="trashCan" aria-hidden="true">
-      <svg viewBox="0 0 110 150" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="canBodyG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#d7dddd"/>
-            <stop offset="28%" stop-color="#aeb8b8"/>
-            <stop offset="68%" stop-color="#747f81"/>
-            <stop offset="100%" stop-color="#566062"/>
+          <linearGradient id="canBodyG" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#6f7c7f"/>
+            <stop offset="15%" stop-color="#aeb8b8"/>
+            <stop offset="46%" stop-color="#859194"/>
+            <stop offset="62%" stop-color="#cad1d0"/>
+            <stop offset="100%" stop-color="#556063"/>
           </linearGradient>
-          <linearGradient id="canLipG" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#edf2f1"/>
-            <stop offset="55%" stop-color="#a9b4b4"/>
-            <stop offset="100%" stop-color="#687274"/>
+          <linearGradient id="canRimG" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#dce3e3"/>
+            <stop offset="42%" stop-color="#929fa1"/>
+            <stop offset="100%" stop-color="#5c686b"/>
           </linearGradient>
-          <linearGradient id="canInsideG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#4f5a5c"/>
-            <stop offset="100%" stop-color="#202728"/>
+          <linearGradient id="canLidG" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#cfd7d7"/>
+            <stop offset="52%" stop-color="#8f9b9d"/>
+            <stop offset="100%" stop-color="#5f6b6e"/>
+          </linearGradient>
+          <linearGradient id="canMouthG" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#2f3a3d"/>
+            <stop offset="100%" stop-color="#121719"/>
           </linearGradient>
           <linearGradient id="labelG" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stop-color="#ffe86a"/>
-            <stop offset="55%" stop-color="#f4c70d"/>
-            <stop offset="100%" stop-color="#d19c00"/>
+            <stop offset="0%" stop-color="#fff071"/>
+            <stop offset="49%" stop-color="#f4c915"/>
+            <stop offset="100%" stop-color="#d69a00"/>
           </linearGradient>
           <clipPath id="canClip">
-            <path d="M15 29 C15 19 95 19 95 29 L95 134 C95 146 15 146 15 134 Z"/>
+            <path d="M14 29 C14 24 106 24 106 29 L106 149 C106 158 14 158 14 149 Z"/>
           </clipPath>
           <clipPath id="labelClip">
-            <path d="M20 58 C31 63 79 63 90 58 L90 106 C78 113 32 113 20 106 Z"/>
+            <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z"/>
           </clipPath>
           <filter id="labelShadow" x="-24%" y="-24%" width="148%" height="148%">
-            <feDropShadow dx="1.3" dy="1.6" stdDeviation="1.0" flood-color="rgba(0,0,0,0.48)"/>
+            <feDropShadow dx="1.2" dy="1.5" stdDeviation="0.9" flood-color="rgba(0,0,0,0.42)"/>
           </filter>
         </defs>
 
-        <path d="M15 29 C15 19 95 19 95 29 L95 134 C95 146 15 146 15 134 Z" fill="url(#canBodyG)" stroke="#edf2f1" stroke-width="2.6"/>
+        <ellipse cx="60" cy="154" rx="44" ry="6" fill="#465153" opacity="0.45"/>
+        <path d="M14 29 C14 24 106 24 106 29 L106 149 C106 158 14 158 14 149 Z" fill="url(#canBodyG)" stroke="#dfe7e6" stroke-width="2"/>
         <g clip-path="url(#canClip)">
-          <rect x="20" y="31" width="70" height="105" fill="rgba(255,255,255,0.08)"/>
-          <rect x="54" y="31" width="5" height="106" fill="rgba(255,255,255,0.16)"/>
-          <path d="M18 35 C31 41 79 41 92 35" fill="none" stroke="#6d787a" stroke-width="3"/>
-          <path d="M18 42 C31 48 79 48 92 42" fill="none" stroke="#6d787a" stroke-width="2.1"/>
-          <path d="M18 49 C31 55 79 55 92 49" fill="none" stroke="#6d787a" stroke-width="2.1"/>
-          <path d="M18 117 C31 123 79 123 92 117" fill="none" stroke="#6d787a" stroke-width="2.6"/>
-          <path d="M18 125 C31 131 79 131 92 125" fill="none" stroke="#6d787a" stroke-width="2.6"/>
-          <path d="M18 134 C31 140 79 140 92 134" fill="none" stroke="#6d787a" stroke-width="2.2"/>
+          <rect x="19" y="30" width="82" height="124" fill="rgba(255,255,255,0.06)"/>
+          <rect x="58" y="30" width="5" height="124" fill="rgba(255,255,255,0.15)"/>
+          <rect x="99" y="32" width="5" height="118" fill="rgba(0,0,0,0.12)"/>
 
-          <path d="M20 58 C31 63 79 63 90 58 L90 106 C78 113 32 113 20 106 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.3"/>
+          <path d="M14 43 C29 48 91 48 106 43" fill="none" stroke="#4d5a5d" stroke-width="3.2"/>
+          <path d="M14 49 C29 54 91 54 106 49" fill="none" stroke="#9eaaab" stroke-width="1.4" opacity="0.7"/>
+          <path d="M14 55 C29 60 91 60 106 55" fill="none" stroke="#596568" stroke-width="2.6"/>
+          <path d="M14 61 C29 66 91 66 106 61" fill="none" stroke="#aeb8b8" stroke-width="1.25" opacity="0.65"/>
+
+          <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.1"/>
           <g clip-path="url(#labelClip)">
-            <rect x="20" y="58" width="70" height="51" fill="rgba(255,255,255,0.08)"/>
-            <path d="M16 94 C31 83 70 84 95 96" stroke="#0f5f32" stroke-width="9" opacity="0.82" fill="none"/>
-            <path d="M17 103 C30 96 72 96 94 107" stroke="#10491f" stroke-width="8" opacity="0.95" fill="none"/>
-            <circle cx="28" cy="64" r="9" fill="#0f5f32"/>
-            <circle cx="84" cy="65" r="10" fill="#0f5f32"/>
-            <circle cx="33" cy="103" r="10" fill="#0f5f32"/>
-            <circle cx="78" cy="101" r="9" fill="#0f5f32"/>
-            <g fill="#f5c800" opacity="0.94">
-              <circle cx="25" cy="72" r="1.9"/><circle cx="32" cy="66" r="1.9"/><circle cx="36" cy="73" r="1.9"/>
-              <circle cx="80" cy="70" r="1.9"/><circle cx="87" cy="76" r="1.9"/><circle cx="75" cy="96" r="1.9"/>
-              <circle cx="42" cy="107" r="1.9"/><circle cx="31" cy="99" r="1.9"/>
+            <rect x="14" y="64" width="92" height="62" fill="rgba(255,255,255,0.08)"/>
+            <path d="M6 101 C29 86 74 88 113 104" stroke="#0f5f32" stroke-width="11" opacity="0.82" fill="none"/>
+            <path d="M7 112 C29 101 78 101 113 115" stroke="#10491f" stroke-width="9" opacity="0.95" fill="none"/>
+            <g fill="#0f5f32">
+              <path d="M18 73 C10 83 9 98 18 109 C29 105 37 96 40 82 C33 75 26 72 18 73 Z"/>
+              <path d="M101 72 C110 83 111 97 101 111 C91 106 84 96 80 82 C87 75 94 72 101 72 Z"/>
             </g>
-            <path d="M25 58 C38 62 72 62 86 58" fill="none" stroke="#195322" stroke-width="2.4" opacity="0.72"/>
-            <text x="55" y="63.5" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="3.2" fill="#fff3b0" stroke="#17451d" stroke-width="0.25" letter-spacing="0.12">BY MIKE SZALAJKO &amp; ALEX MACKEY</text>
+            <g fill="#f5c800" opacity="0.94">
+              <circle cx="21" cy="82" r="2.1"/><circle cx="31" cy="77" r="2.1"/><circle cx="34" cy="92" r="2.1"/>
+              <circle cx="87" cy="81" r="2.1"/><circle cx="98" cy="77" r="2.1"/><circle cx="101" cy="93" r="2.1"/>
+              <circle cx="28" cy="111" r="1.9"/><circle cx="92" cy="111" r="1.9"/>
+            </g>
+            <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
+            <text x="60" y="70.5" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="3.6" fill="#fff3b0" stroke="#17451d" stroke-width="0.25" letter-spacing="0.12">BY MIKE SZALAJKO &amp; ALEX MACKEY</text>
           </g>
           <g filter="url(#labelShadow)">
-            <g transform="translate(15 63) rotate(-4 40 24)">
-              <text class="logo-outer" x="1" y="20" font-size="27" stroke-width="5.1" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-warm-shadow" x="2.4" y="21.5" font-size="27" stroke-width="2.2" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-face" x="1" y="20" font-size="27" stroke-width="1.8" textLength="72" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-outer" x="13" y="44" font-size="30" stroke-width="5.3" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
-              <text class="logo-warm-shadow" x="14.5" y="45.6" font-size="30" stroke-width="2.3" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
-              <text class="logo-face" x="13" y="44" font-size="30" stroke-width="1.85" textLength="60" lengthAdjust="spacingAndGlyphs">Dice</text>
+            <g transform="translate(14 70) rotate(-3 46 27)">
+              <text class="logo-outer" x="1" y="22" font-size="31" stroke-width="5.8" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-warm-shadow" x="2.5" y="23.6" font-size="31" stroke-width="2.5" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-face" x="1" y="22" font-size="31" stroke-width="2.05" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
+              <text class="logo-outer" x="15" y="50" font-size="34" stroke-width="5.9" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
+              <text class="logo-warm-shadow" x="16.5" y="51.6" font-size="34" stroke-width="2.55" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
+              <text class="logo-face" x="15" y="50" font-size="34" stroke-width="2.1" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
             </g>
-            <text x="55" y="111" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="5.2" fill="#fff3b0" stroke="#245d1d" stroke-width="0.3" letter-spacing="0.25">ROLL, WIN, AVOID THE BIN!</text>
+            <text x="60" y="124" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="6" fill="#fff3b0" stroke="#245d1d" stroke-width="0.4" letter-spacing="0.18">ROLL, WIN, AVOID THE BIN!</text>
           </g>
+
+          <path d="M14 128 C29 134 91 134 106 128" fill="none" stroke="#586568" stroke-width="3.1"/>
+          <path d="M14 135 C29 141 91 141 106 135" fill="none" stroke="#aeb8b8" stroke-width="1.3" opacity="0.65"/>
+          <path d="M14 142 C29 148 91 148 106 142" fill="none" stroke="#586568" stroke-width="3.1"/>
+          <path d="M17 151 C31 156 89 156 103 151" fill="none" stroke="#d1d9d8" stroke-width="1.6" opacity="0.58"/>
         </g>
 
-        <ellipse cx="55" cy="28" rx="42" ry="15" fill="url(#canLipG)" stroke="#f1f5f4" stroke-width="2.4"/>
-        <ellipse cx="55" cy="29" rx="35" ry="11" fill="url(#canInsideG)" stroke="#5d686a" stroke-width="2.1"/>
-        <g class="can-static-dice" opacity="0.98">
-          <g transform="translate(34 20) rotate(-18)">
-            <rect x="-7" y="-5" width="17" height="17" rx="3.8" fill="#805f00" opacity="0.7" transform="translate(2.3 2.5)"/>
-            <rect x="-8" y="-8" width="17" height="17" rx="3.8" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
-            <ellipse cx="-3" cy="-5" rx="4.1" ry="2.4" fill="rgba(255,255,255,0.44)"/>
-            <g fill="#0f5f32"><circle cx="-3.5" cy="-3.5" r="1.55"/><circle cx="3.5" cy="-3.5" r="1.55"/><circle cx="-3.5" cy="3.5" r="1.55"/><circle cx="3.5" cy="3.5" r="1.55"/></g>
-          </g>
-          <g transform="translate(48 14) rotate(8)">
-            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#062c18" opacity="0.75" transform="translate(2.3 2.5)"/>
-            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#0f6f38" stroke="#0a4c28" stroke-width="0.75"/>
-            <ellipse cx="-3" cy="-6" rx="4.3" ry="2.4" fill="rgba(255,255,255,0.28)"/>
-            <g fill="#f5c800"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="-4" r="1.55"/><circle cx="-4" cy="0" r="1.55"/><circle cx="4" cy="0" r="1.55"/><circle cx="-4" cy="4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
-          </g>
-          <g transform="translate(63 18) rotate(19)">
-            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#805f00" opacity="0.7" transform="translate(2.4 2.4)"/>
-            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
-            <ellipse cx="-3" cy="-6" rx="4.2" ry="2.5" fill="rgba(255,255,255,0.44)"/>
-            <g fill="#0f5f32"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
-          </g>
-          <g transform="translate(75 24) rotate(-13)">
-            <rect x="-8" y="-5" width="18" height="18" rx="4" fill="#062c18" opacity="0.75" transform="translate(2.4 2.5)"/>
-            <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#0f6f38" stroke="#0a4c28" stroke-width="0.75"/>
-            <ellipse cx="-3" cy="-6" rx="4.2" ry="2.5" fill="rgba(255,255,255,0.27)"/>
-            <g fill="#f5c800"><circle cx="-4" cy="-4" r="1.55"/><circle cx="4" cy="-4" r="1.55"/><circle cx="0" cy="0" r="1.55"/><circle cx="-4" cy="4" r="1.55"/><circle cx="4" cy="4" r="1.55"/></g>
-          </g>
-          <g transform="translate(52 31) rotate(-7)">
-            <rect x="-7" y="-5" width="17" height="17" rx="3.8" fill="#805f00" opacity="0.72" transform="translate(2.3 2.5)"/>
-            <rect x="-8" y="-8" width="17" height="17" rx="3.8" fill="#f5c800" stroke="#c49b00" stroke-width="0.75"/>
-            <ellipse cx="-3" cy="-5" rx="4.1" ry="2.4" fill="rgba(255,255,255,0.42)"/>
-            <g fill="#0f5f32"><circle cx="-4" cy="-4" r="1.5"/><circle cx="4" cy="-4" r="1.5"/><circle cx="0" cy="0" r="1.5"/><circle cx="-4" cy="4" r="1.5"/><circle cx="4" cy="4" r="1.5"/></g>
-          </g>
-        </g>
-        <ellipse cx="55" cy="28" rx="38" ry="12" fill="none" stroke="#98a3a4" stroke-width="5" opacity="0.9"/>
-        <ellipse cx="55" cy="28" rx="42" ry="15" fill="none" stroke="#f2f6f5" stroke-width="1.5" opacity="0.92"/>
+        <ellipse cx="60" cy="26" rx="48" ry="16" fill="url(#canMouthG)"/>
+        <path d="M11 25 C11 12 109 12 109 25 L109 37 C109 49 11 49 11 37 Z" fill="url(#canRimG)" stroke="#dce4e4" stroke-width="2.2"/>
+        <ellipse cx="60" cy="24" rx="43" ry="12.5" fill="#2c373a" opacity="0.88"/>
+        <path d="M24 24 C35 16 85 16 96 24 C87 29 33 29 24 24 Z" fill="url(#canLidG)" stroke="#6a7679" stroke-width="1.8"/>
+        <path d="M32 24 C41 20 79 20 88 24" fill="none" stroke="#c7d0d0" stroke-width="1" opacity="0.75"/>
+        <path d="M45 18 L45 12 C45 9 75 9 75 12 L75 18" fill="none" stroke="#657174" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M47 17 L47 13 C47 12 73 12 73 13 L73 17" fill="none" stroke="#bcc6c6" stroke-width="1.4" stroke-linecap="round"/>
+        <ellipse cx="60" cy="36" rx="48" ry="10" fill="none" stroke="#516064" stroke-width="2.6"/>
+        <ellipse cx="60" cy="25" rx="49" ry="16" fill="none" stroke="#eff5f4" stroke-width="1.5" opacity="0.85"/>
       </svg>
       <div class="can-load-pile" id="canLoadPile"></div>
     </div>
@@ -1797,7 +1933,7 @@ body.debug-p0 .debug-badge { display: block; }
 
 </div>
 
-<div class="message" id="message">Yellow Turn - tap ROLL</div>
+<div class="message" id="message">ROLL TO START</div>
 <div class="debug-badge" id="debugBadge">P-0 Autoplay</div>
 
 <!-- Start overlay -->
@@ -1981,11 +2117,11 @@ body.debug-p0 .debug-badge { display: block; }
 
     (DOTS[idx + 1] || []).forEach(([row, col]) => {
       const pip = document.createElementNS(NS, 'circle');
-      pip.setAttribute('cx', f((col - 1) * 6.2));
-      pip.setAttribute('cy', f((row - 1) * 6.2));
-      pip.setAttribute('r', '2.05');
+      pip.setAttribute('cx', f((col - 1) * 6.7));
+      pip.setAttribute('cy', f((row - 1) * 6.7));
+      pip.setAttribute('r', '2.8');
       pip.setAttribute('fill', colors.label);
-      pip.setAttribute('filter', 'drop-shadow(0 0.7px 0 rgba(0,0,0,0.55))');
+      pip.setAttribute('filter', 'drop-shadow(0 0.9px 0 rgba(0,0,0,0.58))');
       g.appendChild(pip);
     });
 
@@ -2183,18 +2319,23 @@ body.debug-p0 .debug-badge { display: block; }
     pocketG.appendChild(make('stop', { offset:'42%', 'stop-color':'#747f80' }));
     pocketG.appendChild(make('stop', { offset:'100%', 'stop-color':'#4a5355' }));
     defs.appendChild(pocketG);
+    const moldedG = make('linearGradient', { id:'moldedG', x1:'0', x2:'1', y1:'0', y2:'1' });
+    moldedG.appendChild(make('stop', { offset:'0%', 'stop-color':'#929d9f' }));
+    moldedG.appendChild(make('stop', { offset:'52%', 'stop-color':'#6d787a' }));
+    moldedG.appendChild(make('stop', { offset:'100%', 'stop-color':'#4a5557' }));
+    defs.appendChild(moldedG);
     const slotInset = make('filter', { id:'slotInset', x:'-28%', y:'-28%', width:'156%', height:'156%' });
     slotInset.appendChild(make('feDropShadow', { dx:'0', dy:'2.1', stdDeviation:'1.35', 'flood-color':'rgba(0,0,0,0.56)' }));
     defs.appendChild(slotInset);
     svg.appendChild(defs);
 
-    const shadow = make('ellipse', { cx, cy:'104', rx:'93', ry:'90', fill:'rgba(0,0,0,0.28)', opacity:'0.72' });
+    const shadow = make('ellipse', { cx, cy:'105', rx:'93', ry:'90', fill:'rgba(0,0,0,0.28)', opacity:'0.7' });
     svg.appendChild(shadow);
     svg.appendChild(make('circle', { cx, cy, r:98, fill:'url(#rimG)', filter:'drop-shadow(0 5px 9px rgba(0,0,0,0.54))' }));
-    svg.appendChild(make('circle', { cx, cy, r:91, fill:'#778384', stroke:'#d0d8d8', 'stroke-width':'2.2' }));
-    svg.appendChild(make('circle', { cx, cy, r:84, fill:'url(#plateG)', stroke:'#3f494b', 'stroke-width':'2.7' }));
-    svg.appendChild(make('circle', { cx, cy, r:75.5, fill:'none', stroke:'#b8c1c1', 'stroke-width':'1.45', opacity:'0.42' }));
-    svg.appendChild(make('circle', { cx, cy, r:65.5, fill:'none', stroke:'#465153', 'stroke-width':'1.45', opacity:'0.52' }));
+    svg.appendChild(make('circle', { cx, cy, r:92, fill:'#5a6668', stroke:'#d0d8d8', 'stroke-width':'2.1' }));
+    svg.appendChild(make('circle', { cx, cy, r:86.5, fill:'#879294', stroke:'#3e494b', 'stroke-width':'2.4' }));
+    svg.appendChild(make('circle', { cx, cy, r:80.5, fill:'url(#plateG)', stroke:'#303a3c', 'stroke-width':'2.1' }));
+    svg.appendChild(make('circle', { cx, cy, r:73.5, fill:'none', stroke:'#b8c1c1', 'stroke-width':'1.2', opacity:'0.33' }));
 
     [
       { x:100, y:11, w:26, h:5, a:0 },
@@ -2209,37 +2350,30 @@ body.debug-p0 .debug-badge { display: block; }
       }));
     });
 
-    const ridge = (x1, y1, x2, y2, w = 5.8) => {
-      svg.appendChild(make('line', {
-        x1:f(x1), y1:f(y1), x2:f(x2), y2:f(y2),
-        stroke:'#3f494b', 'stroke-width':f(w), 'stroke-linecap':'round', opacity:'0.78',
-        'pointer-events':'none'
+    const moldedPanel = d => {
+      svg.appendChild(make('path', {
+        d, fill:'url(#moldedG)', stroke:'#333e40', 'stroke-width':'2.2',
+        'stroke-linejoin':'round', opacity:'0.9', 'pointer-events':'none'
       }));
-      svg.appendChild(make('line', {
-        x1:f(x1), y1:f(y1), x2:f(x2), y2:f(y2),
-        stroke:'#aeb8b8', 'stroke-width':f(Math.max(1.25, w * 0.32)), 'stroke-linecap':'round', opacity:'0.48',
-        'pointer-events':'none'
+      svg.appendChild(make('path', {
+        d, fill:'none', stroke:'#b5bebe', 'stroke-width':'0.95',
+        'stroke-linejoin':'round', opacity:'0.34', 'pointer-events':'none'
       }));
     };
 
-    ridge(60, 36, 83, 76);
-    ridge(140, 36, 117, 76);
-    ridge(35, 100, 83, 100);
-    ridge(165, 100, 117, 100);
-    ridge(61, 164, 84, 124);
-    ridge(139, 164, 116, 124);
-    ridge(91, 35, 91, 165, 3.6);
-    ridge(109, 35, 109, 165, 3.6);
-
-    const chute = make('path', {
-      d:'M82 33 L118 33 L118 80 C112 88 109 94 109 100 C109 106 112 112 118 120 L118 167 L82 167 L82 120 C88 112 91 106 91 100 C91 94 88 88 82 80 Z',
-      fill:'#697475', stroke:'#434d4f', 'stroke-width':'2', opacity:'0.82',
-      'pointer-events':'none'
-    });
-    svg.appendChild(chute);
+    moldedPanel('M76 38 L124 38 L124 78 L114 92 L114 108 L124 122 L124 162 L76 162 L76 122 L86 108 L86 92 L76 78 Z');
+    moldedPanel('M31 75 L63 45 L78 82 L68 99 L31 99 Z');
+    moldedPanel('M169 75 L137 45 L122 82 L132 99 L169 99 Z');
+    moldedPanel('M31 101 L68 101 L78 118 L63 155 L31 125 Z');
+    moldedPanel('M169 101 L132 101 L122 118 L137 155 L169 125 Z');
     svg.appendChild(make('path', {
-      d:'M94 38 L94 82 M106 38 L106 82 M94 118 L94 162 M106 118 L106 162',
-      fill:'none', stroke:'#303a3c', 'stroke-width':'1.4', opacity:'0.38', 'stroke-linecap':'round',
+      d:'M93 43 L93 82 M107 43 L107 82 M93 118 L93 157 M107 118 L107 157',
+      fill:'none', stroke:'#303a3c', 'stroke-width':'1.35', opacity:'0.45', 'stroke-linecap':'round',
+      'pointer-events':'none'
+    }));
+    svg.appendChild(make('path', {
+      d:'M78 98 L122 98',
+      fill:'none', stroke:'#303a3c', 'stroke-width':'1.5', opacity:'0.22', 'stroke-linecap':'round',
       'pointer-events':'none'
     }));
 
@@ -2301,12 +2435,12 @@ body.debug-p0 .debug-badge { display: block; }
     };
 
     const slots = [];
-    slots[0] = addRectSlot({ val:1, x:100, y:48, w:40, h:34, angle:0, textAngle:0, fontSize:18 });
-    slots[1] = addRectSlot({ val:2, x:134, y:77, w:39, h:34, angle:28, textAngle:28, fontSize:17 });
-    slots[2] = addRectSlot({ val:3, x:134, y:126, w:39, h:34, angle:-38, textAngle:-38, fontSize:17 });
-    slots[3] = addRectSlot({ val:4, x:100, y:153, w:42, h:34, angle:0, textAngle:180, fontSize:18 });
-    slots[4] = addRectSlot({ val:5, x:66, y:126, w:39, h:34, angle:38, textAngle:38, fontSize:17 });
-    slots[5] = addRectSlot({ val:6, x:58, y:77, w:39, h:34, angle:-38, textAngle:-38, fontSize:17 });
+    slots[0] = addRectSlot({ val:1, x:100, y:45, w:38, h:31, angle:0, textAngle:0, fontSize:18 });
+    slots[1] = addRectSlot({ val:2, x:144, y:77, w:37, h:32, angle:34, textAngle:34, fontSize:17 });
+    slots[2] = addRectSlot({ val:3, x:143, y:124, w:37, h:32, angle:-39, textAngle:-39, fontSize:17 });
+    slots[3] = addRectSlot({ val:4, x:100, y:155, w:39, h:31, angle:0, textAngle:180, fontSize:18 });
+    slots[4] = addRectSlot({ val:5, x:57, y:124, w:37, h:32, angle:39, textAngle:39, fontSize:17 });
+    slots[5] = addRectSlot({ val:6, x:56, y:77, w:37, h:32, angle:-39, textAngle:-39, fontSize:17 });
 
     slots.forEach(({ slot, label, info }) => {
       slotEls.push(slot);
@@ -2835,7 +2969,7 @@ body.debug-p0 .debug-badge { display: block; }
   }
 
   function clearVictoryEffects() {
-    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero').forEach(el => el.remove());
+    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-dice-floor, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
   }
@@ -2863,6 +2997,28 @@ body.debug-p0 .debug-badge { display: block; }
       overlay.insertBefore(lidHero, overlay.firstChild);
     }
 
+    const canHero = document.createElement('div');
+    canHero.className = 'victory-can-hero';
+    const canSvg = trashCan.querySelector('svg');
+    if (canSvg) canHero.appendChild(canSvg.cloneNode(true));
+    overlay.appendChild(canHero);
+
+    const diceFloor = document.createElement('div');
+    diceFloor.className = 'victory-dice-floor';
+    overlay.appendChild(diceFloor);
+    const floorCount = Math.round(clamp(46 + totalTrashedDice() * 1.3, 58, 96));
+    for (let i = 0; i < floorCount; i++) {
+      const greenChance = winner === 'p2' ? 0.66 : 0.42;
+      const color = Math.random() < greenChance ? 'green' : 'yellow';
+      const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-floor-die');
+      die.style.left = (3 + Math.random() * 94).toFixed(1) + '%';
+      die.style.top = (40 + Math.random() * 56).toFixed(1) + '%';
+      die.style.setProperty('--r', Math.round(-30 + Math.random() * 60) + 'deg');
+      die.style.setProperty('--s', (0.8 + Math.random() * 0.5).toFixed(2));
+      die.style.setProperty('--d', Math.round(Math.random() * 1200) + 'ms');
+      diceFloor.appendChild(die);
+    }
+
     boardWrap.classList.remove('game-win-spin');
     void boardWrap.offsetWidth;
     boardWrap.classList.add('game-win-spin');
@@ -2880,20 +3036,21 @@ body.debug-p0 .debug-badge { display: block; }
       Audio.megaWinFanfare();
     }
 
-    const canR = trashCan.getBoundingClientRect();
+    const sourceR = canHero.childElementCount ? canHero.getBoundingClientRect() : trashCan.getBoundingClientRect();
+    const canR = sourceR.width > 0 ? sourceR : trashCan.getBoundingClientRect();
     const sx = canR.left + canR.width * 0.5;
     const sy = canR.top + canR.height * 0.23;
-    const burstCount = Math.round(clamp(142 + totalTrashedDice() * 3.2, 160, 240));
+    const burstCount = Math.round(clamp(170 + totalTrashedDice() * 3.6, 190, 280));
     for (let i = 0; i < burstCount; i++) {
       const greenChance = winner === 'p2' ? 0.68 : 0.46;
       const color = Math.random() < greenChance ? 'green' : 'yellow';
       const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-cannon-die victory-persist-die');
       const targetX = clamp(18 + Math.random() * (window.innerWidth - 36), 18, window.innerWidth - 18);
-      const targetY = clamp(20 + Math.random() * (window.innerHeight - 40), 18, window.innerHeight - 18);
+      const targetY = clamp(18 + Math.random() * (window.innerHeight - 36), 18, window.innerHeight - 18);
       const midX = (targetX - sx) * (0.34 + Math.random() * 0.22);
-      const midY = -window.innerHeight * (0.24 + Math.random() * 0.34);
-      const duration = Math.round(760 + Math.random() * 840);
-      const delay = Math.round(i * 2 + Math.random() * 58);
+      const midY = -window.innerHeight * (0.34 + Math.random() * 0.44);
+      const duration = Math.round(900 + Math.random() * 1120);
+      const delay = Math.round(i * 1.4 + Math.random() * 80);
 
       die.style.left = sx + 'px';
       die.style.top = sy + 'px';
@@ -2908,7 +3065,7 @@ body.debug-p0 .debug-badge { display: block; }
       overlay.appendChild(die);
     }
 
-    const settledCount = Math.round(clamp(104 + totalTrashedDice() * 1.7, 126, 180));
+    const settledCount = Math.round(clamp(118 + totalTrashedDice() * 1.9, 140, 210));
     for (let i = 0; i < settledCount; i++) {
       const greenChance = winner === 'p2' ? 0.68 : 0.46;
       const color = Math.random() < greenChance ? 'green' : 'yellow';
@@ -2969,11 +3126,11 @@ body.debug-p0 .debug-badge { display: block; }
     p0Autoplay = !!enabled;
     document.body.classList.toggle('debug-p0', p0Autoplay);
     if (p0Autoplay) {
-      if (announce && gameStarted) setMsg('P-0 autoplay: yellow and green are rolling.');
+      if (announce && gameStarted) setMsg('AUTOPLAY ON');
       scheduleP0Autoplay();
     } else {
       clearP0Timer();
-      if (announce && gameStarted && current === 'p1') setMsg('Yellow Turn - tap ROLL');
+      if (announce && gameStarted && current === 'p1') setMsg('YELLOW ROLL');
     }
     return p0Autoplay;
   }
@@ -3018,7 +3175,7 @@ body.debug-p0 .debug-badge { display: block; }
     gameStarted = true;
 
     clearVictoryEffects();
-    overlay.classList.remove('show', 'victory', 'loss');
+    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green');
 
     requestAnimationFrame(() => {
       buildSlots();
@@ -3028,7 +3185,7 @@ body.debug-p0 .debug-badge { display: block; }
       renderDie(opener.p1, 'p1', 'yellow');
       renderDie(opener.p2, 'p2', 'green');
       syncUI();
-      setMsg(`Opening roll: Yellow ${opener.p1}, Green ${opener.p2} - ${PLAYER_NAME[current]} starts.`);
+      setMsg(`${PLAYER_NAME[current].toUpperCase()} STARTS`);
       if (current === 'p1') clearDie('p1');
       rollBtn.disabled = current !== 'p1';
       if (current === 'p2') setTimeout(() => doRoll(), 1150);
@@ -3077,7 +3234,7 @@ body.debug-p0 .debug-badge { display: block; }
       Audio.rollResolve(value);
       const idx   = value - 1;
       const taken = board[idx] !== null;
-      setMsg(`${PLAYER_NAME[current]} rolled a ${value}...`);
+      setMsg(`ROLLED ${value}`);
       setTimeout(() => {
         taken
           ? travelRolledDieToTrash(current, rollColor, () => handleTrash(value, idx, rollColor))
@@ -3094,7 +3251,7 @@ body.debug-p0 .debug-badge { display: block; }
     slot.classList.add('anim-place');
     slot.addEventListener('animationend', () => slot.classList.remove('anim-place'), { once: true });
 
-    setMsg(`${PLAYER_NAME[current]} placed a ${value} on the lid!`, 'ok');
+    setMsg(`LID ${value}!`, 'ok');
     Audio.placeClink();
     Audio.placeFanfare(color);
     triggerLidPlacePulse(color, idx);
@@ -3120,8 +3277,7 @@ body.debug-p0 .debug-badge { display: block; }
     slot.classList.add('anim-trash');
     slot.addEventListener('animationend', () => slot.classList.remove('anim-trash'), { once:true });
 
-    const owner = board[idx].player === 'p1' ? 'a yellow die' : 'a green die';
-    setMsg(`${PLAYER_NAME[current]} rolled a ${value} - that space has ${owner}! TRASHED!`, 'trash');
+    setMsg(`TRASH ${value}!`, 'trash');
     const canLoad = totalTrashedDice();
     triggerTrashCanImpact(canLoad);
     Audio.trashCrash(canLoad);
@@ -3231,7 +3387,7 @@ body.debug-p0 .debug-badge { display: block; }
     const spillLoad = claimedDice.length;
     const spillDuration = spillDurationForDice(spillLoad);
 
-    setMsg(`${PLAYER_NAME[winner]} wins the round - ${claimedDice.length} dice spill into ${PLAYER_NAME[winner].toLowerCase()} pile!`, 'win');
+    setMsg(`${PLAYER_NAME[winner].toUpperCase()} WINS THE ROUND!`, 'win');
 
     // Flash
     roundFlash.className = '';
@@ -3274,7 +3430,7 @@ body.debug-p0 .debug-badge { display: block; }
         rollBtn.disabled = true;
         setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
       } else {
-        setMsg(`Round ${round} - Yellow Turn!`);
+        setMsg('YELLOW ROLL');
         rollBtn.disabled = false;
         busy = false;
         scheduleP0Autoplay();
@@ -3285,12 +3441,16 @@ body.debug-p0 .debug-badge { display: block; }
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
     clearP0Timer();
+    busy = true;
     const playerWon = winner === 'p1';
-    overlayTitle.innerHTML = playerWon ? 'YELLOW WINS!' : 'GREEN WINS!';
-    overlaySub.textContent = playerWon ? 'Roll. Collect. Avoid the trash.' : 'ROLL, WIN, AVOID THE BIN!';
+    overlayTitle.innerHTML = playerWon
+      ? '<span class="win-line">YELLOW DICE</span><span class="win-line">WIN!</span>'
+      : '<span class="win-line">GREEN DICE</span><span class="win-line">WIN!</span>';
+    overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
     overlayStats.textContent = '';
-    overlay.classList.remove('victory', 'loss');
-    overlay.classList.add(playerWon ? 'victory' : 'loss');
+    playAgainBtn.textContent = 'ROLL AGAIN';
+    overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green');
+    overlay.classList.add('victory', playerWon ? 'winner-yellow' : 'winner-green');
     overlay.classList.add('show');
     triggerGameWinCelebration(winner);
   }
@@ -3370,7 +3530,7 @@ body.debug-p0 .debug-badge { display: block; }
       rollBtn.disabled = true;
       setTimeout(() => { busy = false; doRoll(); }, CPU_START_MS);
     } else {
-      setMsg('Yellow Turn - tap ROLL');
+      setMsg('YELLOW ROLL');
       rollBtn.disabled = false;
       busy = false;
       scheduleP0Autoplay();
