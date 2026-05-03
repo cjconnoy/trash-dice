@@ -1184,6 +1184,11 @@ body.debug-p0 .debug-badge { display: block; }
   overflow: visible;
   transform: perspective(520px) rotateY(-4deg);
   transform-origin: 50% 54%;
+  animation: canSlowTurntable 7.8s ease-in-out infinite;
+  will-change: transform;
+}
+body.fast-preview .trash-can svg {
+  animation-duration: 11.5s;
 }
 .can-hero-glint,
 .can-rim-glint {
@@ -1309,6 +1314,17 @@ body.debug-p0 .debug-badge { display: block; }
   28%     { transform: translate(-50%, -44%) rotate(8deg) scale(0.96); filter: drop-shadow(0 18px 20px rgba(0,0,0,0.68)); }
   48%     { transform: translate(-50%, -56%) rotate(-5deg) scale(1.18); filter: drop-shadow(0 0 30px rgba(94,232,94,0.82)); }
   72%     { transform: translate(-50%, -49%) rotate(3deg) scale(1.04); }
+}
+@keyframes canSlowTurntable {
+  0%, 100% {
+    transform: perspective(520px) rotateY(-7deg) rotateZ(-0.35deg) translateY(0);
+  }
+  36% {
+    transform: perspective(520px) rotateY(5.5deg) rotateZ(0.45deg) translateY(-1px);
+  }
+  64% {
+    transform: perspective(520px) rotateY(2deg) rotateZ(0.18deg) translateY(0);
+  }
 }
 
 .travelling-die {
