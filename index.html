@@ -2236,18 +2236,18 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(235px, 61vw, 330px);
-  height: clamp(235px, 61vw, 330px);
+  width: clamp(292px, 74vw, 438px);
+  height: clamp(212px, 48vw, 278px);
 }
 .start-blob {
   position: absolute; inset: 0;
   z-index: 3;
   background:
-    radial-gradient(circle at 42% 35%, #fffefa 0 24%, #fff8e3 46%, #efe9c4 68%, #d9da97 100%);
-  border-radius: 50%;
+    radial-gradient(ellipse at 43% 34%, #fffefa 0 25%, #fff8e4 48%, #eee9c6 72%, #dcdd9b 100%);
+  border-radius: clamp(30px, 7vw, 48px);
   box-shadow:
     inset 0 0 0 2px rgba(255,255,255,0.44),
-    inset 0 -22px 34px rgba(185,183,105,0.18),
+    inset 0 -20px 30px rgba(185,183,105,0.18),
     0 18px 42px rgba(84,89,16,0.22);
 }
 .start-lurker-can {
@@ -2379,7 +2379,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   -webkit-text-stroke: 0.65px rgba(88,0,0,0.42);
   paint-order: stroke fill;
   border: none;
-  border-radius: 50%;
+  border-radius: clamp(30px, 7vw, 48px);
   font-family: 'Bangers', sans-serif;
   font-size: clamp(1.65rem, 6.4vw, 2.8rem);
   letter-spacing: 0.12em;
@@ -2388,7 +2388,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: clamp(9.1rem, 32vw, 11.4rem);
+  padding-top: clamp(7.7rem, 25vw, 9.6rem);
   text-shadow:
     -0.8px -0.8px 0 rgba(255,164,88,0.34),
     1.4px 1.9px 0 #711006,
@@ -3074,8 +3074,19 @@ body.fast-preview .overlay.victory .play-again-btn {
           </linearGradient>
           <linearGradient id="startCanLidG" x1="0" x2="1" y1="0" y2="1">
             <stop offset="0%" stop-color="#dbe2e1"/>
-            <stop offset="56%" stop-color="#879396"/>
+            <stop offset="42%" stop-color="#b9c3c4"/>
+            <stop offset="70%" stop-color="#727e81"/>
             <stop offset="100%" stop-color="#3f4a4d"/>
+          </linearGradient>
+          <linearGradient id="startCanLidRimG" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#cfd9da"/>
+            <stop offset="54%" stop-color="#758185"/>
+            <stop offset="100%" stop-color="#2f383b"/>
+          </linearGradient>
+          <linearGradient id="startCanLidKnobG" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#f2f6f4"/>
+            <stop offset="56%" stop-color="#8c999b"/>
+            <stop offset="100%" stop-color="#4a5558"/>
           </linearGradient>
         </defs>
         <ellipse cx="36" cy="82" rx="24" ry="4" fill="rgba(37,42,37,0.28)"/>
@@ -3086,9 +3097,12 @@ body.fast-preview .overlay.victory .play-again-btn {
         <path d="M31 19 C34 34 34 62 31 78" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" opacity="0.74"/>
         <ellipse class="start-can-mouth" cx="36" cy="16" rx="28" ry="9" fill="#140f12"/>
         <g class="start-can-lid-chomp">
-          <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
-          <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
-          <path d="M14 13 C24 7 48 7 58 13" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M28 8 C30 2 42 2 44 8 C41 11 31 11 28 8 Z" fill="url(#startCanLidKnobG)" stroke="#dde4e4" stroke-width="1.2"/>
+          <path d="M8 15 C8 6 64 6 64 15 C64 22 8 22 8 15 Z" fill="url(#startCanLidG)" stroke="#e8eeee" stroke-width="1.9"/>
+          <path d="M9 16 C18 23 54 23 63 16 L63 22 C63 31 9 31 9 22 Z" fill="url(#startCanLidRimG)" stroke="#d2dcdd" stroke-width="1.3"/>
+          <path d="M14 13 C24 8 48 8 58 13" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2.1" stroke-linecap="round"/>
+          <path d="M15 18 C25 21 47 21 57 18" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M14 23 C25 29 47 29 58 23" fill="none" stroke="rgba(35,43,45,0.42)" stroke-width="2.2" stroke-linecap="round"/>
         </g>
       </svg>
     </div>
