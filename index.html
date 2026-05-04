@@ -4387,8 +4387,11 @@ body.fast-preview .overlay.victory .play-again-btn {
     roundFlash.className = '';
     void roundFlash.offsetWidth;
     roundFlash.className = 'round-flash ' + winner;
-    triggerTitleRoundWinFanfare(spillDuration);
-    Audio.roundWonFanfare(spillDuration);
+    const fanfareDuration = winner === 'p2'
+      ? clamp(spillDuration * 0.42, 850, 1700)
+      : spillDuration;
+    triggerTitleRoundWinFanfare(fanfareDuration);
+    Audio.roundWonFanfare(fanfareDuration);
 
     // Trash can empties the claimed set into the winner's pile.
     showClaimBadge(winner, claimedDice, spillDuration);
