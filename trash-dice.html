@@ -1170,6 +1170,9 @@ body.p0-mode .p0-review-toggle {
   z-index: 120;
   animation: boardGameWinSpin 2.45s cubic-bezier(.09,.82,.12,1);
 }
+body.player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin) {
+  animation: lidIdleWobble 5.8s cubic-bezier(.16,.82,.18,1) infinite;
+}
 .lid-edge-glint,
 .lid-inner-glint {
   pointer-events: none;
@@ -1330,6 +1333,20 @@ body.p0-mode .p0-review-toggle {
 }
 
 /* ── SHARED TRASH CAN ── */
+@keyframes lidIdleWobble {
+  0%, 53%, 100% {
+    transform: translateX(var(--lid-offset)) rotate(0deg) translateY(0) scale(1);
+  }
+  60% {
+    transform: translateX(var(--lid-offset)) rotate(-1.8deg) translateY(-3px) scale(1.012);
+  }
+  67% {
+    transform: translateX(var(--lid-offset)) rotate(1.3deg) translateY(1px) scale(0.998);
+  }
+  74% {
+    transform: translateX(var(--lid-offset)) rotate(-0.5deg) translateY(0) scale(1.004);
+  }
+}
 .trash-can {
   position: absolute;
   left: calc(50% + var(--can-offset));
@@ -1443,6 +1460,9 @@ body.fast-preview .lid-inner-glint {
   z-index: 122;
   animation: canVictoryErupt 1.35s cubic-bezier(.12,.82,.16,1);
 }
+body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
+  animation: canIdleWobble 6.4s cubic-bezier(.16,.82,.18,1) 0.8s infinite;
+}
 @keyframes canHeroGlintSweep {
   0%, 16%, 48%, 100% {
     opacity: 0;
@@ -1503,6 +1523,20 @@ body.fast-preview .lid-inner-glint {
   58%  { transform: translate(-52%, -56%) rotate(-7deg) scale(1.02); }
   78%  { transform: translate(-49%, -52%) rotate(4deg) scale(1); }
   100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45)); }
+}
+@keyframes canIdleWobble {
+  0%, 56%, 100% {
+    transform: translate(-50%, -50%) rotate(0deg) translateY(0) scale(1);
+  }
+  63% {
+    transform: translate(-50%, -51.5%) rotate(2.3deg) scale(1.012,0.992);
+  }
+  70% {
+    transform: translate(-50%, -49.2%) rotate(-1.5deg) scale(0.996,1.006);
+  }
+  78% {
+    transform: translate(-50%, -50.4%) rotate(0.6deg) scale(1);
+  }
 }
 @keyframes canVictoryErupt {
   0%,100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); filter: drop-shadow(0 8px 10px rgba(0,0,0,0.45)); }
@@ -4446,6 +4480,17 @@ body.fast-preview .overlay.victory .play-again-btn {
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
     renderCanLoad();
+    syncHeroIdleState();
+  }
+
+  function syncHeroIdleState() {
+    const readyForPlayerRoll =
+      gameStarted &&
+      current === 'p1' &&
+      !busy &&
+      !rollBtn.disabled &&
+      !overlay.classList.contains('show');
+    document.body.classList.toggle('player-roll-ready', readyForPlayerRoll);
   }
 
   function setMsg(text, type) {
@@ -4536,6 +4581,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     clearRuntimeTimers();
     clearVictoryEffects();
     stopTitleRoundWinFanfare();
+    document.body.classList.remove('player-roll-ready');
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt');
     trashCan.style.animationDuration = '';
@@ -4567,6 +4613,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       syncUI();
       setMsg('YELLOW STARTS');
       rollBtn.disabled = false;
+      syncHeroIdleState();
       scheduleP0Autoplay(1200);
     });
   }
@@ -4581,6 +4628,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     if (current === 'p1' && rollBtn.disabled) return; // only block human; green rolls freely
     busy = true;
     rollBtn.disabled = true;
+    syncHeroIdleState();
     totalRolls++;
 
     const rollColor = takeDie(current);
@@ -4824,6 +4872,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       setMsg('YELLOW ROLL');
       rollBtn.disabled = false;
       busy = false;
+      syncHeroIdleState();
       scheduleP0Autoplay();
     }, spillDuration + 260);
   }
@@ -4833,6 +4882,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     clearRuntimeTimers();
     stopTitleRoundWinFanfare();
     busy = true;
+    syncHeroIdleState();
     const playerWon = winner === 'p1';
     overlayTitle.innerHTML = playerWon
       ? '<span class="win-line">YELLOW PLAYER</span><span class="win-line">WINS!</span>'
@@ -4942,11 +4992,13 @@ body.fast-preview .overlay.victory .play-again-btn {
     syncUI();
     if (current === 'p2') {
       rollBtn.disabled = true;
+      syncHeroIdleState();
       runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
     } else {
       setMsg('YELLOW ROLL');
       rollBtn.disabled = false;
       busy = false;
+      syncHeroIdleState();
       scheduleP0Autoplay();
     }
   }
