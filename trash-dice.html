@@ -724,7 +724,8 @@ body.p0-mode .p0-review-toggle {
   pointer-events: none;
   z-index: 3;
 }
-.die.rolling::after {
+.die.idle.ready-p1::after,
+.die.idle.ready-p2::after {
   top: -22%;
   left: -64%;
   width: 58%;
@@ -741,10 +742,10 @@ body.p0-mode .p0-review-toggle {
   mix-blend-mode: screen;
   transform: rotate(16deg);
   z-index: 5;
-  filter: drop-shadow(0 0 10px rgba(255,255,255,0.72));
-  animation: dieHeroGlint 0.82s cubic-bezier(.12,.76,.18,1) 0.06s both;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.56));
+  animation: dieIdleHeroGlint 3.2s cubic-bezier(.12,.76,.18,1) 0.55s infinite;
 }
-.die.rolling.p2::after {
+.die.idle.ready-p2::after {
   background:
     linear-gradient(102deg,
       transparent 0%,
@@ -752,10 +753,6 @@ body.p0-mode .p0-review-toggle {
       rgba(222,255,234,0.9) 46%,
       rgba(94,232,94,0.62) 60%,
       transparent 78%);
-}
-.die.roll-resolved::after {
-  z-index: 5;
-  animation: dieResolveGlint 0.42s cubic-bezier(.18,.9,.22,1) both;
 }
 .dot-cell,
 .dot {
@@ -803,37 +800,17 @@ body.p0-mode .p0-review-toggle {
     box-shadow: 8px 8px 0 0 rgba(0,0,0,0.42), 14px 14px 0 0 rgba(0,0,0,0.32), 0 12px 30px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.16);
   }
 }
-@keyframes dieHeroGlint {
-  0% {
+@keyframes dieIdleHeroGlint {
+  0%, 68% {
     opacity: 0;
     transform: translateX(0) rotate(16deg);
   }
-  16% {
-    opacity: 0.95;
+  74% {
+    opacity: 0.78;
   }
-  54% {
-    opacity: 0.82;
-  }
-  100% {
+  88%, 100% {
     opacity: 0;
     transform: translateX(340%) rotate(16deg);
-  }
-}
-@keyframes dieResolveGlint {
-  0% {
-    opacity: 0;
-    transform: scale(0.82);
-    filter: brightness(1);
-  }
-  36% {
-    opacity: 1;
-    transform: scale(1.04);
-    filter: brightness(1.36);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.14);
-    filter: brightness(1);
   }
 }
 @keyframes dieResolvePulse {
