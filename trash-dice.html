@@ -862,39 +862,47 @@ body.p0-mode .p0-review-toggle {
 /* ── ROLL BUTTON ── */
 .roll-btn {
   position: absolute;
-  left: 50%;
-  top: 51%;
+  inset: 0;
   z-index: 7;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 92%;
-  height: 54%;
+  width: 100%;
+  height: 100%;
   border: none;
-  border-radius: 42%;
+  border-radius: 22%;
   background: transparent;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  touch-action: manipulation;
+}
+.roll-btn-label {
+  display: block;
   color: #e3271f;
   font-family: 'Bangers', sans-serif;
   font-size: clamp(2.25rem, 9.8vw, 4.65rem);
   line-height: 0.85;
   letter-spacing: 0.02em;
   padding: 0 0 0.04em;
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%) rotate(-8deg) skewX(-9deg) scale(0.86, 0.72);
+  transform: rotate(-8deg) skewX(-9deg) scale(0.86, 0.72);
   transform-origin: 50% 55%;
   filter: saturate(1.08);
+  pointer-events: none;
   text-shadow:
     -0.8px -0.8px 0 rgba(255,164,88,0.28),
     1.2px 1.6px 0 #711006,
     2.6px 3.1px 0 rgba(75,35,0,0.34);
   -webkit-text-stroke: 0.55px rgba(88,0,0,0.38);
-  transition: opacity 0.18s ease, transform 0.1s ease, text-shadow 0.18s ease;
+  transition: transform 0.1s ease, text-shadow 0.18s ease;
 }
 .die.idle + .roll-btn.p1:not(:disabled) {
   opacity: 1;
   pointer-events: auto;
+}
+.die.idle + .roll-btn.p1:not(:disabled) .roll-btn-label {
   animation: rollInkPulse 1.25s ease-in-out infinite;
 }
 .die.idle + .roll-btn.p1:not(:disabled)::before {
@@ -914,7 +922,10 @@ body.p0-mode .p0-review-toggle {
   animation: none;
 }
 .roll-btn:active:not(:disabled) {
-  transform: translate(-50%, -50%) rotate(-8deg) skewX(-9deg) scale(0.82, 0.68);
+  transform: none;
+}
+.roll-btn:active:not(:disabled) .roll-btn-label {
+  transform: rotate(-8deg) skewX(-9deg) scale(0.82, 0.68);
 }
 .roll-btn:focus-visible {
   outline: 3px solid rgba(245,200,0,0.9);
@@ -925,7 +936,7 @@ body.p0-mode .p0-review-toggle {
 @keyframes rollInkPulse {
   0%,100% {
     opacity: 0.9;
-    transform: translate(-50%, -50%) rotate(-8deg) skewX(-9deg) scale(0.84, 0.7);
+    transform: rotate(-8deg) skewX(-9deg) scale(0.84, 0.7);
     text-shadow:
       -0.8px -0.8px 0 rgba(255,164,88,0.24),
       1.2px 1.6px 0 #711006,
@@ -933,7 +944,7 @@ body.p0-mode .p0-review-toggle {
   }
   48% {
     opacity: 1;
-    transform: translate(-50%, -50%) rotate(-8deg) skewX(-9deg) scale(0.9, 0.76);
+    transform: rotate(-8deg) skewX(-9deg) scale(0.9, 0.76);
     text-shadow:
       -0.8px -0.8px 0 rgba(255,164,88,0.3),
       1.2px 1.6px 0 #711006,
@@ -3005,7 +3016,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   <!-- Yellow player panel — BOTTOM -->
   <div class="player-panel yellow-panel">
     <div class="player-label p1">Yellow Player</div>
-    <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die">ROLL</button></div>
+    <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button></div>
     <div class="inventory-cluster has-status">
       <div class="status-bar yellow-turn" id="p1StatusBar">
         <div class="turn-dot" id="p1TurnDot"></div>
