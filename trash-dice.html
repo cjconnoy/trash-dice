@@ -681,30 +681,30 @@ body.p0-mode .p0-review-toggle {
 }
 .die.idle.ready-p1 {
   background:
-    radial-gradient(ellipse at 31% 18%, rgba(255,255,255,0.92), rgba(255,255,255,0.42) 18%, transparent 38%),
-    radial-gradient(circle at 72% 74%, rgba(91,62,0,0.34), transparent 48%),
-    linear-gradient(150deg, #fff070 0%, #ffd91e 34%, #d79d00 68%, #7a5300 100%);
+    radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.94), rgba(255,255,255,0.46) 18%, transparent 38%),
+    radial-gradient(circle at 74% 76%, rgba(120,75,0,0.18), transparent 52%),
+    linear-gradient(150deg, #fff379 0%, #ffdc25 36%, #efb400 70%, #bd8300 100%);
   box-shadow:
-    8px 9px 0 #8f6900,
-    15px 16px 0 rgba(53,38,0,0.3),
-    0 16px 28px rgba(0,0,0,0.42),
-    inset 2px 2px 0 rgba(255,255,255,0.42),
-    inset -10px -12px 0 rgba(120,82,0,0.16),
-    inset -18px -19px 24px rgba(74,51,0,0.24);
+    8px 9px 0 #7a5700,
+    15px 16px 0 rgba(53,38,0,0.32),
+    0 16px 28px rgba(0,0,0,0.4),
+    inset 2px 2px 0 rgba(255,255,255,0.48),
+    inset 9px 10px 14px rgba(255,244,119,0.18),
+    inset -12px -14px 18px rgba(93,61,0,0.16);
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die.idle.ready-p2 {
   background:
-    radial-gradient(ellipse at 31% 18%, rgba(255,255,255,0.62), rgba(255,255,255,0.18) 20%, transparent 40%),
-    radial-gradient(circle at 72% 74%, rgba(1,25,11,0.48), transparent 50%),
-    linear-gradient(150deg, #20a85d 0%, #0f713b 36%, #074521 70%, #02170a 100%);
+    radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.66), rgba(255,255,255,0.2) 20%, transparent 40%),
+    radial-gradient(circle at 74% 76%, rgba(0,27,12,0.25), transparent 52%),
+    linear-gradient(150deg, #22ae62 0%, #11783f 36%, #0a5529 70%, #063018 100%);
   box-shadow:
-    8px 9px 0 #042612,
-    15px 16px 0 rgba(0,0,0,0.34),
-    0 16px 28px rgba(0,0,0,0.44),
-    inset 2px 2px 0 rgba(255,255,255,0.16),
-    inset -10px -12px 0 rgba(0,0,0,0.18),
-    inset -18px -19px 24px rgba(0,0,0,0.32);
+    8px 9px 0 #032110,
+    15px 16px 0 rgba(0,0,0,0.36),
+    0 16px 28px rgba(0,0,0,0.42),
+    inset 2px 2px 0 rgba(255,255,255,0.18),
+    inset 9px 10px 14px rgba(93,218,132,0.08),
+    inset -12px -14px 18px rgba(0,0,0,0.22);
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die { position: relative; overflow: visible; }
@@ -723,12 +723,12 @@ body.p0-mode .p0-review-toggle {
 .die.idle.ready-p1::before {
   inset: 12% -15% -16% 20%;
   background:
-    linear-gradient(135deg, #d2a400 0%, #8a6500 48%, #4d3400 100%);
+    linear-gradient(135deg, #b98600 0%, #765000 48%, #322000 100%);
 }
 .die.idle.ready-p2::before {
   inset: 12% -15% -16% 20%;
   background:
-    linear-gradient(135deg, #0b562c 0%, #052d16 48%, #010f06 100%);
+    linear-gradient(135deg, #094c25 0%, #042612 48%, #010b04 100%);
 }
 /* Oval gloss highlight */
 .die::after {
@@ -912,15 +912,15 @@ body.p0-mode .p0-review-toggle {
 .die.idle + .roll-btn.p1:not(:disabled)::before {
   content: "";
   position: absolute;
-  inset: 9% 4% 11%;
+  inset: 6% 1% 10%;
   z-index: -1;
   border-radius: 44%;
   background:
-    radial-gradient(ellipse at 42% 34%, rgba(255,209,83,0.18), transparent 48%),
-    linear-gradient(150deg, rgba(92,45,0,0.2), rgba(92,45,0,0.04) 56%, rgba(255,255,255,0.05));
+    radial-gradient(ellipse at 44% 42%, rgba(95,49,0,0.22), rgba(95,49,0,0.1) 42%, transparent 70%),
+    linear-gradient(150deg, rgba(255,222,76,0.1), rgba(92,45,0,0.1) 58%, rgba(65,34,0,0.18));
   box-shadow:
-    inset 1px 1px 2px rgba(92,45,0,0.16),
-    inset -1px -1px 1px rgba(255,236,116,0.12);
+    inset 1px 1px 2px rgba(92,45,0,0.18),
+    inset -1px -1px 1px rgba(255,236,116,0.1);
   transform: skewX(-4deg);
 }
 .roll-btn:disabled {
