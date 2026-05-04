@@ -499,12 +499,13 @@ body.player-roll-ready .player-panel.yellow-panel {
   }
 }
 .player-label {
-  --label-face-hi: #ffe05b;
-  --label-face: #f5c800;
-  --label-face-low: #d8a900;
-  --label-ink: #0f5f32;
-  --label-accent: #fff3b0;
+  --label-main-hi: #ffe96f;
+  --label-main: #f5c800;
+  --label-main-low: #c79a00;
+  --label-contrast: #0f5f32;
+  --label-edge: rgba(15,95,50,0.45);
   --label-side: #8b6900;
+  --label-text-shadow: rgba(15,95,50,0.7);
   --label-glow: rgba(245,200,0,0.28);
   position: relative;
   z-index: 4;
@@ -524,15 +525,15 @@ body.player-roll-ready .player-panel.yellow-panel {
   overflow: visible;
   isolation: isolate;
   transform: rotate(-3deg);
-  color: var(--label-ink);
+  color: var(--label-main);
   background:
-    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,0.66), transparent 42%),
-    linear-gradient(180deg, var(--label-face-hi), var(--label-face) 58%, var(--label-face-low));
+    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,0.9), transparent 42%),
+    linear-gradient(180deg, #fffdf0, #f9f0cc 60%, #eadb9f);
   border: 2px solid rgba(255,243,176,0.9);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.56),
     inset 0 -2px 0 rgba(0,0,0,0.14),
-    0 0 0 1px color-mix(in srgb, var(--label-ink) 55%, transparent),
+    0 0 0 1px var(--label-edge),
     0 4px 0 var(--label-side),
     0 10px 16px rgba(64,54,36,0.18),
     0 0 18px var(--label-glow);
@@ -559,21 +560,23 @@ body.player-roll-ready .player-panel.yellow-panel {
   opacity: 0.72;
 }
 .player-label.p1 {
-  --label-face-hi: #ffe96f;
-  --label-face: #f5c800;
-  --label-face-low: #c79a00;
-  --label-ink: #0f5f32;
-  --label-accent: #0f5f32;
+  --label-main-hi: #ffe96f;
+  --label-main: #f5c800;
+  --label-main-low: #c79a00;
+  --label-contrast: #0f5f32;
+  --label-edge: rgba(15,95,50,0.42);
   --label-side: #8b6900;
+  --label-text-shadow: rgba(15,95,50,0.72);
   --label-glow: rgba(245,200,0,0.34);
 }
 .player-label.p2 {
-  --label-face-hi: #249454;
-  --label-face: #0f6b37;
-  --label-face-low: #073d1e;
-  --label-ink: #f5c800;
-  --label-accent: #f5c800;
+  --label-main-hi: #249454;
+  --label-main: #0f6b37;
+  --label-main-low: #073d1e;
+  --label-contrast: #f5c800;
+  --label-edge: rgba(245,200,0,0.38);
   --label-side: #05331a;
+  --label-text-shadow: rgba(5,51,26,0.74);
   --label-glow: rgba(15,95,50,0.36);
 }
 .label-die {
@@ -584,7 +587,7 @@ body.player-roll-ready .player-panel.yellow-panel {
   border-radius: 28%;
   background:
     radial-gradient(circle at 30% 22%, rgba(255,255,255,0.78), rgba(255,255,255,0.18) 34%, transparent 52%),
-    linear-gradient(145deg, var(--label-accent), color-mix(in srgb, var(--label-accent) 68%, #000 32%));
+    linear-gradient(145deg, var(--label-main-hi), var(--label-main) 52%, var(--label-main-low));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.42),
     inset -3px -4px 7px rgba(0,0,0,0.18),
@@ -599,11 +602,11 @@ body.player-roll-ready .player-panel.yellow-panel {
   width: 0.22rem;
   height: 0.22rem;
   border-radius: 50%;
-  background: var(--label-face-low);
+  background: var(--label-contrast);
   transform: translate(-50%, -50%);
   box-shadow:
-    -0.34rem -0.34rem 0 var(--label-face-low),
-    0.34rem 0.34rem 0 var(--label-face-low);
+    -0.34rem -0.34rem 0 var(--label-contrast),
+    0.34rem 0.34rem 0 var(--label-contrast);
   opacity: 0.9;
 }
 .label-copy {
@@ -617,17 +620,19 @@ body.player-roll-ready .player-panel.yellow-panel {
   font-size: clamp(1.18rem, 4.2vw, 1.72rem);
   letter-spacing: 0.06em;
   line-height: 0.82;
-  color: var(--label-ink);
+  color: var(--label-main);
+  -webkit-text-stroke: 0.45px var(--label-contrast);
   text-shadow:
     0 1px 0 rgba(255,255,255,0.22),
-    1.4px 1.6px 0 rgba(0,0,0,0.22);
+    1.4px 1.6px 0 var(--label-text-shadow);
 }
 .label-role {
   display: block;
   padding: 0.09rem 0.34rem 0.07rem;
   border-radius: 999px;
-  color: var(--label-face);
-  background: color-mix(in srgb, var(--label-ink) 86%, #000 14%);
+  color: var(--label-contrast);
+  background: var(--label-main);
+  border: 1px solid var(--label-edge);
   font-size: clamp(0.46rem, 1.56vw, 0.62rem);
   letter-spacing: 0.14em;
   line-height: 1;
