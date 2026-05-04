@@ -2272,6 +2272,16 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   height: auto;
   overflow: visible;
 }
+.start-can-mouth {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: startCanMouthOpen 0.36s steps(2, end) infinite;
+}
+.start-can-lid-chomp {
+  transform-box: fill-box;
+  transform-origin: 50% 78%;
+  animation: startCanChomp 0.36s steps(2, end) infinite;
+}
 .start-dice-row {
   position: relative;
   display: flex;
@@ -2422,6 +2432,24 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
   100% {
     transform: translate(calc(50vw + 130px), 4%) rotate(-7deg) scale(0.92);
+  }
+}
+@keyframes startCanChomp {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-12deg);
+  }
+}
+@keyframes startCanMouthOpen {
+  0%, 100% {
+    opacity: 0.28;
+    transform: scaleY(0.36);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.25);
   }
 }
 @keyframes startGreenWobble {
@@ -3000,9 +3028,12 @@ body.fast-preview .overlay.victory .play-again-btn {
         <path d="M22 40 C30 38 42 38 50 41" fill="none" stroke="#0f5f32" stroke-width="4.4" stroke-linecap="round" opacity="0.86"/>
         <path d="M18 28 C27 31 45 31 54 28 M18 61 C27 65 45 65 54 61 M19 69 C28 72 44 72 53 69" fill="none" stroke="#586568" stroke-width="2.3" opacity="0.72"/>
         <path d="M31 19 C34 34 34 62 31 78" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" opacity="0.74"/>
-        <ellipse cx="36" cy="15" rx="28" ry="9" fill="#263236" opacity="0.94"/>
-        <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
-        <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
+        <ellipse class="start-can-mouth" cx="36" cy="16" rx="27" ry="8" fill="#172326"/>
+        <g class="start-can-lid-chomp">
+          <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
+          <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
+          <path d="M14 13 C24 7 48 7 58 13" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="2" stroke-linecap="round"/>
+        </g>
       </svg>
     </div>
     <div class="start-dice-row">
