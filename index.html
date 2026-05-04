@@ -886,6 +886,12 @@ body.p0-mode .p0-review-toggle {
     inset 1px 1px 2px rgba(0,0,0,0.62),
     0 1px 0 rgba(255,255,255,0.12);
 }
+.die.idle .dot.idle-preview-dot {
+  width: clamp(14px, 4vw, 20px);
+  height: clamp(14px, 4vw, 20px);
+  opacity: 0.82;
+  transform: translateY(1px);
+}
 
 /* ── ROLL BUTTON ── */
 .roll-btn {
@@ -3849,7 +3855,20 @@ body.fast-preview .overlay.victory .play-again-btn {
     targets.forEach(target => {
       target.el.className = `die idle ready-${target.player}`;
       target.el.style.opacity = '';
-      target.el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
+      const previewValue = target.player === 'p1' ? 5 : 3;
+      target.el.innerHTML = '';
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          const cell = document.createElement('div');
+          cell.className = 'dot-cell';
+          if ((DOTS[previewValue] || []).some(([dr, dc]) => dr === row && dc === col)) {
+            const dot = document.createElement('div');
+            dot.className = 'dot idle-preview-dot';
+            cell.appendChild(dot);
+          }
+          target.el.appendChild(cell);
+        }
+      }
     });
   }
 
