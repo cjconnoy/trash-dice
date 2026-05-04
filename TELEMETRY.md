@@ -542,3 +542,25 @@ CJ direction addressed:
 
 Verification:
 - Inline script syntax check passed for `index.html`.
+
+---
+
+## 2026-05-04 1ST PLAYABLE MOBILE REVIEW HARDENING PASS
+
+Event ID: `trash-dice-first-playable-mobile-review-hardening-20260504`
+
+Approximate active elapsed: ~45 minutes for self-directed issue scan, desktop preview verification, headless iPhone-size LAN capture, implementation, mirroring, commit, and push.
+
+CJ direction addressed:
+- Responded to CJ's direction to aggressively address open issues without creating technical work for CJ.
+- Removed a mobile-review workflow trap: LAN preview URLs now default to the low-power `fast-preview` path unless `fullfx` is explicitly requested.
+- Tuned the trash-can hero glint so it reads as surface shine behind the printed label instead of washing over the can wordmark.
+- Preserved the current simplified panel direction: no Green/Yellow player label blocks, narrower panels, and larger/more readable pool dice.
+- Updated the Game 2 handoff package with the current Trash Dice state, current pushed HEAD, mobile review link, Slack channel ID, and performance guardrails.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the simplified panels and no page console errors.
+- Headless Chrome iPhone-size LAN capture at `http://192.168.86.48:5175/index.html` reported `fast-preview player-roll-ready`, no scroll overflow, no P0 review control on mobile, and visible gameplay copy.
