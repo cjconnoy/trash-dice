@@ -2057,6 +2057,17 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     inset 0 -4px 7px rgba(40,52,47,0.13);
 }
 .inventory-cluster.has-status {
+  padding-top: clamp(1.42rem, 4.2vw, 1.84rem);
+}
+.inventory-cluster.has-status .status-bar {
+  top: clamp(0.24rem, 0.9vw, 0.38rem);
+  transform: translateX(-50%) scale(0.94);
+}
+.inventory-cluster.has-status .status-bar.active {
+  transform: translateX(-50%) scale(1);
+}
+.inventory-cluster.has-status .panel-pile {
+  align-content: flex-start;
   padding-top: 0;
 }
 .panel-pile {
