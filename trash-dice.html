@@ -680,33 +680,15 @@ body.p0-mode .p0-review-toggle {
   transform: none;
 }
 .die.idle.ready-p1 {
-  background:
-    radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.94), rgba(255,255,255,0.46) 18%, transparent 38%),
-    radial-gradient(ellipse at 58% 53%, rgba(255,229,65,0.62), rgba(255,213,35,0.34) 36%, transparent 66%),
-    radial-gradient(circle at 91% 88%, rgba(94,57,0,0.1), transparent 34%),
-    linear-gradient(150deg, #fff682 0%, #ffe34b 36%, #f7ca20 72%, #dfaa10 100%);
+  background: transparent;
   box-shadow:
-    8px 9px 0 #6d4a00,
-    15px 16px 0 rgba(53,38,0,0.32),
-    0 16px 28px rgba(0,0,0,0.4),
-    inset 2px 2px 0 rgba(255,255,255,0.48),
-    inset 10px 10px 16px rgba(255,247,132,0.24),
-    inset -10px -12px 16px rgba(93,61,0,0.1);
+    0 15px 24px rgba(0,0,0,0.36);
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die.idle.ready-p2 {
-  background:
-    radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.66), rgba(255,255,255,0.2) 20%, transparent 40%),
-    radial-gradient(ellipse at 58% 53%, rgba(42,178,94,0.26), rgba(18,120,62,0.14) 38%, transparent 66%),
-    radial-gradient(circle at 91% 88%, rgba(0,20,8,0.2), transparent 34%),
-    linear-gradient(150deg, #23b365 0%, #147f45 36%, #0d602f 72%, #0a421f 100%);
+  background: transparent;
   box-shadow:
-    8px 9px 0 #032110,
-    15px 16px 0 rgba(0,0,0,0.36),
-    0 16px 28px rgba(0,0,0,0.42),
-    inset 2px 2px 0 rgba(255,255,255,0.18),
-    inset 9px 10px 14px rgba(93,218,132,0.08),
-    inset -12px -14px 18px rgba(0,0,0,0.22);
+    0 15px 24px rgba(0,0,0,0.38);
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die { position: relative; overflow: visible; }
@@ -723,14 +705,10 @@ body.p0-mode .p0-review-toggle {
 .die.p2::before { background: linear-gradient(135deg, #0b552b 0%, #062d16 54%, #021007 100%); }
 .die.idle::before { background: linear-gradient(135deg, #3d4546 0%, #222829 54%, #111 100%); }
 .die.idle.ready-p1::before {
-  inset: 12% -15% -16% 20%;
-  background:
-    linear-gradient(135deg, #a06f00 0%, #6a4700 48%, #2b1b00 100%);
+  content: none;
 }
 .die.idle.ready-p2::before {
-  inset: 12% -15% -16% 20%;
-  background:
-    linear-gradient(135deg, #094c25 0%, #042612 48%, #010b04 100%);
+  content: none;
 }
 /* Oval gloss highlight */
 .die::after {
@@ -745,33 +723,38 @@ body.p0-mode .p0-review-toggle {
 }
 .die.idle.ready-p1::after,
 .die.idle.ready-p2::after {
-  top: -22%;
-  left: -64%;
-  width: 58%;
-  height: 154%;
-  border-radius: 999px;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 22%;
+  opacity: 1;
+  mix-blend-mode: normal;
+  transform: none;
+  z-index: 3;
+  filter: none;
+  animation: none;
+}
+.die.idle.ready-p1::after {
   background:
-    linear-gradient(102deg,
-      transparent 0%,
-      rgba(255,255,255,0.14) 24%,
-      rgba(255,255,255,0.96) 46%,
-      rgba(255,244,168,0.72) 58%,
-      transparent 78%);
-  opacity: 0;
-  mix-blend-mode: screen;
-  transform: rotate(16deg);
-  z-index: 5;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.56));
-  animation: dieIdleHeroGlint 3.2s cubic-bezier(.12,.76,.18,1) 0.55s infinite;
+    radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.96), rgba(255,255,255,0.52) 18%, transparent 39%),
+    linear-gradient(150deg, #fff678 0%, #ffe04a 40%, #f8cf22 74%, #f0bd11 100%);
+  box-shadow:
+    3px 3px 0 #b77f00,
+    6px 7px 0 rgba(75,49,0,0.16),
+    inset 2px 2px 0 rgba(255,255,255,0.54),
+    inset 8px 9px 14px rgba(255,248,126,0.22),
+    inset -4px -5px 8px rgba(88,55,0,0.06);
 }
 .die.idle.ready-p2::after {
   background:
-    linear-gradient(102deg,
-      transparent 0%,
-      rgba(255,255,255,0.1) 24%,
-      rgba(222,255,234,0.9) 46%,
-      rgba(94,232,94,0.62) 60%,
-      transparent 78%);
+    radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.68), rgba(255,255,255,0.22) 20%, transparent 40%),
+    linear-gradient(150deg, #24b765 0%, #16884a 40%, #106f39 74%, #0d5b2d 100%);
+  box-shadow:
+    3px 3px 0 #06451f,
+    6px 7px 0 rgba(0,0,0,0.18),
+    inset 2px 2px 0 rgba(255,255,255,0.18),
+    inset 8px 9px 14px rgba(93,218,132,0.08),
+    inset -6px -8px 12px rgba(0,0,0,0.12);
 }
 .dot-cell,
 .dot {
@@ -917,12 +900,8 @@ body.p0-mode .p0-review-toggle {
   inset: 10% 5% 12%;
   z-index: -1;
   border-radius: 44%;
-  background:
-    radial-gradient(ellipse at 44% 42%, rgba(95,49,0,0.1), rgba(95,49,0,0.04) 42%, transparent 70%),
-    linear-gradient(150deg, rgba(255,232,93,0.14), rgba(118,67,0,0.04) 58%, rgba(65,34,0,0.07));
-  box-shadow:
-    inset 1px 1px 2px rgba(92,45,0,0.12),
-    inset -1px -1px 1px rgba(255,236,116,0.12);
+  background: transparent;
+  box-shadow: none;
   transform: skewX(-4deg);
 }
 .roll-btn:disabled {
