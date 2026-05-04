@@ -682,21 +682,31 @@ body.p0-mode .p0-review-toggle {
 }
 .die.idle.ready-p1 {
   background:
-    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.78), rgba(255,255,255,0.2) 26%, transparent 42%),
-    linear-gradient(145deg, #ffe86a 0%, #f5c800 52%, #ad8500 100%);
+    radial-gradient(ellipse at 31% 18%, rgba(255,255,255,0.92), rgba(255,255,255,0.42) 18%, transparent 38%),
+    radial-gradient(circle at 72% 74%, rgba(91,62,0,0.34), transparent 48%),
+    linear-gradient(150deg, #fff070 0%, #ffd91e 34%, #d79d00 68%, #7a5300 100%);
   box-shadow:
-    7px 8px 0 #8f6900,
-    0 14px 26px rgba(0,0,0,0.42),
-    inset -10px -12px 18px rgba(86,59,0,0.2);
+    8px 9px 0 #8f6900,
+    15px 16px 0 rgba(53,38,0,0.3),
+    0 16px 28px rgba(0,0,0,0.42),
+    inset 2px 2px 0 rgba(255,255,255,0.42),
+    inset -10px -12px 0 rgba(120,82,0,0.16),
+    inset -18px -19px 24px rgba(74,51,0,0.24);
+  transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die.idle.ready-p2 {
   background:
-    radial-gradient(circle at 28% 20%, rgba(255,255,255,0.54), rgba(255,255,255,0.12) 28%, transparent 44%),
-    linear-gradient(145deg, #18864a 0%, #0f5f32 58%, #052916 100%);
+    radial-gradient(ellipse at 31% 18%, rgba(255,255,255,0.62), rgba(255,255,255,0.18) 20%, transparent 40%),
+    radial-gradient(circle at 72% 74%, rgba(1,25,11,0.48), transparent 50%),
+    linear-gradient(150deg, #20a85d 0%, #0f713b 36%, #074521 70%, #02170a 100%);
   box-shadow:
-    7px 8px 0 #042612,
-    0 14px 26px rgba(0,0,0,0.44),
-    inset -10px -12px 18px rgba(0,0,0,0.28);
+    8px 9px 0 #042612,
+    15px 16px 0 rgba(0,0,0,0.34),
+    0 16px 28px rgba(0,0,0,0.44),
+    inset 2px 2px 0 rgba(255,255,255,0.16),
+    inset -10px -12px 0 rgba(0,0,0,0.18),
+    inset -18px -19px 24px rgba(0,0,0,0.32);
+  transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die { position: relative; overflow: visible; }
 .die::before {
@@ -711,8 +721,16 @@ body.p0-mode .p0-review-toggle {
 .die.p1::before { background: linear-gradient(135deg, #d3a900 0%, #8a6800 54%, #5f4300 100%); }
 .die.p2::before { background: linear-gradient(135deg, #0b552b 0%, #062d16 54%, #021007 100%); }
 .die.idle::before { background: linear-gradient(135deg, #3d4546 0%, #222829 54%, #111 100%); }
-.die.idle.ready-p1::before { background: linear-gradient(135deg, #d3a900 0%, #8a6800 54%, #5f4300 100%); }
-.die.idle.ready-p2::before { background: linear-gradient(135deg, #0b552b 0%, #062d16 54%, #021007 100%); }
+.die.idle.ready-p1::before {
+  inset: 12% -15% -16% 20%;
+  background:
+    linear-gradient(135deg, #d2a400 0%, #8a6500 48%, #4d3400 100%);
+}
+.die.idle.ready-p2::before {
+  inset: 12% -15% -16% 20%;
+  background:
+    linear-gradient(135deg, #0b562c 0%, #052d16 48%, #010f06 100%);
+}
 /* Oval gloss highlight */
 .die::after {
   content: '';
@@ -854,6 +872,20 @@ body.p0-mode .p0-review-toggle {
 }
 .die.p2 .dot { background: var(--green-pip); }
 .die.idle .dot { background: #555; }
+.die.idle.ready-p1 .dot {
+  background:
+    radial-gradient(circle at 34% 28%, #1c7b40 0 18%, var(--yellow-pip) 48%, #06391e 100%);
+  box-shadow:
+    inset 1px 1px 2px rgba(0,0,0,0.56),
+    0 1px 0 rgba(255,255,255,0.22);
+}
+.die.idle.ready-p2 .dot {
+  background:
+    radial-gradient(circle at 34% 28%, #ffe86a 0 20%, var(--green-pip) 50%, #b48500 100%);
+  box-shadow:
+    inset 1px 1px 2px rgba(0,0,0,0.62),
+    0 1px 0 rgba(255,255,255,0.12);
+}
 
 /* ── ROLL BUTTON ── */
 .roll-btn {
