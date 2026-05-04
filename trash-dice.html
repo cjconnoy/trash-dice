@@ -1338,9 +1338,6 @@ body.p0-mode .p0-review-toggle {
 .trash-can text {
   text-rendering: geometricPrecision;
 }
-.can-label-logo text {
-  vector-effect: non-scaling-stroke;
-}
 body.fast-preview .trash-can svg {
   animation: none;
   will-change: auto;
@@ -2964,16 +2961,20 @@ body.fast-preview .overlay.victory .play-again-btn {
           <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
           <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.2)" stroke-width="1" opacity="0.46"/>
           </g>
-          <g class="can-label-logo" filter="url(#labelShadow)">
-            <g transform="translate(15.5 70) rotate(-2.4 45 27)">
-              <text class="logo-outer" x="1.5" y="23" font-size="31.6" stroke-width="5" textLength="88" lengthAdjust="spacing">Trash</text>
-              <text class="logo-warm-shadow" x="3" y="24.25" font-size="31.6" stroke-width="1.85" textLength="88" lengthAdjust="spacing">Trash</text>
-              <text class="logo-face" x="1.5" y="23" font-size="31.6" stroke-width="1.45" textLength="88" lengthAdjust="spacing">Trash</text>
-              <text class="logo-outer" x="13" y="51.5" font-size="35.6" stroke-width="5.05" textLength="72" lengthAdjust="spacing">Dice</text>
-              <text class="logo-warm-shadow" x="14.5" y="52.75" font-size="35.6" stroke-width="1.9" textLength="72" lengthAdjust="spacing">Dice</text>
-              <text class="logo-face" x="13" y="51.5" font-size="35.6" stroke-width="1.5" textLength="72" lengthAdjust="spacing">Dice</text>
+          <g class="can-label-logo" clip-path="url(#labelClip)" filter="url(#labelShadow)">
+            <g transform="translate(7.8 66) scale(0.34)">
+              <g transform="rotate(-5 160 76)">
+                <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
+                <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
+                <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+                <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+                <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
+                <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+                <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+                <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
+                <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
+              </g>
             </g>
-            <path d="M26 119 C42 123 78 123 94 119" fill="none" stroke="#fff3b0" stroke-width="1.7" opacity="0.85"/>
           </g>
 
           <path d="M14 128 C29 134 91 134 106 128" fill="none" stroke="#586568" stroke-width="3.1"/>
