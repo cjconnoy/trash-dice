@@ -682,22 +682,24 @@ body.p0-mode .p0-review-toggle {
 .die.idle.ready-p1 {
   background:
     radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.94), rgba(255,255,255,0.46) 18%, transparent 38%),
-    radial-gradient(circle at 74% 76%, rgba(120,75,0,0.18), transparent 52%),
-    linear-gradient(150deg, #fff379 0%, #ffdc25 36%, #efb400 70%, #bd8300 100%);
+    radial-gradient(ellipse at 58% 53%, rgba(255,229,65,0.62), rgba(255,213,35,0.34) 36%, transparent 66%),
+    radial-gradient(circle at 91% 88%, rgba(94,57,0,0.1), transparent 34%),
+    linear-gradient(150deg, #fff682 0%, #ffe34b 36%, #f7ca20 72%, #dfaa10 100%);
   box-shadow:
-    8px 9px 0 #7a5700,
+    8px 9px 0 #6d4a00,
     15px 16px 0 rgba(53,38,0,0.32),
     0 16px 28px rgba(0,0,0,0.4),
     inset 2px 2px 0 rgba(255,255,255,0.48),
-    inset 9px 10px 14px rgba(255,244,119,0.18),
-    inset -12px -14px 18px rgba(93,61,0,0.16);
+    inset 10px 10px 16px rgba(255,247,132,0.24),
+    inset -10px -12px 16px rgba(93,61,0,0.1);
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die.idle.ready-p2 {
   background:
     radial-gradient(ellipse at 30% 18%, rgba(255,255,255,0.66), rgba(255,255,255,0.2) 20%, transparent 40%),
-    radial-gradient(circle at 74% 76%, rgba(0,27,12,0.25), transparent 52%),
-    linear-gradient(150deg, #22ae62 0%, #11783f 36%, #0a5529 70%, #063018 100%);
+    radial-gradient(ellipse at 58% 53%, rgba(42,178,94,0.26), rgba(18,120,62,0.14) 38%, transparent 66%),
+    radial-gradient(circle at 91% 88%, rgba(0,20,8,0.2), transparent 34%),
+    linear-gradient(150deg, #23b365 0%, #147f45 36%, #0d602f 72%, #0a421f 100%);
   box-shadow:
     8px 9px 0 #032110,
     15px 16px 0 rgba(0,0,0,0.36),
@@ -723,7 +725,7 @@ body.p0-mode .p0-review-toggle {
 .die.idle.ready-p1::before {
   inset: 12% -15% -16% 20%;
   background:
-    linear-gradient(135deg, #b98600 0%, #765000 48%, #322000 100%);
+    linear-gradient(135deg, #a06f00 0%, #6a4700 48%, #2b1b00 100%);
 }
 .die.idle.ready-p2::before {
   inset: 12% -15% -16% 20%;
@@ -912,15 +914,15 @@ body.p0-mode .p0-review-toggle {
 .die.idle + .roll-btn.p1:not(:disabled)::before {
   content: "";
   position: absolute;
-  inset: 6% 1% 10%;
+  inset: 10% 5% 12%;
   z-index: -1;
   border-radius: 44%;
   background:
-    radial-gradient(ellipse at 44% 42%, rgba(95,49,0,0.22), rgba(95,49,0,0.1) 42%, transparent 70%),
-    linear-gradient(150deg, rgba(255,222,76,0.1), rgba(92,45,0,0.1) 58%, rgba(65,34,0,0.18));
+    radial-gradient(ellipse at 44% 42%, rgba(95,49,0,0.1), rgba(95,49,0,0.04) 42%, transparent 70%),
+    linear-gradient(150deg, rgba(255,232,93,0.14), rgba(118,67,0,0.04) 58%, rgba(65,34,0,0.07));
   box-shadow:
-    inset 1px 1px 2px rgba(92,45,0,0.18),
-    inset -1px -1px 1px rgba(255,236,116,0.1);
+    inset 1px 1px 2px rgba(92,45,0,0.12),
+    inset -1px -1px 1px rgba(255,236,116,0.12);
   transform: skewX(-4deg);
 }
 .roll-btn:disabled {
