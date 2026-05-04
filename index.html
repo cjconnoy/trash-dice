@@ -4534,7 +4534,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       scheduleP0Autoplay();
     } else {
       clearP0Timer();
-      if (announce && gameStarted && current === 'p1') setMsg('YELLOW ROLL');
+      if (announce && gameStarted && current === 'p1') setMsg('YELLOW PLAYER ROLL');
     }
     updateP0ReviewControl();
     return p0Autoplay;
@@ -4556,7 +4556,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     clearRuntimeTimers();
     setP0Autoplay(false, false);
     init();
-    setMsg('YELLOW ROLL');
+    setMsg('YELLOW PLAYER ROLL');
     updateP0ReviewControl();
   }
 
@@ -4611,7 +4611,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       current = 'p1';
       clearDie(null);
       syncUI();
-      setMsg('YELLOW STARTS');
+      setMsg('YELLOW PLAYER STARTS');
       rollBtn.disabled = false;
       syncHeroIdleState();
       scheduleP0Autoplay(1200);
@@ -4869,7 +4869,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       current = 'p1';
       clearDie(null);
       syncUI();
-      setMsg('YELLOW ROLL');
+      setMsg('YELLOW PLAYER ROLL');
       rollBtn.disabled = false;
       busy = false;
       syncHeroIdleState();
@@ -4995,7 +4995,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       syncHeroIdleState();
       runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
     } else {
-      setMsg('YELLOW ROLL');
+      setMsg('YELLOW PLAYER ROLL');
       rollBtn.disabled = false;
       busy = false;
       syncHeroIdleState();
