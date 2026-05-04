@@ -874,32 +874,34 @@ body.p0-mode .p0-review-toggle {
 /* ── ROLL BUTTON ── */
 .roll-btn {
   position: absolute;
-  left: 50%;
-  top: 52%;
+  left: 48.5%;
+  top: 50.5%;
   z-index: 7;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 74%;
-  height: 44%;
+  width: 66%;
+  height: 34%;
   border: none;
-  border-radius: 999px 999px 42% 42%;
+  border-radius: 42%;
   background: transparent;
-  color: #ff2424;
+  color: #e3271f;
   font-family: 'Bangers', sans-serif;
-  font-size: clamp(1.55rem, 6.6vw, 2.75rem);
+  font-size: clamp(1.42rem, 5.7vw, 2.38rem);
   line-height: 0.85;
   letter-spacing: 0.02em;
-  padding: 0 0 0.08em;
+  padding: 0 0 0.04em;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%) rotate(-8deg);
+  transform: translate(-50%, -50%) rotate(-8deg) skewX(-8deg) scaleY(0.86);
+  transform-origin: 50% 55%;
+  filter: saturate(1.08);
   text-shadow:
-    1.5px 2px 0 #760909,
-    3px 4px 0 rgba(60,0,0,0.28),
-    0 0 10px rgba(255,36,36,0.42);
-  -webkit-text-stroke: 0.7px rgba(100,0,0,0.32);
+    -0.8px -0.8px 0 rgba(255,164,88,0.28),
+    1.2px 1.6px 0 #711006,
+    2.6px 3.1px 0 rgba(75,35,0,0.34);
+  -webkit-text-stroke: 0.55px rgba(88,0,0,0.38);
   transition: opacity 0.18s ease, transform 0.1s ease, text-shadow 0.18s ease;
 }
 .die.idle + .roll-btn.p1:not(:disabled) {
@@ -910,14 +912,16 @@ body.p0-mode .p0-review-toggle {
 .die.idle + .roll-btn.p1:not(:disabled)::before {
   content: "";
   position: absolute;
-  inset: 8% 4% 10%;
+  inset: -2% -5% 2%;
   z-index: -1;
-  border-radius: 999px 999px 42% 42%;
+  border-radius: 44%;
   background:
-    radial-gradient(ellipse at 35% 20%, rgba(255,255,255,0.25), transparent 42%),
-    linear-gradient(180deg, rgba(112,0,0,0.12), rgba(112,0,0,0.02));
-  filter: blur(0.2px);
-  transform: skewX(-6deg);
+    radial-gradient(ellipse at 42% 34%, rgba(255,209,83,0.18), transparent 48%),
+    linear-gradient(150deg, rgba(92,45,0,0.2), rgba(92,45,0,0.04) 56%, rgba(255,255,255,0.05));
+  box-shadow:
+    inset 1px 1px 2px rgba(92,45,0,0.16),
+    inset -1px -1px 1px rgba(255,236,116,0.12);
+  transform: skewX(-4deg);
 }
 .roll-btn:disabled {
   opacity: 0;
@@ -926,7 +930,7 @@ body.p0-mode .p0-review-toggle {
   animation: none;
 }
 .roll-btn:active:not(:disabled) {
-  transform: translate(-50%, -50%) rotate(-8deg) scale(0.94);
+  transform: translate(-50%, -50%) rotate(-8deg) skewX(-8deg) scale(0.94, 0.82);
 }
 .roll-btn:focus-visible {
   outline: 3px solid rgba(245,200,0,0.9);
@@ -936,21 +940,21 @@ body.p0-mode .p0-review-toggle {
 /* ── ROLL BUTTON PULSE ── */
 @keyframes rollInkPulse {
   0%,100% {
-    opacity: 0.86;
-    transform: translate(-50%, -50%) rotate(-8deg) scale(0.98);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) rotate(-8deg) skewX(-8deg) scale(0.98, 0.84);
     text-shadow:
-      1.5px 2px 0 #760909,
-      3px 4px 0 rgba(60,0,0,0.28),
-      0 0 8px rgba(255,36,36,0.28);
+      -0.8px -0.8px 0 rgba(255,164,88,0.24),
+      1.2px 1.6px 0 #711006,
+      2.4px 2.9px 0 rgba(75,35,0,0.3);
   }
   48% {
     opacity: 1;
-    transform: translate(-50%, -50%) rotate(-8deg) scale(1.055);
+    transform: translate(-50%, -50%) rotate(-8deg) skewX(-8deg) scale(1.03, 0.9);
     text-shadow:
-      1.5px 2px 0 #760909,
-      3px 4px 0 rgba(60,0,0,0.3),
-      0 0 18px rgba(255,36,36,0.7),
-      0 0 28px rgba(245,200,0,0.32);
+      -0.8px -0.8px 0 rgba(255,164,88,0.3),
+      1.2px 1.6px 0 #711006,
+      2.7px 3.2px 0 rgba(75,35,0,0.34),
+      0 0 8px rgba(255,36,36,0.18);
   }
 }
 
