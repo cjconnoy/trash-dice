@@ -2276,17 +2276,12 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   transform-box: fill-box;
   transform-origin: 50% 50%;
   filter: drop-shadow(0 0 5px rgba(217,48,48,0.48));
-  animation: startCanMouthOpen 0.28s steps(2, end) infinite;
+  animation: startCanMouthOpen 0.68s cubic-bezier(.18,.9,.2,1) infinite;
 }
 .start-can-lid-chomp {
   transform-box: fill-box;
   transform-origin: 50% 78%;
-  animation: startCanChomp 0.28s steps(2, end) infinite;
-}
-.start-can-teeth {
-  transform-box: fill-box;
-  transform-origin: 50% 0%;
-  animation: startCanTeethFlash 0.28s steps(2, end) infinite;
+  animation: startCanChomp 0.68s cubic-bezier(.18,.9,.2,1) infinite;
 }
 .start-dice-row {
   position: relative;
@@ -2443,31 +2438,28 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 }
 @keyframes startCanChomp {
-  0%, 100% {
+  0%, 22%, 100% {
     transform: translateY(0) rotate(0deg);
   }
-  50% {
-    transform: translateY(-21px) rotate(-19deg) scale(1.04);
+  52% {
+    transform: translateY(-18px) rotate(-16deg) scale(1.035);
+  }
+  68% {
+    transform: translateY(-3px) rotate(2deg) scale(1);
   }
 }
 @keyframes startCanMouthOpen {
-  0%, 100% {
-    opacity: 0.2;
-    transform: scaleY(0.26);
+  0%, 22%, 100% {
+    opacity: 0.24;
+    transform: scaleY(0.32);
   }
-  50% {
+  52% {
     opacity: 1;
-    transform: scaleY(1.72);
+    transform: scaleY(1.46);
   }
-}
-@keyframes startCanTeethFlash {
-  0%, 100% {
-    opacity: 0.28;
-    transform: translateY(-1px) scaleY(0.72);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(5px) scaleY(1.24);
+  68% {
+    opacity: 0.58;
+    transform: scaleY(0.56);
   }
 }
 @keyframes startGreenWobble {
@@ -2476,46 +2468,46 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   68% { transform: perspective(500px) rotateX(-11deg) rotateY(-8deg) rotateZ(-1.4deg) translateY(2px); }
 }
 @keyframes startYellowStartled {
-  0%, 15%, 30%, 39%, 52%, 70%, 100% {
+  0%, 15%, 30%, 34%, 46%, 70%, 100% {
     transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) translateY(0) scale(1);
   }
   8%, 24% {
     transform: perspective(500px) rotateX(-9deg) rotateY(12deg) rotateZ(-1.5deg) translateY(-2px) scale(1);
   }
-  42.5% {
-    transform: perspective(500px) rotateX(-13deg) rotateY(8deg) rotateZ(2deg) translateY(8px) scale(1.12,0.82);
+  36.5% {
+    transform: perspective(500px) rotateX(-13deg) rotateY(8deg) rotateZ(2deg) translateY(9px) scale(1.15,0.78);
   }
-  45.5% {
-    transform: perspective(500px) rotateX(-4deg) rotateY(18deg) rotateZ(-12deg) translateY(-46px) scale(0.94,1.18);
+  39% {
+    transform: perspective(500px) rotateX(-4deg) rotateY(18deg) rotateZ(-14deg) translateY(-52px) scale(0.92,1.2);
   }
-  48.5% {
-    transform: perspective(500px) rotateX(-16deg) rotateY(7deg) rotateZ(5deg) translateY(10px) scale(1.14,0.8);
+  41.5% {
+    transform: perspective(500px) rotateX(-16deg) rotateY(7deg) rotateZ(6deg) translateY(11px) scale(1.16,0.78);
   }
-  51% {
-    transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(-2deg) translateY(-8px) scale(1.04);
+  43.5% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(-3deg) translateY(-10px) scale(1.05);
   }
   86% {
     transform: perspective(500px) rotateX(-11deg) rotateY(8deg) rotateZ(1.2deg) translateY(1px) scale(1);
   }
 }
 @keyframes startGreenStartled {
-  0%, 18%, 36%, 52%, 67%, 82%, 100% {
+  0%, 18%, 36%, 46%, 59%, 82%, 100% {
     transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(0deg) translateY(0) scale(1);
   }
   10%, 28% {
     transform: perspective(500px) rotateX(-9deg) rotateY(-12deg) rotateZ(1.5deg) translateY(-2px) scale(1);
   }
-  55% {
-    transform: perspective(500px) rotateX(-13deg) rotateY(-8deg) rotateZ(-2deg) translateY(8px) scale(1.12,0.82);
+  48.5% {
+    transform: perspective(500px) rotateX(-13deg) rotateY(-8deg) rotateZ(-2deg) translateY(9px) scale(1.15,0.78);
   }
-  58% {
-    transform: perspective(500px) rotateX(-4deg) rotateY(-18deg) rotateZ(12deg) translateY(-46px) scale(0.94,1.18);
+  51% {
+    transform: perspective(500px) rotateX(-4deg) rotateY(-18deg) rotateZ(14deg) translateY(-52px) scale(0.92,1.2);
   }
-  61% {
-    transform: perspective(500px) rotateX(-16deg) rotateY(-7deg) rotateZ(-5deg) translateY(10px) scale(1.14,0.8);
+  53.5% {
+    transform: perspective(500px) rotateX(-16deg) rotateY(-7deg) rotateZ(-6deg) translateY(11px) scale(1.16,0.78);
   }
-  64% {
-    transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(2deg) translateY(-8px) scale(1.04);
+  55.5% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(3deg) translateY(-10px) scale(1.05);
   }
   90% {
     transform: perspective(500px) rotateX(-11deg) rotateY(-8deg) rotateZ(-1.2deg) translateY(1px) scale(1);
@@ -3097,11 +3089,6 @@ body.fast-preview .overlay.victory .play-again-btn {
           <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
           <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
           <path d="M14 13 C24 7 48 7 58 13" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="2" stroke-linecap="round"/>
-          <g class="start-can-teeth" fill="#fff6c8" stroke="#17361f" stroke-width="0.9" stroke-linejoin="round">
-            <path d="M20 24 L24 35 L28 24 Z"/>
-            <path d="M31 25 L36 39 L41 25 Z"/>
-            <path d="M44 24 L48 35 L52 24 Z"/>
-          </g>
         </g>
       </svg>
     </div>
