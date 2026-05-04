@@ -416,9 +416,9 @@ body.p0-mode .p0-review-toggle {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: clamp(0.25rem, 1.4vw, 0.5rem);
+  gap: clamp(0.42rem, 1.8vw, 0.72rem);
   width: 100%;
-  max-width: 520px;
+  max-width: 460px;
   padding: clamp(0.42rem, 1.5vw, 0.56rem) clamp(0.52rem, 2vw, 0.76rem);
   background:
     radial-gradient(ellipse at 30% 8%, rgba(255,255,255,0.58), transparent 42%),
@@ -498,150 +498,6 @@ body.player-roll-ready .player-panel.yellow-panel {
     filter: brightness(1.03) saturate(1.04);
   }
 }
-.player-label {
-  --label-main-hi: #ffe96f;
-  --label-main: #f5c800;
-  --label-main-low: #c79a00;
-  --label-contrast: #0f5f32;
-  --label-edge: rgba(15,95,50,0.45);
-  --label-side: #8b6900;
-  --label-text-shadow: rgba(15,95,50,0.7);
-  --label-glow: rgba(245,200,0,0.28);
-  position: relative;
-  z-index: 4;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: clamp(0.26rem, 1vw, 0.4rem);
-  justify-content: center;
-  min-width: clamp(7.8rem, 23.8vw, 9.8rem);
-  min-height: clamp(2.32rem, 6.9vw, 2.82rem);
-  padding: 0.28rem 0.62rem 0.28rem 0.42rem;
-  border-radius: 12px 10px 12px 10px;
-  font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  line-height: 0.9;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: visible;
-  isolation: isolate;
-  transform: rotate(-3deg);
-  color: var(--label-main);
-  background:
-    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,0.9), transparent 42%),
-    linear-gradient(180deg, #fffdf0, #f9f0cc 60%, #eadb9f);
-  border: 2px solid rgba(255,243,176,0.9);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.56),
-    inset 0 -2px 0 rgba(0,0,0,0.14),
-    0 0 0 1px var(--label-edge),
-    0 4px 0 var(--label-side),
-    0 10px 16px rgba(64,54,36,0.18),
-    0 0 18px var(--label-glow);
-}
-.player-label::before,
-.player-label::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-}
-.player-label::before {
-  inset: -5px;
-  z-index: -2;
-  border-radius: 15px 13px 15px 13px;
-  background: rgba(255,250,220,0.84);
-  box-shadow: 0 2px 0 rgba(80,58,20,0.16);
-}
-.player-label::after {
-  inset: 3px 6px auto 14px;
-  height: 42%;
-  z-index: -1;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0));
-  opacity: 0.72;
-}
-.player-label.p1 {
-  --label-main-hi: #ffe96f;
-  --label-main: #f5c800;
-  --label-main-low: #c79a00;
-  --label-contrast: #0f5f32;
-  --label-edge: rgba(15,95,50,0.42);
-  --label-side: #8b6900;
-  --label-text-shadow: rgba(15,95,50,0.72);
-  --label-glow: rgba(245,200,0,0.34);
-}
-.player-label.p2 {
-  --label-main-hi: #249454;
-  --label-main: #0f6b37;
-  --label-main-low: #073d1e;
-  --label-contrast: #f5c800;
-  --label-edge: rgba(245,200,0,0.38);
-  --label-side: #05331a;
-  --label-text-shadow: rgba(5,51,26,0.74);
-  --label-glow: rgba(15,95,50,0.36);
-}
-.label-die {
-  position: relative;
-  display: block;
-  width: clamp(1.16rem, 3.5vw, 1.5rem);
-  height: clamp(1.16rem, 3.5vw, 1.5rem);
-  border-radius: 28%;
-  background:
-    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.78), rgba(255,255,255,0.18) 34%, transparent 52%),
-    linear-gradient(145deg, var(--label-main-hi), var(--label-main) 52%, var(--label-main-low));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.42),
-    inset -3px -4px 7px rgba(0,0,0,0.18),
-    2px 2px 0 rgba(0,0,0,0.24);
-  transform: rotate(-7deg);
-}
-.label-die::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0.22rem;
-  height: 0.22rem;
-  border-radius: 50%;
-  background: var(--label-contrast);
-  transform: translate(-50%, -50%);
-  box-shadow:
-    -0.34rem -0.34rem 0 var(--label-contrast),
-    0.34rem 0.34rem 0 var(--label-contrast);
-  opacity: 0.9;
-}
-.label-copy {
-  display: grid;
-  justify-items: center;
-  gap: 0.06rem;
-}
-.label-name {
-  display: block;
-  font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
-  font-size: clamp(1.18rem, 4.2vw, 1.72rem);
-  letter-spacing: 0.06em;
-  line-height: 0.82;
-  color: var(--label-main);
-  -webkit-text-stroke: 0.45px var(--label-contrast);
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.22),
-    1.4px 1.6px 0 var(--label-text-shadow);
-}
-.label-role {
-  display: block;
-  padding: 0.09rem 0.34rem 0.07rem;
-  border-radius: 999px;
-  color: var(--label-contrast);
-  background: var(--label-main);
-  border: 1px solid var(--label-edge);
-  font-size: clamp(0.46rem, 1.56vw, 0.62rem);
-  letter-spacing: 0.14em;
-  line-height: 1;
-  text-shadow: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    0 1px 0 rgba(0,0,0,0.18);
-}
-
 /* dice-pool-visual no longer used in panels — piles live on the mat */
 .mini-die {
   width: 13px; height: 13px;
@@ -2311,12 +2167,12 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
-  min-height: clamp(76px, 20.5vw, 116px);
+  min-height: clamp(78px, 21vw, 118px);
   align-self: stretch;
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  column-gap: clamp(0.45rem, 1.6vw, 0.72rem);
+  column-gap: clamp(0.52rem, 1.9vw, 0.86rem);
   padding: clamp(0.26rem, 1vw, 0.42rem) clamp(0.42rem, 1.4vw, 0.62rem);
   border-radius: 8px;
   background:
@@ -2339,41 +2195,41 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 }
 .inventory-cluster.has-status .panel-pile {
   align-self: end;
-  align-content: flex-start;
+  align-content: center;
   padding-top: 0;
   padding-bottom: 0;
-  min-height: clamp(42px, 10.5vw, 58px);
-  transform: translateY(clamp(0.1rem, 0.8vw, 0.32rem));
+  min-height: clamp(50px, 12vw, 66px);
+  transform: translateY(clamp(0.08rem, 0.55vw, 0.22rem));
 }
 .inventory-cluster.has-status .panel-pile .mini-die {
-  width: clamp(10px, 2.75vw, 14px);
-  height: clamp(10px, 2.75vw, 14px);
+  width: clamp(14px, 3.45vw, 18px);
+  height: clamp(14px, 3.45vw, 18px);
 }
 .inventory-cluster.has-status .panel-pile .mini-pip {
-  width: clamp(2.35px, 0.74vw, 3.5px);
-  height: clamp(2.35px, 0.74vw, 3.5px);
+  width: clamp(3.2px, 0.92vw, 4.5px);
+  height: clamp(3.2px, 0.92vw, 4.5px);
 }
 .panel-pile {
   flex: none;
   width: 100%;
   min-width: 0;
-  min-height: clamp(58px, 15vw, 78px);
+  min-height: clamp(62px, 16vw, 86px);
   overflow: visible;
-  align-content: flex-start;
+  align-content: center;
   align-items: center;
-  justify-content: flex-start;
-  gap: 2px;
-  padding: 7px 0 10px;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 0 9px;
   filter: drop-shadow(0 3px 2px rgba(35,30,21,0.13));
 }
 .panel-pile .mini-die {
-  width: clamp(12px, 3.2vw, 16px);
-  height: clamp(12px, 3.2vw, 16px);
+  width: clamp(15px, 3.9vw, 20px);
+  height: clamp(15px, 3.9vw, 20px);
   border-radius: 22%;
 }
 .panel-pile .mini-pip {
-  width: clamp(2.8px, 0.86vw, 4px);
-  height: clamp(2.8px, 0.86vw, 4px);
+  width: clamp(3.4px, 1vw, 5px);
+  height: clamp(3.4px, 1vw, 5px);
 }
 .mini-die.can-load-die,
 .mini-die.can-pour-die {
@@ -3032,11 +2888,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 <div class="game-area">
 
   <!-- Green player panel — TOP -->
-  <div class="player-panel green-panel">
-    <div class="player-label p2">
-      <span class="label-die" aria-hidden="true"></span>
-      <span class="label-copy"><span class="label-name">Green</span><span class="label-role">Player</span></span>
-    </div>
+  <div class="player-panel green-panel" aria-label="Green player">
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="inventory-cluster">
       <div class="dice-pile panel-pile" id="p2Pile"></div>
@@ -3207,11 +3059,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   </div>
 
   <!-- Yellow player panel — BOTTOM -->
-  <div class="player-panel yellow-panel">
-    <div class="player-label p1">
-      <span class="label-die" aria-hidden="true"></span>
-      <span class="label-copy"><span class="label-name">Yellow</span><span class="label-role">Player</span></span>
-    </div>
+  <div class="player-panel yellow-panel" aria-label="Yellow player">
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button></div>
     <div class="inventory-cluster has-status">
       <div class="status-bar yellow-turn" id="p1StatusBar">
