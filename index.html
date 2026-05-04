@@ -443,6 +443,10 @@ body.p0-mode .p0-review-toggle {
   --panel-accent-dark: #8b6900;
   --panel-glow: rgba(245,200,0,0.22);
 }
+body.player-roll-ready .player-panel.yellow-panel {
+  animation: playerPanelRollPulse 1.25s ease-in-out infinite;
+  transform-origin: 50% 55%;
+}
 .player-panel::before {
   content: '';
   position: absolute;
@@ -473,6 +477,27 @@ body.p0-mode .p0-review-toggle {
 .player-panel > * {
   position: relative;
   z-index: 2;
+}
+@keyframes playerPanelRollPulse {
+  0%,100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.88),
+      inset 0 -2px 0 rgba(65,78,73,0.18),
+      inset 0 0 0 1px rgba(55,67,62,0.09),
+      0 8px 0 rgba(88,97,91,0.18),
+      0 16px 28px rgba(72,60,43,0.16);
+  }
+  48% {
+    transform: scale(1.016);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.92),
+      inset 0 -2px 0 rgba(65,78,73,0.14),
+      inset 0 0 0 1px rgba(245,200,0,0.28),
+      0 8px 0 rgba(139,105,0,0.2),
+      0 16px 28px rgba(72,60,43,0.16),
+      0 0 28px rgba(245,200,0,0.34);
+  }
 }
 .player-label {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
