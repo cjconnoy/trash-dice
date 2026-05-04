@@ -499,39 +499,142 @@ body.player-roll-ready .player-panel.yellow-panel {
   }
 }
 .player-label {
-  font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.58rem, 1.85vw, 0.82rem);
-  letter-spacing: 0.045em;
-  line-height: 1.05;
-  text-transform: uppercase;
-  white-space: nowrap;
-  min-width: clamp(7.15rem, 22vw, 8.85rem);
-  min-height: 1.38rem;
-  padding: 0.32rem 0.54rem;
-  border-radius: 7px;
+  --label-face-hi: #ffe05b;
+  --label-face: #f5c800;
+  --label-face-low: #d8a900;
+  --label-ink: #0f5f32;
+  --label-accent: #fff3b0;
+  --label-side: #8b6900;
+  --label-glow: rgba(245,200,0,0.28);
   position: relative;
   z-index: 4;
-  transform: rotate(-1deg);
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
+  gap: clamp(0.26rem, 1vw, 0.4rem);
   justify-content: center;
+  min-width: clamp(7.8rem, 23.8vw, 9.8rem);
+  min-height: clamp(2.32rem, 6.9vw, 2.82rem);
+  padding: 0.28rem 0.62rem 0.28rem 0.42rem;
+  border-radius: 12px 10px 12px 10px;
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  line-height: 0.9;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: visible;
+  isolation: isolate;
+  transform: rotate(-3deg);
+  color: var(--label-ink);
+  background:
+    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,0.66), transparent 42%),
+    linear-gradient(180deg, var(--label-face-hi), var(--label-face) 58%, var(--label-face-low));
+  border: 2px solid rgba(255,243,176,0.9);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.4),
-    inset 0 -1px 0 rgba(0,0,0,0.18),
-    0 3px 0 var(--panel-accent-dark),
-    0 8px 16px rgba(64,54,36,0.13);
+    inset 0 1px 0 rgba(255,255,255,0.56),
+    inset 0 -2px 0 rgba(0,0,0,0.14),
+    0 0 0 1px color-mix(in srgb, var(--label-ink) 55%, transparent),
+    0 4px 0 var(--label-side),
+    0 10px 16px rgba(64,54,36,0.18),
+    0 0 18px var(--label-glow);
+}
+.player-label::before,
+.player-label::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.player-label::before {
+  inset: -5px;
+  z-index: -2;
+  border-radius: 15px 13px 15px 13px;
+  background: rgba(255,250,220,0.84);
+  box-shadow: 0 2px 0 rgba(80,58,20,0.16);
+}
+.player-label::after {
+  inset: 3px 6px auto 14px;
+  height: 42%;
+  z-index: -1;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.46), rgba(255,255,255,0));
+  opacity: 0.72;
 }
 .player-label.p1 {
-  color: var(--yellow-pip);
-  background: linear-gradient(180deg, #ffe05b, #f5c800 62%, #d8a900);
-  border: 1px solid rgba(15,95,50,0.32);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.36);
+  --label-face-hi: #ffe96f;
+  --label-face: #f5c800;
+  --label-face-low: #c79a00;
+  --label-ink: #0f5f32;
+  --label-accent: #0f5f32;
+  --label-side: #8b6900;
+  --label-glow: rgba(245,200,0,0.34);
 }
 .player-label.p2 {
-  color: var(--green-pip);
-  background: linear-gradient(180deg, #1f8a49, #0f6b37 62%, #084421);
-  border: 1px solid rgba(245,200,0,0.28);
-  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  --label-face-hi: #249454;
+  --label-face: #0f6b37;
+  --label-face-low: #073d1e;
+  --label-ink: #f5c800;
+  --label-accent: #f5c800;
+  --label-side: #05331a;
+  --label-glow: rgba(15,95,50,0.36);
+}
+.label-die {
+  position: relative;
+  display: block;
+  width: clamp(1.16rem, 3.5vw, 1.5rem);
+  height: clamp(1.16rem, 3.5vw, 1.5rem);
+  border-radius: 28%;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.78), rgba(255,255,255,0.18) 34%, transparent 52%),
+    linear-gradient(145deg, var(--label-accent), color-mix(in srgb, var(--label-accent) 68%, #000 32%));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.42),
+    inset -3px -4px 7px rgba(0,0,0,0.18),
+    2px 2px 0 rgba(0,0,0,0.24);
+  transform: rotate(-7deg);
+}
+.label-die::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.22rem;
+  height: 0.22rem;
+  border-radius: 50%;
+  background: var(--label-face-low);
+  transform: translate(-50%, -50%);
+  box-shadow:
+    -0.34rem -0.34rem 0 var(--label-face-low),
+    0.34rem 0.34rem 0 var(--label-face-low);
+  opacity: 0.9;
+}
+.label-copy {
+  display: grid;
+  justify-items: center;
+  gap: 0.06rem;
+}
+.label-name {
+  display: block;
+  font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
+  font-size: clamp(1.18rem, 4.2vw, 1.72rem);
+  letter-spacing: 0.06em;
+  line-height: 0.82;
+  color: var(--label-ink);
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.22),
+    1.4px 1.6px 0 rgba(0,0,0,0.22);
+}
+.label-role {
+  display: block;
+  padding: 0.09rem 0.34rem 0.07rem;
+  border-radius: 999px;
+  color: var(--label-face);
+  background: color-mix(in srgb, var(--label-ink) 86%, #000 14%);
+  font-size: clamp(0.46rem, 1.56vw, 0.62rem);
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 1px 0 rgba(0,0,0,0.18);
 }
 
 /* dice-pool-visual no longer used in panels — piles live on the mat */
@@ -2925,7 +3028,10 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   <!-- Green player panel — TOP -->
   <div class="player-panel green-panel">
-    <div class="player-label p2">Green Player</div>
+    <div class="player-label p2">
+      <span class="label-die" aria-hidden="true"></span>
+      <span class="label-copy"><span class="label-name">Green</span><span class="label-role">Player</span></span>
+    </div>
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
     <div class="inventory-cluster">
       <div class="dice-pile panel-pile" id="p2Pile"></div>
@@ -3097,7 +3203,10 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   <!-- Yellow player panel — BOTTOM -->
   <div class="player-panel yellow-panel">
-    <div class="player-label p1">Yellow Player</div>
+    <div class="player-label p1">
+      <span class="label-die" aria-hidden="true"></span>
+      <span class="label-copy"><span class="label-name">Yellow</span><span class="label-role">Player</span></span>
+    </div>
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button></div>
     <div class="inventory-cluster has-status">
       <div class="status-bar yellow-turn" id="p1StatusBar">
