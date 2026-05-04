@@ -2243,7 +2243,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   position: absolute; inset: 0;
   z-index: 3;
   background:
-    radial-gradient(circle at 42% 35%, rgba(255,255,255,0.98) 0 24%, rgba(255,250,229,0.96) 46%, rgba(239,233,196,0.9) 68%, rgba(217,218,151,0.84) 100%);
+    radial-gradient(circle at 42% 35%, #fffefa 0 24%, #fff8e3 46%, #efe9c4 68%, #d9da97 100%);
   border-radius: 50%;
   box-shadow:
     inset 0 0 0 2px rgba(255,255,255,0.44),
@@ -2275,12 +2275,18 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 .start-can-mouth {
   transform-box: fill-box;
   transform-origin: 50% 50%;
-  animation: startCanMouthOpen 0.36s steps(2, end) infinite;
+  filter: drop-shadow(0 0 5px rgba(217,48,48,0.48));
+  animation: startCanMouthOpen 0.28s steps(2, end) infinite;
 }
 .start-can-lid-chomp {
   transform-box: fill-box;
   transform-origin: 50% 78%;
-  animation: startCanChomp 0.36s steps(2, end) infinite;
+  animation: startCanChomp 0.28s steps(2, end) infinite;
+}
+.start-can-teeth {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: startCanTeethFlash 0.28s steps(2, end) infinite;
 }
 .start-dice-row {
   position: relative;
@@ -2326,13 +2332,15 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   background: linear-gradient(148deg, #ffe84a 0%, #f5c800 30%, #ddb000 65%, #b88e00 100%);
   box-shadow: 7px 7px 0 0 #9a7400, 12px 12px 0 0 rgba(0,0,0,0.32), 0 10px 24px rgba(0,0,0,0.44);
   transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
-  animation: startYellowWobble 2.85s ease-in-out infinite;
+  animation: startYellowStartled 9.8s linear infinite;
+  animation-delay: -1.35s;
 }
 .start-die.green {
   background: linear-gradient(148deg, #38d065 0%, #218f3f 31%, #17672d 66%, #0b3e1b 100%);
   box-shadow: 7px 7px 0 0 #062806, 12px 12px 0 0 rgba(0,0,0,0.36), 0 10px 24px rgba(0,0,0,0.46);
   transform: perspective(500px) rotateX(-10deg) rotateY(-10deg);
-  animation: startGreenWobble 3.05s ease-in-out 0.14s infinite;
+  animation: startGreenStartled 9.8s linear infinite;
+  animation-delay: -1.35s;
 }
 .start-die.green::after {
   animation-delay: 0.42s;
@@ -2439,23 +2447,79 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-12px) rotate(-12deg);
+    transform: translateY(-21px) rotate(-19deg) scale(1.04);
   }
 }
 @keyframes startCanMouthOpen {
   0%, 100% {
-    opacity: 0.28;
-    transform: scaleY(0.36);
+    opacity: 0.2;
+    transform: scaleY(0.26);
   }
   50% {
     opacity: 1;
-    transform: scaleY(1.25);
+    transform: scaleY(1.72);
+  }
+}
+@keyframes startCanTeethFlash {
+  0%, 100% {
+    opacity: 0.28;
+    transform: translateY(-1px) scaleY(0.72);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(5px) scaleY(1.24);
   }
 }
 @keyframes startGreenWobble {
   0%, 100% { transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(0deg) translateY(0); }
   34% { transform: perspective(500px) rotateX(-8deg) rotateY(-12deg) rotateZ(2deg) translateY(-2px); }
   68% { transform: perspective(500px) rotateX(-11deg) rotateY(-8deg) rotateZ(-1.4deg) translateY(2px); }
+}
+@keyframes startYellowStartled {
+  0%, 15%, 30%, 39%, 52%, 70%, 100% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) translateY(0) scale(1);
+  }
+  8%, 24% {
+    transform: perspective(500px) rotateX(-9deg) rotateY(12deg) rotateZ(-1.5deg) translateY(-2px) scale(1);
+  }
+  42.5% {
+    transform: perspective(500px) rotateX(-13deg) rotateY(8deg) rotateZ(2deg) translateY(8px) scale(1.12,0.82);
+  }
+  45.5% {
+    transform: perspective(500px) rotateX(-4deg) rotateY(18deg) rotateZ(-12deg) translateY(-46px) scale(0.94,1.18);
+  }
+  48.5% {
+    transform: perspective(500px) rotateX(-16deg) rotateY(7deg) rotateZ(5deg) translateY(10px) scale(1.14,0.8);
+  }
+  51% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(-2deg) translateY(-8px) scale(1.04);
+  }
+  86% {
+    transform: perspective(500px) rotateX(-11deg) rotateY(8deg) rotateZ(1.2deg) translateY(1px) scale(1);
+  }
+}
+@keyframes startGreenStartled {
+  0%, 18%, 36%, 52%, 67%, 82%, 100% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(0deg) translateY(0) scale(1);
+  }
+  10%, 28% {
+    transform: perspective(500px) rotateX(-9deg) rotateY(-12deg) rotateZ(1.5deg) translateY(-2px) scale(1);
+  }
+  55% {
+    transform: perspective(500px) rotateX(-13deg) rotateY(-8deg) rotateZ(-2deg) translateY(8px) scale(1.12,0.82);
+  }
+  58% {
+    transform: perspective(500px) rotateX(-4deg) rotateY(-18deg) rotateZ(12deg) translateY(-46px) scale(0.94,1.18);
+  }
+  61% {
+    transform: perspective(500px) rotateX(-16deg) rotateY(-7deg) rotateZ(-5deg) translateY(10px) scale(1.14,0.8);
+  }
+  64% {
+    transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(2deg) translateY(-8px) scale(1.04);
+  }
+  90% {
+    transform: perspective(500px) rotateX(-11deg) rotateY(-8deg) rotateZ(-1.2deg) translateY(1px) scale(1);
+  }
 }
 
 /* ── GAME OVER OVERLAY ── */
@@ -3028,11 +3092,16 @@ body.fast-preview .overlay.victory .play-again-btn {
         <path d="M22 40 C30 38 42 38 50 41" fill="none" stroke="#0f5f32" stroke-width="4.4" stroke-linecap="round" opacity="0.86"/>
         <path d="M18 28 C27 31 45 31 54 28 M18 61 C27 65 45 65 54 61 M19 69 C28 72 44 72 53 69" fill="none" stroke="#586568" stroke-width="2.3" opacity="0.72"/>
         <path d="M31 19 C34 34 34 62 31 78" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" opacity="0.74"/>
-        <ellipse class="start-can-mouth" cx="36" cy="16" rx="27" ry="8" fill="#172326"/>
+        <ellipse class="start-can-mouth" cx="36" cy="16" rx="28" ry="9" fill="#140f12"/>
         <g class="start-can-lid-chomp">
           <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
           <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
           <path d="M14 13 C24 7 48 7 58 13" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="2" stroke-linecap="round"/>
+          <g class="start-can-teeth" fill="#fff6c8" stroke="#17361f" stroke-width="0.9" stroke-linejoin="round">
+            <path d="M20 24 L24 35 L28 24 Z"/>
+            <path d="M31 25 L36 39 L41 25 Z"/>
+            <path d="M44 24 L48 35 L52 24 Z"/>
+          </g>
         </g>
       </svg>
     </div>
