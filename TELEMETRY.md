@@ -564,3 +564,24 @@ Verification:
 - `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
 - In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the simplified panels and no page console errors.
 - Headless Chrome iPhone-size LAN capture at `http://192.168.86.48:5175/index.html` reported `fast-preview player-roll-ready`, no scroll overflow, no P0 review control on mobile, and visible gameplay copy.
+
+---
+
+## 2026-05-04 RESPONSIVE ONE-VERSION GAME SCREEN PASS
+
+Event ID: `trash-dice-responsive-one-version-game-screen-pass-20260504`
+
+Approximate active elapsed: ~35 minutes for responsive layout implementation, file mirroring, static checks, in-app desktop verification, and headless mobile viewport verification.
+
+CJ direction addressed:
+- Confirmed the product should use one responsive/adaptive game screen rather than separate desktop and mobile versions, reducing QA drift and keeping one shared rules/UI code path.
+- Added mobile breakpoints that compact the live game screen vertically while keeping the title, player panels, board, trash can, status message, and footer badges visible.
+- Preserved the simplified player panels with no Green/Yellow label blocks, letting pool dice occupy more width and read larger on mobile.
+- Tuned compact short-phone layout so the tagline hides, the title shrinks, panels tighten, and the board/can area remains playable without horizontal or vertical page overflow.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the simplified responsive game screen with no page console errors.
+- Headless Chrome mobile captures at 390x844, 390x700, and 360x640 reported equal viewport/scroll dimensions, no checked hero elements outside the viewport, and `fast-preview player-roll-ready`.
