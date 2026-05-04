@@ -4275,14 +4275,11 @@ body.fast-preview .overlay.victory .play-again-btn {
 
     requestAnimationFrame(() => {
       buildSlots();
-      clearDie(null);
       const opener = openingRoll();
       current = opener.starter;
-      renderDie(opener.p1, 'p1', 'yellow');
-      renderDie(opener.p2, 'p2', 'green');
+      clearDie(null);
       syncUI();
       setMsg(`${PLAYER_NAME[current].toUpperCase()} STARTS`);
-      if (current === 'p1') clearDie('p1');
       rollBtn.disabled = current !== 'p1';
       if (current === 'p2') runLater(() => doRoll(), 1150);
       scheduleP0Autoplay(1200);
