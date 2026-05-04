@@ -2241,6 +2241,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 }
 .start-blob {
   position: absolute; inset: 0;
+  z-index: 3;
   background:
     radial-gradient(circle at 42% 35%, rgba(255,255,255,0.98) 0 24%, rgba(255,250,229,0.96) 46%, rgba(239,233,196,0.9) 68%, rgba(217,218,151,0.84) 100%);
   border-radius: 50%;
@@ -2252,17 +2253,18 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 .start-lurker-can {
   position: absolute;
   left: 50%;
-  top: 6%;
-  width: clamp(42px, 11vw, 60px);
+  top: 28%;
+  width: clamp(92px, 23vw, 128px);
   height: auto;
-  z-index: 4;
+  z-index: 2;
   pointer-events: none;
-  opacity: 0.78;
+  opacity: 0.88;
   filter:
-    drop-shadow(0 6px 7px rgba(33,44,34,0.34))
-    drop-shadow(0 0 9px rgba(255,255,255,0.5));
+    drop-shadow(0 12px 14px rgba(33,44,34,0.28))
+    drop-shadow(0 0 12px rgba(255,255,255,0.36));
   transform-origin: 50% 42%;
-  animation: startCanLurk 8.4s ease-in-out infinite;
+  animation: startCanLurk 9.8s linear infinite;
+  animation-delay: -1.35s;
 }
 .start-lurker-can svg {
   display: block;
@@ -2406,17 +2408,20 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   62% { transform: perspective(500px) rotateX(-11deg) rotateY(8deg) rotateZ(1.4deg) translateY(1px); }
 }
 @keyframes startCanLurk {
-  0%, 100% {
-    transform: translate(calc(-50% - clamp(78px, 18vw, 106px)), 12%) rotate(-8deg) scale(0.88);
+  0% {
+    transform: translate(calc(-50vw - 130px), 4%) rotate(-8deg) scale(0.92);
   }
-  28% {
-    transform: translate(calc(-50% - clamp(30px, 8vw, 48px)), -5%) rotate(4deg) scale(1);
+  24% {
+    transform: translate(calc(-50vw + 92px), -2%) rotate(4deg) scale(1);
   }
-  58% {
-    transform: translate(calc(-50% + clamp(34px, 9vw, 58px)), -3%) rotate(-3deg) scale(0.98);
+  52% {
+    transform: translate(0, -6%) rotate(-3deg) scale(1.04);
   }
-  78% {
-    transform: translate(calc(-50% + clamp(78px, 18vw, 106px)), 10%) rotate(7deg) scale(0.9);
+  76% {
+    transform: translate(calc(50vw - 92px), -2%) rotate(5deg) scale(1);
+  }
+  100% {
+    transform: translate(calc(50vw + 130px), 4%) rotate(-7deg) scale(0.92);
   }
 }
 @keyframes startGreenWobble {
