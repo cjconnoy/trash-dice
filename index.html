@@ -4236,16 +4236,6 @@ body.fast-preview .overlay.victory .play-again-btn {
     init();
   }
 
-  function openingRoll() {
-    let p1;
-    let p2;
-    do {
-      p1 = Math.floor(Math.random() * 6) + 1;
-      p2 = Math.floor(Math.random() * 6) + 1;
-    } while (p1 === p2);
-    return { p1, p2, starter: p1 > p2 ? 'p1' : 'p2' };
-  }
-
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
     clearRuntimeTimers();
@@ -4277,13 +4267,11 @@ body.fast-preview .overlay.victory .play-again-btn {
 
     requestAnimationFrame(() => {
       buildSlots();
-      const opener = openingRoll();
-      current = opener.starter;
+      current = 'p1';
       clearDie(null);
       syncUI();
-      setMsg(`${PLAYER_NAME[current].toUpperCase()} STARTS`);
-      rollBtn.disabled = current !== 'p1';
-      if (current === 'p2') runLater(() => doRoll(), 1150);
+      setMsg('YELLOW STARTS');
+      rollBtn.disabled = false;
       scheduleP0Autoplay(1200);
     });
   }
@@ -4530,18 +4518,13 @@ body.fast-preview .overlay.victory .play-again-btn {
       if (totalDice('p1') <= 0) { gameOver('p2'); return; }
       if (totalDice('p2') <= 0) { gameOver('p1'); return; }
 
-      current = winner;
+      current = 'p1';
       clearDie(null);
       syncUI();
-      if (current === 'p2') {
-        rollBtn.disabled = true;
-        runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
-      } else {
-        setMsg('YELLOW ROLL');
-        rollBtn.disabled = false;
-        busy = false;
-        scheduleP0Autoplay();
-      }
+      setMsg('YELLOW ROLL');
+      rollBtn.disabled = false;
+      busy = false;
+      scheduleP0Autoplay();
     }, spillDuration + 260);
   }
 
