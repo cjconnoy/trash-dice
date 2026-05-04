@@ -2249,6 +2249,27 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     inset 0 -22px 34px rgba(185,183,105,0.18),
     0 18px 42px rgba(84,89,16,0.22);
 }
+.start-lurker-can {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: clamp(42px, 11vw, 60px);
+  height: auto;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.78;
+  filter:
+    drop-shadow(0 6px 7px rgba(33,44,34,0.34))
+    drop-shadow(0 0 9px rgba(255,255,255,0.5));
+  transform-origin: 50% 42%;
+  animation: startCanLurk 8.4s ease-in-out infinite;
+}
+.start-lurker-can svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
 .start-dice-row {
   position: relative;
   display: flex;
@@ -2383,6 +2404,20 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   0%, 100% { transform: perspective(500px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) translateY(0); }
   28% { transform: perspective(500px) rotateX(-8deg) rotateY(12deg) rotateZ(-2.2deg) translateY(-3px); }
   62% { transform: perspective(500px) rotateX(-11deg) rotateY(8deg) rotateZ(1.4deg) translateY(1px); }
+}
+@keyframes startCanLurk {
+  0%, 100% {
+    transform: translate(calc(-50% - clamp(78px, 18vw, 106px)), 12%) rotate(-8deg) scale(0.88);
+  }
+  28% {
+    transform: translate(calc(-50% - clamp(30px, 8vw, 48px)), -5%) rotate(4deg) scale(1);
+  }
+  58% {
+    transform: translate(calc(-50% + clamp(34px, 9vw, 58px)), -3%) rotate(-3deg) scale(0.98);
+  }
+  78% {
+    transform: translate(calc(-50% + clamp(78px, 18vw, 106px)), 10%) rotate(7deg) scale(0.9);
+  }
 }
 @keyframes startGreenWobble {
   0%, 100% { transform: perspective(500px) rotateX(-10deg) rotateY(-10deg) rotateZ(0deg) translateY(0); }
@@ -2937,6 +2972,34 @@ body.fast-preview .overlay.victory .play-again-btn {
   </div>
   <div class="start-blob-wrap">
     <div class="start-blob"></div>
+    <div class="start-lurker-can" aria-hidden="true">
+      <svg viewBox="0 0 72 88" focusable="false">
+        <defs>
+          <linearGradient id="startCanBodyG" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#4d5a5d"/>
+            <stop offset="13%" stop-color="#9fa9aa"/>
+            <stop offset="34%" stop-color="#dce2e1"/>
+            <stop offset="54%" stop-color="#8a9698"/>
+            <stop offset="78%" stop-color="#c9d1d0"/>
+            <stop offset="100%" stop-color="#465255"/>
+          </linearGradient>
+          <linearGradient id="startCanLidG" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#dbe2e1"/>
+            <stop offset="56%" stop-color="#879396"/>
+            <stop offset="100%" stop-color="#3f4a4d"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="36" cy="82" rx="24" ry="4" fill="rgba(37,42,37,0.28)"/>
+        <path d="M16 18 C16 13 56 13 56 18 L54 74 C53 81 19 81 18 74 Z" fill="url(#startCanBodyG)" stroke="#e2e9e7" stroke-width="1.8"/>
+        <path d="M18 34 C26 37 46 37 54 34 L54 53 C45 57 27 57 18 53 Z" fill="#f5c800" stroke="#0f5f32" stroke-width="1.6"/>
+        <path d="M22 40 C30 38 42 38 50 41" fill="none" stroke="#0f5f32" stroke-width="4.4" stroke-linecap="round" opacity="0.86"/>
+        <path d="M18 28 C27 31 45 31 54 28 M18 61 C27 65 45 65 54 61 M19 69 C28 72 44 72 53 69" fill="none" stroke="#586568" stroke-width="2.3" opacity="0.72"/>
+        <path d="M31 19 C34 34 34 62 31 78" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" opacity="0.74"/>
+        <ellipse cx="36" cy="15" rx="28" ry="9" fill="#263236" opacity="0.94"/>
+        <path d="M9 15 C9 7 63 7 63 15 L63 22 C63 30 9 30 9 22 Z" fill="url(#startCanLidG)" stroke="#dce4e4" stroke-width="1.8"/>
+        <path d="M13 17 C22 23 50 23 59 17 L59 22 C50 29 22 29 13 22 Z" fill="rgba(45,54,57,0.46)"/>
+      </svg>
+    </div>
     <div class="start-dice-row">
       <div class="start-die yellow">
         <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
