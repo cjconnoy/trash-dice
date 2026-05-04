@@ -1332,6 +1332,12 @@ body.p0-mode .p0-review-toggle {
   animation: canSlowTurntable 7.8s ease-in-out infinite;
   will-change: transform;
 }
+.trash-can text {
+  text-rendering: geometricPrecision;
+}
+.can-label-logo text {
+  vector-effect: non-scaling-stroke;
+}
 body.fast-preview .trash-can svg {
   animation: none;
   will-change: auto;
@@ -2727,39 +2733,36 @@ body.fast-preview .overlay.victory .play-again-btn {
           <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z" fill="url(#labelG)" stroke="#245d1d" stroke-width="2.1"/>
           <g clip-path="url(#labelClip)">
             <rect x="14" y="64" width="92" height="62" fill="rgba(255,255,255,0.08)"/>
-            <path d="M14 64 C30 70 90 70 106 64 L106 122 C90 129 30 129 14 122 Z" fill="url(#labelWrapG)" opacity="0.72"/>
-            <path d="M18 69 C34 73 86 73 102 69" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2.2" opacity="0.78"/>
-            <path d="M18 119 C34 124 86 124 102 119" fill="none" stroke="rgba(90,53,0,0.34)" stroke-width="2.6" opacity="0.9"/>
-            <rect x="14" y="64" width="10" height="62" fill="rgba(0,0,0,0.18)"/>
-            <rect x="96" y="64" width="10" height="62" fill="rgba(0,0,0,0.22)"/>
-            <path d="M46 66 C50 78 51 111 46 125" stroke="rgba(255,255,255,0.12)" stroke-width="6.6" fill="none" opacity="0.55"/>
-            <path d="M59 65 C65 79 65 112 59 126" stroke="rgba(255,255,255,0.28)" stroke-width="5.8" fill="none" opacity="0.62"/>
-            <path d="M82 66 C77 81 77 111 83 124" stroke="rgba(0,0,0,0.16)" stroke-width="7" fill="none" opacity="0.58"/>
-            <path d="M6 101 C29 86 74 88 113 104" stroke="#0f5f32" stroke-width="11" opacity="0.82" fill="none"/>
-            <path d="M7 112 C29 101 78 101 113 115" stroke="#10491f" stroke-width="9" opacity="0.95" fill="none"/>
-            <g fill="#0f5f32">
-              <path d="M18 73 C10 83 9 98 18 109 C29 105 37 96 40 82 C33 75 26 72 18 73 Z"/>
-              <path d="M101 72 C110 83 111 97 101 111 C91 106 84 96 80 82 C87 75 94 72 101 72 Z"/>
-            </g>
-            <g fill="#f5c800" opacity="0.94">
-              <circle cx="21" cy="82" r="2.1"/><circle cx="31" cy="77" r="2.1"/><circle cx="34" cy="92" r="2.1"/>
-              <circle cx="87" cy="81" r="2.1"/><circle cx="98" cy="77" r="2.1"/><circle cx="101" cy="93" r="2.1"/>
-              <circle cx="28" cy="111" r="1.9"/><circle cx="92" cy="111" r="1.9"/>
-            </g>
-            <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
-            <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.28)" stroke-width="1.4" opacity="0.68"/>
-            <text x="60" y="70.5" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="3.6" fill="#fff3b0" stroke="#17451d" stroke-width="0.25" letter-spacing="0.12">BY MIKE SZALAJKO &amp; ALEX MACKEY</text>
+          <path d="M14 64 C30 70 90 70 106 64 L106 122 C90 129 30 129 14 122 Z" fill="url(#labelWrapG)" opacity="0.72"/>
+          <path d="M18 69 C34 73 86 73 102 69" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2.2" opacity="0.78"/>
+          <path d="M18 119 C34 124 86 124 102 119" fill="none" stroke="rgba(90,53,0,0.34)" stroke-width="2.6" opacity="0.9"/>
+          <rect x="14" y="64" width="10" height="62" fill="rgba(0,0,0,0.18)"/>
+          <rect x="96" y="64" width="10" height="62" fill="rgba(0,0,0,0.22)"/>
+          <path d="M46 66 C50 78 51 111 46 125" stroke="rgba(255,255,255,0.1)" stroke-width="5.2" fill="none" opacity="0.42"/>
+          <path d="M59 65 C65 79 65 112 59 126" stroke="rgba(255,255,255,0.22)" stroke-width="4.8" fill="none" opacity="0.5"/>
+          <path d="M82 66 C77 81 77 111 83 124" stroke="rgba(0,0,0,0.13)" stroke-width="5.6" fill="none" opacity="0.44"/>
+          <path d="M12 100 C32 90 78 90 108 103 L108 119 C76 106 34 106 12 117 Z" fill="#0f5f32" opacity="0.94"/>
+          <path d="M14 107 C35 99 78 100 106 112" stroke="#10491f" stroke-width="6.4" opacity="0.88" fill="none"/>
+          <g fill="#0f5f32">
+            <path d="M17 73 C11 84 11 96 18 106 C28 102 34 94 37 83 C31 76 24 73 17 73 Z"/>
+            <path d="M102 72 C108 83 109 96 101 107 C92 103 86 94 83 83 C89 76 95 72 102 72 Z"/>
           </g>
-          <g filter="url(#labelShadow)">
-            <g transform="translate(14 70) rotate(-3 46 27)">
-              <text class="logo-outer" x="1" y="22" font-size="31" stroke-width="5.8" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-warm-shadow" x="2.5" y="23.6" font-size="31" stroke-width="2.5" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-face" x="1" y="22" font-size="31" stroke-width="2.05" textLength="90" lengthAdjust="spacingAndGlyphs">Trash</text>
-              <text class="logo-outer" x="15" y="50" font-size="34" stroke-width="5.9" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
-              <text class="logo-warm-shadow" x="16.5" y="51.6" font-size="34" stroke-width="2.55" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
-              <text class="logo-face" x="15" y="50" font-size="34" stroke-width="2.1" textLength="75" lengthAdjust="spacingAndGlyphs">Dice</text>
+          <g fill="#f5c800" opacity="0.58">
+            <circle cx="24" cy="84" r="1.45"/><circle cx="95" cy="84" r="1.45"/>
+          </g>
+          <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
+          <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.2)" stroke-width="1" opacity="0.46"/>
+          </g>
+          <g class="can-label-logo" filter="url(#labelShadow)">
+            <g transform="translate(15.5 70) rotate(-2.4 45 27)">
+              <text class="logo-outer" x="1.5" y="23" font-size="31.6" stroke-width="5" textLength="88" lengthAdjust="spacing">Trash</text>
+              <text class="logo-warm-shadow" x="3" y="24.25" font-size="31.6" stroke-width="1.85" textLength="88" lengthAdjust="spacing">Trash</text>
+              <text class="logo-face" x="1.5" y="23" font-size="31.6" stroke-width="1.45" textLength="88" lengthAdjust="spacing">Trash</text>
+              <text class="logo-outer" x="13" y="51.5" font-size="35.6" stroke-width="5.05" textLength="72" lengthAdjust="spacing">Dice</text>
+              <text class="logo-warm-shadow" x="14.5" y="52.75" font-size="35.6" stroke-width="1.9" textLength="72" lengthAdjust="spacing">Dice</text>
+              <text class="logo-face" x="13" y="51.5" font-size="35.6" stroke-width="1.5" textLength="72" lengthAdjust="spacing">Dice</text>
             </g>
-            <text x="60" y="124" text-anchor="middle" font-family="Fredoka One, Arial Black, sans-serif" font-size="6" fill="#fff3b0" stroke="#245d1d" stroke-width="0.4" letter-spacing="0.18">ROLL, WIN, AVOID THE BIN!</text>
+            <path d="M26 119 C42 123 78 123 94 119" fill="none" stroke="#fff3b0" stroke-width="1.7" opacity="0.85"/>
           </g>
 
           <path d="M14 128 C29 134 91 134 106 128" fill="none" stroke="#586568" stroke-width="3.1"/>
