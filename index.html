@@ -1184,7 +1184,7 @@ body.player-roll-ready .roll-btn.p1:not(:disabled)::before {
 /* ── BOARD SCENE ── */
 .board-scene {
   --lid-offset: clamp(-88px, -16vw, -46px);
-  --can-offset: clamp(124px, 27vw, 164px);
+  --can-offset: clamp(145px, 31vw, 198px);
   position: relative;
   display: flex;
   flex-direction: row;
@@ -1465,9 +1465,9 @@ body.player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not
 .trash-can {
   position: absolute;
   left: calc(50% + var(--can-offset));
-  top: calc(50% + clamp(18px, 4vw, 32px));
-  width: clamp(114px, 24.5vw, 160px);
-  height: clamp(180px, 40vw, 264px);
+  top: calc(50% - clamp(12px, 1.4vw, 18px));
+  width: clamp(158px, 33.75vw, 223px);
+  height: clamp(248px, 55vw, 368px);
   z-index: 2;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -2477,7 +2477,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .board-scene {
     --lid-offset: clamp(-64px, -15vw, -48px);
-    --can-offset: clamp(90px, 25vw, 112px);
+    --can-offset: clamp(108px, 29vw, 137px);
     min-height: clamp(206px, 30.5dvh, 246px);
     padding: clamp(0.08rem, 0.58vh, 0.34rem) 0 clamp(0.42rem, 1.4vh, 0.78rem);
   }
@@ -2492,9 +2492,9 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .trash-can {
-    top: calc(50% + clamp(8px, 2.7vw, 18px));
-    width: clamp(84px, 24vw, 106px);
-    height: clamp(132px, 37.5vw, 166px);
+    top: calc(50% + clamp(2px, 1vw, 6px));
+    width: clamp(115px, 32.5vw, 148px);
+    height: clamp(180px, 51.25vw, 230px);
     filter:
       drop-shadow(0 8px 9px rgba(0,0,0,0.44))
       drop-shadow(0 13px 14px rgba(52,43,32,0.12));
@@ -2574,7 +2574,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .board-scene {
     --lid-offset: clamp(-56px, -14.2vw, -44px);
-    --can-offset: clamp(80px, 24vw, 102px);
+    --can-offset: clamp(95px, 27.5vw, 121px);
     min-height: clamp(182px, 29dvh, 218px);
     padding-top: 0;
     padding-bottom: 0.28rem;
@@ -2586,8 +2586,8 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .trash-can {
-    width: clamp(76px, 22vw, 96px);
-    height: clamp(120px, 34vw, 150px);
+    width: clamp(103px, 30vw, 133px);
+    height: clamp(161px, 46.25vw, 208px);
   }
 
   .message {
