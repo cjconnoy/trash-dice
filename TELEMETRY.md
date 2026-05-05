@@ -606,3 +606,23 @@ Verification:
 - `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
 - In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the right-side ROLL layout with no page console errors.
 - Headless Chrome mobile captures at 390x844, 390x700, and 360x640 reported equal viewport/scroll dimensions and no checked hero elements outside the viewport.
+
+---
+
+## 2026-05-04 MOBILE HERO GLINT RESTORE PASS
+
+Event ID: `trash-dice-mobile-hero-glint-restore-pass-20260504`
+
+Approximate active elapsed: ~15 minutes for fast-preview CSS inspection, targeted restore, file mirroring, desktop browser verification, and mobile animation sampling.
+
+CJ direction addressed:
+- Restored visible moving hero glints for the gameplay title, lid, trash-can body, and trash-can rim in mobile/LAN `fast-preview`.
+- Kept the broader low-power preview behavior intact by leaving the can's overall SVG turntable animation disabled and not enabling full victory FX.
+- Replaced the previous blanket fast-preview glint suppression with a narrow low-power allowance for these specific hero assets.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed no page console errors.
+- Headless Chrome iPhone-size fast-preview sampling reported `fast-preview player-roll-ready`, moving title gradient values, visible can body/rim glint opacity peaks, and visible lid edge/inner glint opacity peaks.

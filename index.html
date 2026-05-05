@@ -1387,15 +1387,14 @@ body.fast-preview .trash-can svg {
   animation: none;
   will-change: auto;
 }
-body.fast-preview .title-hero-glint,
-body.fast-preview .can-hero-glint,
-body.fast-preview .can-rim-glint {
-  animation: none;
-  opacity: 0;
+body.fast-preview .title-wrap:not(.big) .title-hero-glint {
+  opacity: 0.88;
 }
+body.fast-preview .can-hero-glint,
+body.fast-preview .can-rim-glint,
 body.fast-preview .lid-edge-glint,
 body.fast-preview .lid-inner-glint {
-  animation: none !important;
+  will-change: opacity, transform;
 }
 .can-hero-glint,
 .can-rim-glint {
