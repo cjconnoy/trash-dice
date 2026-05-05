@@ -574,8 +574,14 @@ body.player-roll-ready .roll-panel {
   transition: opacity 0.08s ease;
   animation: rollStagePop 0.24s cubic-bezier(.14,.9,.18,1.28) both;
 }
+.player-panel:has(.roll-die-stage.active) {
+  z-index: 130;
+}
+.player-panel:has(.roll-die-stage.active) .roll-die-stage {
+  z-index: 160;
+}
 .inventory-cluster .roll-die-stage {
-  --roll-stage-size: clamp(62px, 15vw, 90px);
+  --roll-stage-size: clamp(86px, 20.7vw, 124px);
   --roll-stage-x: -50%;
   --roll-stage-y: -50%;
   --roll-stage-rotate: -5deg;
@@ -604,6 +610,12 @@ body.player-roll-ready .roll-panel {
   width: 100%;
   height: 100%;
   padding: clamp(8px, 2.4vw, 13px);
+}
+.roll-die-stage .dot {
+  width: 78%;
+  height: 78%;
+  max-width: clamp(20px, 5vw, 29px);
+  max-height: clamp(20px, 5vw, 29px);
 }
 @keyframes rollStagePop {
   0% {
@@ -910,6 +922,26 @@ body.player-roll-ready .roll-panel {
   animation: dieResolvePulse 0.42s cubic-bezier(.18,.9,.22,1) both;
   transform-origin: 50% 50%;
 }
+.roll-die-stage .die.roll-resolved::after {
+  top: 4%;
+  left: 9%;
+  width: 72%;
+  height: 34%;
+  border-radius: 48% 38% 44% 34%;
+  background:
+    linear-gradient(112deg,
+      transparent 0%,
+      rgba(255,255,255,0.05) 22%,
+      rgba(255,255,255,0.82) 44%,
+      rgba(255,246,150,0.42) 52%,
+      rgba(255,255,255,0.08) 68%,
+      transparent 100%);
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.58));
+  mix-blend-mode: screen;
+  transform: translateX(-28%) rotate(-13deg);
+  transform-origin: 50% 50%;
+  animation: dieRevealGlint 0.3s cubic-bezier(.16,.82,.18,1) both;
+}
 .die.trashed { animation: dieTrash 0.55s ease-in forwards; }
 @keyframes dieRoll {
   0% {
@@ -954,6 +986,19 @@ body.player-roll-ready .roll-panel {
   88%, 100% {
     opacity: 0;
     transform: translateX(340%) rotate(16deg);
+  }
+}
+@keyframes dieRevealGlint {
+  0% {
+    opacity: 0;
+    transform: translateX(-28%) rotate(-13deg);
+  }
+  30% {
+    opacity: 0.82;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(34%) rotate(-13deg);
   }
 }
 @keyframes dieResolvePulse {
@@ -1675,7 +1720,7 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
   position: fixed;
   margin: 0;
   pointer-events: none;
-  z-index: 70;
+  z-index: 160;
   transform-origin: 50% 50%;
   will-change: transform, opacity;
 }
@@ -2371,7 +2416,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   body {
     height: 100dvh;
     min-height: 100svh;
-    padding: 0.22rem 0.34rem calc(env(safe-area-inset-bottom, 0px) + 2.35rem);
+    padding: 0.22rem 0.34rem calc(env(safe-area-inset-bottom, 0px) + 1.55rem);
     gap: clamp(0.08rem, 0.62vh, 0.22rem);
   }
 
@@ -2397,8 +2442,8 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .game-area {
     flex: 1 1 auto;
-    justify-content: space-evenly;
-    gap: clamp(0.12rem, 0.82vh, 0.32rem);
+    justify-content: space-between;
+    gap: clamp(0.14rem, 0.86vh, 0.38rem);
     min-height: 0;
   }
 
@@ -2428,44 +2473,48 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     right: clamp(0.48rem, 1.8vw, 0.76rem);
   }
 
+  .inventory-cluster .roll-die-stage {
+    --roll-stage-size: clamp(119px, 28.5vw, 171px);
+  }
+
   .die-wrap {
     --roll-die-size: clamp(62px, 18.7vw, 78px);
     margin: 0.08rem clamp(0.1rem, 0.7vw, 0.28rem) 0.08rem clamp(0.42rem, 2vw, 0.72rem);
   }
 
   .inventory-cluster {
-    min-height: clamp(66px, 18.2vw, 84px);
-    column-gap: clamp(0.38rem, 1.7vw, 0.62rem);
-    padding: clamp(0.18rem, 0.78vw, 0.32rem) clamp(0.34rem, 1.25vw, 0.52rem);
+    min-height: clamp(80px, 21.4vw, 104px);
+    column-gap: clamp(0.42rem, 1.8vw, 0.68rem);
+    padding: clamp(0.28rem, 1vw, 0.44rem) clamp(0.42rem, 1.45vw, 0.64rem);
   }
 
   .inventory-cluster.has-status {
-    padding-top: clamp(1.82rem, 5vw, 2.14rem);
+    padding-top: clamp(2.02rem, 5.55vw, 2.46rem);
   }
 
   .panel-pile {
-    min-height: clamp(52px, 14vw, 70px);
+    min-height: clamp(62px, 16.4vw, 84px);
     gap: 2.5px;
     padding: 4px 0 6px;
   }
 
   .panel-pile .mini-die {
-    width: clamp(13px, 3.7vw, 18px);
-    height: clamp(13px, 3.7vw, 18px);
+    width: clamp(15.5px, 4.22vw, 21.5px);
+    height: clamp(15.5px, 4.22vw, 21.5px);
   }
 
   .panel-pile .mini-pip {
-    width: clamp(3px, 0.94vw, 4.4px);
-    height: clamp(3px, 0.94vw, 4.4px);
+    width: clamp(3.5px, 1.08vw, 5.2px);
+    height: clamp(3.5px, 1.08vw, 5.2px);
   }
 
   .inventory-cluster.has-status .panel-pile {
-    min-height: clamp(44px, 11.2vw, 58px);
+    min-height: clamp(54px, 13.6vw, 70px);
   }
 
   .inventory-cluster.has-status .panel-pile .mini-die {
-    width: clamp(12.5px, 3.45vw, 16.5px);
-    height: clamp(12.5px, 3.45vw, 16.5px);
+    width: clamp(14.25px, 3.88vw, 19px);
+    height: clamp(14.25px, 3.88vw, 19px);
   }
 
   .pool-count {
@@ -2522,6 +2571,129 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     font-size: clamp(0.58rem, 2.7vw, 0.74rem);
     max-width: 47vw;
     white-space: nowrap;
+  }
+}
+
+@media (min-width: 521px) and (max-width: 720px) {
+  .game-area {
+    justify-content: flex-start;
+    gap: clamp(0.16rem, 0.7vh, 0.32rem);
+  }
+
+  .roll-panel {
+    margin-top: clamp(-0.28rem, -0.5vh, -0.12rem);
+  }
+}
+
+@media (min-width: 721px) {
+  body {
+    gap: clamp(0.12rem, 0.8vh, 0.34rem);
+  }
+
+  .game-area {
+    flex: 0 0 auto;
+    max-width: min(100%, 860px);
+    gap: clamp(0.22rem, 1vh, 0.64rem);
+  }
+
+  .player-panel {
+    max-width: 650px;
+    padding: clamp(0.5rem, 1vw, 0.72rem) clamp(0.62rem, 1.4vw, 0.92rem);
+  }
+
+  .inventory-cluster {
+    min-height: clamp(108px, 10.2vw, 142px);
+    column-gap: clamp(0.68rem, 1.2vw, 0.92rem);
+  }
+
+  .inventory-cluster.has-status {
+    padding-top: clamp(2.32rem, 3.1vw, 2.8rem);
+  }
+
+  .panel-pile {
+    min-height: clamp(82px, 7.7vw, 106px);
+    gap: 4px;
+  }
+
+  .panel-pile .mini-die {
+    width: clamp(18px, 2.1vw, 25px);
+    height: clamp(18px, 2.1vw, 25px);
+  }
+
+  .panel-pile .mini-pip {
+    width: clamp(4px, 0.52vw, 6px);
+    height: clamp(4px, 0.52vw, 6px);
+  }
+
+  .inventory-cluster.has-status .panel-pile {
+    min-height: clamp(68px, 6.3vw, 88px);
+  }
+
+  .inventory-cluster.has-status .panel-pile .mini-die {
+    width: clamp(17px, 1.95vw, 23px);
+    height: clamp(17px, 1.95vw, 23px);
+  }
+
+  .pool-count {
+    font-size: clamp(1.7rem, 3vw, 2.36rem);
+    min-width: clamp(2.8rem, 4.7vw, 3.5rem);
+    min-height: clamp(42px, 5vw, 54px);
+  }
+
+  .board-scene {
+    --lid-offset: clamp(-132px, -11.6vw, -102px);
+    --can-offset: clamp(186px, 18.4vw, 230px);
+    min-height: clamp(408px, 38vw, 500px);
+    padding: clamp(0.28rem, 1vw, 0.7rem) 0 clamp(0.18rem, 0.8vw, 0.52rem);
+  }
+
+  .board-wrap {
+    width: clamp(320px, 32vw, 396px);
+    height: clamp(320px, 32vw, 396px);
+  }
+
+  .trash-can {
+    top: calc(50% - clamp(6px, 0.9vw, 14px));
+    width: clamp(218px, 22.8vw, 286px);
+    height: clamp(342px, 37.2vw, 472px);
+  }
+
+  .roll-panel {
+    width: min(62%, 430px);
+    max-width: 430px;
+    min-height: clamp(82px, 8vw, 108px);
+    margin-top: clamp(-0.22rem, -0.3vw, -0.08rem);
+  }
+}
+
+@media (min-width: 721px) and (min-height: 900px) {
+  .game-area {
+    max-width: min(100%, 940px);
+    gap: clamp(0.28rem, 1.1vh, 0.72rem);
+    margin-top: clamp(2.1rem, 4.4vh, 4.2rem);
+  }
+
+  .player-panel {
+    max-width: 700px;
+  }
+
+  .board-scene {
+    --lid-offset: clamp(-158px, -14vw, -126px);
+    --can-offset: clamp(216px, 21.8vw, 272px);
+    min-height: clamp(520px, 49vw, 624px);
+    padding-top: clamp(0.12rem, 0.5vw, 0.34rem);
+    padding-bottom: 0;
+  }
+
+  .board-wrap {
+    width: clamp(388px, 39.5vw, 490px);
+    height: clamp(388px, 39.5vw, 490px);
+  }
+
+  .trash-can {
+    top: calc(50% - clamp(2px, 0.4vw, 8px));
+    width: clamp(268px, 27.5vw, 350px);
+    height: clamp(421px, 44.5vw, 580px);
   }
 }
 
@@ -4225,12 +4397,32 @@ body.fast-preview .overlay.victory .play-again-btn {
   // ── AUDIO ENGINE ─────────────────────────────────────────────
   const Audio = (() => {
     let ctx = null;
+    let primed = false;
     function getCtx() {
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
       return ctx;
     }
+    function resumeCtx(c) {
+      if (c && c.state === 'suspended' && typeof c.resume === 'function') {
+        c.resume().catch(() => {});
+      }
+      return c;
+    }
+    function primeOutput(c) {
+      if (primed) return;
+      primed = true;
+      try {
+        const osc = c.createOscillator();
+        const g = c.createGain();
+        g.gain.value = 0.0001;
+        osc.frequency.value = 880;
+        osc.connect(g).connect(c.destination);
+        osc.start();
+        osc.stop(c.currentTime + 0.012);
+      } catch (_) {}
+    }
     function tone(freq, type, gain, start, dur, dest) {
-      const c = getCtx();
+      const c = resumeCtx(getCtx());
       const osc = c.createOscillator();
       const g   = c.createGain();
       osc.type = type; osc.frequency.value = freq;
@@ -4242,7 +4434,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       osc.stop(c.currentTime + start + dur + 0.05);
     }
     function noiseBurst(duration, start, gain, decay = 1.6, filterFreq = 1200, filterType = 'bandpass') {
-      const c = getCtx();
+      const c = resumeCtx(getCtx());
       const frames = Math.max(1, Math.floor(c.sampleRate * duration));
       const buf = c.createBuffer(1, frames, c.sampleRate);
       const data = buf.getChannelData(0);
@@ -4262,8 +4454,13 @@ body.fast-preview .overlay.victory .play-again-btn {
       src.stop(c.currentTime + start + duration + 0.03);
     }
     return {
+      unlock() {
+        const c = resumeCtx(getCtx());
+        primeOutput(c);
+        return c.state;
+      },
       rollLoop(durationMs = 1550) {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const total = Math.max(0.25, durationMs / 1000);
         for (let t = 0.01; t < total - 0.08; t += 0.045 + Math.random() * 0.045) {
           const progress = t / total;
@@ -4278,7 +4475,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(84, 'sine', 0.07, Math.max(0.02, total - 0.16), 0.14, c.destination);
       },
       rollResolve(value = 1) {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const notes = [523, 587, 659, 698, 784, 880];
         const root = notes[clamp(value, 1, 6) - 1] || 659;
         noiseBurst(0.035, 0.0, 0.045, 2.8, 2600, 'highpass');
@@ -4287,7 +4484,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(root * 2, 'sine', 0.03, 0.115, 0.16, c.destination);
       },
       lidWinFanfare() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         noiseBurst(0.12, 0.0, 0.16, 1.8, 2300, 'highpass');
         [[392,0.00],[523,0.06],[659,0.12],[784,0.20],[1047,0.30]].forEach(([fr,t]) => {
           tone(fr, 'triangle', 0.18, t, 0.28, c.destination);
@@ -4297,7 +4494,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(1568, 'sine', 0.06, 0.34, 0.24, c.destination);
       },
       placeClink() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         noiseBurst(0.06, 0.0, 0.12, 2.6, 2600, 'highpass');
         noiseBurst(0.075, 0.012, 0.055, 2.2, 1180, 'bandpass');
         tone(1320, 'sine', 0.16, 0.0, 0.15, c.destination);
@@ -4306,7 +4503,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(246, 'sine', 0.075, 0.0, 0.12, c.destination);
       },
       placeFanfare(color = 'yellow') {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const root = color === 'green' ? 392 : 523;
         noiseBurst(0.095, 0.0, 0.13, 2.1, 2850, 'highpass');
         noiseBurst(0.11, 0.055, 0.07, 2.7, 3800, 'highpass');
@@ -4320,7 +4517,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(156, 'sine', 0.12, 0.12, 0.26, c.destination);
       },
       trashCrash(intensity = 1) {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const now = c.currentTime;
         const power = clamp(1 + Math.max(0, intensity - 1) * 0.13, 1, 2.35);
         const fanfareGain = clamp(0.10 + intensity * 0.02, 0.12, 0.38);
@@ -4367,7 +4564,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Punchy start-game fanfare — ascending brass stab
       startFanfare() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         // Snare hit
         const buf = c.createBuffer(1, c.sampleRate * 0.15, c.sampleRate);
         const d   = buf.getChannelData(0);
@@ -4386,7 +4583,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Round start — sharp 3-note "ready" sting
       roundFanfare() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         [[330, 0.0], [392, 0.12], [523, 0.24]].forEach(([fr, t]) => {
           tone(fr, 'triangle', 0.2, t, 0.28, c.destination);
         });
@@ -4394,7 +4591,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Place tone — 3x punchy hit
       placeTone() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         // Snare crack
         const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.09), c.sampleRate);
         const bd  = buf.getChannelData(0);
@@ -4412,7 +4609,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Round WON — 20x massive fanfare
       roundWonFanfare(durationMs = 1700) {
-        const c = getCtx(); const now = c.currentTime;
+        const c = resumeCtx(getCtx()); const now = c.currentTime;
         const total = clamp(durationMs / 1000, 1.2, 9.4);
         function snareHit(t, vol) {
           const buf = c.createBuffer(1, Math.floor(c.sampleRate*0.14), c.sampleRate);
@@ -4452,7 +4649,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Win
       winFanfare() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         [[262, 0.0],[330, 0.08],[392, 0.16],[523, 0.25],[659, 0.35],[784, 0.45]].forEach(([fr, t]) => {
           tone(fr, 'triangle', 0.18, t, 0.5, c.destination);
         });
@@ -4460,7 +4657,7 @@ body.fast-preview .overlay.victory .play-again-btn {
         tone(196, 'sine', 0.2, 0.45, 0.6, c.destination);
       },
       megaWinFanfare() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const now = c.currentTime;
         function burstSnare(t, gain = 0.34) {
           const frames = Math.floor(c.sampleRate * 0.18);
@@ -4491,7 +4688,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       },
       // Trash fanfare — big dramatic womp + crash
       trashSting() {
-        const c = getCtx();
+        const c = resumeCtx(getCtx());
         const now = c.currentTime;
         // Crash noise burst
         const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.35), c.sampleRate);
@@ -4942,6 +5139,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   function startGameFromOverlay(playAudio = true) {
     if (gameStarted) return;
+    Audio.unlock();
     const so = document.getElementById('startOverlay');
     const startBtn = document.getElementById('startBtn');
     startBtn.disabled = true;
@@ -4998,6 +5196,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   playAgainBtn.addEventListener('click', init);
 
   function doRoll() {
+    Audio.unlock();
     clearP0Timer();
     if (busy) return;
     if (current === 'p1' && rollBtn.disabled) return; // only block human; green rolls freely
@@ -5385,6 +5584,12 @@ body.fast-preview .overlay.victory .play-again-btn {
   }
 
   // ── BOOT ─────────────────────────────────────────────────────
+  function unlockAudioForInput() {
+    Audio.unlock();
+  }
+  document.addEventListener('pointerdown', unlockAudioForInput, { capture: true, passive: true });
+  document.addEventListener('touchstart', unlockAudioForInput, { capture: true, passive: true });
+  document.addEventListener('keydown', unlockAudioForInput, { capture: true });
   document.getElementById('startBtn').addEventListener('click', () => startGameFromOverlay(true));
   if (p0ReviewToggle) {
     p0ReviewToggle.addEventListener('click', event => {
