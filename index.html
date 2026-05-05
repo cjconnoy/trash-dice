@@ -480,6 +480,12 @@ body.player-roll-ready .player-panel.yellow-panel {
   position: relative;
   z-index: 2;
 }
+.player-panel .inventory-cluster {
+  order: 1;
+}
+.player-panel .die-wrap {
+  order: 2;
+}
 @keyframes playerPanelRollPulse {
   0%,100% {
     transform: scale(1);
@@ -612,7 +618,7 @@ body.player-roll-ready .player-panel.yellow-panel {
   width: var(--roll-die-size);
   height: var(--roll-die-size);
   aspect-ratio: 1 / 1;
-  margin: 0.2rem clamp(0.65rem, 2.4vw, 1rem) 0.2rem clamp(0.2rem, 1vw, 0.45rem);
+  margin: 0.2rem clamp(0.2rem, 1vw, 0.45rem) 0.2rem clamp(0.65rem, 2.4vw, 1rem);
 }
 .die-wrap::after {
   content: '';
@@ -2170,7 +2176,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   min-height: clamp(78px, 21vw, 118px);
   align-self: stretch;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
   column-gap: clamp(0.52rem, 1.9vw, 0.86rem);
   padding: clamp(0.26rem, 1vw, 0.42rem) clamp(0.42rem, 1.4vw, 0.62rem);
@@ -2188,6 +2194,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 }
 .inventory-cluster.has-status .status-bar {
   top: clamp(0.24rem, 0.9vw, 0.38rem);
+  left: calc(50% + clamp(0.7rem, 2.6vw, 1.1rem));
   transform: translateX(-50%) scale(0.94);
 }
 .inventory-cluster.has-status .status-bar.active {
@@ -2210,6 +2217,8 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   height: clamp(3.2px, 0.92vw, 4.5px);
 }
 .panel-pile {
+  grid-column: 2;
+  grid-row: 1;
   flex: none;
   width: 100%;
   min-width: 0;
@@ -2230,6 +2239,10 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 .panel-pile .mini-pip {
   width: clamp(3.4px, 1vw, 5px);
   height: clamp(3.4px, 1vw, 5px);
+}
+.inventory-cluster .pool-count {
+  grid-column: 1;
+  grid-row: 1;
 }
 
 @media (max-width: 720px) {
@@ -2275,7 +2288,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .die-wrap {
     --roll-die-size: clamp(62px, 18.7vw, 78px);
-    margin: 0.08rem clamp(0.42rem, 2vw, 0.72rem) 0.08rem clamp(0.1rem, 0.7vw, 0.28rem);
+    margin: 0.08rem clamp(0.1rem, 0.7vw, 0.28rem) 0.08rem clamp(0.42rem, 2vw, 0.72rem);
   }
 
   .inventory-cluster {

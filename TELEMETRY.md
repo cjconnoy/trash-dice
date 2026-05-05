@@ -585,3 +585,24 @@ Verification:
 - `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
 - In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the simplified responsive game screen with no page console errors.
 - Headless Chrome mobile captures at 390x844, 390x700, and 360x640 reported equal viewport/scroll dimensions, no checked hero elements outside the viewport, and `fast-preview player-roll-ready`.
+
+---
+
+## 2026-05-04 RIGHT-THUMB ROLL PANEL PASS
+
+Event ID: `trash-dice-right-thumb-roll-panel-pass-20260504`
+
+Approximate active elapsed: ~20 minutes for layout decision, CSS implementation, file mirroring, desktop preview verification, and headless mobile viewport verification.
+
+CJ direction addressed:
+- Moved the hero die/ROLL action bay to the right side of the player panel so it sits under a natural right-thumb tap zone on mobile.
+- Mirrored the same composition on the green panel, placing the green die bay on the right and the count on the left for visual consistency.
+- Moved both pool-count badges to the left side of the inventory lane while keeping the dice pools in the larger center lane.
+- Shifted the bottom-panel `YOUR TURN` status over the dice lane after the count moved left.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed the right-side ROLL layout with no page console errors.
+- Headless Chrome mobile captures at 390x844, 390x700, and 360x640 reported equal viewport/scroll dimensions and no checked hero elements outside the viewport.
