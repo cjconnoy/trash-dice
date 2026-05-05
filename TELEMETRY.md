@@ -647,3 +647,25 @@ Verification:
 - `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
 - In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed no visible bottom message badge and no page console errors.
 - Headless Chrome mobile captures at 390x844 and 360x640 reported no scroll overflow, hidden `.message`, active yellow panel status, and no checked hero elements outside the viewport.
+
+---
+
+## 2026-05-04 FAST-PREVIEW GAME-WIN FX RESTORE PASS
+
+Event ID: `trash-dice-fast-preview-game-win-fx-restore-pass-20260504`
+
+Approximate active elapsed: ~20 minutes for victory CSS inspection, targeted fast-preview restore, file mirroring, forced player-win QA, mobile animation sampling, and preview parking.
+
+CJ direction addressed:
+- Restored persistent raining confetti dice on the player-win screen in mobile/LAN `fast-preview`.
+- Restored the dancing trash-can hero loop after its entrance pop.
+- Restored the persistent Play Again badge nudge/pulse.
+- Preserved fast-preview discipline by keeping the reduced dice count and not enabling fullfx-only spectacle.
+- Parked the in-app browser on `about:blank` after QA so the win-screen loops do not drain app performance.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- Forced player-win QA at `http://127.0.0.1:5174/index.html?qa&gamewin=p1&forceqa` showed visible dice rain, victory can, and Play Again with no page console errors.
+- Headless iPhone-size fast-preview sampling confirmed dice rain uses infinite iteration, the victory can uses pop plus infinite dance, and Play Again uses infinite `winButtonPulse`.
