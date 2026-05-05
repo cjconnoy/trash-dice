@@ -305,6 +305,14 @@ body.fast-preview .start-overlay .title-hero-glint {
 .status-bar.yellow-turn .status-text {
   color: var(--yellow-pip);
 }
+.status-bar.green-turn {
+  background: rgba(15,111,57,0.18);
+  border-color: rgba(245,200,0,0.28);
+  box-shadow: 0 2px 10px rgba(15,95,50,0.16);
+}
+.status-bar.green-turn .status-text {
+  color: var(--green);
+}
 .turn-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
@@ -957,30 +965,7 @@ body.player-roll-ready .die.idle + .roll-btn.p1:not(:disabled) .roll-btn-label {
 
 /* ── MESSAGE ── */
 .message {
-  position: fixed;
-  left: 50%;
-  bottom: clamp(4.25rem, 10vh, 6rem);
-  z-index: 24;
-  transform: translateX(-50%) rotate(-2deg);
-  min-height: 1.75rem;
-  font-family: 'Bangers', 'Fredoka One', Arial Black, sans-serif;
-  font-size: clamp(1rem, 3.3vw, 1.32rem);
-  letter-spacing: 0.08em;
-  text-align: center;
-  min-width: clamp(150px, 42vw, 270px);
-  max-width: calc(100vw - 1rem);
-  padding: 0.22rem 0.86rem 0.16rem;
-  color: #17361f;
-  background: rgba(255,255,255,0.68);
-  border: 1px solid rgba(15,95,50,0.22);
-  border-radius: 999px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.72),
-    0 5px 14px rgba(68,53,30,0.12);
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.82),
-    2px 2px 0 rgba(15,95,50,0.28);
-  text-transform: uppercase;
+  display: none;
 }
 .message.ok {
   color: var(--yellow);
@@ -3103,7 +3088,11 @@ body.fast-preview .overlay.victory .play-again-btn {
   <!-- Green player panel — TOP -->
   <div class="player-panel green-panel" aria-label="Green player">
     <div class="die-wrap"><div class="die idle" id="p2Die"></div></div>
-    <div class="inventory-cluster">
+    <div class="inventory-cluster" id="p2Inventory">
+      <div class="status-bar green-turn" id="p2StatusBar">
+        <div class="turn-dot" id="p2TurnDot"></div>
+        <span class="status-text" id="p2StatusText">Green Roll</span>
+      </div>
       <div class="dice-pile panel-pile" id="p2Pile"></div>
       <div class="pool-count p2" id="p2Pool">20</div>
     </div>
@@ -3274,7 +3263,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   <!-- Yellow player panel — BOTTOM -->
   <div class="player-panel yellow-panel" aria-label="Yellow player">
     <div class="die-wrap"><div class="die idle" id="p1Die"></div><button class="roll-btn p1" id="rollBtn" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button></div>
-    <div class="inventory-cluster has-status">
+    <div class="inventory-cluster has-status" id="p1Inventory">
       <div class="status-bar yellow-turn" id="p1StatusBar">
         <div class="turn-dot" id="p1TurnDot"></div>
         <span class="status-text" id="p1StatusText">Your Turn</span>
@@ -3622,8 +3611,12 @@ body.fast-preview .overlay.victory .play-again-btn {
   const rollBtn     = document.getElementById('rollBtn');
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   const msgEl       = document.getElementById('message');
+  const p1Inventory = document.getElementById('p1Inventory');
+  const p2Inventory = document.getElementById('p2Inventory');
   const p1StatusBar = document.getElementById('p1StatusBar');
   const p1TurnDot   = document.getElementById('p1TurnDot');
+  const p2StatusBar = document.getElementById('p2StatusBar');
+  const p2TurnDot   = document.getElementById('p2TurnDot');
   const p1PoolEl    = document.getElementById('p1Pool');
   const p2PoolEl    = document.getElementById('p2Pool');
   const p1Pile      = document.getElementById('p1Pile');
@@ -4673,8 +4666,12 @@ body.fast-preview .overlay.victory .play-again-btn {
     updatePoolVisual('p2');
 
     const isP1 = current === 'p1';
+    p1Inventory.classList.toggle('has-status', isP1);
+    p2Inventory.classList.toggle('has-status', !isP1);
     p1StatusBar.classList.toggle('active', isP1);
+    p2StatusBar.classList.toggle('active', !isP1);
     p1TurnDot.style.background = '#f5c800';
+    p2TurnDot.style.background = '#1f9652';
     rollBtn.className = 'roll-btn ' + current;
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));

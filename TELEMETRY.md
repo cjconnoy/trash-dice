@@ -626,3 +626,24 @@ Verification:
 - `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
 - In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed no page console errors.
 - Headless Chrome iPhone-size fast-preview sampling reported `fast-preview player-roll-ready`, moving title gradient values, visible can body/rim glint opacity peaks, and visible lid edge/inner glint opacity peaks.
+
+---
+
+## 2026-05-04 GAMEPLAY MESSAGE BADGE REMOVAL PASS
+
+Event ID: `trash-dice-gameplay-message-badge-removal-pass-20260504`
+
+Approximate active elapsed: ~20 minutes for message-badge audit, panel-status implementation, file mirroring, desktop browser verification, and mobile viewport verification.
+
+CJ direction addressed:
+- Removed the visible bottom gameplay message badge, including the small `YELLOW PLAYER STARTS` pill that read poorly on mobile.
+- Shifted start/turn communication into the player panels: yellow uses the existing `YOUR TURN` badge and green now has a matching `GREEN ROLL` status badge when active.
+- Made panel status space dynamic so inactive panels do not reserve empty badge room.
+- Kept the hidden message element available for internal state/debug text updates without presenting it as a visible UI panel.
+
+Verification:
+- Inline script syntax check passed for `index.html`.
+- `git diff --check` passed with only the repo's expected CRLF warning.
+- `index.html` and `trash-dice.html` SHA256 hashes matched after mirroring.
+- In-app browser desktop preview at `http://127.0.0.1:5174/index.html` showed no visible bottom message badge and no page console errors.
+- Headless Chrome mobile captures at 390x844 and 360x640 reported no scroll overflow, hidden `.message`, active yellow panel status, and no checked hero elements outside the viewport.
