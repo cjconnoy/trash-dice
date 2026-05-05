@@ -382,15 +382,16 @@ body.p0-mode .p0-review-toggle {
 .odg-badge {
   position: fixed;
   z-index: 140;
-  padding: 0.28rem 0.52rem;
-  border-radius: 6px;
-  background: rgba(15,95,50,0.92);
-  color: #fff3b0;
-  border: 1px solid rgba(245,200,0,0.78);
-  font-family: 'Fredoka One', Arial Black, sans-serif;
-  font-size: clamp(0.52rem, 1.8vw, 0.68rem);
-  letter-spacing: 0.07em;
-  box-shadow: 0 6px 16px rgba(68,53,30,0.24);
+  padding: 0.24rem 0.44rem;
+  border-radius: 3px;
+  background: rgba(24,26,28,0.76);
+  color: rgba(244,246,248,0.92);
+  border: 1px solid rgba(255,255,255,0.22);
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(0.5rem, 1.45vw, 0.62rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: none;
   pointer-events: none;
 }
 .milestone-badge {
@@ -401,7 +402,6 @@ body.p0-mode .p0-review-toggle {
 .odg-badge {
   right: 8px;
   bottom: 8px;
-  letter-spacing: 0.045em;
 }
 
 /* ── GAME AREA ── */
@@ -2567,9 +2567,8 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   .milestone-badge,
   .odg-badge {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
-    padding: 0.22rem 0.42rem;
-    font-size: clamp(0.58rem, 2.7vw, 0.74rem);
-    max-width: 47vw;
+    padding: 0.2rem 0.36rem;
+    font-size: clamp(0.46rem, 2.25vw, 0.62rem);
     white-space: nowrap;
   }
 }
