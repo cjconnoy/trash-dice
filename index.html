@@ -503,9 +503,9 @@ body.player-roll-ready .roll-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 460px;
-  min-height: clamp(84px, 21vw, 126px);
+  width: min(75%, 345px);
+  max-width: 345px;
+  min-height: clamp(64px, 15.75vw, 95px);
   padding: clamp(0.42rem, 1.5vw, 0.56rem) clamp(0.52rem, 2vw, 0.76rem);
   background:
     radial-gradient(ellipse at 28% 4%, rgba(255,255,255,0.58), transparent 42%),
@@ -1028,7 +1028,7 @@ body.player-roll-ready .roll-panel {
   display: block;
   color: #e3271f;
   font-family: 'Bangers', sans-serif;
-  font-size: clamp(3rem, 10.8vw, 5.75rem);
+  font-size: clamp(2.4rem, 8vw, 4.4rem);
   line-height: 0.85;
   letter-spacing: 0.02em;
   padding: 0 0 0.04em;
@@ -1192,7 +1192,7 @@ body.player-roll-ready .roll-btn.p1:not(:disabled)::before {
   justify-content: center;
   gap: 0.4rem;
   width: 100%;
-  padding: 1.05rem 0.5rem clamp(2.1rem, 6vw, 4.2rem);
+  padding: 1.05rem 0.5rem clamp(1.05rem, 2.8vw, 1.8rem);
   flex-shrink: 0;
   overflow: visible;
   cursor: none;
@@ -2411,7 +2411,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .roll-panel {
     --roll-strip-die-size: clamp(62px, 18.7vw, 78px);
-    min-height: clamp(84px, 22vw, 96px);
+    min-height: clamp(62px, 16.5vw, 72px);
   }
 
   .roll-btn {
@@ -2421,7 +2421,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .roll-btn-label {
-    font-size: clamp(2.72rem, 13.2vw, 4.55rem);
+    font-size: clamp(2.15rem, 10.4vw, 3.3rem);
   }
 
   .roll-die-stage {
@@ -2557,11 +2557,11 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .roll-panel {
     --roll-strip-die-size: clamp(56px, 17vw, 68px);
-    min-height: clamp(78px, 22vw, 86px);
+    min-height: clamp(58px, 16.5vw, 65px);
   }
 
   .roll-btn-label {
-    font-size: clamp(2.42rem, 12.4vw, 3.86rem);
+    font-size: clamp(1.95rem, 9.8vw, 2.95rem);
   }
 
   .inventory-cluster {
@@ -3429,11 +3429,6 @@ body.fast-preview .overlay.victory .play-again-btn {
     </div>
   </div>
 
-  <!-- Yellow roll command — thumb-first action strip -->
-  <div class="roll-panel" aria-label="Yellow roll action">
-    <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
-  </div>
-
   <!-- Yellow player panel — BOTTOM -->
   <div class="player-panel yellow-panel" aria-label="Yellow player">
     <div class="inventory-cluster has-status" id="p1Inventory">
@@ -3446,6 +3441,11 @@ body.fast-preview .overlay.victory .play-again-btn {
       <div class="roll-die-stage" id="p1DieStage" aria-hidden="true"><div class="die idle" id="p1Die"></div></div>
     </div>
     <span class="turn-tag p1" id="p1TurnTag">TURN</span>
+  </div>
+
+  <!-- Yellow roll command — thumb-first action strip -->
+  <div class="roll-panel" aria-label="Yellow roll action">
+    <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
   </div>
 
 </div>
