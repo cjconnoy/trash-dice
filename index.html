@@ -2588,6 +2588,37 @@ body.mobile-roll-smoothing .victory-lid-hero {
   16%  { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.8); filter: blur(12px); }
 }
+.overlay.player-win-mega::before,
+.overlay.player-win-mega::after {
+  content: "";
+  position: fixed;
+  left: 50%;
+  top: 44%;
+  width: min(90vw, 880px);
+  aspect-ratio: 1;
+  border: clamp(4px, 0.75vw, 10px) solid rgba(255,244,130,0.72);
+  border-radius: 50%;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.24);
+  filter:
+    drop-shadow(0 0 22px rgba(245,200,0,0.76))
+    drop-shadow(0 0 38px rgba(94,232,94,0.42));
+  animation: playerWinShockwave 1.28s cubic-bezier(.12,.82,.18,1) 0.1s both;
+}
+.overlay.player-win-mega::after {
+  width: min(74vw, 720px);
+  border-color: rgba(94,232,94,0.56);
+  animation-delay: 0.46s;
+}
+.overlay.player-win-mega .victory-screen-burst {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255,255,255,0.54), transparent 15%),
+    radial-gradient(circle at 50% 46%, rgba(245,200,0,0.68), transparent 27%),
+    radial-gradient(circle at 50% 46%, rgba(94,232,94,0.42), transparent 45%);
+  animation: playerWinMegaBurst 2.05s ease-out forwards;
+}
 .victory-can-hero {
   position: fixed;
   left: 78%;
@@ -2619,11 +2650,92 @@ body.mobile-roll-smoothing .victory-can-hero {
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
   will-change: transform, opacity;
 }
-.victory-can-hero svg {
+.victory-can-hero > svg:not(.can-logo-overlay) {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
+}
+.victory-can-hero .can-logo-overlay {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 78%;
+  height: auto;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  transform-origin: 50% 50%;
+  text-rendering: geometricPrecision;
+  shape-rendering: geometricPrecision;
+  filter:
+    drop-shadow(0 2px 0 rgba(255,255,255,0.24))
+    drop-shadow(0 4px 4px rgba(0,0,0,0.32));
+}
+body.mobile-roll-smoothing .victory-can-hero .can-logo-overlay {
+  width: 82%;
+  top: 55%;
+}
+.overlay.player-win-mega .victory-can-hero {
+  filter:
+    drop-shadow(0 22px 24px rgba(0,0,0,0.42))
+    drop-shadow(0 0 22px rgba(245,200,0,0.76))
+    drop-shadow(0 0 38px rgba(94,232,94,0.42));
+}
+.victory-can-jackpot {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  overflow: visible;
+}
+.mini-die.victory-jackpot-die {
+  position: fixed;
+  left: var(--jackpot-x, 50vw);
+  top: var(--jackpot-y, 70vh);
+  width: clamp(24px, 5.6vw, 48px);
+  height: clamp(24px, 5.6vw, 48px);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.36) rotate(0deg);
+  filter:
+    brightness(1.16)
+    drop-shadow(0 8px 10px rgba(0,0,0,0.36))
+    drop-shadow(0 0 14px rgba(245,200,0,0.72));
+  animation: victoryJackpotDie var(--jackpot-duration, 1450ms) cubic-bezier(.08,.78,.18,1) var(--jackpot-delay, 0ms) forwards;
+}
+.mini-die.victory-jackpot-die::after {
+  content: "";
+  position: absolute;
+  right: 56%;
+  top: 50%;
+  width: clamp(34px, 7vw, 62px);
+  height: clamp(8px, 1.7vw, 14px);
+  border-radius: 999px;
+  opacity: 0.68;
+  transform: translateY(-50%) rotate(var(--trail-rot, -18deg));
+  background: linear-gradient(90deg, transparent, rgba(94,232,94,0.34), rgba(245,200,0,0.78), rgba(255,255,255,0.92));
+  filter: blur(0.2px);
+  mix-blend-mode: screen;
+}
+.mini-die.victory-jackpot-die .mini-pip {
+  width: 25%;
+  height: 25%;
+  box-shadow:
+    inset 1px 1px 1.8px rgba(0,0,0,0.66),
+    0 0 1px rgba(255,255,255,0.28);
+}
+body.mobile-roll-smoothing .mini-die.victory-jackpot-die {
+  width: clamp(18px, 5.6vw, 30px);
+  height: clamp(18px, 5.6vw, 30px);
+  filter: drop-shadow(0 7px 9px rgba(0,0,0,0.3));
+}
+body.mobile-roll-smoothing .mini-die.victory-jackpot-die::after {
+  width: 34px;
+  height: 8px;
+  opacity: 0.52;
 }
 .can-lid-piece {
   display: none;
@@ -2694,6 +2806,38 @@ body.fast-preview .mini-die.victory-settled-die {
   66%  { left: 72%; transform: translate(-50%, -18px) rotate(10deg) scale(1.09); }
   82%  { left: 28%; transform: translate(-50%, -3px) rotate(-9deg) scale(1.02); }
   100% { left: 78%; transform: translate(-50%, 0) rotate(7deg) scale(1); }
+}
+@keyframes playerWinShockwave {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.24); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.28); filter: blur(3px); }
+}
+@keyframes playerWinMegaBurst {
+  0%   { opacity: 0; transform: scale(0.46); filter: blur(0); }
+  10%  { opacity: 1; transform: scale(0.92); }
+  34%  { opacity: 0.88; transform: scale(1.18); }
+  100% { opacity: 0; transform: scale(2.05); filter: blur(14px); }
+}
+@keyframes victoryJackpotDie {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.36) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.45) rotate(42deg);
+  }
+  46% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(1.16) rotate(calc(var(--rot) * 0.48));
+  }
+  78% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.42) rotate(var(--rot));
+  }
 }
 @keyframes victoryFloorDieBob {
   0%   { transform: translate(-50%, -50%) translateY(0) rotate(var(--r, 0deg)) scale(var(--s, 1)); }
@@ -4150,6 +4294,18 @@ body.fast-preview .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
   will-change: transform, filter;
 }
+.overlay.player-win-mega .play-again-btn,
+body.fast-preview .overlay.player-win-mega .play-again-btn {
+  animation: playerWinButtonDelayedFocus 2.35s cubic-bezier(.16,.82,.18,1) both;
+}
+.overlay.player-win-mega .overlay-title {
+  animation:
+    playerWinMegaTitlePunch 2.28s cubic-bezier(.12,.86,.12,1) 0.08s both,
+    playerWinMegaTitleGlow 1.16s ease-in-out 2.28s infinite;
+}
+.overlay.player-win-mega .overlay-title::before {
+  animation: playerWinBadgePunch 1.8s cubic-bezier(.12,.86,.12,1) 0.28s both;
+}
 @keyframes winButtonPulse {
   0%,100% {
     transform: rotate(-1deg) scale(1);
@@ -4164,7 +4320,37 @@ body.fast-preview .overlay.victory .play-again-btn {
     box-shadow:
       0 7px 0 var(--yellow-dark),
       0 0 44px var(--winner-glow),
-      0 0 70px rgba(255,255,255,0.18);
+    0 0 70px rgba(255,255,255,0.18);
+  }
+}
+@keyframes playerWinButtonDelayedFocus {
+  0%, 42% {
+    opacity: 0.52;
+    transform: rotate(-1deg) translateY(10px) scale(0.92);
+    filter: brightness(0.86) saturate(0.92);
+    box-shadow:
+      0 4px 0 var(--yellow-dark),
+      0 0 14px rgba(245,200,0,0.28);
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(-1deg) translateY(-4px) scale(1.18);
+    filter: brightness(1.2) saturate(1.14);
+    box-shadow:
+      0 8px 0 var(--yellow-dark),
+      0 0 48px var(--winner-glow),
+      0 0 82px rgba(255,255,255,0.24);
+  }
+  72% {
+    transform: rotate(-1deg) translateY(1px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-1deg) translateY(0) scale(1.05);
+    filter: brightness(1.08);
+    box-shadow:
+      0 6px 0 var(--yellow-dark),
+      0 0 40px var(--winner-glow);
   }
 }
 @keyframes victoryTitlePunch {
@@ -4172,6 +4358,63 @@ body.fast-preview .overlay.victory .play-again-btn {
   36%  { transform: scale(1.28) rotate(2deg); filter: brightness(1.35); }
   62%  { transform: scale(0.96) rotate(-1deg); }
   100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+}
+@keyframes playerWinMegaTitlePunch {
+  0% {
+    transform: scale(0.5) rotate(-7deg);
+    filter: brightness(0.98);
+  }
+  16% {
+    transform: scale(1.42) rotate(3deg);
+    filter: brightness(1.55) drop-shadow(0 0 24px rgba(255,255,255,0.48));
+  }
+  28% {
+    transform: scale(0.94) rotate(-2deg);
+  }
+  42% {
+    transform: scale(1.28) rotate(1.5deg);
+    filter: brightness(1.38) drop-shadow(0 0 26px rgba(245,200,0,0.7));
+  }
+  58% {
+    transform: scale(0.98) rotate(-1deg);
+  }
+  76% {
+    transform: scale(1.14) rotate(0.8deg);
+    filter: brightness(1.24) drop-shadow(0 0 20px rgba(94,232,94,0.48));
+  }
+  100% {
+    transform: scale(1.04) rotate(0deg);
+    filter: brightness(1.08);
+  }
+}
+@keyframes playerWinMegaTitleGlow {
+  0%, 100% {
+    filter:
+      brightness(1.06)
+      drop-shadow(0 0 14px rgba(245,200,0,0.38));
+  }
+  48% {
+    filter:
+      brightness(1.18)
+      drop-shadow(0 0 24px rgba(245,200,0,0.62))
+      drop-shadow(0 0 34px rgba(94,232,94,0.32));
+  }
+}
+@keyframes playerWinBadgePunch {
+  0%, 36% {
+    transform: rotate(2deg) scale(0.92);
+    filter: brightness(0.95);
+  }
+  52% {
+    transform: rotate(2deg) scale(1.18);
+    filter: brightness(1.28);
+  }
+  74% {
+    transform: rotate(2deg) scale(0.98);
+  }
+  100% {
+    transform: rotate(2deg) scale(1.05);
+  }
 }
 </style>
 </head>
@@ -6401,7 +6644,8 @@ body.fast-preview .overlay.victory .play-again-btn {
       cancelAnimationFrame(victoryRainFrame);
       victoryRainFrame = null;
     }
-    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-dice-floor, .victory-dice-rain, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
+    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-jackpot-die, .victory-dice-floor, .victory-dice-rain, .victory-can-jackpot, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
+    overlay.classList.remove('player-win-mega');
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
   }
@@ -6470,8 +6714,51 @@ body.fast-preview .overlay.victory .play-again-btn {
     appendRainBatch();
   }
 
+  function createVictoryCanJackpot(canHero, winner) {
+    if (!canHero || winner !== 'p1') return;
+    const jackpot = document.createElement('div');
+    jackpot.className = 'victory-can-jackpot';
+    overlay.appendChild(jackpot);
+    const diceCount = MOBILE_VICTORY_SAFE_MODE
+      ? Math.round(clamp(14 + totalTrashedDice() * 0.16, 18, 24))
+      : (FAST_PREVIEW_ENABLED
+        ? Math.round(clamp(30 + totalTrashedDice() * 0.32, 36, 54))
+        : Math.round(clamp(64 + totalTrashedDice() * 0.7, 74, 112)));
+    requestAnimationFrame(() => {
+      if (!jackpot.isConnected || !canHero.isConnected) return;
+      const r = canHero.getBoundingClientRect();
+      const originX = r.left + r.width * 0.5;
+      const originY = r.top + r.height * 0.22;
+      const spreadX = Math.min(window.innerWidth * (MOBILE_VICTORY_SAFE_MODE ? 0.78 : 0.66), 900);
+      const launchHeight = Math.min(window.innerHeight * (MOBILE_VICTORY_SAFE_MODE ? 0.45 : 0.58), 560);
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < diceCount; i++) {
+        const color = Math.random() < 0.76 ? 'yellow' : 'green';
+        const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-jackpot-die');
+        const sideBias = (i / Math.max(1, diceCount - 1)) - 0.5;
+        const dx = sideBias * spreadX + (-54 + Math.random() * 108);
+        const peak = launchHeight * (0.56 + Math.random() * 0.42);
+        const drift = -36 + Math.random() * 72;
+        die.style.setProperty('--jackpot-x', originX.toFixed(1) + 'px');
+        die.style.setProperty('--jackpot-y', originY.toFixed(1) + 'px');
+        die.style.setProperty('--mx', (dx * 0.44 + drift).toFixed(1) + 'px');
+        die.style.setProperty('--my', (-peak).toFixed(1) + 'px');
+        die.style.setProperty('--tx', (dx * 0.88 + drift).toFixed(1) + 'px');
+        die.style.setProperty('--ty', (-peak * 0.62 + 78 + Math.random() * 58).toFixed(1) + 'px');
+        die.style.setProperty('--rot', Math.round((Math.random() < 0.5 ? -1 : 1) * (480 + Math.random() * 980)) + 'deg');
+        die.style.setProperty('--trail-rot', Math.round(-32 + Math.random() * 64) + 'deg');
+        die.style.setProperty('--jackpot-delay', Math.round(i * (MOBILE_VICTORY_SAFE_MODE ? 22 : 16) + Math.random() * 90) + 'ms');
+        die.style.setProperty('--jackpot-duration', Math.round(1260 + Math.random() * (MOBILE_VICTORY_SAFE_MODE ? 430 : 820)) + 'ms');
+        frag.appendChild(die);
+      }
+      jackpot.appendChild(frag);
+    });
+    runLater(() => jackpot.remove(), MOBILE_VICTORY_SAFE_MODE ? 2700 : 3600);
+  }
+
   function triggerGameWinCelebration(winner) {
     clearVictoryEffects();
+    overlay.classList.toggle('player-win-mega', winner === 'p1');
     const burst = document.createElement('div');
     burst.className = 'victory-screen-burst';
     overlay.appendChild(burst);
@@ -6497,10 +6784,13 @@ body.fast-preview .overlay.victory .play-again-btn {
 
     const canHero = document.createElement('div');
     canHero.className = 'victory-can-hero';
-    const canSvg = trashCan.querySelector('svg');
+    const canSvg = trashCan.querySelector('svg:not(.can-logo-overlay)');
+    const canLogo = trashCan.querySelector('.can-logo-overlay');
     if (canSvg) canHero.appendChild(canSvg.cloneNode(true));
+    if (canLogo) canHero.appendChild(canLogo.cloneNode(true));
     overlay.appendChild(canHero);
 
+    createVictoryCanJackpot(canHero, winner);
     createVictoryDiceRain(winner);
 
     boardWrap.classList.remove('game-win-spin');
@@ -6751,7 +7041,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     playerClutchMagnetUsedThisRound = false;
     gameStarted = true;
 
-    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green');
+    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
 
     requestAnimationFrame(() => {
       buildSlots();
@@ -7088,8 +7378,9 @@ body.fast-preview .overlay.victory .play-again-btn {
     overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
     overlayStats.textContent = '';
     playAgainBtn.textContent = 'PLAY AGAIN';
-    overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green');
+    overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
     overlay.classList.add('victory', playerWon ? 'winner-yellow' : 'winner-green');
+    if (playerWon) overlay.classList.add('player-win-mega');
     overlay.classList.add('show');
     triggerGameWinCelebration(winner);
   }
@@ -7113,7 +7404,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     trashCan.classList.remove('flash', 'pour', 'victory-erupt');
     trashCan.style.animationDuration = '';
     boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin');
-    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green');
+    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
   }
 
   function forceFinalRoundGameSequence(winner = 'p1', trashLoad = 10) {
