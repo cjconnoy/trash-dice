@@ -1061,6 +1061,32 @@ body.player-roll-ready .roll-panel {
     box-shadow: 8px 8px 0 0 rgba(0,0,0,0.42), 14px 14px 0 0 rgba(0,0,0,0.32), 0 12px 30px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.16);
   }
 }
+@keyframes dieRollMobile {
+  0% {
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+  14% {
+    transform: translate3d(0,-5px,0) rotate(118deg) scale(1.045);
+  }
+  28% {
+    transform: translate3d(0,2px,0) rotate(248deg) scale(0.985);
+  }
+  43% {
+    transform: translate3d(0,-4px,0) rotate(398deg) scale(1.04);
+  }
+  58% {
+    transform: translate3d(0,1px,0) rotate(552deg) scale(0.99);
+  }
+  74% {
+    transform: translate3d(0,-3px,0) rotate(728deg) scale(1.025);
+  }
+  90% {
+    transform: translate3d(0,2px,0) rotate(876deg) scale(1.06,0.94);
+  }
+  100% {
+    transform: translate3d(0,0,0) rotate(900deg) scale(1);
+  }
+}
 @keyframes dieIdleHeroGlint {
   0%, 68% {
     opacity: 0;
@@ -2641,6 +2667,25 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     --roll-stage-size: clamp(144px, 34.5vw, 207px);
   }
 
+  .roll-die-stage::before {
+    filter: none;
+    opacity: 0.78;
+  }
+
+  .roll-die-stage .die {
+    backface-visibility: hidden;
+    transform: translate3d(0,0,0);
+  }
+
+  .roll-die-stage .die.rolling {
+    animation-name: dieRollMobile;
+    box-shadow:
+      5px 6px 0 0 rgba(0,0,0,0.38),
+      10px 11px 0 0 rgba(0,0,0,0.22),
+      0 10px 18px rgba(0,0,0,0.42),
+      inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+
   .die-wrap {
     --roll-die-size: clamp(62px, 18.7vw, 78px);
     margin: 0.08rem clamp(0.1rem, 0.7vw, 0.28rem) 0.08rem clamp(0.42rem, 2vw, 0.72rem);
@@ -2809,7 +2854,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .player-panel {
-    max-width: 650px;
+    max-width: 700px;
     padding: clamp(0.5rem, 1vw, 0.72rem) clamp(0.62rem, 1.4vw, 0.92rem);
   }
 
@@ -2828,43 +2873,43 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .panel-pile .mini-die {
-    width: clamp(18px, 2.1vw, 25px);
-    height: clamp(18px, 2.1vw, 25px);
+    width: clamp(19px, 2.22vw, 27px);
+    height: clamp(19px, 2.22vw, 27px);
   }
 
   .panel-pile .mini-pip {
-    width: clamp(4px, 0.52vw, 6px);
-    height: clamp(4px, 0.52vw, 6px);
+    width: clamp(4.25px, 0.56vw, 6.45px);
+    height: clamp(4.25px, 0.56vw, 6.45px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-die {
-    width: clamp(19.4px, 2.27vw, 27px);
-    height: clamp(19.4px, 2.27vw, 27px);
+    width: clamp(20.6px, 2.42vw, 29px);
+    height: clamp(20.6px, 2.42vw, 29px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-die {
-    width: clamp(20.9px, 2.44vw, 29px);
-    height: clamp(20.9px, 2.44vw, 29px);
+    width: clamp(22.1px, 2.62vw, 31.5px);
+    height: clamp(22.1px, 2.62vw, 31.5px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-die {
-    width: clamp(22.3px, 2.6vw, 31px);
-    height: clamp(22.3px, 2.6vw, 31px);
+    width: clamp(23.8px, 2.82vw, 34px);
+    height: clamp(23.8px, 2.82vw, 34px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-pip {
-    width: clamp(4.3px, 0.56vw, 6.5px);
-    height: clamp(4.3px, 0.56vw, 6.5px);
+    width: clamp(4.6px, 0.62vw, 7px);
+    height: clamp(4.6px, 0.62vw, 7px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-pip {
-    width: clamp(4.65px, 0.6vw, 7px);
-    height: clamp(4.65px, 0.6vw, 7px);
+    width: clamp(4.95px, 0.68vw, 7.55px);
+    height: clamp(4.95px, 0.68vw, 7.55px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-pip {
-    width: clamp(5px, 0.64vw, 7.45px);
-    height: clamp(5px, 0.64vw, 7.45px);
+    width: clamp(5.35px, 0.74vw, 8.15px);
+    height: clamp(5.35px, 0.74vw, 8.15px);
   }
 
   .inventory-cluster.has-status .panel-pile {
@@ -2872,23 +2917,23 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .inventory-cluster.has-status .panel-pile .mini-die {
-    width: clamp(17px, 1.95vw, 23px);
-    height: clamp(17px, 1.95vw, 23px);
+    width: clamp(18.2px, 2.12vw, 25px);
+    height: clamp(18.2px, 2.12vw, 25px);
   }
 
   .inventory-cluster.has-status.pile-mid .panel-pile .mini-die {
-    width: clamp(18.4px, 2.1vw, 24.9px);
-    height: clamp(18.4px, 2.1vw, 24.9px);
+    width: clamp(19.6px, 2.28vw, 27px);
+    height: clamp(19.6px, 2.28vw, 27px);
   }
 
   .inventory-cluster.has-status.pile-low .panel-pile .mini-die {
-    width: clamp(19.7px, 2.26vw, 26.7px);
-    height: clamp(19.7px, 2.26vw, 26.7px);
+    width: clamp(21px, 2.48vw, 29px);
+    height: clamp(21px, 2.48vw, 29px);
   }
 
   .inventory-cluster.has-status.pile-critical .panel-pile .mini-die {
-    width: clamp(21.1px, 2.42vw, 28.5px);
-    height: clamp(21.1px, 2.42vw, 28.5px);
+    width: clamp(22.6px, 2.66vw, 31px);
+    height: clamp(22.6px, 2.66vw, 31px);
   }
 
   .pool-count {
@@ -2931,7 +2976,7 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
   }
 
   .player-panel {
-    max-width: 680px;
+    max-width: 720px;
   }
 
   .board-scene {
@@ -4072,6 +4117,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
+  const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
   const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
@@ -5901,8 +5947,13 @@ body.fast-preview .overlay.victory .play-again-btn {
 
     // Fast phase (80–1000ms every 85ms) then slow phase (1100–1430ms every 165ms)
     const spinAt = [];
-    for (let t = 55;  t <= 620; t += 65)  spinAt.push(t);
-    for (let t = 700; t <= 805; t += 105) spinAt.push(t);
+    if (MOBILE_ROLL_SMOOTHING) {
+      for (let t = 90;  t <= 610; t += 130) spinAt.push(t);
+      for (let t = 760; t <= 820; t += 120) spinAt.push(t);
+    } else {
+      for (let t = 55;  t <= 620; t += 65)  spinAt.push(t);
+      for (let t = 700; t <= 805; t += 105) spinAt.push(t);
+    }
     const spinHandles = spinAt.map(t =>
       runLater(() => setPips(Math.floor(Math.random() * 6) + 1, current), t)
     );
