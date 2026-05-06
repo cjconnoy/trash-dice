@@ -59,6 +59,12 @@ One Day Games | Game 2 | Full development cycle tracking
 
 ---
 
+## QA NOTES
+
+- 2026-05-05: Before diagnosing mobile web audio in future ODG games, first confirm the iPhone hardware audio/silent toggle is not engaged and device volume is up. Trash Dice mobile audio was functioning after unlock; the apparent failure was caused by the phone audio toggle being off.
+
+---
+
 ## TOKEN / COST TRACKING
 *Claude cannot read its own token counts mid-session. Log manually or pull from Anthropic console after each session.*
 
