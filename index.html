@@ -373,9 +373,70 @@ body.p0-mode .p0-review-toggle {
   color: #123418;
   border-color: rgba(15,95,50,0.74);
 }
+.dev-cheat-bar {
+  position: fixed;
+  right: 8px;
+  bottom: 52px;
+  z-index: 190;
+  display: none;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 7px;
+  background: rgba(16,18,20,0.86);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.4);
+}
+body.dev-cheats .dev-cheat-bar {
+  display: inline-flex;
+}
+.dev-cheat-btn {
+  min-width: 54px;
+  min-height: 34px;
+  padding: 0.34rem 0.48rem 0.38rem;
+  border: 2px solid rgba(255,255,255,0.28);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)),
+    rgba(31,36,38,0.96);
+  color: rgba(244,246,248,0.94);
+  font-family: 'Fredoka One', Arial Black, sans-serif;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.dev-cheat-btn:hover,
+.dev-cheat-btn:focus-visible {
+  border-color: rgba(245,200,0,0.72);
+  color: #fff3b0;
+  outline: none;
+}
+.dev-cheat-btn.win {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0)),
+    rgba(174,126,0,0.96);
+  color: #fff5be;
+}
+.dev-cheat-btn.lose {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)),
+    rgba(15,95,50,0.96);
+  color: #dff6c5;
+}
+.dev-cheat-btn.start {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0)),
+    rgba(44,51,55,0.96);
+}
 @media (hover: none), (pointer: coarse), (max-width: 899px) {
   .p0-review-toggle {
     display: none !important;
+  }
+  .dev-cheat-bar {
+    right: 50%;
+    bottom: 50px;
+    transform: translateX(50%);
   }
 }
 .milestone-badge,
@@ -4365,6 +4426,11 @@ body.fast-preview .overlay.victory .play-again-btn {
 <div class="message" id="message">ROLL TO START</div>
 <div class="debug-badge" id="debugBadge">P-0 Autoplay</div>
 <button class="p0-review-toggle" id="p0ReviewToggle" type="button" hidden>P0 Demo</button>
+<div class="dev-cheat-bar" id="devCheatBar" hidden aria-label="Development cheats">
+  <button class="dev-cheat-btn win" id="devWinBtn" type="button" title="W key">WIN</button>
+  <button class="dev-cheat-btn lose" id="devLoseBtn" type="button" title="L key">LOSE</button>
+  <button class="dev-cheat-btn start" id="devStartBtn" type="button" title="G key">START</button>
+</div>
 
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
@@ -4550,6 +4616,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
+  document.body.classList.toggle('dev-cheats', DEV_CHEATS_ENABLED);
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
   const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
   const TURN_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 340 : 950;
@@ -4920,6 +4987,10 @@ body.fast-preview .overlay.victory .play-again-btn {
   const overlayStats= document.getElementById('overlayStats');
   const playAgainBtn= document.getElementById('playAgainBtn');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
+  const devCheatBar = document.getElementById('devCheatBar');
+  const devWinBtn = document.getElementById('devWinBtn');
+  const devLoseBtn = document.getElementById('devLoseBtn');
+  const devStartBtn = document.getElementById('devStartBtn');
 
   let slotEls  = [];  // SVG slot elements
   let labelEls = [];  // SVG number labels
@@ -6500,11 +6571,14 @@ body.fast-preview .overlay.victory .play-again-btn {
   function updateP0ReviewControl() {
     document.body.classList.toggle('review-build', REVIEW_BUILD);
     document.body.classList.toggle('p0-mode', p0ReviewMode);
-    if (!p0ReviewToggle) return;
-    p0ReviewToggle.hidden = !REVIEW_BUILD;
-    p0ReviewToggle.textContent = p0ReviewMode ? 'P1 Play' : 'P0 Demo';
-    p0ReviewToggle.setAttribute('aria-label', p0ReviewMode ? 'Switch to Player 1 play' : 'Switch to Player 0 demo');
-    p0ReviewToggle.setAttribute('aria-pressed', String(p0ReviewMode));
+    document.body.classList.toggle('dev-cheats', DEV_CHEATS_ENABLED);
+    if (devCheatBar) devCheatBar.hidden = !DEV_CHEATS_ENABLED;
+    if (p0ReviewToggle) {
+      p0ReviewToggle.hidden = !REVIEW_BUILD;
+      p0ReviewToggle.textContent = p0ReviewMode ? 'P1 Play' : 'P0 Demo';
+      p0ReviewToggle.setAttribute('aria-label', p0ReviewMode ? 'Switch to Player 1 play' : 'Switch to Player 0 demo');
+      p0ReviewToggle.setAttribute('aria-pressed', String(p0ReviewMode));
+    }
   }
 
   function clearP0Timer() {
@@ -7269,10 +7343,32 @@ body.fast-preview .overlay.victory .play-again-btn {
       toggleP0Review();
     });
   }
+  if (devWinBtn) {
+    devWinBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      forceFinalRoundGameSequence('p1', 10);
+    });
+  }
+  if (devLoseBtn) {
+    devLoseBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      forceFinalRoundGameSequence('p2', 10);
+    });
+  }
+  if (devStartBtn) {
+    devStartBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      resetToGameStart();
+    });
+  }
 
   document.addEventListener('pointerdown', event => {
     if (!p0ReviewMode) return;
     if (p0ReviewToggle && event.target === p0ReviewToggle) return;
+    if (devCheatBar && devCheatBar.contains(event.target)) return;
     event.preventDefault();
     event.stopPropagation();
     stopP0ToP1();
