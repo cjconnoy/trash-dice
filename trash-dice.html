@@ -457,6 +457,76 @@ body.player-roll-ready .roll-panel {
   transform-origin: 50% 55%;
   will-change: transform, filter;
 }
+.player-panel.bench-celebrate {
+  animation: benchPanelCelebrate 0.86s cubic-bezier(.12,.88,.16,1);
+  transform-origin: 50% 54%;
+  will-change: transform, filter;
+}
+.player-panel.bench-celebrate::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.8),
+    inset 0 -2px 5px rgba(35,45,41,0.1),
+    0 0 24px var(--panel-glow);
+}
+.inventory-cluster.bench-celebrate {
+  animation: benchInventoryCelebrate 0.86s cubic-bezier(.12,.88,.16,1);
+  will-change: transform, filter;
+}
+.status-bar.bench-praise {
+  min-width: clamp(8.6rem, 30vw, 11rem);
+  background: rgba(255,229,78,0.64);
+  border-color: rgba(15,95,50,0.44);
+  box-shadow:
+    0 4px 13px rgba(201,160,0,0.22),
+    0 0 18px rgba(245,200,0,0.34);
+  animation: benchStatusPraise 0.92s cubic-bezier(.12,.88,.16,1);
+}
+.status-bar.bench-praise .status-text {
+  color: #0f5f32;
+}
+.yellow-panel.player-payout-fanfare {
+  animation: playerPayoutPanelFanfare 0.72s cubic-bezier(.14,.82,.16,1) infinite;
+  transform-origin: 50% 54%;
+  will-change: transform, filter;
+}
+.yellow-panel.player-payout-fanfare::before {
+  border-color: rgba(245,200,0,0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.92),
+    inset 0 -2px 5px rgba(35,45,41,0.08),
+    0 0 22px rgba(245,200,0,0.46),
+    0 0 42px rgba(255,230,88,0.28);
+}
+.yellow-panel.player-payout-fanfare::after {
+  width: 8px;
+  background: linear-gradient(180deg, #fff38a, #f5c800 38%, #0f5f32 78%);
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,0.55),
+    0 0 18px rgba(245,200,0,0.76),
+    0 0 34px rgba(245,200,0,0.42);
+  animation: playerPayoutRailChase 0.42s linear infinite;
+}
+.inventory-cluster.player-payout-fanfare {
+  animation: playerPayoutInventoryGlow 0.62s cubic-bezier(.12,.82,.18,1) infinite;
+  will-change: filter;
+}
+.status-bar.payout-praise {
+  min-width: clamp(7.4rem, 27vw, 9.6rem);
+  background: rgba(255,232,74,0.86);
+  border-color: rgba(15,95,50,0.58);
+  box-shadow:
+    0 5px 0 rgba(15,95,50,0.22),
+    0 0 20px rgba(245,200,0,0.54),
+    0 0 38px rgba(255,244,154,0.34);
+  animation: playerPayoutStatusPop 0.58s cubic-bezier(.12,.88,.16,1) infinite;
+}
+.status-bar.payout-praise .status-text {
+  color: #0f5f32;
+}
+.pool-count.payout-jackpot {
+  animation: playerPayoutCountJackpot 0.52s cubic-bezier(.12,.88,.16,1) infinite;
+  will-change: transform, filter;
+}
 .player-panel::before {
   content: '';
   position: absolute;
@@ -634,6 +704,20 @@ body.player-roll-ready .roll-panel {
     filter: brightness(1);
   }
 }
+@keyframes rollStagePopMobile {
+  0% {
+    opacity: 0;
+    transform: translate(var(--roll-stage-x), var(--roll-stage-y)) scale(0.74) rotate(var(--roll-stage-rotate));
+  }
+  68% {
+    opacity: 1;
+    transform: translate(var(--roll-stage-x), var(--roll-stage-y)) scale(1.025) rotate(var(--roll-stage-rotate));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(var(--roll-stage-x), var(--roll-stage-y)) scale(1) rotate(var(--roll-stage-rotate));
+  }
+}
 @keyframes playerPanelRollPulse {
   0%,100% {
     transform: scale(1);
@@ -650,6 +734,89 @@ body.player-roll-ready .roll-panel {
   62% {
     transform: scale(1.01);
     filter: brightness(1.03) saturate(1.04);
+  }
+}
+@keyframes benchPanelCelebrate {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1) saturate(1);
+  }
+  20% {
+    transform: translateY(-3px) scale(1.036);
+    filter: brightness(1.14) saturate(1.16) drop-shadow(0 0 12px var(--panel-glow));
+  }
+  42% {
+    transform: translateY(-5px) scale(1.056);
+    filter: brightness(1.2) saturate(1.22) drop-shadow(0 0 22px var(--panel-glow));
+  }
+  66% {
+    transform: translateY(1px) scale(0.992);
+    filter: brightness(1.04) saturate(1.08);
+  }
+}
+@keyframes benchInventoryCelebrate {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  34% {
+    transform: translateY(-3px) scale(1.018);
+    filter: brightness(1.12);
+  }
+  62% {
+    transform: translateY(1px) scale(0.996);
+    filter: brightness(1.04);
+  }
+}
+@keyframes benchStatusPraise {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+  }
+  28% {
+    transform: translateX(-50%) translateY(-2px) scale(1.16) rotate(-1deg);
+  }
+  54% {
+    transform: translateX(-50%) scale(1.06) rotate(1deg);
+  }
+  76% {
+    transform: translateX(-50%) translateY(1px) scale(0.98);
+  }
+}
+@keyframes playerPayoutPanelFanfare {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1.02) saturate(1.04);
+  }
+  38% {
+    transform: translateY(-3px) scale(1.028);
+    filter: brightness(1.2) saturate(1.22) drop-shadow(0 0 18px rgba(245,200,0,0.38));
+  }
+  68% {
+    transform: translateY(1px) scale(0.996);
+    filter: brightness(1.08) saturate(1.1);
+  }
+}
+@keyframes playerPayoutRailChase {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.35) saturate(1.24); }
+}
+@keyframes playerPayoutInventoryGlow {
+  0%, 100% { filter: brightness(1.02) saturate(1.02); }
+  46% { filter: brightness(1.18) saturate(1.18) drop-shadow(0 0 16px rgba(245,200,0,0.32)); }
+}
+@keyframes playerPayoutStatusPop {
+  0%, 100% { transform: translateX(-50%) translateY(0) scale(1) rotate(0deg); }
+  42% { transform: translateX(-50%) translateY(-2px) scale(1.12) rotate(-1deg); }
+  72% { transform: translateX(-50%) translateY(1px) scale(0.98) rotate(1deg); }
+}
+@keyframes playerPayoutCountJackpot {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  42% {
+    transform: translateY(-5px) scale(1.22) rotate(-2deg);
+    filter: brightness(1.24) saturate(1.2) drop-shadow(0 0 13px rgba(245,200,0,0.52));
   }
 }
 /* dice-pool-visual no longer used in panels — piles live on the mat */
@@ -686,6 +853,12 @@ body.player-roll-ready .roll-panel {
   z-index: 4;
   animation: inventoryMischiefDuck 0.62s cubic-bezier(.12,.82,.18,1) both;
   will-change: transform;
+}
+.panel-pile .mini-die.bench-cheer-die {
+  z-index: 10;
+  animation: benchCheerDie 0.74s cubic-bezier(.12,.88,.16,1) both;
+  animation-delay: var(--bench-delay, 0ms);
+  will-change: transform, filter;
 }
 @keyframes inventoryMischiefWave {
   0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
@@ -732,6 +905,24 @@ body.player-roll-ready .roll-panel {
   34% { transform: translateY(10px) rotate(var(--mischief-tilt, -5deg)) scale(1.22, 0.58); }
   54% { transform: translateY(-5px) rotate(calc(var(--mischief-tilt, -5deg) * -0.42)) scale(0.9, 1.18); }
   78% { transform: translateY(2px) rotate(0deg) scale(1.04, 0.94); }
+}
+@keyframes benchCheerDie {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    filter: brightness(1);
+  }
+  28% {
+    transform: translateY(var(--bench-hop, -14px)) rotate(var(--bench-tilt, 10deg)) scale(1.22);
+    filter: brightness(1.24) saturate(1.12);
+  }
+  52% {
+    transform: translateY(2px) rotate(0deg) scale(0.94, 1.08);
+    filter: brightness(1.06);
+  }
+  76% {
+    transform: translateY(var(--bench-hop-small, -8px)) rotate(var(--bench-tilt-small, -6deg)) scale(1.1);
+    filter: brightness(1.14);
+  }
 }
 
 .pool-count {
@@ -1065,26 +1256,23 @@ body.player-roll-ready .roll-panel {
   0% {
     transform: translate3d(0,0,0) rotate(0deg) scale(1);
   }
-  14% {
-    transform: translate3d(0,-5px,0) rotate(118deg) scale(1.045);
+  16% {
+    transform: translate3d(0,-2px,0) rotate(210deg) scale(1.018);
   }
-  28% {
-    transform: translate3d(0,2px,0) rotate(248deg) scale(0.985);
+  32% {
+    transform: translate3d(0,-1px,0) rotate(420deg) scale(1.008);
   }
-  43% {
-    transform: translate3d(0,-4px,0) rotate(398deg) scale(1.04);
+  50% {
+    transform: translate3d(0,-2px,0) rotate(660deg) scale(1.014);
   }
-  58% {
-    transform: translate3d(0,1px,0) rotate(552deg) scale(0.99);
+  68% {
+    transform: translate3d(0,-1px,0) rotate(900deg) scale(1.006);
   }
-  74% {
-    transform: translate3d(0,-3px,0) rotate(728deg) scale(1.025);
-  }
-  90% {
-    transform: translate3d(0,2px,0) rotate(876deg) scale(1.06,0.94);
+  86% {
+    transform: translate3d(0,0,0) rotate(1110deg) scale(1.014,0.992);
   }
   100% {
-    transform: translate3d(0,0,0) rotate(900deg) scale(1);
+    transform: translate3d(0,0,0) rotate(1200deg) scale(1);
   }
 }
 @keyframes dieIdleHeroGlint {
@@ -1956,6 +2144,36 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
 .can-pour-die::after {
   content: none;
 }
+.can-pour-die.player-payout-comet {
+  z-index: 74;
+  filter:
+    brightness(1.12)
+    saturate(1.14)
+    drop-shadow(0 0 10px rgba(245,200,0,0.72))
+    drop-shadow(0 0 16px rgba(15,95,50,0.28));
+}
+.payout-comet-trail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: clamp(76px, 16vw, 126px);
+  height: clamp(18px, 4vw, 28px);
+  pointer-events: none;
+  z-index: 70;
+  opacity: 0;
+  transform-origin: 86% 50%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 88% 50%, rgba(255,255,255,0.92) 0 8%, #fff38a 9% 17%, transparent 18%),
+    linear-gradient(90deg, transparent 0%, rgba(15,95,50,0.08) 16%, rgba(245,200,0,0.3) 42%, rgba(255,236,88,0.72) 72%, rgba(255,255,255,0.9) 100%);
+  filter:
+    blur(0.2px)
+    drop-shadow(0 0 10px rgba(245,200,0,0.7))
+    drop-shadow(0 0 18px rgba(255,236,88,0.38));
+  mix-blend-mode: screen;
+  animation: payoutCometTrail var(--payout-duration, 900ms) cubic-bezier(.12,.75,.2,1) forwards;
+  animation-delay: var(--payout-delay, 0ms);
+}
 @keyframes payoutDieArc {
   0% {
     opacity: 0;
@@ -1979,6 +2197,27 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
     opacity: 0;
     transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty) + 6px)) rotate(var(--r3, 300deg)) scale(0.52);
     filter: brightness(0.94);
+  }
+}
+@keyframes payoutCometTrail {
+  0% {
+    opacity: 0;
+    transform: translate(-86%,-50%) rotate(var(--trail-angle, -22deg)) scaleX(0.18) scaleY(0.66);
+  }
+  10% {
+    opacity: 0.84;
+  }
+  45% {
+    opacity: 0.92;
+    transform: translate(calc(-86% + var(--mx)), calc(-50% + var(--my))) rotate(var(--trail-angle, -22deg)) scaleX(1.08) scaleY(1);
+  }
+  82% {
+    opacity: 0.62;
+    transform: translate(calc(-86% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--trail-angle, -22deg)) scaleX(0.68) scaleY(0.78);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-86% + var(--tx)), calc(-50% + var(--ty) + 6px)) rotate(var(--trail-angle, -22deg)) scaleX(0.18) scaleY(0.5);
   }
 }
 .mini-die.victory-cannon-die {
@@ -2672,6 +2911,12 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
     opacity: 0.78;
   }
 
+  .roll-die-stage.active {
+    animation-name: rollStagePopMobile;
+    animation-duration: 0.18s;
+    animation-timing-function: cubic-bezier(.16,.82,.18,1);
+  }
+
   .roll-die-stage .die {
     backface-visibility: hidden;
     transform: translate3d(0,0,0);
@@ -2679,11 +2924,21 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 
   .roll-die-stage .die.rolling {
     animation-name: dieRollMobile;
+    animation-duration: 0.7s;
+    animation-timing-function: cubic-bezier(.18,.84,.16,1);
     box-shadow:
       5px 6px 0 0 rgba(0,0,0,0.38),
       10px 11px 0 0 rgba(0,0,0,0.22),
       0 10px 18px rgba(0,0,0,0.42),
       inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+
+  body.fast-preview .roll-die-stage .die.rolling {
+    animation-duration: 0.42s;
+  }
+
+  body.fast-preview .roll-die-stage.active {
+    animation-duration: 0.14s;
   }
 
   .die-wrap {
@@ -4118,10 +4373,14 @@ body.fast-preview .overlay.victory .play-again-btn {
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
+  const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
+  const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
+  document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
   const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
   const TURN_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 340 : 950;
+  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 1420 : 1620;
   const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
   const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
   let forcedRolls = [];
@@ -4130,6 +4389,10 @@ body.fast-preview .overlay.victory .play-again-btn {
   let p0Timer = null;
   let titleRoundWinTimer = null;
   let titleRoundWinStageTimer = null;
+  let benchCelebrateTimer = null;
+  let playerPayoutFanfareTimer = null;
+  let playerPayoutFanfareActive = false;
+  let lastPlayerHitPraise = null;
   let victoryRainFrame = null;
   let victoryRainRun = 0;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -4186,6 +4449,9 @@ body.fast-preview .overlay.victory .play-again-btn {
     p0Timer = null;
     titleRoundWinTimer = null;
     titleRoundWinStageTimer = null;
+    benchCelebrateTimer = null;
+    playerPayoutFanfareTimer = null;
+    playerPayoutFanfareActive = false;
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
   }
@@ -4315,8 +4581,10 @@ body.fast-preview .overlay.victory .play-again-btn {
   const p1Inventory = document.getElementById('p1Inventory');
   const p2Inventory = document.getElementById('p2Inventory');
   const p1StatusBar = document.getElementById('p1StatusBar');
+  const p1StatusText = document.getElementById('p1StatusText');
   const p1TurnDot   = document.getElementById('p1TurnDot');
   const p2StatusBar = document.getElementById('p2StatusBar');
+  const p2StatusText = document.getElementById('p2StatusText');
   const p2TurnDot   = document.getElementById('p2TurnDot');
   const p1PoolEl    = document.getElementById('p1Pool');
   const p2PoolEl    = document.getElementById('p2Pool');
@@ -4726,6 +4994,116 @@ body.fast-preview .overlay.victory .play-again-btn {
     void panel.offsetWidth;
     panel.classList.add('payout-tick');
     panel.addEventListener('animationend', () => panel.classList.remove('payout-tick'), { once: true });
+  }
+
+  function clearPlayerPayoutFanfare(resetStatus = false) {
+    if (playerPayoutFanfareTimer) {
+      cancelRuntimeTimer(playerPayoutFanfareTimer);
+      playerPayoutFanfareTimer = null;
+    }
+    playerPayoutFanfareActive = false;
+    const panel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
+    if (panel) panel.classList.remove('player-payout-fanfare');
+    if (p1Inventory) p1Inventory.classList.remove('player-payout-fanfare');
+    if (p1StatusBar) p1StatusBar.classList.remove('payout-praise');
+    if (p1PoolEl) p1PoolEl.classList.remove('payout-jackpot');
+    if (resetStatus && p1StatusText) p1StatusText.textContent = current === 'p1' ? 'YOUR TURN' : 'YELLOW PLAYER';
+  }
+
+  function startPlayerPayoutFanfare(duration = 1800) {
+    if (!p1Inventory) return;
+    clearPlayerPayoutFanfare(false);
+    clearBenchCelebration(false);
+    playerPayoutFanfareActive = true;
+    const panel = p1Inventory.closest('.player-panel');
+    if (panel) {
+      void panel.offsetWidth;
+      panel.classList.add('player-payout-fanfare');
+    }
+    p1Inventory.classList.add('player-payout-fanfare');
+    if (p1StatusText) p1StatusText.textContent = 'PAYDAY!';
+    if (p1StatusBar) p1StatusBar.classList.add('payout-praise');
+    if (p1PoolEl) p1PoolEl.classList.add('payout-jackpot');
+    playerPayoutFanfareTimer = runLater(() => {
+      playerPayoutFanfareTimer = null;
+      clearPlayerPayoutFanfare(true);
+    }, duration);
+  }
+
+  function clearBenchCelebration(resetStatus = false) {
+    if (benchCelebrateTimer) {
+      cancelRuntimeTimer(benchCelebrateTimer);
+      benchCelebrateTimer = null;
+    }
+    const panel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
+    if (panel) panel.classList.remove('bench-celebrate');
+    if (p1Inventory) p1Inventory.classList.remove('bench-celebrate');
+    if (p1StatusBar) p1StatusBar.classList.remove('bench-praise');
+    if (resetStatus && p1StatusText) p1StatusText.textContent = 'YOUR TURN';
+    document.querySelectorAll('.bench-cheer-die').forEach(die => {
+      die.classList.remove('bench-cheer-die');
+      die.style.removeProperty('--bench-delay');
+      die.style.removeProperty('--bench-hop');
+      die.style.removeProperty('--bench-hop-small');
+      die.style.removeProperty('--bench-tilt');
+      die.style.removeProperty('--bench-tilt-small');
+    });
+  }
+
+  function choosePlayerHitPraise(isRoundWin = false) {
+    if (isRoundWin) {
+      lastPlayerHitPraise = PLAYER_ROUND_WIN_PRAISE;
+      return PLAYER_ROUND_WIN_PRAISE;
+    }
+    const options = PLAYER_HIT_PRAISE.filter(phrase => phrase !== lastPlayerHitPraise);
+    const phrase = options[Math.floor(Math.random() * options.length)] || PLAYER_HIT_PRAISE[0];
+    lastPlayerHitPraise = phrase;
+    return phrase;
+  }
+
+  function triggerBenchCelebration(player, isRoundWin = false) {
+    if (player !== 'p1' || !p1Pile || !p1Inventory) return;
+    clearBenchCelebration(false);
+    clearInventoryMischief();
+
+    const panel = p1Inventory.closest('.player-panel');
+    if (panel) {
+      void panel.offsetWidth;
+      panel.classList.add('bench-celebrate');
+    }
+    p1Inventory.classList.add('bench-celebrate');
+    if (p1StatusText) {
+      p1StatusText.textContent = choosePlayerHitPraise(isRoundWin);
+    }
+    if (p1StatusBar) {
+      p1StatusBar.classList.remove('bench-praise');
+      void p1StatusBar.offsetWidth;
+      p1StatusBar.classList.add('bench-praise');
+    }
+
+    const dice = Array.from(p1Pile.querySelectorAll('.mini-die'));
+    dice.forEach(die => die.classList.remove('bench-cheer-die'));
+    void p1Pile.offsetWidth;
+    dice.forEach((die, i) => {
+      const stagger = Math.min(i, 20) * 22;
+      const tilt = (i % 2 === 0 ? -1 : 1) * (8 + (i % 4) * 2);
+      const hop = -(10 + (i % 5) * 2);
+      die.style.setProperty('--bench-delay', stagger + 'ms');
+      die.style.setProperty('--bench-hop', hop + 'px');
+      die.style.setProperty('--bench-hop-small', Math.round(hop * 0.58) + 'px');
+      die.style.setProperty('--bench-tilt', tilt + 'deg');
+      die.style.setProperty('--bench-tilt-small', Math.round(tilt * -0.55) + 'deg');
+      die.classList.add('bench-cheer-die');
+    });
+
+    const clearDelay = Math.max(
+      Math.min(1560, 980 + dice.length * 24),
+      PLAYER_PLACE_CELEBRATE_HANDOFF_MS + 80
+    );
+    benchCelebrateTimer = runLater(() => {
+      benchCelebrateTimer = null;
+      clearBenchCelebration(current === 'p1');
+    }, clearDelay);
   }
 
   function clearInventoryMischief() {
@@ -5746,6 +6124,15 @@ body.fast-preview .overlay.victory .play-again-btn {
     p2Inventory.classList.toggle('has-status', !isP1);
     p1StatusBar.classList.toggle('active', isP1);
     p2StatusBar.classList.toggle('active', !isP1);
+    p1StatusBar.classList.remove('bench-praise');
+    if (playerPayoutFanfareActive) {
+      p1Inventory.classList.add('has-status');
+      p1StatusBar.classList.add('active', 'payout-praise');
+      if (p1StatusText) p1StatusText.textContent = 'PAYDAY!';
+    } else if (p1StatusText) {
+      p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'YELLOW PLAYER';
+    }
+    if (p2StatusText) p2StatusText.textContent = isP1 ? 'GREEN PLAYER' : 'GREEN ROLL';
     p1TurnDot.style.background = '#f5c800';
     p2TurnDot.style.background = '#1f9652';
     rollBtn.className = 'roll-btn ' + current;
@@ -5869,10 +6256,12 @@ body.fast-preview .overlay.victory .play-again-btn {
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
     clearRuntimeTimers();
+    clearBenchCelebration(false);
     clearVictoryEffects();
     stopTitleRoundWinFanfare();
     document.body.classList.remove('player-roll-ready');
-    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    clearPlayerPayoutFanfare(false);
     trashCan.classList.remove('flash', 'pour', 'victory-erupt');
     trashCan.style.animationDuration = '';
     boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
@@ -5948,8 +6337,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     // Fast phase (80–1000ms every 85ms) then slow phase (1100–1430ms every 165ms)
     const spinAt = [];
     if (MOBILE_ROLL_SMOOTHING) {
-      for (let t = 90;  t <= 610; t += 130) spinAt.push(t);
-      for (let t = 760; t <= 820; t += 120) spinAt.push(t);
+      // Keep mobile roll compositor-only until the final face resolves.
     } else {
       for (let t = 55;  t <= 620; t += 65)  spinAt.push(t);
       for (let t = 700; t <= 805; t += 105) spinAt.push(t);
@@ -5990,14 +6378,16 @@ body.fast-preview .overlay.victory .play-again-btn {
     syncUI();
 
     const filled = board.filter(s => s !== null).length;
-    if (filled === 6) {
+    const isRoundWinPlacement = filled === 6;
+    triggerBenchCelebration(current, isRoundWinPlacement);
+    if (isRoundWinPlacement) {
       triggerLidWinPulse();
       runLater(endRound, TURN_HANDOFF_MS);
     } else if (totalDice(current) <= 0) {
       const winner = current === 'p1' ? 'p2' : 'p1';
       runLater(() => gameOver(winner), 520);
     } else {
-      runLater(nextTurn, TURN_HANDOFF_MS);
+      runLater(nextTurn, current === 'p1' ? PLAYER_PLACE_CELEBRATE_HANDOFF_MS : TURN_HANDOFF_MS);
     }
   }
 
@@ -6058,24 +6448,43 @@ body.fast-preview .overlay.victory .play-again-btn {
       const tx = pileR.left + pileR.width * (0.25 + Math.random() * 0.5);
       const ty = pileR.top + pileR.height * (0.25 + Math.random() * 0.5);
       const dieValue = clamp(Math.floor(die.value || ((i % 6) + 1)), 1, 6);
-      const el = makeMiniDie(die.color, dieValue, 'can-pour-die');
+      const playerPayout = winner === 'p1';
+      const el = makeMiniDie(die.color, dieValue, playerPayout ? 'can-pour-die player-payout-comet' : 'can-pour-die');
       const available = Math.max(0, spillDuration - travelMs - pourLeadInMs - pourTailMs);
       const delay = pourLeadInMs + (diceWon === 1 ? 0 : i * (available / (diceWon - 1)));
       const dx = tx - sx;
       const dy = ty - sy;
       const arc = clamp(125 + visualLoad * 4 + Math.random() * 56, 140, 300);
+      const mx = dx * (0.35 + Math.random() * 0.22);
+      const my = dy * 0.35 - arc;
       el.style.left = sx + 'px';
       el.style.top = sy + 'px';
       el.style.setProperty('--payout-duration', travelMs + 'ms');
       el.style.setProperty('--payout-delay', Math.round(delay) + 'ms');
-      el.style.setProperty('--mx', (dx * (0.35 + Math.random() * 0.22)).toFixed(1) + 'px');
-      el.style.setProperty('--my', (dy * 0.35 - arc).toFixed(1) + 'px');
+      el.style.setProperty('--mx', mx.toFixed(1) + 'px');
+      el.style.setProperty('--my', my.toFixed(1) + 'px');
       el.style.setProperty('--tx', dx.toFixed(1) + 'px');
       el.style.setProperty('--ty', dy.toFixed(1) + 'px');
       el.style.setProperty('--r0', (i * 17 - 42) + 'deg');
       el.style.setProperty('--r1', (80 + i * 19) + 'deg');
       el.style.setProperty('--r2', (180 + i * 23) + 'deg');
       el.style.setProperty('--r3', (220 + i * 29) + 'deg');
+      if (playerPayout) {
+        const trail = document.createElement('div');
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        trail.className = 'payout-comet-trail';
+        trail.style.left = sx + 'px';
+        trail.style.top = sy + 'px';
+        trail.style.setProperty('--payout-duration', travelMs + 'ms');
+        trail.style.setProperty('--payout-delay', Math.round(delay) + 'ms');
+        trail.style.setProperty('--mx', mx.toFixed(1) + 'px');
+        trail.style.setProperty('--my', my.toFixed(1) + 'px');
+        trail.style.setProperty('--tx', dx.toFixed(1) + 'px');
+        trail.style.setProperty('--ty', dy.toFixed(1) + 'px');
+        trail.style.setProperty('--trail-angle', angle.toFixed(1) + 'deg');
+        document.body.appendChild(trail);
+        runLater(() => trail.remove(), delay + travelMs + pourTailMs);
+      }
       document.body.appendChild(el);
       if (typeof onDieArrive === 'function') {
         runLater(() => onDieArrive(die, i), Math.round(delay + travelMs * 0.82));
@@ -6138,6 +6547,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       : spillDuration;
     triggerTitleRoundWinFanfare(fanfareDuration);
     Audio.roundWonFanfare(fanfareDuration);
+    if (winner === 'p1') startPlayerPayoutFanfare(spillDuration + 420);
 
     // Trash can empties the claimed set into the winner's pile.
     showClaimBadge(winner, claimedDice, spillDuration);
@@ -6174,6 +6584,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 
       current = 'p1';
       clearDie(null);
+      clearPlayerPayoutFanfare(false);
       syncUI();
       setMsg('YELLOW PLAYER ROLL');
       rollBtn.disabled = false;
@@ -6186,6 +6597,8 @@ body.fast-preview .overlay.victory .play-again-btn {
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
     clearRuntimeTimers();
+    clearBenchCelebration(false);
+    clearPlayerPayoutFanfare(false);
     stopTitleRoundWinFanfare();
     busy = true;
     syncHeroIdleState();
@@ -6286,6 +6699,7 @@ body.fast-preview .overlay.victory .play-again-btn {
 
   // ── NEXT TURN ────────────────────────────────────────────────
   function nextTurn() {
+    clearBenchCelebration(false);
     current = current === 'p1' ? 'p2' : 'p1';
 
     if (totalDice(current) <= 0) {
