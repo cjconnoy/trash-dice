@@ -4368,13 +4368,15 @@ body.fast-preview .overlay.victory .play-again-btn {
     URL_HASH.includes('review')
   );
   const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
-  const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
+  const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
+  const P0_DEBUG_AUTOPLAY_START = URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p-0') || URL_HASH.includes('debug-p0');
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
+  const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
@@ -4393,6 +4395,7 @@ body.fast-preview .overlay.victory .play-again-btn {
   let playerPayoutFanfareTimer = null;
   let playerPayoutFanfareActive = false;
   let lastPlayerHitPraise = null;
+  let playerClutchMagnetUsedThisRound = false;
   let victoryRainFrame = null;
   let victoryRainRun = 0;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -6176,15 +6179,67 @@ body.fast-preview .overlay.victory .play-again-btn {
     }
   }
 
+  function canRunP0Autoplay() {
+    return p0Autoplay &&
+      gameStarted &&
+      !busy &&
+      current === 'p1' &&
+      totalDice('p1') > 0 &&
+      !overlay.classList.contains('show');
+  }
+
   function scheduleP0Autoplay(delay = P0_AUTOPLAY_MS) {
     clearP0Timer();
-    if (!p0Autoplay || !gameStarted || busy || overlay.classList.contains('show')) return;
-    if (current !== 'p1' || rollBtn.disabled || totalDice('p1') <= 0) return;
+    if (!canRunP0Autoplay()) return;
     p0Timer = runLater(() => {
       p0Timer = null;
-      if (!p0Autoplay || busy || current !== 'p1' || rollBtn.disabled || overlay.classList.contains('show')) return;
+      if (!canRunP0Autoplay()) return;
+      rollBtn.disabled = false;
+      syncHeroIdleState();
       doRoll();
     }, delay);
+  }
+
+  function forceP0AutoplayKick(delay = P0_AUTOPLAY_MS) {
+    clearP0Timer();
+    if (!gameStarted || overlay.classList.contains('show')) return;
+    p0Timer = runLater(() => {
+      p0Timer = null;
+      if (!canRunP0Autoplay()) return;
+      rollBtn.disabled = false;
+      syncHeroIdleState();
+      doRoll();
+    }, delay);
+  }
+
+  function randomDieFace() {
+    return Math.floor(Math.random() * 6) + 1;
+  }
+
+  function choosePlayerClutchFace(openFace) {
+    if (Math.random() < PLAYER_CLUTCH_MAGNET_CHANCE) return openFace;
+    const otherFaces = [1, 2, 3, 4, 5, 6].filter(face => face !== openFace);
+    return otherFaces[Math.floor(Math.random() * otherFaces.length)];
+  }
+
+  function chooseRollValue(player) {
+    if (forcedRolls.length) return forcedRolls.shift();
+    const openSlots = Array.isArray(board)
+      ? board.reduce((slots, slot, i) => {
+          if (slot === null) slots.push(i + 1);
+          return slots;
+        }, [])
+      : [];
+    if (
+      player === 'p1' &&
+      !p0Autoplay &&
+      !playerClutchMagnetUsedThisRound &&
+      openSlots.length === 1
+    ) {
+      playerClutchMagnetUsedThisRound = true;
+      return choosePlayerClutchFace(openSlots[0]);
+    }
+    return randomDieFace();
   }
 
   function setP0Autoplay(enabled, announce = true) {
@@ -6234,7 +6289,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     requestAnimationFrame(() => {
       setP0Autoplay(true, false);
       setMsg('P0 AUTOPLAY');
-      scheduleP0Autoplay(260);
+      forceP0AutoplayKick(260);
     });
   }
 
@@ -6281,6 +6336,7 @@ body.fast-preview .overlay.victory .play-again-btn {
     round     = 1;
     busy      = false;
     totalRolls= 0;
+    playerClutchMagnetUsedThisRound = false;
     gameStarted = true;
 
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green');
@@ -6318,7 +6374,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       return;
     }
 
-    const value = forcedRolls.length ? forcedRolls.shift() : Math.floor(Math.random() * 6) + 1;
+    const value = chooseRollValue(current);
 
     // Start tumble + spinning pip values
     const activeDie = getDie(current);
@@ -6564,6 +6620,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       board = Array(6).fill(null);
       trashDice = [];
       round++;
+      playerClutchMagnetUsedThisRound = false;
       syncUI();
     }, spillDuration);
 
@@ -6856,7 +6913,7 @@ body.fast-preview .overlay.victory .play-again-btn {
       return;
     }
     if (P0_START_ENABLED) {
-      if (REVIEW_BUILD) {
+      if (REVIEW_BUILD && !P0_DEBUG_AUTOPLAY_START) {
         startP0Review();
       } else {
         startP0DebugAutoplay();
