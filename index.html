@@ -4861,12 +4861,13 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     URL_HASH.includes('review')
   );
   const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
-  const DEV_CHEATS_ENABLED = REVIEW_BUILD || QA_ENABLED || URL_OPTIONS.has('devcheats') || URL_HASH.includes('devcheats');
   const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
   const P0_DEBUG_AUTOPLAY_START = URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p-0') || URL_HASH.includes('debug-p0');
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
-  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite'));
+  const FAST_PREVIEW_REQUESTED = URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite');
+  const DEV_CHEATS_ENABLED = REVIEW_BUILD || QA_ENABLED || FAST_PREVIEW_REQUESTED || URL_OPTIONS.has('devcheats') || URL_HASH.includes('devcheats');
+  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
