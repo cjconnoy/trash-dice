@@ -2588,6 +2588,11 @@ body.mobile-roll-smoothing .victory-lid-hero {
   16%  { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.8); filter: blur(12px); }
 }
+@keyframes victoryScreenBurstMobile {
+  0%   { opacity: 0; transform: scale(0.62); }
+  18%  { opacity: 0.82; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.62); }
+}
 .overlay.player-win-mega::before,
 .overlay.player-win-mega::after {
   content: "";
@@ -2619,6 +2624,16 @@ body.mobile-roll-smoothing .victory-lid-hero {
     radial-gradient(circle at 50% 46%, rgba(94,232,94,0.42), transparent 45%);
   animation: playerWinMegaBurst 2.05s ease-out forwards;
 }
+body.mobile-roll-smoothing .victory-screen-burst,
+body.mobile-roll-smoothing .overlay.player-win-mega .victory-screen-burst {
+  animation-name: victoryScreenBurstMobile;
+}
+body.mobile-roll-smoothing .overlay.player-win-mega::before,
+body.mobile-roll-smoothing .overlay.player-win-mega::after {
+  border-width: 3px;
+  filter: none;
+  animation-name: playerWinShockwaveMobile;
+}
 .victory-can-hero {
   position: fixed;
   left: 78%;
@@ -2649,7 +2664,7 @@ body.mobile-roll-smoothing .victory-can-hero {
   animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
-  will-change: left, transform, opacity;
+  will-change: transform, opacity;
 }
 .victory-can-hero > svg:not(.can-logo-overlay) {
   display: block;
@@ -2683,6 +2698,11 @@ body.mobile-roll-smoothing .victory-can-hero .can-logo-overlay {
     drop-shadow(0 22px 24px rgba(0,0,0,0.42))
     drop-shadow(0 0 22px rgba(245,200,0,0.76))
     drop-shadow(0 0 38px rgba(94,232,94,0.42));
+}
+body.mobile-roll-smoothing .overlay.player-win-mega .victory-can-hero {
+  filter:
+    drop-shadow(0 12px 16px rgba(0,0,0,0.32))
+    drop-shadow(0 0 16px rgba(245,200,0,0.42));
 }
 .victory-can-jackpot {
   position: fixed;
@@ -2799,29 +2819,37 @@ body.fast-preview .mini-die.victory-settled-die {
   100% { opacity: 1; transform: translate3d(-50%, 0, 0) scale(1) rotate(0deg); }
 }
 @keyframes victoryCanHeroDance {
-  0%   { left: 78%; transform: translate(-50%, 0) rotate(-7deg) scale(1); }
-  10%  { left: 70%; transform: translate(-50%, -16px) rotate(8deg) scale(1.08); }
-  24%  { left: 24%; transform: translate(-50%, -2px) rotate(-10deg) scale(1.02); }
-  34%  { left: 31%; transform: translate(-50%, -20px) rotate(9deg) scale(1.1); }
-  50%  { left: 50%; transform: translate(-50%, -7px) rotate(-3deg) scale(1.04); }
-  66%  { left: 72%; transform: translate(-50%, -18px) rotate(10deg) scale(1.09); }
-  82%  { left: 28%; transform: translate(-50%, -3px) rotate(-9deg) scale(1.02); }
-  100% { left: 78%; transform: translate(-50%, 0) rotate(7deg) scale(1); }
+  0%   { transform: translate3d(-50%, 0, 0) rotate(-7deg) scale(1); }
+  10%  { transform: translate3d(calc(-50% - 8vw), -16px, 0) rotate(8deg) scale(1.08); }
+  24%  { transform: translate3d(calc(-50% - 54vw), -2px, 0) rotate(-10deg) scale(1.02); }
+  34%  { transform: translate3d(calc(-50% - 47vw), -20px, 0) rotate(9deg) scale(1.1); }
+  50%  { transform: translate3d(calc(-50% - 28vw), -7px, 0) rotate(-3deg) scale(1.04); }
+  66%  { transform: translate3d(calc(-50% - 6vw), -18px, 0) rotate(10deg) scale(1.09); }
+  82%  { transform: translate3d(calc(-50% - 50vw), -3px, 0) rotate(-9deg) scale(1.02); }
+  100% { transform: translate3d(-50%, 0, 0) rotate(7deg) scale(1); }
 }
 @keyframes victoryCanHeroDanceMobile {
-  0%   { left: 76%; transform: translate3d(-50%, 0, 0) rotate(-5deg) scale(1); }
-  12%  { left: 64%; transform: translate3d(-50%, -13px, 0) rotate(8deg) scale(1.06); }
-  28%  { left: 46%; transform: translate3d(-50%, -4px, 0) rotate(-7deg) scale(1.02); }
-  42%  { left: 56%; transform: translate3d(-50%, -17px, 0) rotate(9deg) scale(1.08); }
-  58%  { left: 73%; transform: translate3d(-50%, -3px, 0) rotate(-6deg) scale(1.02); }
-  74%  { left: 52%; transform: translate3d(-50%, -15px, 0) rotate(8deg) scale(1.07); }
-  88%  { left: 68%; transform: translate3d(-50%, -5px, 0) rotate(-7deg) scale(1.03); }
-  100% { left: 76%; transform: translate3d(-50%, 0, 0) rotate(6deg) scale(1); }
+  0%   { transform: translate3d(-50%, 0, 0) rotate(-5deg) scale(1); }
+  8%   { transform: translate3d(calc(-50% - 7vw), -9px, 0) rotate(7deg) scale(1.05,0.98); }
+  15%  { transform: translate3d(calc(-50% - 16vw), -2px, 0) rotate(-8deg) scale(0.98,1.05); }
+  26%  { transform: translate3d(calc(-50% - 29vw), -16px, 0) rotate(10deg) scale(1.08); }
+  35%  { transform: translate3d(calc(-50% - 21vw), 2px, 0) rotate(-5deg) scale(1.02,0.96); }
+  48%  { transform: translate3d(calc(-50% - 9vw), -18px, 0) rotate(11deg) scale(1.09); }
+  57%  { transform: translate3d(calc(-50% - 2vw), -4px, 0) rotate(-9deg) scale(1.01); }
+  69%  { transform: translate3d(calc(-50% - 24vw), -12px, 0) rotate(6deg) scale(1.06,1.01); }
+  79%  { transform: translate3d(calc(-50% - 18vw), 1px, 0) rotate(-11deg) scale(0.99,1.04); }
+  91%  { transform: translate3d(calc(-50% - 6vw), -14px, 0) rotate(9deg) scale(1.07); }
+  100% { transform: translate3d(-50%, 0, 0) rotate(6deg) scale(1); }
 }
 @keyframes playerWinShockwave {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.24); }
   12%  { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.28); filter: blur(3px); }
+}
+@keyframes playerWinShockwaveMobile {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.32); }
+  16%  { opacity: 0.78; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12); }
 }
 @keyframes playerWinMegaBurst {
   0%   { opacity: 0; transform: scale(0.46); filter: blur(0); }
@@ -4321,6 +4349,12 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
 .overlay.player-win-mega .overlay-title::before {
   animation: playerWinBadgePunch 1.8s cubic-bezier(.12,.86,.12,1) 0.28s both;
 }
+body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title {
+  animation: playerWinMegaTitlePunchMobile 1.72s cubic-bezier(.12,.86,.12,1) 0.08s both;
+}
+body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
+  animation: playerWinBadgePunchMobile 1.42s cubic-bezier(.12,.86,.12,1) 0.22s both;
+}
 @keyframes winButtonPulse {
   0%,100% {
     transform: rotate(-1deg) scale(1);
@@ -4402,6 +4436,14 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     filter: brightness(1.08);
   }
 }
+@keyframes playerWinMegaTitlePunchMobile {
+  0%   { transform: translate3d(0,0,0) scale(0.58) rotate(-6deg); }
+  18%  { transform: translate3d(0,0,0) scale(1.32) rotate(3deg); }
+  32%  { transform: translate3d(0,0,0) scale(0.96) rotate(-2deg); }
+  50%  { transform: translate3d(0,0,0) scale(1.18) rotate(1.4deg); }
+  68%  { transform: translate3d(0,0,0) scale(0.99) rotate(-0.8deg); }
+  100% { transform: translate3d(0,0,0) scale(1.04) rotate(0deg); }
+}
 @keyframes playerWinMegaTitleGlow {
   0%, 100% {
     filter:
@@ -4429,6 +4471,17 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
   }
   100% {
     transform: rotate(2deg) scale(1.05);
+  }
+}
+@keyframes playerWinBadgePunchMobile {
+  0%, 34% {
+    transform: translate3d(0,0,0) rotate(2deg) scale(0.92);
+  }
+  52% {
+    transform: translate3d(0,0,0) rotate(2deg) scale(1.14);
+  }
+  100% {
+    transform: translate3d(0,0,0) rotate(2deg) scale(1.04);
   }
 }
 </style>
@@ -6390,17 +6443,32 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
         const c = sfxCtx('megaWinFanfare');
         if (!c) return;
         const now = c.currentTime;
+        const mobileLite = MOBILE_VICTORY_SAFE_MODE;
         function burstSnare(t, gain = 0.34) {
-          const frames = Math.floor(c.sampleRate * 0.18);
+          const frames = Math.floor(c.sampleRate * (mobileLite ? 0.09 : 0.18));
           const buf = c.createBuffer(1, frames, c.sampleRate);
           const d = buf.getChannelData(0);
-          for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 1.2);
+          for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, mobileLite ? 1.7 : 1.2);
           const src = c.createBufferSource();
           const g = c.createGain();
           src.buffer = buf;
           g.gain.value = gain;
           src.connect(g).connect(c.destination);
           src.start(now + t);
+        }
+        if (mobileLite) {
+          [0, 0.18].forEach((t, i) => burstSnare(t, i === 0 ? 0.26 : 0.2));
+          [[196,0.00],[247,0.08],[294,0.16],[392,0.26],[523,0.38],[659,0.52],[784,0.68]].forEach(([fr,t], i) => {
+            tone(fr, 'triangle', 0.18 - i * 0.012, t, 0.42, c.destination);
+            tone(fr * 1.5, 'sine', 0.052, t + 0.025, 0.28, c.destination);
+          });
+          [[65,0.0,0.72,0.32],[98,0.36,0.58,0.22]].forEach(([fr,t,dur,gain]) => {
+            tone(fr, 'sine', gain, t, dur, c.destination);
+          });
+          [[523,0.82],[659,0.82],[784,0.82],[1047,0.82]].forEach(([fr,t]) => {
+            tone(fr, 'sine', 0.075, t, 0.92, c.destination);
+          });
+          return;
         }
         [0, 0.13, 0.26, 0.54, 0.72, 0.9].forEach((t, i) => burstSnare(t, i < 3 ? 0.34 : 0.26));
         noiseBurst(0.55, 0.02, 0.35, 1.15, 2800, 'highpass');
@@ -6674,8 +6742,8 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     const playerWin = winner === 'p1';
     const diceCount = MOBILE_VICTORY_SAFE_MODE
       ? (playerWin
-        ? Math.round(clamp(30 + totalTrashedDice() * 0.34, 36, 48))
-        : Math.round(clamp(12 + totalTrashedDice() * 0.18, 16, 24)))
+        ? Math.round(clamp(22 + totalTrashedDice() * 0.22, 26, 36))
+        : Math.round(clamp(10 + totalTrashedDice() * 0.12, 12, 18)))
       : (playerWin
         ? (FAST_PREVIEW_ENABLED
           ? Math.round(clamp(116 + totalTrashedDice() * 0.72, 132, 178))
@@ -6713,7 +6781,7 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
       if (run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
       const batchSize = MOBILE_VICTORY_SAFE_MODE
-        ? (playerWin ? 10 : 8)
+        ? (playerWin ? 7 : 6)
         : (playerWin
           ? (FAST_PREVIEW_ENABLED ? 22 : 50)
           : (FAST_PREVIEW_ENABLED ? 12 : 34));
@@ -6736,7 +6804,7 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     jackpot.className = 'victory-can-jackpot';
     overlay.appendChild(jackpot);
     const diceCount = MOBILE_VICTORY_SAFE_MODE
-      ? Math.round(clamp(14 + totalTrashedDice() * 0.16, 18, 24))
+      ? Math.round(clamp(8 + totalTrashedDice() * 0.12, 12, 18))
       : (FAST_PREVIEW_ENABLED
         ? Math.round(clamp(30 + totalTrashedDice() * 0.32, 36, 54))
         : Math.round(clamp(64 + totalTrashedDice() * 0.7, 74, 112)));
@@ -6747,11 +6815,11 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
       const originY = r.top + r.height * 0.22;
       const spreadX = Math.min(window.innerWidth * (MOBILE_VICTORY_SAFE_MODE ? 0.78 : 0.66), 900);
       const launchHeight = Math.min(window.innerHeight * (MOBILE_VICTORY_SAFE_MODE ? 0.45 : 0.58), 560);
-      const frag = document.createDocumentFragment();
-      for (let i = 0; i < diceCount; i++) {
+      let i = 0;
+      function makeJackpotDie(index) {
         const color = Math.random() < 0.76 ? 'yellow' : 'green';
         const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-jackpot-die');
-        const sideBias = (i / Math.max(1, diceCount - 1)) - 0.5;
+        const sideBias = (index / Math.max(1, diceCount - 1)) - 0.5;
         const dx = sideBias * spreadX + (-54 + Math.random() * 108);
         const peak = launchHeight * (0.56 + Math.random() * 0.42);
         const drift = -36 + Math.random() * 72;
@@ -6763,11 +6831,22 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
         die.style.setProperty('--ty', (-peak * 0.62 + 78 + Math.random() * 58).toFixed(1) + 'px');
         die.style.setProperty('--rot', Math.round((Math.random() < 0.5 ? -1 : 1) * (480 + Math.random() * 980)) + 'deg');
         die.style.setProperty('--trail-rot', Math.round(-32 + Math.random() * 64) + 'deg');
-        die.style.setProperty('--jackpot-delay', Math.round(i * (MOBILE_VICTORY_SAFE_MODE ? 22 : 16) + Math.random() * 90) + 'ms');
+        die.style.setProperty('--jackpot-delay', Math.round(index * (MOBILE_VICTORY_SAFE_MODE ? 22 : 16) + Math.random() * 90) + 'ms');
         die.style.setProperty('--jackpot-duration', Math.round(1260 + Math.random() * (MOBILE_VICTORY_SAFE_MODE ? 430 : 820)) + 'ms');
-        frag.appendChild(die);
+        return die;
       }
-      jackpot.appendChild(frag);
+      function appendJackpotBatch() {
+        if (!jackpot.isConnected) return;
+        const frag = document.createDocumentFragment();
+        const batchSize = MOBILE_VICTORY_SAFE_MODE ? 4 : 12;
+        const end = Math.min(i + batchSize, diceCount);
+        for (; i < end; i++) {
+          frag.appendChild(makeJackpotDie(i));
+        }
+        jackpot.appendChild(frag);
+        if (i < diceCount) requestAnimationFrame(appendJackpotBatch);
+      }
+      appendJackpotBatch();
     });
     runLater(() => jackpot.remove(), MOBILE_VICTORY_SAFE_MODE ? 2700 : 3600);
   }
@@ -6806,20 +6885,31 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     if (canLogo) canHero.appendChild(canLogo.cloneNode(true));
     overlay.appendChild(canHero);
 
-    createVictoryCanJackpot(canHero, winner);
-    createVictoryDiceRain(winner);
+    if (MOBILE_VICTORY_SAFE_MODE) {
+      runLater(() => {
+        if (overlay.classList.contains('show')) createVictoryDiceRain(winner);
+      }, 160);
+      runLater(() => {
+        if (overlay.classList.contains('show')) createVictoryCanJackpot(canHero, winner);
+      }, 300);
+    } else {
+      createVictoryCanJackpot(canHero, winner);
+      createVictoryDiceRain(winner);
 
-    boardWrap.classList.remove('game-win-spin');
-    void boardWrap.offsetWidth;
-    boardWrap.classList.add('game-win-spin');
-    boardWrap.addEventListener('animationend', () => boardWrap.classList.remove('game-win-spin'), { once: true });
+      boardWrap.classList.remove('game-win-spin');
+      void boardWrap.offsetWidth;
+      boardWrap.classList.add('game-win-spin');
+      boardWrap.addEventListener('animationend', () => boardWrap.classList.remove('game-win-spin'), { once: true });
 
-    trashCan.classList.remove('victory-erupt');
-    void trashCan.offsetWidth;
-    trashCan.classList.add('victory-erupt');
-    trashCan.addEventListener('animationend', () => trashCan.classList.remove('victory-erupt'), { once: true });
+      trashCan.classList.remove('victory-erupt');
+      void trashCan.offsetWidth;
+      trashCan.classList.add('victory-erupt');
+      trashCan.addEventListener('animationend', () => trashCan.classList.remove('victory-erupt'), { once: true });
+    }
 
-    if (winner === 'p1') {
+    if (winner === 'p1' && MOBILE_VICTORY_SAFE_MODE) {
+      runLater(() => Audio.megaWinFanfare(), 50);
+    } else if (winner === 'p1') {
       Audio.megaWinFanfare();
     } else {
       Audio.trashCrash(Math.max(9, totalTrashedDice()));
@@ -7399,6 +7489,13 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
     if (playerWon) overlay.classList.add('player-win-mega');
     overlay.classList.add('show');
     triggerGameWinCelebration(winner);
+    runLater(() => {
+      if (!overlay.classList.contains('show')) return;
+      busy = true;
+      rollBtn.disabled = true;
+      playAgainBtn.disabled = false;
+      syncHeroIdleState();
+    }, 220);
   }
 
   function ensureDevCheatGame() {
@@ -7524,8 +7621,9 @@ body.fast-preview .overlay.player-win-mega .play-again-btn {
         return forceFinalRoundGameSequence(winner, trashLoad);
       },
       gameWin(winner = 'p1') {
+        const needsInit = !gameStarted;
         ensureQaGame();
-        gameOver(winner === 'p2' ? 'p2' : 'p1');
+        runLater(() => gameOver(winner === 'p2' ? 'p2' : 'p1'), needsInit ? 80 : 0);
         return winner;
       },
       breakProgression(kind = 'player-blocked') {
