@@ -4416,6 +4416,16 @@ body.mobile-roll-smoothing .overlay.victory .overlay-title::before {
 .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
 }
+body.mobile-roll-smoothing .overlay.victory .play-again-btn,
+body.mobile-roll-smoothing .overlay.loss .play-again-btn {
+  background:
+    linear-gradient(180deg, #fff27a, var(--yellow) 56%, #b58a00);
+  color: var(--green);
+  border-color: rgba(255,255,255,0.32);
+  box-shadow:
+    0 5px 0 var(--yellow-dark),
+    0 0 30px rgba(245,200,0,0.66);
+}
 body.fast-preview .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
   will-change: transform, filter;
@@ -4437,6 +4447,10 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title {
 }
 body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
   animation: playerWinBadgePunchMobile 1.42s cubic-bezier(.12,.86,.12,1) 0.22s both;
+}
+body.mobile-roll-smoothing .overlay.player-win-mega .play-again-btn,
+body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn {
+  animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
 }
 @keyframes winButtonPulse {
   0%,100% {
