@@ -2557,11 +2557,11 @@ body.fast-preview .victory-lid-hero {
 }
 body.mobile-roll-smoothing .victory-lid-hero {
   display: block;
-  top: 56%;
-  width: min(126vw, 68vh);
-  height: min(126vw, 68vh);
+  top: 58%;
+  width: min(106vw, 52vh);
+  height: min(106vw, 52vh);
   z-index: 6;
-  opacity: 0.68;
+  opacity: 0.58;
   transform: translate(-50%, -50%) scale(1.03) rotate(18deg);
   filter:
     brightness(1.32)
@@ -2703,8 +2703,8 @@ body.fast-preview .victory-can-hero {
 }
 body.mobile-roll-smoothing .victory-can-hero {
   left: 50%;
-  bottom: clamp(3.7rem, 7vh, 5.4rem);
-  width: clamp(124px, 32vw, 168px);
+  bottom: clamp(8.4rem, 15vh, 10rem);
+  width: clamp(126px, 31vw, 154px);
   animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
@@ -4157,13 +4157,28 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
   gap: clamp(0.65rem, 2.4vw, 1rem);
   padding: 1.1rem;
   text-align: center;
-  z-index: 132;
+  z-index: 10000;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.4s, visibility 0s linear 0.4s;
   overflow: hidden;
   isolation: isolate;
+}
+body.terminal-screen-active > :not(#overlay) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.terminal-screen-active #overlay {
+  visibility: visible;
+}
+body.mobile-roll-smoothing.terminal-screen-active #overlay {
+  background:
+    radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 25%),
+    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.2), transparent 44%),
+    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.26), transparent 48%),
+    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.24), transparent 44%),
+    #050c07;
 }
 .overlay.show {
   opacity: 1;
@@ -4470,43 +4485,6 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
 body.mobile-roll-smoothing .overlay.player-win-mega .play-again-btn,
 body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .play-again-btn,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .play-again-btn {
-  animation: none;
-  transform: rotate(-1deg) scale(1.04);
-  filter: brightness(1.06);
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest {
-  background:
-    radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 24%),
-    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.16), transparent 44%),
-    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.22), transparent 48%),
-    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.2), transparent 44%),
-    rgba(5,12,7,0.97);
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-can-hero,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .victory-can-hero {
-  animation: victoryCanHeroRestBobMobile 2.8s ease-in-out infinite;
-  filter: none;
-  will-change: auto;
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-hero,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-backdrop {
-  filter: none;
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-can-hero *,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-hero * {
-  animation: none !important;
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega::before,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega::after {
-  content: none;
-  animation: none;
-}
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title,
-body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title::before {
-  animation: none;
 }
 @keyframes winButtonPulse {
   0%,100% {
@@ -6905,12 +6883,6 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
     if (!MOBILE_VICTORY_SAFE_MODE || !overlay.classList.contains('show')) return;
     stopTerminalAutoplayState();
     document.body.classList.add('terminal-screen-rest');
-    overlay.classList.add('mobile-terminal-rest');
-    victoryRainRun++;
-    if (victoryRainFrame !== null) {
-      cancelAnimationFrame(victoryRainFrame);
-      victoryRainFrame = null;
-    }
     document.querySelectorAll('.victory-jackpot-die, .victory-can-jackpot, .victory-screen-burst').forEach(el => el.remove());
   }
 
@@ -7781,6 +7753,13 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
     };
   }
 
+  function forceTerminalGameOver(winner = 'p1') {
+    const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
+    if (!gameStarted || overlay.classList.contains('show')) init();
+    gameOver(forcedWinner);
+    return { winner: forcedWinner, terminal: true };
+  }
+
   function resetToGameStart() {
     init();
     return { gameStarted, current, round, totalRolls, pools: JSON.parse(JSON.stringify(pools)) };
@@ -7972,14 +7951,14 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
     devWinBtn.addEventListener('click', event => {
       event.preventDefault();
       event.stopPropagation();
-      forceFinalRoundGameSequence('p1', 10);
+      forceTerminalGameOver('p1');
     });
   }
   if (devLoseBtn) {
     devLoseBtn.addEventListener('click', event => {
       event.preventDefault();
       event.stopPropagation();
-      forceFinalRoundGameSequence('p2', 10);
+      forceTerminalGameOver('p2');
     });
   }
   if (devStartBtn) {
@@ -8019,13 +7998,13 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
     if (DEV_CHEATS_ENABLED && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey) {
       if (key === 'w') {
         event.preventDefault();
-        forceFinalRoundGameSequence('p1', 10);
+        forceTerminalGameOver('p1');
         debugKeyBuffer = '';
         return;
       }
       if (key === 'l') {
         event.preventDefault();
-        forceFinalRoundGameSequence('p2', 10);
+        forceTerminalGameOver('p2');
         debugKeyBuffer = '';
         return;
       }
@@ -8078,10 +8057,10 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
       return { p0ReviewMode, p0Autoplay, reviewBuild: REVIEW_BUILD, mobileReviewDevice: MOBILE_REVIEW_DEVICE, audioState: Audio.state(), audio: Audio.debugState(), current, busy, round, roundWins: { ...roundWins }, openingComebackAssist: isOpeningComebackAssistActive(), openingComebackAssistRolls, totalRolls, lastProgressionRecovery };
     },
     win(trashLoad = 10) {
-      return forceFinalRoundGameSequence('p1', trashLoad);
+      return forceTerminalGameOver('p1');
     },
     lose(trashLoad = 10) {
-      return forceFinalRoundGameSequence('p2', trashLoad);
+      return forceTerminalGameOver('p2');
     },
     gameStart() {
       return resetToGameStart();
