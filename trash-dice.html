@@ -4165,7 +4165,10 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
   overflow: hidden;
   isolation: isolate;
 }
-body.terminal-screen-active > :not(#overlay) {
+body.terminal-screen-active .dev-cheat-bar,
+body.terminal-screen-active .debug-badge,
+body.terminal-screen-active .p0-review-toggle,
+body.terminal-screen-active .message {
   visibility: hidden !important;
   pointer-events: none !important;
 }
@@ -4179,6 +4182,16 @@ body.mobile-roll-smoothing.terminal-screen-active #overlay {
     radial-gradient(circle at 48% 58%, rgba(94,232,94,0.26), transparent 48%),
     radial-gradient(circle at 60% 66%, rgba(245,200,0,0.24), transparent 44%),
     #050c07;
+}
+body.mobile-roll-smoothing.terminal-screen-active .overlay.victory .play-again-btn,
+body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn {
+  opacity: 1 !important;
+  background:
+    linear-gradient(180deg, #fff27a, var(--yellow) 56%, #b58a00) !important;
+  color: var(--green) !important;
+}
+body.mobile-roll-smoothing.terminal-screen-active .victory-can-hero {
+  opacity: 1 !important;
 }
 .overlay.show {
   opacity: 1;
@@ -6879,13 +6892,6 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     overlay.classList.remove('mobile-terminal-rest');
   }
 
-  function settleMobileTerminalEffects() {
-    if (!MOBILE_VICTORY_SAFE_MODE || !overlay.classList.contains('show')) return;
-    stopTerminalAutoplayState();
-    document.body.classList.add('terminal-screen-rest');
-    document.querySelectorAll('.victory-jackpot-die, .victory-can-jackpot, .victory-screen-burst').forEach(el => el.remove());
-  }
-
   function createVictoryDiceRain(winner) {
     const rain = document.createElement('div');
     rain.className = 'victory-dice-rain';
@@ -6986,7 +6992,6 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       runLater(() => {
         if (overlay.classList.contains('show')) createVictoryDiceRain(winner);
       }, 160);
-      runLater(settleMobileTerminalEffects, 4600);
     } else {
       createVictoryDiceRain(winner);
 
