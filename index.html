@@ -5146,6 +5146,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   let terminalWinner = null;
   let terminalRunId = 0;
   let terminalState = null;
+  let roundResolutionRunId = 0;
+  let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
   const INVENTORY_MISCHIEF_CLASSES = [
     'inventory-mischief-wave',
@@ -5210,6 +5212,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
     progressionWatchdogRun++;
+    roundResolutionRunId++;
+    roundResolutionState = null;
   }
 
   function totalDice(player) {
@@ -5329,10 +5333,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     }
 
     if (hasValidBoard() && board.every(Boolean)) {
-      busy = true;
-      rollBtn.disabled = true;
-      syncHeroIdleState();
-      endRound();
+      const resolution = beginRoundResolution(current);
+      endRound(resolution.runId);
       return true;
     }
 
@@ -7548,8 +7550,9 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     triggerBenchCelebration(current, isRoundWinPlacement);
     if (isRoundWinPlacement) {
       triggerLidWinPulse();
+      const resolution = beginRoundResolution(current);
       scheduleProgressionWatchdog('round-win-placement', TURN_HANDOFF_MS + 7200);
-      runLater(endRound, TURN_HANDOFF_MS);
+      runLater(() => endRound(resolution.runId), TURN_HANDOFF_MS);
     } else if (totalDice(current) <= 0) {
       const winner = current === 'p1' ? 'p2' : 'p1';
       scheduleProgressionWatchdog('place-empty', 2200);
@@ -7704,8 +7707,32 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     if (isValidPlayer(winner)) roundWins[winner]++;
   }
 
-  function endRound() {
-    const winner = current;
+  function beginRoundResolution(winner = current) {
+    if (roundResolutionState && roundResolutionState.active) return roundResolutionState;
+    const finalWinner = isValidPlayer(winner) ? winner : 'p1';
+    roundResolutionState = {
+      active: true,
+      runId: ++roundResolutionRunId,
+      round,
+      winner: finalWinner,
+      payoutStarted: false
+    };
+    busy = true;
+    rollBtn.disabled = true;
+    syncHeroIdleState();
+    return roundResolutionState;
+  }
+
+  function endRound(runId = null) {
+    const state = beginRoundResolution(current);
+    if (runId !== null && state.runId !== runId) return false;
+    if (state.payoutStarted) return false;
+    state.payoutStarted = true;
+    busy = true;
+    rollBtn.disabled = true;
+    syncHeroIdleState();
+
+    const winner = state.winner;
     recordRoundWin(winner);
     const lidDice = board.filter(Boolean);
     const canDice = Array.isArray(trashDice) ? trashDice.slice() : [];
@@ -7762,6 +7789,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       if (totalDice('p2') <= 0) { gameOver('p1'); return; }
 
       current = 'p1';
+      roundResolutionState = null;
       clearDie(null);
       clearPlayerPayoutFanfare(false);
       syncUI();
@@ -7771,6 +7799,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       syncHeroIdleState();
       scheduleP0Autoplay();
     }, spillDuration + 260);
+    return true;
   }
 
   // ── GAME OVER ────────────────────────────────────────────────
@@ -7982,6 +8011,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
           trashDice: trashDice ? trashDice.slice() : [],
           board: board.map(Boolean),
           forcedRolls: forcedRolls.slice(),
+          roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
           lastProgressionRecovery: lastProgressionRecovery ? { ...lastProgressionRecovery } : null
         };
       }
@@ -8167,6 +8197,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
         terminal: terminalState ? { ...terminalState } : null,
         terminalWinner,
         terminalRunId,
+        roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
+        roundResolutionRunId,
         lastProgressionRecovery
       };
     },
