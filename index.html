@@ -2580,6 +2580,10 @@ body.mobile-roll-smoothing.terminal-screen-active #trashCan * {
 body.mobile-roll-smoothing.terminal-screen-active #trashCan {
   filter: none;
 }
+body.mobile-roll-smoothing.terminal-screen-active .victory-can-hero svg *,
+body.mobile-roll-smoothing.terminal-screen-active .victory-lid-hero svg * {
+  animation: none !important;
+}
 .victory-lid-hero .lid-svg {
   position: relative !important;
   inset: auto !important;
@@ -2707,8 +2711,8 @@ body.mobile-roll-smoothing .victory-can-hero {
   width: clamp(126px, 31vw, 154px);
   animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
-  filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
-  will-change: transform, opacity;
+  filter: none;
+  will-change: auto;
   backface-visibility: hidden;
   contain: layout style paint;
 }
@@ -2738,6 +2742,7 @@ body.mobile-roll-smoothing .victory-can-hero {
 body.mobile-roll-smoothing .victory-can-hero .can-logo-overlay {
   width: 82%;
   top: 55%;
+  filter: none;
 }
 .overlay.player-win-mega .victory-can-hero {
   filter:
@@ -2746,9 +2751,7 @@ body.mobile-roll-smoothing .victory-can-hero .can-logo-overlay {
     drop-shadow(0 0 38px rgba(94,232,94,0.42));
 }
 body.mobile-roll-smoothing .overlay.player-win-mega .victory-can-hero {
-  filter:
-    drop-shadow(0 12px 16px rgba(0,0,0,0.32))
-    drop-shadow(0 0 16px rgba(245,200,0,0.42));
+  filter: none;
 }
 .victory-can-jackpot {
   position: fixed;
@@ -3036,17 +3039,16 @@ body.fast-preview .mini-die.victory-rain-die .mini-pip {
 }
 body.mobile-roll-smoothing .victory-dice-rain {
   perspective: none;
+  contain: layout style paint;
 }
 body.mobile-roll-smoothing .mini-die.victory-rain-die {
-  width: clamp(11px, 3.1vw, 16px);
-  height: clamp(11px, 3.1vw, 16px);
+  width: clamp(9px, 2.4vw, 13px);
+  height: clamp(9px, 2.4vw, 13px);
   transform-style: flat;
   animation-name: victoryDiceRainMobile;
-  box-shadow:
-    1.4px 1.5px 0 var(--rain-edge, rgba(0,0,0,0.34)),
-    0 3px 5px rgba(0,0,0,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.42);
-  will-change: transform, opacity;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.34);
+  will-change: auto;
 }
 body.mobile-roll-smoothing .mini-die.victory-rain-die::before,
 body.mobile-roll-smoothing .mini-die.victory-rain-die::after {
@@ -3054,7 +3056,41 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die::after {
 }
 body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
   transform: none;
-  box-shadow: inset 0.6px 0.6px 0.9px rgba(0,0,0,0.58);
+  box-shadow: none;
+}
+body.mobile-roll-smoothing .victory-rain-die-lite {
+  position: absolute;
+  left: var(--rain-left, 50%);
+  top: -12vh;
+  width: clamp(10px, 2.8vw, 14px);
+  height: clamp(10px, 2.8vw, 14px);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: 24%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #fff6a6, var(--rain-face), var(--rain-low));
+  box-shadow: 1px 1px 0 var(--rain-edge), inset 0 1px 0 rgba(255,255,255,0.28);
+  transform: translate3d(0, -14vh, 0) rotate(var(--r0, 0deg)) scale(var(--s, 1));
+  animation: victoryDiceRainMobile var(--fall-duration, 6800ms) linear var(--fall-delay, 0ms) infinite;
+  contain: layout style paint;
+}
+body.mobile-roll-smoothing .victory-rain-die-lite::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rain-pips);
+}
+body.mobile-roll-smoothing .victory-rain-die-lite.is-yellow {
+  --rain-face: var(--yellow);
+  --rain-low: #b58a00;
+  --rain-edge: rgba(83,55,0,0.5);
+}
+body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
+  --rain-face: var(--green);
+  --rain-low: #063919;
+  --rain-edge: rgba(2,31,17,0.5);
 }
 @keyframes victoryDiceRain {
   0% {
@@ -4189,6 +4225,12 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
   background:
     linear-gradient(180deg, #fff27a, var(--yellow) 56%, #b58a00) !important;
   color: var(--green) !important;
+  animation: none !important;
+  filter: none !important;
+  transform: rotate(-1deg);
+  box-shadow:
+    0 5px 0 var(--yellow-dark),
+    0 0 24px rgba(245,200,0,0.54);
 }
 body.mobile-roll-smoothing.terminal-screen-active .victory-can-hero {
   opacity: 1 !important;
@@ -4497,7 +4539,10 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
 }
 body.mobile-roll-smoothing .overlay.player-win-mega .play-again-btn,
 body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn {
-  animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
+  animation: none;
+  filter: none;
+  transform: rotate(-1deg);
+  will-change: auto;
 }
 @keyframes winButtonPulse {
   0%,100% {
@@ -6882,7 +6927,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       cancelAnimationFrame(victoryRainFrame);
       victoryRainFrame = null;
     }
-    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-jackpot-die, .victory-dice-floor, .victory-dice-rain, .victory-can-jackpot, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
+    document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-rain-die-lite, .victory-jackpot-die, .victory-dice-floor, .victory-dice-rain, .victory-can-jackpot, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
     overlay.classList.remove('player-win-mega', 'mobile-terminal-rest');
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
@@ -6927,8 +6972,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     const playerWin = winner === 'p1';
     const diceCount = MOBILE_VICTORY_SAFE_MODE
       ? (playerWin
-        ? Math.round(clamp(58 + totalTrashedDice() * 0.48, 68, 96))
-        : Math.round(clamp(24 + totalTrashedDice() * 0.22, 28, 42)))
+        ? Math.round(clamp(16 + totalTrashedDice() * 0.08, 18, 24))
+        : Math.round(clamp(14 + totalTrashedDice() * 0.08, 16, 22)))
       : (playerWin
         ? (FAST_PREVIEW_ENABLED
           ? Math.round(clamp(104 + totalTrashedDice() * 0.58, 118, 158))
@@ -6940,14 +6985,29 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     const run = ++victoryRainRun;
     let i = 0;
 
+    function rainPipBackground(value, pipColor) {
+      return (MINI_DOTS[value] || MINI_DOTS[5]).map(([top, left]) => (
+        `radial-gradient(circle at ${left}% ${top}%, ${pipColor} 0 10%, transparent 11%)`
+      )).join(', ');
+    }
+
     function makeRainDie() {
       const color = Math.random() < winnerGreenBias ? 'green' : 'yellow';
       const isGreen = color === 'green';
-      const die = makeMiniDie(color, Math.floor(Math.random() * 6) + 1, 'victory-rain-die');
-      const duration = Math.round(3900 + Math.random() * 4400);
+      const value = Math.floor(Math.random() * 6) + 1;
+      const die = MOBILE_VICTORY_SAFE_MODE
+        ? document.createElement('div')
+        : makeMiniDie(color, value, 'victory-rain-die');
+      if (MOBILE_VICTORY_SAFE_MODE) {
+        die.className = `victory-rain-die-lite ${isGreen ? 'is-green' : 'is-yellow'}`;
+        die.style.setProperty('--rain-pips', rainPipBackground(value, isGreen ? 'var(--green-pip)' : 'var(--yellow-pip)'));
+      }
+      const duration = MOBILE_VICTORY_SAFE_MODE
+        ? Math.round(6200 + Math.random() * 5200)
+        : Math.round(3900 + Math.random() * 4400);
       const delay = Math.round(-duration + Math.random() * (duration + 900));
       die.style.setProperty('--rain-left', (Math.random() * 100).toFixed(2) + '%');
-      die.style.setProperty('--drift', Math.round(-86 + Math.random() * 172) + 'px');
+      die.style.setProperty('--drift', Math.round((MOBILE_VICTORY_SAFE_MODE ? -42 : -86) + Math.random() * (MOBILE_VICTORY_SAFE_MODE ? 84 : 172)) + 'px');
       die.style.setProperty('--fall-duration', duration + 'ms');
       die.style.setProperty('--fall-delay', delay + 'ms');
       die.style.setProperty('--r0', Math.round(Math.random() * 360) + 'deg');
@@ -6966,7 +7026,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       if (!isCurrentTerminalRun(runId) || run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
       const batchSize = MOBILE_VICTORY_SAFE_MODE
-        ? (playerWin ? 12 : 8)
+        ? (playerWin ? 6 : 5)
         : (playerWin
           ? (FAST_PREVIEW_ENABLED ? 16 : 40)
           : (FAST_PREVIEW_ENABLED ? 12 : 34));
