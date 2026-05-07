@@ -2556,7 +2556,20 @@ body.fast-preview .victory-lid-hero {
   animation: none;
 }
 body.mobile-roll-smoothing .victory-lid-hero {
-  display: none;
+  display: block;
+  top: 56%;
+  width: min(126vw, 68vh);
+  height: min(126vw, 68vh);
+  z-index: 6;
+  opacity: 0.68;
+  transform: translate(-50%, -50%) scale(1.03) rotate(18deg);
+  filter:
+    brightness(1.32)
+    contrast(1.08)
+    drop-shadow(0 0 26px rgba(245,200,0,0.54))
+    drop-shadow(0 0 44px rgba(94,232,94,0.28))
+    drop-shadow(0 14px 22px rgba(0,0,0,0.36));
+  animation: none;
 }
 .victory-lid-hero .lid-svg {
   position: relative !important;
@@ -6937,18 +6950,16 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
     lidBackdrop.className = 'victory-lid-backdrop';
     overlay.insertBefore(lidBackdrop, overlay.firstChild);
 
-    if (!MOBILE_VICTORY_SAFE_MODE) {
-      let lidSvg = boardWrap.querySelector('svg.lid-svg');
-      if (!lidSvg) {
-        buildSlots();
-        lidSvg = boardWrap.querySelector('svg.lid-svg');
-      }
-      if (lidSvg) {
-        const lidHero = document.createElement('div');
-        lidHero.className = 'victory-lid-hero';
-        lidHero.appendChild(lidSvg.cloneNode(true));
-        overlay.insertBefore(lidHero, overlay.firstChild);
-      }
+    let lidSvg = boardWrap.querySelector('svg.lid-svg');
+    if (!lidSvg) {
+      buildSlots();
+      lidSvg = boardWrap.querySelector('svg.lid-svg');
+    }
+    if (lidSvg) {
+      const lidHero = document.createElement('div');
+      lidHero.className = 'victory-lid-hero';
+      lidHero.appendChild(lidSvg.cloneNode(true));
+      overlay.insertBefore(lidHero, overlay.firstChild);
     }
 
     const canHero = document.createElement('div');
