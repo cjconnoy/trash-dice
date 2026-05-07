@@ -2571,6 +2571,15 @@ body.mobile-roll-smoothing .victory-lid-hero {
     drop-shadow(0 14px 22px rgba(0,0,0,0.36));
   animation: none;
 }
+body.mobile-roll-smoothing.terminal-screen-active #boardWrap,
+body.mobile-roll-smoothing.terminal-screen-active #boardWrap *,
+body.mobile-roll-smoothing.terminal-screen-active #trashCan,
+body.mobile-roll-smoothing.terminal-screen-active #trashCan * {
+  animation: none !important;
+}
+body.mobile-roll-smoothing.terminal-screen-active #trashCan {
+  filter: none;
+}
 .victory-lid-hero .lid-svg {
   position: relative !important;
   inset: auto !important;
@@ -2700,6 +2709,8 @@ body.mobile-roll-smoothing .victory-can-hero {
              victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
   will-change: transform, opacity;
+  backface-visibility: hidden;
+  contain: layout style paint;
 }
 .victory-can-hero > svg:not(.can-logo-overlay) {
   display: block;
@@ -2883,6 +2894,11 @@ body.fast-preview .mini-die.victory-settled-die {
   82%  { transform: translate3d(calc(-50% + 27vw), -2px, 0) rotate(-11deg) scale(1.01,1.04); }
   92%  { transform: translate3d(calc(-50% - 24vw), -14px, 0) rotate(10deg) scale(1.07); }
   100% { transform: translate3d(-50%, 0, 0) rotate(6deg) scale(1); }
+}
+@keyframes victoryCanHeroRestBobMobile {
+  0%,100% { transform: translate3d(-50%, 0, 0) rotate(-3deg) scale(1); }
+  34% { transform: translate3d(calc(-50% - 4vw), -5px, 0) rotate(3deg) scale(1.02); }
+  68% { transform: translate3d(calc(-50% + 4vw), -2px, 0) rotate(-2deg) scale(1.01); }
 }
 @keyframes playerWinShockwave {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.24); }
@@ -4365,6 +4381,9 @@ body.mobile-roll-smoothing .overlay.loss .overlay-title {
     0 0 26px var(--winner-glow);
   transform: rotate(2deg);
 }
+.overlay.winner-green .overlay-title::before {
+  content: "GAME OVER";
+}
 body.mobile-roll-smoothing .overlay.victory .overlay-title::before {
   margin-bottom: clamp(0.14rem, 1vw, 0.28rem);
   font-size: clamp(0.64rem, 2.4vw, 0.95rem);
@@ -4457,6 +4476,25 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .play-a
   animation: none;
   transform: rotate(-1deg) scale(1.04);
   filter: brightness(1.06);
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-can-hero,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .victory-can-hero {
+  animation: victoryCanHeroRestBobMobile 2.8s ease-in-out infinite;
+  filter: none;
+  will-change: auto;
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-hero,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-backdrop {
+  filter: none;
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-can-hero *,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-lid-hero * {
+  animation: none !important;
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega::before,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega::after {
+  content: none;
+  animation: none;
 }
 body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title,
 body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title::before {
@@ -6851,12 +6889,14 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
 
   function clearTerminalState() {
     terminalWinner = null;
+    document.body.classList.remove('terminal-screen-active', 'terminal-screen-rest');
     overlay.classList.remove('mobile-terminal-rest');
   }
 
   function settleMobileTerminalEffects() {
     if (!MOBILE_VICTORY_SAFE_MODE || !overlay.classList.contains('show')) return;
     stopTerminalAutoplayState();
+    document.body.classList.add('terminal-screen-rest');
     overlay.classList.add('mobile-terminal-rest');
     victoryRainRun++;
     if (victoryRainFrame !== null) {
@@ -7680,6 +7720,7 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
   function gameOver(winner) {
     const finalWinner = winner === 'p2' ? 'p2' : 'p1';
     if (terminalWinner && overlay.classList.contains('show')) {
+      document.body.classList.add('terminal-screen-active');
       stopTerminalAutoplayState();
       busy = true;
       rollBtn.disabled = true;
@@ -7688,6 +7729,8 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
       return;
     }
     terminalWinner = finalWinner;
+    document.body.classList.add('terminal-screen-active');
+    document.body.classList.remove('terminal-screen-rest');
     clearRuntimeTimers();
     cancelProgressionWatchdog();
     stopTerminalAutoplayState();
