@@ -4452,6 +4452,16 @@ body.mobile-roll-smoothing .overlay.player-win-mega .play-again-btn,
 body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
 }
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest .play-again-btn,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .play-again-btn {
+  animation: none;
+  transform: rotate(-1deg) scale(1.04);
+  filter: brightness(1.06);
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title,
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overlay-title::before {
+  animation: none;
+}
 @keyframes winButtonPulse {
   0%,100% {
     transform: rotate(-1deg) scale(1);
@@ -6833,9 +6843,21 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       victoryRainFrame = null;
     }
     document.querySelectorAll('.victory-cannon-die, .victory-settled-die, .victory-floor-die, .victory-rain-die, .victory-jackpot-die, .victory-dice-floor, .victory-dice-rain, .victory-can-jackpot, .victory-screen-burst, .victory-lid-backdrop, .victory-lid-hero, .victory-can-hero').forEach(el => el.remove());
-    overlay.classList.remove('player-win-mega');
+    overlay.classList.remove('player-win-mega', 'mobile-terminal-rest');
     boardWrap.classList.remove('game-win-spin');
     trashCan.classList.remove('victory-erupt');
+  }
+
+  function settleMobileTerminalEffects() {
+    if (!MOBILE_VICTORY_SAFE_MODE || !overlay.classList.contains('show')) return;
+    stopTerminalAutoplayState();
+    overlay.classList.add('mobile-terminal-rest');
+    victoryRainRun++;
+    if (victoryRainFrame !== null) {
+      cancelAnimationFrame(victoryRainFrame);
+      victoryRainFrame = null;
+    }
+    document.querySelectorAll('.victory-rain-die, .victory-dice-rain, .victory-jackpot-die, .victory-can-jackpot, .victory-screen-burst').forEach(el => el.remove());
   }
 
   function createVictoryDiceRain(winner) {
@@ -6999,6 +7021,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       runLater(() => {
         if (overlay.classList.contains('show')) createVictoryCanJackpot(canHero, winner);
       }, 80);
+      runLater(settleMobileTerminalEffects, 4600);
     } else {
       createVictoryCanJackpot(canHero, winner);
       createVictoryDiceRain(winner);
@@ -7097,6 +7120,14 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     }
   }
 
+  function stopTerminalAutoplayState() {
+    p0ReviewMode = false;
+    p0Autoplay = false;
+    clearP0Timer();
+    document.body.classList.remove('p0-mode', 'debug-p0', 'player-roll-ready');
+    updateP0ReviewControl();
+  }
+
   function canRunP0Autoplay() {
     return p0Autoplay &&
       gameStarted &&
@@ -7192,6 +7223,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   }
 
   function setP0Autoplay(enabled, announce = true) {
+    if (enabled && overlay.classList.contains('show')) enabled = false;
     p0Autoplay = !!enabled;
     document.body.classList.toggle('debug-p0', p0Autoplay);
     if (p0Autoplay) {
@@ -7641,6 +7673,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   function gameOver(winner) {
     clearRuntimeTimers();
     cancelProgressionWatchdog();
+    stopTerminalAutoplayState();
+    forcedRolls = [];
     clearBenchCelebration(false);
     clearPlayerPayoutFanfare(false);
     stopTitleRoundWinFanfare();
@@ -7662,6 +7696,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     triggerGameWinCelebration(winner);
     runLater(() => {
       if (!overlay.classList.contains('show')) return;
+      stopTerminalAutoplayState();
       busy = true;
       rollBtn.disabled = true;
       playAgainBtn.disabled = false;
