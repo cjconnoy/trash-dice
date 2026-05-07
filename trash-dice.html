@@ -6957,8 +6957,9 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   }
 
   function triggerGameWinCelebration(winner) {
+    const playerWon = winner === 'p1';
     clearVictoryEffects();
-    overlay.classList.toggle('player-win-mega', winner === 'p1');
+    overlay.classList.toggle('player-win-mega', playerWon);
     const burst = document.createElement('div');
     burst.className = 'victory-screen-burst';
     overlay.appendChild(burst);
@@ -6980,30 +6981,34 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       overlay.insertBefore(lidHero, overlay.firstChild);
     }
 
-    const canHero = document.createElement('div');
-    canHero.className = 'victory-can-hero';
-    const canSvg = trashCan.querySelector('svg:not(.can-logo-overlay)');
-    const canLogo = trashCan.querySelector('.can-logo-overlay');
-    if (canSvg) canHero.appendChild(canSvg.cloneNode(true));
-    if (canLogo) canHero.appendChild(canLogo.cloneNode(true));
-    overlay.appendChild(canHero);
+    if (playerWon) {
+      const canHero = document.createElement('div');
+      canHero.className = 'victory-can-hero';
+      const canSvg = trashCan.querySelector('svg:not(.can-logo-overlay)');
+      const canLogo = trashCan.querySelector('.can-logo-overlay');
+      if (canSvg) canHero.appendChild(canSvg.cloneNode(true));
+      if (canLogo) canHero.appendChild(canLogo.cloneNode(true));
+      overlay.appendChild(canHero);
+    }
 
-    if (MOBILE_VICTORY_SAFE_MODE) {
-      runLater(() => {
-        if (overlay.classList.contains('show')) createVictoryDiceRain(winner);
-      }, 160);
-    } else {
-      createVictoryDiceRain(winner);
+    if (playerWon) {
+      if (MOBILE_VICTORY_SAFE_MODE) {
+        runLater(() => {
+          if (overlay.classList.contains('show')) createVictoryDiceRain(winner);
+        }, 160);
+      } else {
+        createVictoryDiceRain(winner);
 
-      boardWrap.classList.remove('game-win-spin');
-      void boardWrap.offsetWidth;
-      boardWrap.classList.add('game-win-spin');
-      boardWrap.addEventListener('animationend', () => boardWrap.classList.remove('game-win-spin'), { once: true });
+        boardWrap.classList.remove('game-win-spin');
+        void boardWrap.offsetWidth;
+        boardWrap.classList.add('game-win-spin');
+        boardWrap.addEventListener('animationend', () => boardWrap.classList.remove('game-win-spin'), { once: true });
 
-      trashCan.classList.remove('victory-erupt');
-      void trashCan.offsetWidth;
-      trashCan.classList.add('victory-erupt');
-      trashCan.addEventListener('animationend', () => trashCan.classList.remove('victory-erupt'), { once: true });
+        trashCan.classList.remove('victory-erupt');
+        void trashCan.offsetWidth;
+        trashCan.classList.add('victory-erupt');
+        trashCan.addEventListener('animationend', () => trashCan.classList.remove('victory-erupt'), { once: true });
+      }
     }
 
     if (winner === 'p1' && MOBILE_VICTORY_SAFE_MODE) {
