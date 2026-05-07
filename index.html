@@ -4225,7 +4225,6 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
   background:
     linear-gradient(180deg, #fff27a, var(--yellow) 56%, #b58a00) !important;
   color: var(--green) !important;
-  animation: none !important;
   filter: none !important;
   transform: rotate(-1deg);
   box-shadow:
@@ -4502,6 +4501,26 @@ body.mobile-roll-smoothing .overlay.victory .overlay-title::before {
     0 0 28px var(--winner-glow);
   transform: rotate(-1deg);
 }
+body.terminal-screen-active .overlay.victory .play-again-btn,
+body.terminal-screen-active .overlay.loss .play-again-btn {
+  min-height: clamp(72px, 9.2vw, 108px);
+  min-width: min(88vw, 460px);
+  padding: clamp(1.02rem, 2vw, 1.44rem) clamp(3.2rem, 6vw, 5rem) clamp(1.08rem, 2.1vw, 1.52rem);
+  border-width: 4px;
+  border-radius: 20px;
+  font-size: clamp(1.74rem, 4.7vw, 2.76rem);
+  letter-spacing: 0.08em;
+  margin-top: clamp(0.45rem, 1.4vh, 0.9rem);
+}
+body.mobile-roll-smoothing.terminal-screen-active .overlay.victory .play-again-btn,
+body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn {
+  width: min(88vw, 380px);
+  min-width: 0;
+  min-height: clamp(72px, 17vw, 96px);
+  padding: clamp(0.9rem, 3.6vw, 1.3rem) clamp(1.35rem, 7vw, 2.6rem) clamp(0.98rem, 3.8vw, 1.38rem);
+  font-size: clamp(1.58rem, 7vw, 2.18rem);
+  border-radius: 18px;
+}
 .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
 }
@@ -4544,6 +4563,14 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   transform: rotate(-1deg);
   will-change: auto;
 }
+body.mobile-roll-smoothing.terminal-screen-active .overlay.victory .play-again-btn,
+body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn,
+body.mobile-roll-smoothing.terminal-screen-active .overlay.player-win-mega .play-again-btn {
+  animation: mobileTerminalButtonPulse 1.14s cubic-bezier(.16,.82,.18,1) infinite !important;
+  opacity: 1 !important;
+  filter: none !important;
+  will-change: transform, box-shadow;
+}
 @keyframes winButtonPulse {
   0%,100% {
     transform: rotate(-1deg) scale(1);
@@ -4559,6 +4586,23 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       0 7px 0 var(--yellow-dark),
       0 0 44px var(--winner-glow),
     0 0 70px rgba(255,255,255,0.18);
+  }
+}
+@keyframes mobileTerminalButtonPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translate3d(0,0,0) rotate(-1deg) scale(1);
+    box-shadow:
+      0 5px 0 var(--yellow-dark),
+      0 0 24px rgba(245,200,0,0.54);
+  }
+  48% {
+    opacity: 1;
+    transform: translate3d(0,-1px,0) rotate(-1deg) scale(1.055);
+    box-shadow:
+      0 7px 0 var(--yellow-dark),
+      0 0 34px rgba(245,200,0,0.72),
+      0 0 52px rgba(255,255,255,0.16);
   }
 }
 @keyframes playerWinButtonDelayedFocus {
