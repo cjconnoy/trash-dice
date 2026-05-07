@@ -4203,10 +4203,10 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
 body.mobile-roll-smoothing .overlay.victory {
   background:
     radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 25%),
-    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.18), transparent 44%),
-    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.24), transparent 48%),
-    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.2), transparent 44%),
-    rgba(5,12,7,0.88);
+    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.2), transparent 44%),
+    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.26), transparent 48%),
+    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.24), transparent 44%),
+    rgba(5,12,7,0.96);
 }
 .overlay.loss {
   background:
@@ -4268,7 +4268,7 @@ body.mobile-roll-smoothing .overlay-content::before {
   top: 42%;
   height: clamp(230px, 35vh, 320px);
   background:
-    radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0.42), rgba(5,12,7,0.24) 48%, transparent 74%);
+    radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0.6), rgba(5,12,7,0.36) 48%, transparent 74%);
 }
 .overlay-content > * {
   pointer-events: auto;
@@ -4476,6 +4476,14 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .play-a
   animation: none;
   transform: rotate(-1deg) scale(1.04);
   filter: brightness(1.06);
+}
+body.mobile-roll-smoothing .overlay.mobile-terminal-rest {
+  background:
+    radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 24%),
+    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.16), transparent 44%),
+    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.22), transparent 48%),
+    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.2), transparent 44%),
+    rgba(5,12,7,0.97);
 }
 body.mobile-roll-smoothing .overlay.mobile-terminal-rest .victory-can-hero,
 body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .victory-can-hero {
@@ -6903,7 +6911,7 @@ body.mobile-roll-smoothing .overlay.mobile-terminal-rest.player-win-mega .overla
       cancelAnimationFrame(victoryRainFrame);
       victoryRainFrame = null;
     }
-    document.querySelectorAll('.victory-rain-die, .victory-dice-rain, .victory-jackpot-die, .victory-can-jackpot, .victory-screen-burst').forEach(el => el.remove());
+    document.querySelectorAll('.victory-jackpot-die, .victory-can-jackpot, .victory-screen-burst').forEach(el => el.remove());
   }
 
   function createVictoryDiceRain(winner) {
