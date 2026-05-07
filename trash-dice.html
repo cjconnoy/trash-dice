@@ -4901,6 +4901,8 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
   let busy;
   let totalRolls;
   let gameStarted;
+  let roundWins = { p1: 0, p2: 0 };
+  let openingComebackAssistRolls = 0;
 
   const COLORS = ['yellow', 'green'];
   const COLOR_CLASS = { yellow: 'p1', green: 'p2' };
@@ -4933,6 +4935,9 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
+  const PLAYER_OPENING_COMEBACK_HIT_CHANCE = 0.36;
+  const PLAYER_OPENING_COMEBACK_CLUTCH_CHANCE = 0.58;
+  const CPU_OPENING_SWEEP_BRAKE_CHANCE = 0.48;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   document.body.classList.toggle('dev-cheats', DEV_CHEATS_ENABLED);
@@ -7035,10 +7040,24 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
     return Math.floor(Math.random() * 6) + 1;
   }
 
-  function choosePlayerClutchFace(openFace) {
-    if (Math.random() < PLAYER_CLUTCH_MAGNET_CHANCE) return openFace;
+  function randomFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function isOpeningComebackAssistActive() {
+    return !p0Autoplay &&
+      round <= 3 &&
+      roundWins &&
+      roundWins.p1 === 0 &&
+      roundWins.p2 >= 2 &&
+      totalDice('p1') > 0 &&
+      totalDice('p2') > 0;
+  }
+
+  function choosePlayerClutchFace(openFace, chance = PLAYER_CLUTCH_MAGNET_CHANCE) {
+    if (Math.random() < chance) return openFace;
     const otherFaces = [1, 2, 3, 4, 5, 6].filter(face => face !== openFace);
-    return otherFaces[Math.floor(Math.random() * otherFaces.length)];
+    return randomFrom(otherFaces);
   }
 
   function chooseRollValue(player) {
@@ -7049,6 +7068,7 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
           return slots;
         }, [])
       : [];
+    const comebackAssistActive = isOpeningComebackAssistActive();
     if (
       player === 'p1' &&
       !p0Autoplay &&
@@ -7056,7 +7076,23 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
       openSlots.length === 1
     ) {
       playerClutchMagnetUsedThisRound = true;
-      return choosePlayerClutchFace(openSlots[0]);
+      const face = choosePlayerClutchFace(
+        openSlots[0],
+        comebackAssistActive ? PLAYER_OPENING_COMEBACK_CLUTCH_CHANCE : PLAYER_CLUTCH_MAGNET_CHANCE
+      );
+      if (comebackAssistActive && face === openSlots[0]) openingComebackAssistRolls++;
+      return face;
+    }
+    if (comebackAssistActive && player === 'p1' && openSlots.length > 1 && Math.random() < PLAYER_OPENING_COMEBACK_HIT_CHANCE) {
+      openingComebackAssistRolls++;
+      return randomFrom(openSlots);
+    }
+    if (comebackAssistActive && player === 'p2' && openSlots.length <= 2) {
+      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+      if (takenFaces.length && Math.random() < CPU_OPENING_SWEEP_BRAKE_CHANCE) {
+        openingComebackAssistRolls++;
+        return randomFrom(takenFaces);
+      }
     }
     return randomDieFace();
   }
@@ -7178,6 +7214,8 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
     busy      = false;
     totalRolls= 0;
     playerClutchMagnetUsedThisRound = false;
+    roundWins = { p1: 0, p2: 0 };
+    openingComebackAssistRolls = 0;
     gameStarted = true;
 
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
@@ -7431,8 +7469,14 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
   }
 
   // ── ROUND WIN ────────────────────────────────────────────────
+  function recordRoundWin(winner) {
+    if (!roundWins) roundWins = { p1: 0, p2: 0 };
+    if (isValidPlayer(winner)) roundWins[winner]++;
+  }
+
   function endRound() {
     const winner = current;
+    recordRoundWin(winner);
     const lidDice = board.filter(Boolean);
     const canDice = Array.isArray(trashDice) ? trashDice.slice() : [];
     const claimedDice = lidDice.concat(canDice);
@@ -7895,7 +7939,7 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
       return { p0ReviewMode, p0Autoplay, gameStarted, current, totalRolls };
     },
     state() {
-      return { p0ReviewMode, p0Autoplay, reviewBuild: REVIEW_BUILD, mobileReviewDevice: MOBILE_REVIEW_DEVICE, audioState: Audio.state(), audio: Audio.debugState(), current, busy, round, totalRolls, lastProgressionRecovery };
+      return { p0ReviewMode, p0Autoplay, reviewBuild: REVIEW_BUILD, mobileReviewDevice: MOBILE_REVIEW_DEVICE, audioState: Audio.state(), audio: Audio.debugState(), current, busy, round, roundWins: { ...roundWins }, openingComebackAssist: isOpeningComebackAssistActive(), openingComebackAssistRolls, totalRolls, lastProgressionRecovery };
     },
     win(trashLoad = 10) {
       return forceFinalRoundGameSequence('p1', trashLoad);
