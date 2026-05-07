@@ -2646,9 +2646,10 @@ body.mobile-roll-smoothing .victory-can-hero {
   left: 76%;
   bottom: clamp(3.7rem, 7vh, 5.4rem);
   width: clamp(132px, 34vw, 172px);
-  animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both;
+  animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both,
+             victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
-  will-change: transform, opacity;
+  will-change: left, transform, opacity;
 }
 .victory-can-hero > svg:not(.can-logo-overlay) {
   display: block;
@@ -2806,6 +2807,16 @@ body.fast-preview .mini-die.victory-settled-die {
   66%  { left: 72%; transform: translate(-50%, -18px) rotate(10deg) scale(1.09); }
   82%  { left: 28%; transform: translate(-50%, -3px) rotate(-9deg) scale(1.02); }
   100% { left: 78%; transform: translate(-50%, 0) rotate(7deg) scale(1); }
+}
+@keyframes victoryCanHeroDanceMobile {
+  0%   { left: 76%; transform: translate3d(-50%, 0, 0) rotate(-5deg) scale(1); }
+  12%  { left: 64%; transform: translate3d(-50%, -13px, 0) rotate(8deg) scale(1.06); }
+  28%  { left: 46%; transform: translate3d(-50%, -4px, 0) rotate(-7deg) scale(1.02); }
+  42%  { left: 56%; transform: translate3d(-50%, -17px, 0) rotate(9deg) scale(1.08); }
+  58%  { left: 73%; transform: translate3d(-50%, -3px, 0) rotate(-6deg) scale(1.02); }
+  74%  { left: 52%; transform: translate3d(-50%, -15px, 0) rotate(8deg) scale(1.07); }
+  88%  { left: 68%; transform: translate3d(-50%, -5px, 0) rotate(-7deg) scale(1.03); }
+  100% { left: 76%; transform: translate3d(-50%, 0, 0) rotate(6deg) scale(1); }
 }
 @keyframes playerWinShockwave {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.24); }
