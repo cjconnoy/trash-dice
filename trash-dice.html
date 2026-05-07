@@ -2784,14 +2784,17 @@ body.mobile-roll-smoothing .overlay.player-win-mega .victory-can-hero {
     0 0 1px rgba(255,255,255,0.28);
 }
 body.mobile-roll-smoothing .mini-die.victory-jackpot-die {
-  width: clamp(18px, 5.6vw, 30px);
-  height: clamp(18px, 5.6vw, 30px);
-  filter: drop-shadow(0 7px 9px rgba(0,0,0,0.3));
+  width: clamp(22px, 7.2vw, 38px);
+  height: clamp(22px, 7.2vw, 38px);
+  filter:
+    brightness(1.18)
+    drop-shadow(0 8px 10px rgba(0,0,0,0.34))
+    drop-shadow(0 0 13px rgba(245,200,0,0.58));
 }
 body.mobile-roll-smoothing .mini-die.victory-jackpot-die::after {
-  width: 34px;
-  height: 8px;
-  opacity: 0.52;
+  width: 52px;
+  height: 10px;
+  opacity: 0.76;
 }
 .can-lid-piece {
   display: none;
@@ -2908,7 +2911,7 @@ body.fast-preview .mini-die.victory-settled-die {
   }
   46% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(1.16) rotate(calc(var(--rot) * 0.48));
+    transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(1.16) rotate(var(--rot-mid, 240deg));
   }
   78% {
     opacity: 0.92;
@@ -6891,7 +6894,7 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
     jackpot.className = 'victory-can-jackpot';
     overlay.appendChild(jackpot);
     const diceCount = MOBILE_VICTORY_SAFE_MODE
-      ? Math.round(clamp(8 + totalTrashedDice() * 0.12, 12, 18))
+      ? Math.round(clamp(24 + totalTrashedDice() * 0.24, 30, 42))
       : (FAST_PREVIEW_ENABLED
         ? Math.round(clamp(30 + totalTrashedDice() * 0.32, 36, 54))
         : Math.round(clamp(64 + totalTrashedDice() * 0.7, 74, 112)));
@@ -6899,9 +6902,9 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
       if (!jackpot.isConnected || !canHero.isConnected) return;
       const r = canHero.getBoundingClientRect();
       const originX = r.left + r.width * 0.5;
-      const originY = r.top + r.height * 0.22;
-      const spreadX = Math.min(window.innerWidth * (MOBILE_VICTORY_SAFE_MODE ? 0.78 : 0.66), 900);
-      const launchHeight = Math.min(window.innerHeight * (MOBILE_VICTORY_SAFE_MODE ? 0.45 : 0.58), 560);
+      const originY = r.top + r.height * (MOBILE_VICTORY_SAFE_MODE ? 0.16 : 0.22);
+      const spreadX = Math.min(window.innerWidth * (MOBILE_VICTORY_SAFE_MODE ? 0.96 : 0.66), 900);
+      const launchHeight = Math.min(window.innerHeight * (MOBILE_VICTORY_SAFE_MODE ? 0.62 : 0.58), 560);
       let i = 0;
       function makeJackpotDie(index) {
         const color = Math.random() < 0.76 ? 'yellow' : 'green';
@@ -6916,16 +6919,21 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
         die.style.setProperty('--my', (-peak).toFixed(1) + 'px');
         die.style.setProperty('--tx', (dx * 0.88 + drift).toFixed(1) + 'px');
         die.style.setProperty('--ty', (-peak * 0.62 + 78 + Math.random() * 58).toFixed(1) + 'px');
-        die.style.setProperty('--rot', Math.round((Math.random() < 0.5 ? -1 : 1) * (480 + Math.random() * 980)) + 'deg');
+        const rot = Math.round((Math.random() < 0.5 ? -1 : 1) * (480 + Math.random() * 980));
+        die.style.setProperty('--rot-mid', Math.round(rot * 0.48) + 'deg');
+        die.style.setProperty('--rot', rot + 'deg');
         die.style.setProperty('--trail-rot', Math.round(-32 + Math.random() * 64) + 'deg');
-        die.style.setProperty('--jackpot-delay', Math.round(index * (MOBILE_VICTORY_SAFE_MODE ? 22 : 16) + Math.random() * 90) + 'ms');
-        die.style.setProperty('--jackpot-duration', Math.round(1260 + Math.random() * (MOBILE_VICTORY_SAFE_MODE ? 430 : 820)) + 'ms');
+        const delay = MOBILE_VICTORY_SAFE_MODE
+          ? Math.round(-220 + index * 7 + Math.random() * 36)
+          : Math.round(index * 16 + Math.random() * 90);
+        die.style.setProperty('--jackpot-delay', delay + 'ms');
+        die.style.setProperty('--jackpot-duration', Math.round((MOBILE_VICTORY_SAFE_MODE ? 1080 : 1260) + Math.random() * (MOBILE_VICTORY_SAFE_MODE ? 360 : 820)) + 'ms');
         return die;
       }
       function appendJackpotBatch() {
         if (!jackpot.isConnected) return;
         const frag = document.createDocumentFragment();
-        const batchSize = MOBILE_VICTORY_SAFE_MODE ? 4 : 12;
+        const batchSize = MOBILE_VICTORY_SAFE_MODE ? 10 : 12;
         const end = Math.min(i + batchSize, diceCount);
         for (; i < end; i++) {
           frag.appendChild(makeJackpotDie(i));
@@ -6976,7 +6984,7 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
       }, 160);
       runLater(() => {
         if (overlay.classList.contains('show')) createVictoryCanJackpot(canHero, winner);
-      }, 300);
+      }, 80);
     } else {
       createVictoryCanJackpot(canHero, winner);
       createVictoryDiceRain(winner);
