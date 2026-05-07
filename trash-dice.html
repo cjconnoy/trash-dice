@@ -5099,6 +5099,8 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   let victoryRainFrame = null;
   let victoryRainRun = 0;
   let terminalWinner = null;
+  let terminalRunId = 0;
+  let terminalState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
   const INVENTORY_MISCHIEF_CLASSES = [
     'inventory-mischief-wave',
@@ -6887,12 +6889,37 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
   }
 
   function clearTerminalState() {
+    terminalRunId++;
+    terminalState = null;
     terminalWinner = null;
     document.body.classList.remove('terminal-screen-active', 'terminal-screen-rest');
     overlay.classList.remove('mobile-terminal-rest');
   }
 
-  function createVictoryDiceRain(winner) {
+  function isCurrentTerminalRun(runId) {
+    return !!terminalState
+      && terminalState.active
+      && terminalState.runId === runId
+      && terminalWinner === terminalState.winner
+      && overlay.classList.contains('show');
+  }
+
+  function runTerminalLater(runId, callback, delay) {
+    return runLater(() => {
+      if (isCurrentTerminalRun(runId)) callback();
+    }, delay);
+  }
+
+  function lockTerminalInteraction() {
+    stopTerminalAutoplayState();
+    busy = true;
+    rollBtn.disabled = true;
+    playAgainBtn.disabled = false;
+    syncHeroIdleState();
+  }
+
+  function createVictoryDiceRain(winner, runId = terminalRunId) {
+    if (!isCurrentTerminalRun(runId)) return;
     const rain = document.createElement('div');
     rain.className = 'victory-dice-rain';
     overlay.appendChild(rain);
@@ -6936,7 +6963,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     }
 
     function appendRainBatch() {
-      if (run !== victoryRainRun || !rain.isConnected) return;
+      if (!isCurrentTerminalRun(runId) || run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
       const batchSize = MOBILE_VICTORY_SAFE_MODE
         ? (playerWin ? 12 : 8)
@@ -6956,14 +6983,12 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     appendRainBatch();
   }
 
-  function triggerGameWinCelebration(winner) {
-    const playerWon = winner === 'p1';
-    clearVictoryEffects();
-    overlay.classList.toggle('player-win-mega', playerWon);
+  function renderTerminalVisuals(state) {
+    const { winner, playerWon, runId } = state;
     const burst = document.createElement('div');
     burst.className = 'victory-screen-burst';
     overlay.appendChild(burst);
-    runLater(() => burst.remove(), 1700);
+    runTerminalLater(runId, () => burst.remove(), 1700);
 
     const lidBackdrop = document.createElement('div');
     lidBackdrop.className = 'victory-lid-backdrop';
@@ -6993,11 +7018,9 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
 
     if (playerWon) {
       if (MOBILE_VICTORY_SAFE_MODE) {
-        runLater(() => {
-          if (overlay.classList.contains('show')) createVictoryDiceRain(winner);
-        }, 160);
+        runTerminalLater(runId, () => createVictoryDiceRain(winner, runId), 160);
       } else {
-        createVictoryDiceRain(winner);
+        createVictoryDiceRain(winner, runId);
 
         boardWrap.classList.remove('game-win-spin');
         void boardWrap.offsetWidth;
@@ -7012,12 +7035,58 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
     }
 
     if (winner === 'p1' && MOBILE_VICTORY_SAFE_MODE) {
-      runLater(() => Audio.megaWinFanfare(), 50);
+      runTerminalLater(runId, () => Audio.megaWinFanfare(), 50);
     } else if (winner === 'p1') {
       Audio.megaWinFanfare();
     } else {
       Audio.trashCrash(Math.max(9, totalTrashedDice()));
     }
+  }
+
+  function enterTerminalScreen(winner) {
+    const finalWinner = winner === 'p2' ? 'p2' : 'p1';
+    if (terminalState && terminalState.active && overlay.classList.contains('show')) {
+      document.body.classList.add('terminal-screen-active');
+      lockTerminalInteraction();
+      return terminalState;
+    }
+
+    const playerWon = finalWinner === 'p1';
+    terminalRunId++;
+    terminalWinner = finalWinner;
+    terminalState = {
+      active: true,
+      runId: terminalRunId,
+      winner: finalWinner,
+      playerWon
+    };
+
+    document.body.classList.add('terminal-screen-active');
+    document.body.classList.remove('terminal-screen-rest');
+    clearRuntimeTimers();
+    cancelProgressionWatchdog();
+    stopTerminalAutoplayState();
+    forcedRolls = [];
+    clearBenchCelebration(false);
+    clearPlayerPayoutFanfare(false);
+    stopTitleRoundWinFanfare();
+    clearVictoryEffects();
+    lockTerminalInteraction();
+
+    overlayTitle.innerHTML = playerWon
+      ? '<span class="win-line">YELLOW PLAYER</span><span class="win-line">WINS!</span>'
+      : '<span class="win-line">GREEN PLAYER</span><span class="win-line">WINS!</span>';
+    overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
+    overlayStats.textContent = '';
+    playAgainBtn.textContent = 'PLAY AGAIN';
+    overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega', 'mobile-terminal-rest');
+    overlay.classList.add('victory', playerWon ? 'winner-yellow' : 'winner-green');
+    overlay.classList.toggle('player-win-mega', playerWon);
+    overlay.classList.add('show');
+
+    renderTerminalVisuals(terminalState);
+    runTerminalLater(terminalState.runId, lockTerminalInteraction, 220);
+    return terminalState;
   }
 
   // ── UI SYNC ──────────────────────────────────────────────────
@@ -7646,50 +7715,7 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
 
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
-    const finalWinner = winner === 'p2' ? 'p2' : 'p1';
-    if (terminalWinner && overlay.classList.contains('show')) {
-      document.body.classList.add('terminal-screen-active');
-      stopTerminalAutoplayState();
-      busy = true;
-      rollBtn.disabled = true;
-      playAgainBtn.disabled = false;
-      syncHeroIdleState();
-      return;
-    }
-    terminalWinner = finalWinner;
-    document.body.classList.add('terminal-screen-active');
-    document.body.classList.remove('terminal-screen-rest');
-    clearRuntimeTimers();
-    cancelProgressionWatchdog();
-    stopTerminalAutoplayState();
-    forcedRolls = [];
-    clearBenchCelebration(false);
-    clearPlayerPayoutFanfare(false);
-    stopTitleRoundWinFanfare();
-    busy = true;
-    rollBtn.disabled = true;
-    playAgainBtn.disabled = false;
-    syncHeroIdleState();
-    const playerWon = finalWinner === 'p1';
-    overlayTitle.innerHTML = playerWon
-      ? '<span class="win-line">YELLOW PLAYER</span><span class="win-line">WINS!</span>'
-      : '<span class="win-line">GREEN PLAYER</span><span class="win-line">WINS!</span>';
-    overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
-    overlayStats.textContent = '';
-    playAgainBtn.textContent = 'PLAY AGAIN';
-    overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
-    overlay.classList.add('victory', playerWon ? 'winner-yellow' : 'winner-green');
-    if (playerWon) overlay.classList.add('player-win-mega');
-    overlay.classList.add('show');
-    triggerGameWinCelebration(finalWinner);
-    runLater(() => {
-      if (!overlay.classList.contains('show')) return;
-      stopTerminalAutoplayState();
-      busy = true;
-      rollBtn.disabled = true;
-      playAgainBtn.disabled = false;
-      syncHeroIdleState();
-    }, 220);
+    return enterTerminalScreen(winner);
   }
 
   function ensureDevCheatGame() {
@@ -8064,7 +8090,25 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
       return { p0ReviewMode, p0Autoplay, gameStarted, current, totalRolls };
     },
     state() {
-      return { p0ReviewMode, p0Autoplay, reviewBuild: REVIEW_BUILD, mobileReviewDevice: MOBILE_REVIEW_DEVICE, audioState: Audio.state(), audio: Audio.debugState(), current, busy, round, roundWins: { ...roundWins }, openingComebackAssist: isOpeningComebackAssistActive(), openingComebackAssistRolls, totalRolls, lastProgressionRecovery };
+      return {
+        p0ReviewMode,
+        p0Autoplay,
+        reviewBuild: REVIEW_BUILD,
+        mobileReviewDevice: MOBILE_REVIEW_DEVICE,
+        audioState: Audio.state(),
+        audio: Audio.debugState(),
+        current,
+        busy,
+        round,
+        roundWins: { ...roundWins },
+        openingComebackAssist: isOpeningComebackAssistActive(),
+        openingComebackAssistRolls,
+        totalRolls,
+        terminal: terminalState ? { ...terminalState } : null,
+        terminalWinner,
+        terminalRunId,
+        lastProgressionRecovery
+      };
     },
     win(trashLoad = 10) {
       return forceTerminalGameOver('p1');
