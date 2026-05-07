@@ -2520,6 +2520,20 @@ body.fast-preview .victory-lid-backdrop {
     inset 0 0 0 max(1.6vw, 18px) rgba(185,198,198,0.2),
     inset 0 0 0 max(2.7vw, 30px) rgba(62,73,75,0.24);
 }
+body.mobile-roll-smoothing .victory-lid-backdrop {
+  opacity: 0.62;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.36) 0 8%, rgba(170,188,188,0.58) 9% 13%, transparent 14%),
+    conic-gradient(from 18deg, rgba(154,169,170,0.88) 0 8deg, rgba(230,238,232,0.48) 9deg 11deg, rgba(96,112,113,0.9) 12deg 58deg, rgba(230,238,232,0.48) 59deg 61deg, rgba(154,169,170,0.88) 62deg 70deg, rgba(96,112,113,0.9) 71deg 120deg, rgba(230,238,232,0.48) 121deg 123deg, rgba(154,169,170,0.88) 124deg 132deg, rgba(96,112,113,0.9) 133deg 180deg, rgba(230,238,232,0.48) 181deg 183deg, rgba(154,169,170,0.88) 184deg 192deg, rgba(96,112,113,0.9) 193deg 240deg, rgba(230,238,232,0.48) 241deg 243deg, rgba(154,169,170,0.88) 244deg 252deg, rgba(96,112,113,0.9) 253deg 300deg, rgba(230,238,232,0.48) 301deg 303deg, rgba(154,169,170,0.88) 304deg 312deg, rgba(96,112,113,0.9) 313deg 360deg);
+  filter:
+    brightness(1.24)
+    drop-shadow(0 0 26px rgba(245,200,0,0.38))
+    drop-shadow(0 0 44px rgba(94,232,94,0.2));
+  box-shadow:
+    inset 0 0 0 max(1.7vw, 15px) rgba(226,236,232,0.34),
+    inset 0 0 0 max(3vw, 26px) rgba(72,88,90,0.26),
+    0 0 62px rgba(245,200,0,0.3);
+}
 .victory-lid-hero {
   position: fixed;
   left: 50%;
@@ -2652,11 +2666,13 @@ body.mobile-roll-smoothing .overlay.player-win-mega::after {
   filter:
     drop-shadow(0 20px 22px rgba(0,0,0,0.42))
     drop-shadow(0 0 22px var(--winner-glow, rgba(245,200,0,0.44)));
-  animation: victoryCanHeroPop 1.45s cubic-bezier(.14,.86,.17,1) both,
+  animation: victoryCanHeroCannonDock 1.45s cubic-bezier(.2,.72,.18,1) both,
+             victoryCanHeroPop 1.45s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDance 5.6s cubic-bezier(.38,.02,.2,1) 1.45s infinite;
 }
 body.fast-preview .victory-can-hero {
-  animation: victoryCanHeroPop 1.05s cubic-bezier(.14,.86,.17,1) both,
+  animation: victoryCanHeroCannonDock 1.05s cubic-bezier(.2,.72,.18,1) both,
+             victoryCanHeroPop 1.05s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDance 6.2s cubic-bezier(.38,.02,.2,1) 1.05s infinite;
   filter:
     drop-shadow(0 15px 18px rgba(0,0,0,0.32))
@@ -2664,9 +2680,9 @@ body.fast-preview .victory-can-hero {
   will-change: left, transform;
 }
 body.mobile-roll-smoothing .victory-can-hero {
-  left: 76%;
+  left: 50%;
   bottom: clamp(3.7rem, 7vh, 5.4rem);
-  width: clamp(132px, 34vw, 172px);
+  width: clamp(124px, 32vw, 168px);
   animation: victoryCanHeroPopMobile 0.82s cubic-bezier(.14,.86,.17,1) both,
              victoryCanHeroDanceMobile 5.2s cubic-bezier(.38,.02,.2,1) 0.82s infinite;
   filter: drop-shadow(0 12px 16px rgba(0,0,0,0.32));
@@ -2824,6 +2840,11 @@ body.fast-preview .mini-die.victory-settled-die {
   34%  { opacity: 1; transform: translate3d(-50%, -10px, 0) scale(1.08) rotate(3deg); }
   100% { opacity: 1; transform: translate3d(-50%, 0, 0) scale(1) rotate(0deg); }
 }
+@keyframes victoryCanHeroCannonDock {
+  0%,
+  82%  { left: 50%; }
+  100% { left: 78%; }
+}
 @keyframes victoryCanHeroDance {
   0%   { transform: translate3d(-50%, 0, 0) rotate(-7deg) scale(1); }
   10%  { transform: translate3d(calc(-50% - 8vw), -16px, 0) rotate(8deg) scale(1.08); }
@@ -2836,15 +2857,15 @@ body.fast-preview .mini-die.victory-settled-die {
 }
 @keyframes victoryCanHeroDanceMobile {
   0%   { transform: translate3d(-50%, 0, 0) rotate(-5deg) scale(1); }
-  8%   { transform: translate3d(calc(-50% - 7vw), -9px, 0) rotate(7deg) scale(1.05,0.98); }
-  15%  { transform: translate3d(calc(-50% - 16vw), -2px, 0) rotate(-8deg) scale(0.98,1.05); }
-  26%  { transform: translate3d(calc(-50% - 29vw), -16px, 0) rotate(10deg) scale(1.08); }
-  35%  { transform: translate3d(calc(-50% - 21vw), 2px, 0) rotate(-5deg) scale(1.02,0.96); }
-  48%  { transform: translate3d(calc(-50% - 9vw), -18px, 0) rotate(11deg) scale(1.09); }
-  57%  { transform: translate3d(calc(-50% - 2vw), -4px, 0) rotate(-9deg) scale(1.01); }
-  69%  { transform: translate3d(calc(-50% - 24vw), -12px, 0) rotate(6deg) scale(1.06,1.01); }
-  79%  { transform: translate3d(calc(-50% - 18vw), 1px, 0) rotate(-11deg) scale(0.99,1.04); }
-  91%  { transform: translate3d(calc(-50% - 6vw), -14px, 0) rotate(9deg) scale(1.07); }
+  8%   { transform: translate3d(calc(-50% + 12vw), -12px, 0) rotate(8deg) scale(1.06,0.98); }
+  16%  { transform: translate3d(calc(-50% + 28vw), 1px, 0) rotate(-10deg) scale(0.98,1.06); }
+  25%  { transform: translate3d(calc(-50% + 18vw), -19px, 0) rotate(12deg) scale(1.09); }
+  36%  { transform: translate3d(calc(-50% - 10vw), -4px, 0) rotate(-7deg) scale(1.02,0.97); }
+  47%  { transform: translate3d(calc(-50% - 29vw), -18px, 0) rotate(11deg) scale(1.08); }
+  58%  { transform: translate3d(calc(-50% - 18vw), 2px, 0) rotate(-12deg) scale(0.98,1.06); }
+  70%  { transform: translate3d(calc(-50% + 6vw), -16px, 0) rotate(9deg) scale(1.07,1.01); }
+  82%  { transform: translate3d(calc(-50% + 27vw), -2px, 0) rotate(-11deg) scale(1.01,1.04); }
+  92%  { transform: translate3d(calc(-50% - 24vw), -14px, 0) rotate(10deg) scale(1.07); }
   100% { transform: translate3d(-50%, 0, 0) rotate(6deg) scale(1); }
 }
 @keyframes playerWinShockwave {
@@ -2985,8 +3006,8 @@ body.mobile-roll-smoothing .victory-dice-rain {
   perspective: none;
 }
 body.mobile-roll-smoothing .mini-die.victory-rain-die {
-  width: clamp(10px, 2.8vw, 14px);
-  height: clamp(10px, 2.8vw, 14px);
+  width: clamp(11px, 3.1vw, 16px);
+  height: clamp(11px, 3.1vw, 16px);
   transform-style: flat;
   animation-name: victoryDiceRainMobile;
   box-shadow:
@@ -4147,6 +4168,14 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
     radial-gradient(circle at 60% 66%, rgba(245,200,0,0.18), transparent 44%),
     rgba(5,12,7,0.94);
 }
+body.mobile-roll-smoothing .overlay.victory {
+  background:
+    radial-gradient(circle at 50% 38%, var(--winner-glow), transparent 25%),
+    radial-gradient(circle at 50% 58%, rgba(178,198,190,0.18), transparent 44%),
+    radial-gradient(circle at 48% 58%, rgba(94,232,94,0.24), transparent 48%),
+    radial-gradient(circle at 60% 66%, rgba(245,200,0,0.2), transparent 44%),
+    rgba(5,12,7,0.88);
+}
 .overlay.loss {
   background:
     radial-gradient(circle at 50% 40%, rgba(255,126,50,0.28), transparent 31%),
@@ -4178,6 +4207,12 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
   gap: clamp(0.65rem, 2.4vw, 1rem);
   pointer-events: none;
 }
+.overlay.victory .overlay-content,
+.overlay.loss .overlay-content {
+  justify-content: flex-start;
+  padding-top: clamp(2.2rem, 7vh, 4.8rem);
+  gap: clamp(0.42rem, 1.5vw, 0.78rem);
+}
 .overlay-content::before {
   content: "";
   position: absolute;
@@ -4191,6 +4226,17 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
     radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0.62), rgba(5,12,7,0.34) 48%, transparent 74%);
   filter: blur(2px);
   z-index: 0;
+}
+body.mobile-roll-smoothing .overlay.victory .overlay-content,
+body.mobile-roll-smoothing .overlay.loss .overlay-content {
+  padding-top: calc(env(safe-area-inset-top, 0px) + clamp(1rem, 4.6vh, 2.2rem));
+  gap: clamp(0.32rem, 1.35vh, 0.58rem);
+}
+body.mobile-roll-smoothing .overlay-content::before {
+  top: 42%;
+  height: clamp(230px, 35vh, 320px);
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0.42), rgba(5,12,7,0.24) 48%, transparent 74%);
 }
 .overlay-content > * {
   pointer-events: auto;
@@ -4223,6 +4269,11 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
 .overlay-title .win-line {
   display: block;
   white-space: nowrap;
+}
+body.mobile-roll-smoothing .overlay-title {
+  gap: clamp(0.18rem, 1.7vw, 0.34rem);
+  font-size: clamp(1.72rem, 7.6vw, 3.4rem);
+  line-height: 0.94;
 }
 .overlay.loss .overlay-title {
   color: #ff8f52;
@@ -4257,9 +4308,9 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
 }
 .overlay.victory .overlay-title {
   width: min(98vw, 960px);
-  gap: clamp(0.08rem, 1vw, 0.32rem);
+  gap: clamp(0.16rem, 1.2vw, 0.44rem);
   font-size: clamp(2.2rem, 8.4vw, 7.05rem);
-  line-height: 0.75;
+  line-height: 0.84;
   -webkit-text-stroke: clamp(1.7px, 0.34vw, 3px) var(--winner-title-stroke);
   text-shadow:
     0 4px 0 var(--winner-title-shadow),
@@ -4268,6 +4319,12 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
     0 0 18px rgba(0,0,0,0.9),
     0 0 38px var(--winner-glow),
     0 0 76px rgba(255,244,168,0.26);
+}
+body.mobile-roll-smoothing .overlay.victory .overlay-title,
+body.mobile-roll-smoothing .overlay.loss .overlay-title {
+  gap: clamp(0.2rem, 1.8vw, 0.38rem);
+  font-size: clamp(1.72rem, 7.5vw, 3.35rem);
+  line-height: 0.94;
 }
 .overlay.victory .overlay-title::before {
   content: "GAME WIN";
@@ -4291,6 +4348,10 @@ body.mobile-roll-smoothing .mini-die.victory-rain-die .mini-pip {
     0 5px 0 rgba(0,0,0,0.34),
     0 0 26px var(--winner-glow);
   transform: rotate(2deg);
+}
+body.mobile-roll-smoothing .overlay.victory .overlay-title::before {
+  margin-bottom: clamp(0.14rem, 1vw, 0.28rem);
+  font-size: clamp(0.64rem, 2.4vw, 0.95rem);
 }
 .overlay.loss .overlay-sub {
   background: rgba(15,95,50,0.72);
@@ -6755,8 +6816,8 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
     const playerWin = winner === 'p1';
     const diceCount = MOBILE_VICTORY_SAFE_MODE
       ? (playerWin
-        ? Math.round(clamp(22 + totalTrashedDice() * 0.22, 26, 36))
-        : Math.round(clamp(10 + totalTrashedDice() * 0.12, 12, 18)))
+        ? Math.round(clamp(40 + totalTrashedDice() * 0.34, 46, 64))
+        : Math.round(clamp(24 + totalTrashedDice() * 0.22, 28, 42)))
       : (playerWin
         ? (FAST_PREVIEW_ENABLED
           ? Math.round(clamp(116 + totalTrashedDice() * 0.72, 132, 178))
@@ -6794,7 +6855,7 @@ body.mobile-roll-smoothing .overlay.player-win-mega .overlay-title::before {
       if (run !== victoryRainRun || !rain.isConnected) return;
       const frag = document.createDocumentFragment();
       const batchSize = MOBILE_VICTORY_SAFE_MODE
-        ? (playerWin ? 7 : 6)
+        ? (playerWin ? 10 : 8)
         : (playerWin
           ? (FAST_PREVIEW_ENABLED ? 22 : 50)
           : (FAST_PREVIEW_ENABLED ? 12 : 34));
