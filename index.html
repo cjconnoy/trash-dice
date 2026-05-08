@@ -2529,14 +2529,19 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
     transform: translate(var(--mx), var(--my)) rotate(var(--r1)) scale(0.82);
     filter: brightness(1.04);
   }
-  72% {
+  70% {
     opacity: 1;
     transform: translate(var(--tx), var(--ty)) rotate(var(--r2)) scale(var(--final-scale));
     filter: brightness(0.74);
   }
+  86% {
+    opacity: 0;
+    transform: translate(var(--tx), calc(var(--ty) + var(--sink, 18px) * 0.42)) rotate(var(--r3)) scale(0.18);
+    filter: brightness(0.5);
+  }
   100% {
     opacity: 0;
-    transform: translate(var(--tx), calc(var(--ty) + var(--sink, 18px))) rotate(var(--r3)) scale(0.08);
+    transform: translate(var(--tx), calc(var(--ty) + var(--sink, 18px))) rotate(var(--r3)) scale(0.04);
     filter: brightness(0.45);
   }
 }
@@ -2689,13 +2694,17 @@ body.mobile-roll-smoothing .payout-comet-trail {
     opacity: 1;
     transform: translate3d(var(--mx), var(--my), 0) rotate(var(--r1)) scale(0.82);
   }
-  72% {
+  70% {
     opacity: 1;
     transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r2)) scale(var(--final-scale));
   }
+  86% {
+    opacity: 0;
+    transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 18px) * 0.42), 0) rotate(var(--r3)) scale(0.18);
+  }
   100% {
     opacity: 0;
-    transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 18px)), 0) rotate(var(--r3)) scale(0.08);
+    transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 18px)), 0) rotate(var(--r3)) scale(0.04);
   }
 }
 @keyframes payoutDieArcMobile {
@@ -7452,11 +7461,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const { clone, source, rect } = makeDieClone(player, color);
     const target = trashCan.getBoundingClientRect();
     const size = Math.max(18, Math.min(rect.width * 0.48, target.width * 0.34));
-    const sink = clamp(target.height * 0.11, 24, 46);
+    const sink = clamp(target.height * 0.07, 16, 28);
     const startCx = rect.left + rect.width / 2;
     const startCy = rect.top + rect.height / 2;
     const endCx = target.left + target.width / 2;
-    const endCy = target.top + target.height * 0.25;
+    const endCy = target.top + target.height * 0.15;
     const dx = endCx - startCx;
     const dy = endCy - startCy;
     const arc = clamp(Math.abs(dx) * 0.10 + Math.abs(dy) * 0.16, 38, 118);
@@ -7472,9 +7481,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const mouthMask = document.createElement('div');
     mouthMask.className = 'trash-entry-mouth-mask';
     mouthMask.style.left = endCx.toFixed(1) + 'px';
-    mouthMask.style.top = (target.top + target.height * 0.22).toFixed(1) + 'px';
-    mouthMask.style.setProperty('--mouth-w', (target.width * 0.76).toFixed(1) + 'px');
-    mouthMask.style.setProperty('--mouth-h', (target.height * 0.085).toFixed(1) + 'px');
+    mouthMask.style.top = (target.top + target.height * 0.16).toFixed(1) + 'px';
+    mouthMask.style.setProperty('--mouth-w', (target.width * 0.82).toFixed(1) + 'px');
+    mouthMask.style.setProperty('--mouth-h', (target.height * 0.12).toFixed(1) + 'px');
     document.body.appendChild(mouthMask);
     requestAnimationFrame(() => {
       clone.classList.add('to-trash-physical');
