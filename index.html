@@ -445,8 +445,7 @@ body.dev-cheats .dev-cheat-bar {
     transform: translateX(50%);
   }
 }
-.milestone-badge,
-.odg-badge {
+.milestone-badge {
   position: fixed;
   z-index: 140;
   padding: 0.24rem 0.44rem;
@@ -465,10 +464,6 @@ body.dev-cheats .dev-cheat-bar {
   left: 8px;
   bottom: 8px;
   text-transform: uppercase;
-}
-.odg-badge {
-  right: 8px;
-  bottom: 8px;
 }
 
 /* ── GAME AREA ── */
@@ -732,6 +727,11 @@ body.player-roll-ready .roll-panel {
 }
 .green-panel .roll-die-stage {
   --roll-stage-rotate: 5deg;
+}
+@media (min-width: 769px) {
+  body:not(.mobile-roll-smoothing) .inventory-cluster .roll-die-stage {
+    --roll-stage-size: clamp(129px, 31.05vw, 186px);
+  }
 }
 .roll-die-stage::before {
   content: '';
@@ -3683,8 +3683,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     flex-shrink: 0;
   }
 
-  .milestone-badge,
-  .odg-badge {
+  .milestone-badge {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
     padding: 0.2rem 0.36rem;
     font-size: clamp(0.46rem, 2.25vw, 0.62rem);
@@ -3984,6 +3983,24 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   z-index: 30;
   transition: opacity 0.5s;
 }
+.start-purpose-note {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + clamp(0.7rem, 2.2vw, 1.05rem));
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  z-index: 9;
+  color: #0f5f32;
+  font-family: 'Bangers', 'Arial Black', sans-serif;
+  font-size: clamp(0.92rem, 2.1vw, 1.34rem);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-shadow:
+    1px 1.5px 0 rgba(255,255,255,0.52),
+    0 2px 5px rgba(74,82,18,0.18);
+  pointer-events: none;
+  white-space: nowrap;
+}
 .start-overlay.hide {
   opacity: 0;
   pointer-events: none;
@@ -4120,21 +4137,6 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     0 1px 1px rgba(255,255,255,0.16);
 }
 .start-die.green .dot { background: var(--green-pip); }
-@media (min-width: 769px) {
-  body:not(.mobile-roll-smoothing) .start-dice-row {
-    gap: clamp(1.125rem, 3.9vw, 1.725rem);
-    transform: translate(-9px, -12px);
-  }
-  body:not(.mobile-roll-smoothing) .start-die {
-    width: clamp(129px, 30.75vw, 168px);
-    height: clamp(129px, 30.75vw, 168px);
-    border-radius: clamp(25.5px, 6vw, 36px);
-  }
-  body:not(.mobile-roll-smoothing) .start-die .dot {
-    width: clamp(19.5px, 5.7vw, 28.5px);
-    height: clamp(19.5px, 5.7vw, 28.5px);
-  }
-}
 .start-tagline {
   font-size: clamp(1rem, 3.5vw, 1.3rem);
   letter-spacing: 0.08em;
@@ -4846,7 +4848,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 </head>
 <body>
 <div class="milestone-badge">NOT LIVE - ALPHA</div>
-<div class="odg-badge">One Day Games</div>
 
 <div class="title-wrap hero-title" id="heroTitle" aria-label="Trash Dice">
   <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
@@ -5104,6 +5105,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
+  <div class="start-purpose-note">FOR EDUCATIONAL PURPOSES ONLY</div>
   <div class="title-wrap big">
     <div class="splatter sp-y" style="width:70px;height:44px;top:-8px;left:2%;transform:rotate(18deg)"></div>
     <div class="splatter sp-g" style="width:50px;height:32px;bottom:0;right:4%;transform:rotate(-14deg)"></div>
