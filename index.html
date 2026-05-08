@@ -8464,10 +8464,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     lidDice.forEach((die, i) => {
       const slotIndex = Math.max(0, Math.min(5, (Math.floor(die.value || (i + 1)) - 1)));
       const info = slotInfo[slotIndex];
-      const sx = info
+      const seatedDie = slotDiceEls[slotIndex] || null;
+      const seatedR = seatedDie ? seatedDie.getBoundingClientRect() : null;
+      const sx = seatedR && seatedR.width
+        ? seatedR.left + seatedR.width / 2
+        : info
         ? lidR.left + lidR.width * (info.x / 200)
         : lidR.left + lidR.width * (0.35 + Math.random() * 0.3);
-      const sy = info
+      const sy = seatedR && seatedR.height
+        ? seatedR.top + seatedR.height / 2
+        : info
         ? lidR.top + lidR.height * (info.y / 200)
         : lidR.top + lidR.height * (0.35 + Math.random() * 0.3);
       const tx = pileR.left + pileR.width * (0.25 + Math.random() * 0.5);
@@ -8483,6 +8489,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const my = dy * 0.35 - arc;
       el.style.left = sx + 'px';
       el.style.top = sy + 'px';
+      if (seatedR && seatedR.width && seatedR.height) {
+        const payoutSize = clamp(Math.min(seatedR.width, seatedR.height), 19, 34);
+        el.style.width = payoutSize.toFixed(1) + 'px';
+        el.style.height = payoutSize.toFixed(1) + 'px';
+      }
       el.style.setProperty('--payout-duration', travelMs + 'ms');
       el.style.setProperty('--payout-delay', Math.round(delay) + 'ms');
       el.style.setProperty('--mx', mx.toFixed(1) + 'px');
@@ -8510,6 +8521,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         runLater(() => trail.remove(), delay + travelMs + pourTailMs);
       }
       document.body.appendChild(el);
+      if (seatedDie) {
+        runLater(() => {
+          seatedDie.style.opacity = '0';
+        }, Math.max(0, Math.round(delay) - 16));
+      }
       if (typeof onDieArrive === 'function') {
         runLater(() => onDieArrive(die, i), Math.round(delay + travelMs * 0.82));
       }
