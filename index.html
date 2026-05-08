@@ -6655,6 +6655,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       audioGraphBuilt: false,
       musicActive: false,
       musicStarted: false,
+      musicGainValue: 0,
+      musicTimerActive: false,
       musicStep: 0,
       callbacksQueued: 0,
       callbacksFlushed: 0,
@@ -6703,7 +6705,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         ready: !!(ctx && audioReady && ctx.state === 'running'),
         audioGraphBuilt,
         musicActive,
-        musicStarted
+        musicStarted,
+        musicGainValue: musicGain ? Number(musicGain.gain.value.toFixed(3)) : 0,
+        musicTimerActive: !!musicTimer
       });
     }
 
@@ -6733,6 +6737,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     let musicStep = 0;
+    const MUSIC_TARGET_GAIN = 0.34;
     const MUSIC_BEAT = 60 / 132;
     const MUSIC_BAR = MUSIC_BEAT * 4;
     const MUSIC_ROOTS = [261.63, 349.23, 392.00, 329.63];
@@ -6786,22 +6791,23 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const root = MUSIC_ROOTS[musicStep % MUSIC_ROOTS.length];
       const nextRoot = MUSIC_ROOTS[(musicStep + 1) % MUSIC_ROOTS.length];
       [0, 2].forEach(beat => {
-        musicTone(root * 0.5, 'sine', 0.018, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.88);
+        musicTone(root * 0.5, 'sine', 0.044, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.88);
       });
       [0, 1.5, 2.5, 3.25].forEach((beat, i) => {
         const chordRoot = i === 3 ? nextRoot : root;
-        musicTone(chordRoot, 'triangle', 0.012, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.42);
-        musicTone(chordRoot * 1.25, 'sine', 0.008, start + beat * MUSIC_BEAT + 0.015, MUSIC_BEAT * 0.36);
-        musicTone(chordRoot * 1.5, 'sine', 0.007, start + beat * MUSIC_BEAT + 0.028, MUSIC_BEAT * 0.34);
+        musicTone(chordRoot, 'triangle', 0.034, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.42);
+        musicTone(chordRoot * 1.25, 'sine', 0.022, start + beat * MUSIC_BEAT + 0.015, MUSIC_BEAT * 0.36);
+        musicTone(chordRoot * 1.5, 'sine', 0.018, start + beat * MUSIC_BEAT + 0.028, MUSIC_BEAT * 0.34);
       });
       for (let i = 0; i < 4; i++) {
         const semitone = MUSIC_MELODY[(musicStep * 4 + i) % MUSIC_MELODY.length];
         const freq = root * 2 * Math.pow(2, semitone / 12);
-        musicTone(freq, 'triangle', i === 0 ? 0.018 : 0.014, start + (i + 0.08) * MUSIC_BEAT, MUSIC_BEAT * 0.34);
-        if (i === 1 || i === 3) musicTick(start + (i + 0.46) * MUSIC_BEAT, 0.009);
+        musicTone(freq, 'triangle', i === 0 ? 0.052 : 0.04, start + (i + 0.08) * MUSIC_BEAT, MUSIC_BEAT * 0.34);
+        musicTone(freq * 2, 'sine', i === 0 ? 0.014 : 0.01, start + (i + 0.1) * MUSIC_BEAT, MUSIC_BEAT * 0.24);
+        if (i === 1 || i === 3) musicTick(start + (i + 0.46) * MUSIC_BEAT, 0.018);
       }
-      musicTick(start + 0.04, 0.014);
-      musicTick(start + 2 * MUSIC_BEAT + 0.04, 0.011);
+      musicTick(start + 0.04, 0.026);
+      musicTick(start + 2 * MUSIC_BEAT + 0.04, 0.022);
       musicStep++;
       debug.musicStep = musicStep;
       musicTimer = window.setTimeout(scheduleMusicBar, Math.max(120, (MUSIC_BAR - 0.16) * 1000));
@@ -6819,9 +6825,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       try {
         musicGain.gain.cancelScheduledValues(now);
         musicGain.gain.setValueAtTime(Math.max(0.001, musicGain.gain.value || 0.001), now);
-        musicGain.gain.linearRampToValueAtTime(musicActive ? 0.115 : 0.001, now + (musicActive ? 0.9 : 0.35));
+        musicGain.gain.linearRampToValueAtTime(musicActive ? MUSIC_TARGET_GAIN : 0.001, now + (musicActive ? 0.9 : 0.35));
       } catch (_) {
-        musicGain.gain.value = musicActive ? 0.115 : 0.001;
+        musicGain.gain.value = musicActive ? MUSIC_TARGET_GAIN : 0.001;
       }
       if (musicActive && ctx.state === 'running' && !musicTimer) scheduleMusicBar();
       if (!musicActive && musicTimer) {
@@ -6873,6 +6879,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         return Promise.resolve('unsupported');
       }
       if (audioReady && ctx.state === 'running') {
+        if (musicActive && !musicTimer) scheduleMusicBar();
+        noteAudioDebug({ lastEvent: source, resumeResult: ctx.state });
         flushReadyCallbacks();
         return Promise.resolve(ctx.state);
       }
@@ -8310,6 +8318,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const humanGestureRoll = current === 'p1';
     busy = true;
     rollBtn.disabled = true;
+    if (gameStarted) Audio.setMusicActive(true);
     syncHeroIdleState();
     scheduleProgressionWatchdog('roll', ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + TURN_HANDOFF_MS + 5200);
     totalRolls++;
