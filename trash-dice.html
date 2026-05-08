@@ -4120,6 +4120,21 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     0 1px 1px rgba(255,255,255,0.16);
 }
 .start-die.green .dot { background: var(--green-pip); }
+@media (min-width: 769px) {
+  body:not(.mobile-roll-smoothing) .start-dice-row {
+    gap: clamp(1.125rem, 3.9vw, 1.725rem);
+    transform: translate(-9px, -12px);
+  }
+  body:not(.mobile-roll-smoothing) .start-die {
+    width: clamp(129px, 30.75vw, 168px);
+    height: clamp(129px, 30.75vw, 168px);
+    border-radius: clamp(25.5px, 6vw, 36px);
+  }
+  body:not(.mobile-roll-smoothing) .start-die .dot {
+    width: clamp(19.5px, 5.7vw, 28.5px);
+    height: clamp(19.5px, 5.7vw, 28.5px);
+  }
+}
 .start-tagline {
   font-size: clamp(1rem, 3.5vw, 1.3rem);
   letter-spacing: 0.08em;
