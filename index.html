@@ -390,6 +390,10 @@ body.p0-mode .p0-review-toggle {
 body.dev-cheats .dev-cheat-bar {
   display: inline-flex;
 }
+body.inline-game-over .dev-cheat-bar {
+  visibility: hidden;
+  pointer-events: none;
+}
 .dev-cheat-btn {
   min-width: 54px;
   min-height: 34px;
@@ -443,6 +447,10 @@ body.dev-cheats .dev-cheat-bar {
     right: 50%;
     bottom: 50px;
     transform: translateX(50%);
+  }
+  body.inline-game-over .dev-cheat-bar {
+    bottom: 248px;
+    opacity: 0.72;
   }
 }
 .milestone-badge {
@@ -1513,6 +1521,115 @@ body.inline-game-win .yellow-panel {
 body.inline-game-loss .green-panel {
   --panel-glow: rgba(15,95,50,0.34);
 }
+.inline-result-banner {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  z-index: 94;
+  min-width: min(540px, calc(100% - 32px));
+  padding: 0.58rem 0.92rem 0.5rem;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-50%, -50%, 0) rotate(-2deg) scale(0.88);
+  transform-origin: 50% 50%;
+  contain: layout style paint;
+  backface-visibility: hidden;
+  box-shadow:
+    0 8px 0 rgba(43,35,16,0.34),
+    0 18px 38px rgba(42,37,26,0.26);
+}
+body.inline-game-over .inline-result-banner {
+  visibility: visible;
+  opacity: 1;
+  animation:
+    inlineResultPop 0.62s cubic-bezier(.13,.86,.16,1) both,
+    inlineResultPulse 1.45s cubic-bezier(.16,.78,.18,1) 0.62s infinite;
+}
+body.inline-game-win .inline-result-banner {
+  background:
+    radial-gradient(ellipse at 22% 12%, rgba(255,255,255,0.82), rgba(255,255,255,0.2) 33%, transparent 58%),
+    linear-gradient(180deg, #fff59a 0%, #f5c800 55%, #c89200 100%);
+  border: 4px solid rgba(15,95,50,0.88);
+  color: #0f5f32;
+  text-shadow:
+    1px 1px 0 rgba(255,255,255,0.54),
+    2px 3px 0 rgba(93,63,0,0.22);
+}
+body.inline-game-loss .inline-result-banner {
+  background:
+    radial-gradient(ellipse at 24% 10%, rgba(255,255,255,0.22), transparent 48%),
+    linear-gradient(180deg, #257a48 0%, #10552f 58%, #08361f 100%);
+  border: 4px solid rgba(255,143,82,0.9);
+  color: #fff27a;
+  text-shadow:
+    1px 1px 0 rgba(16,28,18,0.82),
+    2px 3px 0 rgba(0,0,0,0.28);
+}
+.inline-result-title {
+  font-family: 'Bangers', sans-serif;
+  font-size: 3.45rem;
+  line-height: 0.82;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.inline-result-sub {
+  font-size: 0.88rem;
+  line-height: 1;
+  letter-spacing: 0;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+@keyframes inlineResultPop {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) rotate(-5deg) scale(0.64);
+  }
+  58% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) rotate(2deg) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) rotate(-2deg) scale(1);
+  }
+}
+@keyframes inlineResultPulse {
+  0%, 100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-2deg) scale(1);
+    filter: brightness(1);
+  }
+  52% {
+    transform: translate3d(-50%, -53%, 0) rotate(1deg) scale(1.045);
+    filter: brightness(1.1);
+  }
+}
+@media (max-width: 768px) {
+  .inline-result-banner {
+    top: 43%;
+    min-width: min(340px, calc(100% - 24px));
+    padding: 0.44rem 0.68rem 0.38rem;
+    border-radius: 12px;
+    border-width: 3px;
+  }
+  .inline-result-title {
+    font-size: 1.9rem;
+  }
+  .inline-result-sub {
+    font-size: 0.68rem;
+  }
+}
+@media (max-width: 380px) {
+  .inline-result-title {
+    font-size: 1.68rem;
+  }
+}
 .roll-btn:disabled {
   opacity: 0.88;
   background:
@@ -1804,12 +1921,14 @@ body.player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not
   animation: lidIdleWobble 5.8s cubic-bezier(.16,.82,.18,1) infinite;
 }
 .board-wrap.player-payout-lid-dance,
-body.player-roll-ready .board-wrap.player-payout-lid-dance {
+body.player-roll-ready .board-wrap.player-payout-lid-dance,
+.board-wrap.inline-ending-lid-dance {
   z-index: 88;
   animation: lidPayoutHappyDance var(--payout-lid-dance-rate, 1.06s) cubic-bezier(.16,.78,.18,1) infinite;
   will-change: transform, filter;
 }
-body.mobile-roll-smoothing .board-wrap.player-payout-lid-dance {
+body.mobile-roll-smoothing .board-wrap.player-payout-lid-dance,
+body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
   animation-name: lidPayoutHappyDanceMobile;
   animation-duration: var(--payout-lid-dance-rate, 1.16s);
 }
@@ -2170,12 +2289,14 @@ body.fast-preview .lid-inner-glint {
 .trash-can.pour {
   animation: canPour 1.05s ease-in-out;
 }
-.trash-can.pour.player-payout-can-dance {
+.trash-can.pour.player-payout-can-dance,
+.trash-can.inline-ending-can-dance {
   z-index: 92;
   animation: canPayoutHappyDance var(--payout-can-dance-rate, 0.92s) cubic-bezier(.16,.78,.18,1) infinite;
   will-change: transform, filter;
 }
-body.mobile-roll-smoothing .trash-can.pour.player-payout-can-dance {
+body.mobile-roll-smoothing .trash-can.pour.player-payout-can-dance,
+body.mobile-roll-smoothing .trash-can.inline-ending-can-dance {
   animation-name: canPayoutHappyDanceMobile;
   animation-duration: var(--payout-can-dance-rate, 1.04s);
 }
@@ -5183,6 +5304,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       </svg>
       <div class="can-load-pile" id="canLoadPile"></div>
     </div>
+    <div class="inline-result-banner" id="inlineResultBanner" role="status" aria-live="polite" aria-hidden="true">
+      <div class="inline-result-title" id="inlineResultTitle"></div>
+      <div class="inline-result-sub" id="inlineResultSub"></div>
+    </div>
   </div>
 
   <!-- Yellow player panel — BOTTOM -->
@@ -5794,6 +5919,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const trashCan    = document.getElementById('trashCan');
   const canLoadPile = document.getElementById('canLoadPile');
   const boardScene  = document.querySelector('.board-scene');
+  const inlineResultBanner = document.getElementById('inlineResultBanner');
+  const inlineResultTitle = document.getElementById('inlineResultTitle');
+  const inlineResultSub = document.getElementById('inlineResultSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
   const roundFlash  = document.getElementById('roundFlash');
@@ -7023,6 +7151,54 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         });
         [1.28, 1.55, 1.82].forEach(t => noiseBurst(0.16, t, 0.11, 2.6, 4200, 'highpass'));
       },
+      gameWinWhistle() {
+        const c = sfxCtx('gameWinWhistle');
+        if (!c) return;
+        const now = c.currentTime;
+        function whistle(freq, start, dur, gain = 0.07, glideTo = freq) {
+          const osc = c.createOscillator();
+          const g = c.createGain();
+          const filter = c.createBiquadFilter();
+          const vibrato = c.createOscillator();
+          const vibratoDepth = c.createGain();
+          const t0 = now + start;
+          const t1 = t0 + dur;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t0);
+          osc.frequency.linearRampToValueAtTime(glideTo, t0 + dur * 0.74);
+          vibrato.type = 'sine';
+          vibrato.frequency.value = 5.8;
+          vibratoDepth.gain.value = 6.5;
+          vibrato.connect(vibratoDepth).connect(osc.detune);
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(freq * 1.08, t0);
+          filter.frequency.linearRampToValueAtTime(glideTo * 1.08, t0 + dur * 0.74);
+          filter.Q.value = 9;
+          g.gain.setValueAtTime(0.001, t0);
+          g.gain.linearRampToValueAtTime(gain, t0 + 0.045);
+          g.gain.setValueAtTime(gain * 0.92, Math.max(t0 + 0.05, t1 - 0.12));
+          g.gain.exponentialRampToValueAtTime(0.001, t1);
+          osc.connect(filter).connect(g).connect(master || c.destination);
+          osc.start(t0);
+          vibrato.start(t0);
+          osc.stop(t1 + 0.04);
+          vibrato.stop(t1 + 0.04);
+        }
+        [[523,0.00,0.54,0.09],[659,0.12,0.5,0.065],[784,0.24,0.48,0.045]].forEach(([fr,t,dur,gain]) => {
+          tone(fr, 'triangle', gain, t, dur, c.destination);
+        });
+        [
+          [988,0.08,0.34,0.062,1175],
+          [1319,0.42,0.28,0.054,1175],
+          [1175,0.76,0.38,0.06,1568],
+          [1568,1.12,0.5,0.052,1760],
+          [1319,1.76,0.36,0.05,1568],
+          [1760,2.12,0.66,0.044,1976],
+          [1568,2.9,0.7,0.04,1319]
+        ].forEach(([freq, start, dur, gain, glide]) => whistle(freq, start, dur, gain, glide));
+        noiseBurst(0.12, 0.02, 0.035, 2.8, 5200, 'highpass');
+        noiseBurst(0.1, 1.08, 0.026, 2.8, 6200, 'highpass');
+      },
       // Trash fanfare — big dramatic womp + crash
       trashSting() {
         const c = sfxCtx('trashSting');
@@ -7286,6 +7462,41 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     rollBtn.classList.toggle('inline-play-again', !!enabled);
   }
 
+  function clearInlineEndingVisuals() {
+    if (inlineResultBanner) {
+      inlineResultBanner.setAttribute('aria-hidden', 'true');
+      inlineResultBanner.classList.remove('win', 'loss');
+    }
+    if (inlineResultTitle) inlineResultTitle.textContent = '';
+    if (inlineResultSub) inlineResultSub.textContent = '';
+    if (trashCan) {
+      trashCan.classList.remove('inline-ending-can-dance');
+      trashCan.style.removeProperty('--payout-can-dance-rate');
+    }
+    if (boardWrap) {
+      boardWrap.classList.remove('inline-ending-lid-dance');
+      boardWrap.style.removeProperty('--payout-lid-dance-rate');
+    }
+  }
+
+  function startInlineEndingVisuals(playerWon) {
+    clearInlineEndingVisuals();
+    if (inlineResultBanner) {
+      inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
+      inlineResultBanner.setAttribute('aria-hidden', 'false');
+    }
+    if (inlineResultTitle) inlineResultTitle.textContent = playerWon ? 'CONGRATULATIONS!' : 'GAME OVER';
+    if (inlineResultSub) inlineResultSub.textContent = playerWon ? 'YELLOW WINS' : 'GREEN WINS';
+    if (boardWrap) {
+      boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
+      boardWrap.classList.add('inline-ending-lid-dance');
+    }
+    if (trashCan) {
+      trashCan.style.setProperty('--payout-can-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.08s' : '0.92s');
+      trashCan.classList.add('inline-ending-can-dance');
+    }
+  }
+
   function clearInlineGameOverUi() {
     inlineGameOverRunId++;
     inlineGameOverState = null;
@@ -7294,6 +7505,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       inlineGameOverTimer = null;
     }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
+    clearInlineEndingVisuals();
     setRollButtonPlayAgainMode(false);
   }
 
@@ -7317,16 +7529,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearVictoryEffects();
     clearBenchCelebration(false);
     clearPlayerPayoutFanfare(false);
+    clearInlineEndingVisuals();
     stopTitleRoundWinFanfare();
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
     roundResolutionState = null;
     document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
-    boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance');
+    boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
     boardWrap.style.removeProperty('--payout-lid-dance-rate');
     clearDie(null);
     roundFlash.className = '';
@@ -7353,6 +7566,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.add('inline-game-over');
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
+    startInlineEndingVisuals(playerWon);
 
     p1Inventory.classList.add('has-status');
     p2Inventory.classList.add('has-status');
@@ -7376,6 +7590,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (playerWon) {
       triggerLidWinPulse();
       Audio.megaWinFanfare();
+      Audio.gameWinWhistle();
     } else {
       Audio.trashCrash(Math.max(6, totalTrashedDice()));
     }
@@ -7948,11 +8163,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.remove('player-roll-ready');
     document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
-    boardWrap.classList.remove('player-payout-lid-dance');
+    boardWrap.classList.remove('player-payout-lid-dance', 'inline-ending-lid-dance');
     boardWrap.style.removeProperty('--payout-lid-dance-rate');
     playAgainBtn.disabled = false;
 
@@ -8374,11 +8589,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p0ReviewMode = false;
     updateP0ReviewControl();
     document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
+    clearInlineEndingVisuals();
     document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
-    boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance');
+    boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
     boardWrap.style.removeProperty('--payout-lid-dance-rate');
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
   }
