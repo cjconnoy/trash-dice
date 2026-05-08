@@ -6631,6 +6631,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
     let ctx = null;
     let master = null;
+    let musicGain = null;
+    let musicTimer = null;
+    let musicActive = false;
     let audioReady = false;
     let audioGraphBuilt = false;
     let musicStarted = false;
@@ -6650,7 +6653,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       resumeError: '',
       silentTap: 'never',
       audioGraphBuilt: false,
+      musicActive: false,
       musicStarted: false,
+      musicStep: 0,
       callbacksQueued: 0,
       callbacksFlushed: 0,
       lastSfx: 'none',
@@ -6682,7 +6687,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const c = ensureCtx('build-graph');
       if (!c) return;
       master = c.createGain();
+      musicGain = c.createGain();
       master.gain.value = 1;
+      musicGain.gain.value = 0.001;
+      musicGain.connect(master);
       master.connect(c.destination);
       audioGraphBuilt = true;
       debug.audioGraphBuilt = true;
@@ -6694,6 +6702,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         state: ctx ? ctx.state : 'uncreated',
         ready: !!(ctx && audioReady && ctx.state === 'running'),
         audioGraphBuilt,
+        musicActive,
         musicStarted
       });
     }
@@ -6723,22 +6732,113 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       noteAudioDebug();
     }
 
+    let musicStep = 0;
+    const MUSIC_BEAT = 60 / 132;
+    const MUSIC_BAR = MUSIC_BEAT * 4;
+    const MUSIC_ROOTS = [261.63, 349.23, 392.00, 329.63];
+    const MUSIC_MELODY = [0, 4, 7, 9, 7, 4, 2, 0, 5, 9, 12, 9, 7, 4, 2, 4];
+
+    function musicTone(freq, type, gain, at, dur) {
+      if (!ctx || !musicGain) return;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const t0 = at;
+      const t1 = t0 + dur;
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      osc.detune.setValueAtTime((Math.random() * 8) - 4, t0);
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(gain, t0 + 0.018);
+      g.gain.setValueAtTime(gain * 0.82, Math.max(t0 + 0.024, t1 - 0.06));
+      g.gain.exponentialRampToValueAtTime(0.001, t1);
+      osc.connect(g).connect(musicGain);
+      osc.start(t0);
+      osc.stop(t1 + 0.04);
+    }
+
+    function musicTick(at, gain = 0.012) {
+      if (!ctx || !musicGain) return;
+      const frames = Math.max(1, Math.floor(ctx.sampleRate * 0.035));
+      const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.4);
+      }
+      const src = ctx.createBufferSource();
+      const filter = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      src.buffer = buf;
+      filter.type = 'highpass';
+      filter.frequency.value = 4200;
+      g.gain.value = gain;
+      src.connect(filter).connect(g).connect(musicGain);
+      src.start(at);
+      src.stop(at + 0.05);
+    }
+
+    function scheduleMusicBar() {
+      musicTimer = null;
+      if (!musicActive || !ctx || ctx.state !== 'running' || !musicGain) {
+        noteAudioDebug({ musicStep });
+        return;
+      }
+      const start = ctx.currentTime + 0.08;
+      const root = MUSIC_ROOTS[musicStep % MUSIC_ROOTS.length];
+      const nextRoot = MUSIC_ROOTS[(musicStep + 1) % MUSIC_ROOTS.length];
+      [0, 2].forEach(beat => {
+        musicTone(root * 0.5, 'sine', 0.018, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.88);
+      });
+      [0, 1.5, 2.5, 3.25].forEach((beat, i) => {
+        const chordRoot = i === 3 ? nextRoot : root;
+        musicTone(chordRoot, 'triangle', 0.012, start + beat * MUSIC_BEAT, MUSIC_BEAT * 0.42);
+        musicTone(chordRoot * 1.25, 'sine', 0.008, start + beat * MUSIC_BEAT + 0.015, MUSIC_BEAT * 0.36);
+        musicTone(chordRoot * 1.5, 'sine', 0.007, start + beat * MUSIC_BEAT + 0.028, MUSIC_BEAT * 0.34);
+      });
+      for (let i = 0; i < 4; i++) {
+        const semitone = MUSIC_MELODY[(musicStep * 4 + i) % MUSIC_MELODY.length];
+        const freq = root * 2 * Math.pow(2, semitone / 12);
+        musicTone(freq, 'triangle', i === 0 ? 0.018 : 0.014, start + (i + 0.08) * MUSIC_BEAT, MUSIC_BEAT * 0.34);
+        if (i === 1 || i === 3) musicTick(start + (i + 0.46) * MUSIC_BEAT, 0.009);
+      }
+      musicTick(start + 0.04, 0.014);
+      musicTick(start + 2 * MUSIC_BEAT + 0.04, 0.011);
+      musicStep++;
+      debug.musicStep = musicStep;
+      musicTimer = window.setTimeout(scheduleMusicBar, Math.max(120, (MUSIC_BAR - 0.16) * 1000));
+      noteAudioDebug({ musicStep });
+    }
+
+    function setAmbientMusicActive(active) {
+      musicActive = !!active;
+      buildAudioGraphOnce();
+      if (!ctx || !musicGain) {
+        noteAudioDebug();
+        return;
+      }
+      const now = ctx.currentTime;
+      try {
+        musicGain.gain.cancelScheduledValues(now);
+        musicGain.gain.setValueAtTime(Math.max(0.001, musicGain.gain.value || 0.001), now);
+        musicGain.gain.linearRampToValueAtTime(musicActive ? 0.115 : 0.001, now + (musicActive ? 0.9 : 0.35));
+      } catch (_) {
+        musicGain.gain.value = musicActive ? 0.115 : 0.001;
+      }
+      if (musicActive && ctx.state === 'running' && !musicTimer) scheduleMusicBar();
+      if (!musicActive && musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+      noteAudioDebug({ musicStep });
+    }
+
     function startMusicOnce() {
       if (!ctx || ctx.state !== 'running') return;
       buildAudioGraphOnce();
       if (!musicStarted) {
         musicStarted = true;
-        if (master) {
-          try {
-            master.gain.cancelScheduledValues(ctx.currentTime);
-            master.gain.setValueAtTime(0.001, ctx.currentTime);
-            master.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.08);
-          } catch (_) {
-            master.gain.value = 1;
-          }
-        }
       }
       audioReady = true;
+      if (musicActive && !musicTimer) scheduleMusicBar();
       noteAudioDebug({ resumeResult: ctx.state });
       flushReadyCallbacks();
     }
@@ -6841,6 +6941,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       },
       state() {
         return ctx ? ctx.state : 'uncreated';
+      },
+      setMusicActive(active) {
+        setAmbientMusicActive(active);
       },
       debugState() {
         return Object.assign({}, debug, {
@@ -7506,6 +7609,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearPlayerPayoutFanfare(false);
     clearInlineEndingVisuals();
     stopTitleRoundWinFanfare();
+    Audio.setMusicActive(false);
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
@@ -8169,6 +8273,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundWins = { p1: 0, p2: 0 };
     openingComebackAssistRolls = 0;
     gameStarted = true;
+    Audio.setMusicActive(true);
 
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
 
