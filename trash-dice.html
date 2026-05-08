@@ -6658,19 +6658,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       trashEntryThunk(intensity = 1) {
         const c = sfxCtx('trashEntryThunk');
         if (!c) return;
-        const power = clamp(0.54 + Math.max(0, intensity - 1) * 0.026, 0.54, 0.82);
-        const bite = clamp(1 + intensity * 0.012, 1, 1.16);
+        const power = clamp(0.48 + Math.max(0, intensity - 1) * 0.018, 0.48, 0.7);
+        const ring = clamp(1 + intensity * 0.009, 1, 1.12);
 
-        // Gameplay trash is intentionally shorter and dirtier than lid placement.
-        // It should read as a can hit, not as another scoring fanfare.
-        noiseBurst(0.15, 0.0, 0.105 * power, 0.95, 720, 'bandpass');
-        noiseBurst(0.07, 0.018, 0.035 * power, 2.1, 1850, 'highpass');
-        noiseBurst(0.10, 0.075, 0.045 * power, 1.35, 1040, 'bandpass');
-        tone(92, 'sine', 0.11 * power, 0.0, 0.18, c.destination);
-        tone(146 * bite, 'triangle', 0.07 * power, 0.012, 0.13, c.destination);
-        tone(232 * bite, 'square', 0.026 * power, 0.058, 0.075, c.destination);
+        // Gameplay trash should read as metal being hit: sharp rim tick,
+        // resonant can body, and a short rattle instead of a wet low thud.
+        noiseBurst(0.038, 0.0, 0.052 * power, 2.9, 4100, 'highpass');
+        noiseBurst(0.095, 0.014, 0.07 * power, 1.85, 1760, 'bandpass');
+        noiseBurst(0.06, 0.075, 0.034 * power, 2.3, 2850, 'highpass');
+        tone(178 * ring, 'triangle', 0.042 * power, 0.0, 0.12, c.destination);
+        [[720,0.0,0.15,0.048],[1035,0.012,0.18,0.035],[1380,0.028,0.14,0.028],[1910,0.052,0.095,0.018]].forEach(([fr,t,dur,gain]) => {
+          tone(fr * ring, 'sine', gain * power, t, dur, c.destination);
+        });
+        [[870,0.088,0.22,0.018],[1210,0.118,0.24,0.014],[1660,0.152,0.2,0.011]].forEach(([fr,t,dur,gain]) => {
+          tone(fr * ring, 'sine', gain * power, t, dur, c.destination);
+        });
+        tone(318 * ring, 'square', 0.018 * power, 0.045, 0.07, c.destination);
         if (intensity >= 5) {
-          noiseBurst(0.08, 0.16, 0.026 * power, 1.45, 860, 'bandpass');
+          noiseBurst(0.07, 0.135, 0.024 * power, 2.05, 2150, 'bandpass');
         }
       },
       trashCrash(intensity = 1) {
