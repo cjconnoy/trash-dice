@@ -2269,15 +2269,7 @@ body.fast-preview .lid-inner-glint {
 }
 .can-static-dice { display: none; }
 .can-load-pile {
-  position: absolute;
-  left: 50%;
-  top: -2%;
-  width: 78%;
-  height: 34%;
-  z-index: 4;
-  transform: translateX(-50%);
-  pointer-events: none;
-  overflow: visible;
+  display: none;
 }
 .trash-can.flash {
   z-index: 90;
@@ -2516,7 +2508,8 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
     filter: brightness(0.45);
   }
 }
-.can-pour-die {
+.can-pour-die,
+.lid-payout-die {
   position: fixed;
   width: 18px;
   height: 18px;
@@ -2535,10 +2528,12 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
   backface-visibility: hidden;
   will-change: transform, opacity;
 }
-.can-pour-die::after {
+.can-pour-die::after,
+.lid-payout-die::after {
   content: none;
 }
-.can-pour-die.player-payout-comet {
+.can-pour-die.player-payout-comet,
+.lid-payout-die.player-payout-comet {
   z-index: 74;
   filter:
     brightness(1.12)
@@ -2623,10 +2618,12 @@ body.mobile-roll-smoothing .travelling-die.to-slot-physical {
 body.mobile-roll-smoothing .travelling-die.to-trash-physical {
   animation-name: dieArcToCanMobile;
 }
-body.mobile-roll-smoothing .can-pour-die {
+body.mobile-roll-smoothing .can-pour-die,
+body.mobile-roll-smoothing .lid-payout-die {
   animation-name: payoutDieArcMobile;
 }
 body.mobile-roll-smoothing .can-pour-die.player-payout-comet,
+body.mobile-roll-smoothing .lid-payout-die.player-payout-comet,
 body.mobile-roll-smoothing .payout-comet-trail {
   filter: none;
 }
@@ -4170,7 +4167,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 }
 
 .mini-die.can-load-die,
-.mini-die.can-pour-die {
+.mini-die.can-pour-die,
+.mini-die.lid-payout-die {
   width: clamp(18px, 3.9vw, 27px);
   height: clamp(18px, 3.9vw, 27px);
   border-radius: 24%;
@@ -4180,7 +4178,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   transform: translate(-50%, -50%) rotate(var(--r, 0deg)) scale(var(--s, 1));
   z-index: var(--z, 1);
 }
-.mini-die.can-pour-die {
+.mini-die.can-pour-die,
+.mini-die.lid-payout-die {
   position: fixed;
   margin: 0;
   pointer-events: none;
@@ -4191,7 +4190,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   will-change: transform, opacity;
 }
 .mini-die.can-load-die .mini-pip,
-.mini-die.can-pour-die .mini-pip {
+.mini-die.can-pour-die .mini-pip,
+.mini-die.lid-payout-die .mini-pip {
   width: clamp(3.8px, 1.05vw, 5.3px);
   height: clamp(3.8px, 1.05vw, 5.3px);
 }
@@ -6619,36 +6619,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function renderCanLoad() {
     if (!canLoadPile) return;
-    const signature = Array.isArray(trashDice) && trashDice.length
-      ? trashDice.map(die => `${die.player}:${die.color}:${die.value}`).join('|')
-      : 'empty';
-    if (signature === canLoadSignature) return;
-    canLoadSignature = signature;
+    if (canLoadSignature === 'empty') return;
+    canLoadSignature = 'empty';
     canLoadPile.replaceChildren();
-    if (!Array.isArray(trashDice) || trashDice.length === 0) return;
-
-    const slots = [
-      [50, 60, -8, 1.02], [33, 58, 13, 0.96], [67, 57, -16, 0.96],
-      [48, 44, 8, 1.08], [27, 45, -21, 0.94], [75, 42, 18, 0.94],
-      [39, 29, 19, 1.06], [60, 28, -13, 1.06], [51, 17, -3, 1.12],
-      [28, 24, 10, 0.92], [73, 21, -19, 0.92], [41, 8, -11, 1.0],
-      [62, 5, 17, 1.0], [51, -7, 6, 1.08], [33, -5, -18, 0.9],
-      [70, -6, 14, 0.9], [44, -17, 20, 0.88], [58, -19, -14, 0.88]
-    ];
-    const visible = trashDice.slice(-slots.length);
-    const frag = document.createDocumentFragment();
-    visible.forEach((die, i) => {
-      const [left, top, rot, scale] = slots[i];
-      const value = clamp(Math.floor(die.value || ((i % 6) + 1)), 1, 6);
-      const el = makeMiniDie(die.color, value, 'can-load-die');
-      el.style.left = left + '%';
-      el.style.top = top + '%';
-      el.style.setProperty('--r', rot + 'deg');
-      el.style.setProperty('--s', scale.toFixed(2));
-      el.style.setProperty('--z', String(i + 1));
-      frag.appendChild(el);
-    });
-    canLoadPile.appendChild(frag);
   }
 
   // ── AUDIO ENGINE ─────────────────────────────────────────────
@@ -7535,7 +7508,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p0Autoplay = false;
     p0ReviewMode = false;
     roundResolutionState = null;
-    document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
@@ -8161,7 +8134,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
     document.body.classList.remove('player-roll-ready');
-    document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
@@ -8353,38 +8326,45 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return winner === 'p2' ? Math.min(duration, 2800) : duration;
   }
 
-  function animateCanPourToPool(winner, lidDice, spillDuration = spillDurationForDice(lidDice.length), spillLoad = lidDice.length, onDieArrive = null) {
+  function animateLidPayoutToPool(winner, lidDice, spillDuration = spillDurationForDice(lidDice.length), spillLoad = lidDice.length, onDieArrive = null) {
     const pileEl  = winner === 'p1' ? p1Pile : p2Pile;
     const pileR   = pileEl.getBoundingClientRect();
-    const canR = trashCan.getBoundingClientRect();
+    const lidR = boardWrap.getBoundingClientRect();
     const diceWon = Math.max(1, lidDice.length);
     const visualLoad = Math.max(diceWon, spillLoad);
     const travelMs = clamp(700 + visualLoad * 28, 820, 1250);
     const pourLeadInMs = 220;
     const pourTailMs = 360;
-    const canShakeMs = clamp(spillDuration * 0.92, 1300, 8500);
-    const canDrainCount = Array.isArray(trashDice) ? trashDice.length : 0;
-    const canDrainSpan = Math.max(0, spillDuration - travelMs - pourLeadInMs - pourTailMs);
+    const lidDanceMs = clamp(spillDuration * 0.92, 1300, 8500);
     const playerPayout = winner === 'p1';
     trashCan.classList.remove('flash', 'pour', 'player-payout-can-dance');
+    trashCan.style.animationDuration = '';
+    trashCan.style.removeProperty('--payout-can-dance-rate');
     boardWrap.classList.remove('lid-win-pulse', 'lid-place-pulse', 'player-payout-lid-dance');
-    void trashCan.offsetWidth;
-    trashCan.style.animationDuration = playerPayout ? '' : canShakeMs + 'ms';
+    void boardWrap.offsetWidth;
     if (playerPayout) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.16s' : '1.06s');
       trashCan.style.setProperty('--payout-can-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.04s' : '0.92s');
       boardWrap.classList.add('player-payout-lid-dance');
       trashCan.classList.add('player-payout-can-dance');
+    } else {
+      boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.12s' : '1s');
+      boardWrap.classList.add('player-payout-lid-dance');
     }
-    trashCan.classList.add('pour');
 
     lidDice.forEach((die, i) => {
-      const sx = canR.left + canR.width * (0.35 + Math.random() * 0.3);
-      const sy = canR.top + canR.height * (0.25 + Math.random() * 0.1);
+      const slotIndex = Math.max(0, Math.min(5, (Math.floor(die.value || (i + 1)) - 1)));
+      const info = slotInfo[slotIndex];
+      const sx = info
+        ? lidR.left + lidR.width * (info.x / 200)
+        : lidR.left + lidR.width * (0.35 + Math.random() * 0.3);
+      const sy = info
+        ? lidR.top + lidR.height * (info.y / 200)
+        : lidR.top + lidR.height * (0.35 + Math.random() * 0.3);
       const tx = pileR.left + pileR.width * (0.25 + Math.random() * 0.5);
       const ty = pileR.top + pileR.height * (0.25 + Math.random() * 0.5);
       const dieValue = clamp(Math.floor(die.value || ((i % 6) + 1)), 1, 6);
-      const el = makeMiniDie(die.color, dieValue, playerPayout ? 'can-pour-die player-payout-comet' : 'can-pour-die');
+      const el = makeMiniDie(die.color, dieValue, playerPayout ? 'lid-payout-die player-payout-comet' : 'lid-payout-die');
       const available = Math.max(0, spillDuration - travelMs - pourLeadInMs - pourTailMs);
       const delay = pourLeadInMs + (diceWon === 1 ? 0 : i * (available / (diceWon - 1)));
       const dx = tx - sx;
@@ -8427,22 +8407,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       runLater(() => el.remove(), delay + travelMs + pourTailMs);
     });
 
-    for (let i = 0; i < canDrainCount; i++) {
-      const delay = pourLeadInMs + (canDrainCount === 1 ? 0 : i * (canDrainSpan / (canDrainCount - 1)));
-      runLater(() => {
-        if (!Array.isArray(trashDice) || trashDice.length === 0) return;
-        trashDice = trashDice.slice(0, -1);
-        renderCanLoad();
-      }, delay + 40);
-    }
-
     runLater(() => {
       trashCan.classList.remove('pour', 'player-payout-can-dance');
       boardWrap.classList.remove('player-payout-lid-dance');
       trashCan.style.animationDuration = '';
       trashCan.style.removeProperty('--payout-can-dance-rate');
       boardWrap.style.removeProperty('--payout-lid-dance-rate');
-    }, canShakeMs + 80);
+    }, lidDanceMs + 80);
     return spillDuration;
   }
 
@@ -8498,10 +8469,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     const winner = state.winner;
     recordRoundWin(winner);
-    const lidDice = board.filter(Boolean);
-    const canDice = Array.isArray(trashDice) ? trashDice.slice() : [];
-    const claimedDice = lidDice.concat(canDice);
-    const spillLoad = claimedDice.length;
+    const payoutDice = board.filter(Boolean);
+    const lostTrashCount = Array.isArray(trashDice) ? trashDice.length : 0;
+    const spillLoad = payoutDice.length;
     const spillDuration = roundSpillDurationForWinner(winner, spillLoad);
     scheduleProgressionWatchdog('round-payout', spillDuration + 3800);
 
@@ -8518,9 +8488,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     Audio.roundWonFanfare(fanfareDuration);
     if (winner === 'p1') startPlayerPayoutFanfare(spillDuration + 420);
 
-    // Trash can empties the claimed set into the winner's pile.
-    showClaimBadge(winner, claimedDice, spillDuration);
-    animateCanPourToPool(winner, claimedDice, spillDuration, spillLoad, die => {
+    // Only dice still sitting in the lid pay out; trash dice are already lost.
+    showClaimBadge(winner, payoutDice, spillDuration);
+    animateLidPayoutToPool(winner, payoutDice, spillDuration, spillLoad, die => {
       pools[winner][die.color]++;
       renderPoolCounts();
       appendPoolDieVisual(winner, die);
@@ -8532,10 +8502,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     runLater(() => {
       board = Array(6).fill(null);
       trashDice = [];
+      canLoadSignature = null;
       round++;
       playerClutchMagnetUsedThisRound = false;
       enduranceAssistUsedThisRound = false;
       syncUI();
+      if (lostTrashCount > 0) renderCanLoad();
     }, spillDuration);
 
     runLater(() => {
@@ -8590,7 +8562,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     updateP0ReviewControl();
     document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
-    document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
@@ -8664,6 +8636,18 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     function ensureQaGame() {
       if (!gameStarted) init();
     }
+    function qaDiceTotals() {
+      const lid = Array.isArray(board) ? board.filter(Boolean).length : 0;
+      const trash = Array.isArray(trashDice) ? trashDice.length : 0;
+      return {
+        p1: totalDice('p1'),
+        p2: totalDice('p2'),
+        pools: totalDice('p1') + totalDice('p2'),
+        lid,
+        trash,
+        inGame: totalDice('p1') + totalDice('p2') + lid + trash
+      };
+    }
     window.TrashDiceQA = {
       queueRolls(values) {
         forcedRolls = values.map(v => clamp(Math.floor(v), 1, 6));
@@ -8702,6 +8686,43 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           endRound();
         }, TURN_HANDOFF_MS);
         return { current, board: board.map(Boolean) };
+      },
+      roundPayoutProof(winner = 'p1', trashLoad = 8) {
+        ensureQaGame();
+        const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
+        const load = clamp(Math.floor(Number(trashLoad) || 0), 0, 24);
+        this.trashLoad(load);
+        current = forcedWinner;
+        board = Array.from({ length: 6 }, (_, i) => ({
+          player: i % 2 ? 'p2' : 'p1',
+          color: i % 2 ? 'green' : 'yellow',
+          value: i + 1
+        }));
+        buildSlots();
+        board.forEach((die, i) => paintSlot(i, die));
+        syncUI();
+        const before = qaDiceTotals();
+        const expectedWinnerTotal = before[forcedWinner] + before.lid;
+        const expectedInGameTotal = before.inGame - before.trash;
+        const spillDuration = roundSpillDurationForWinner(forcedWinner, before.lid);
+        current = forcedWinner;
+        endRound();
+        return new Promise(resolve => {
+          runLater(() => {
+            const after = qaDiceTotals();
+            resolve({
+              winner: forcedWinner,
+              before,
+              after,
+              passed:
+                after[forcedWinner] === expectedWinnerTotal &&
+                after.trash === 0 &&
+                after.inGame === expectedInGameTotal,
+              expectedWinnerTotal,
+              expectedInGameTotal
+            });
+          }, spillDuration + 520);
+        });
       },
       finalRoundWin(winner = 'p1', trashLoad = 10) {
         return forceFinalRoundGameSequence(winner, trashLoad);
@@ -8849,6 +8870,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
           p0ButtonVisible: !!p0ReviewToggle && !p0ReviewToggle.hidden,
           pools: JSON.parse(JSON.stringify(pools)),
+          diceTotals: qaDiceTotals(),
           trashed: { ...trashed },
           trashDice: trashDice ? trashDice.slice() : [],
           board: board.map(Boolean),
