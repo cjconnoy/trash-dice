@@ -5547,6 +5547,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const TURN_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 340 : 950;
   const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 1420 : 1620;
   const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
+  const PLAYER_TO_CPU_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 90 : 140;
+  const CPU_RESPONSE_MS = FAST_PREVIEW_ENABLED ? 70 : 110;
   const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 15000;
   let forcedRolls = [];
@@ -8285,8 +8287,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       scheduleProgressionWatchdog('place-empty', 2200);
       runLater(() => gameOver(winner), 520);
     } else {
-      scheduleProgressionWatchdog('post-place', (current === 'p1' ? PLAYER_PLACE_CELEBRATE_HANDOFF_MS : TURN_HANDOFF_MS) + 4200);
-      runLater(nextTurn, current === 'p1' ? PLAYER_PLACE_CELEBRATE_HANDOFF_MS : TURN_HANDOFF_MS);
+      const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : TURN_HANDOFF_MS;
+      scheduleProgressionWatchdog('post-place', handoffDelay + 4200);
+      runLater(nextTurn, handoffDelay);
     }
   }
 
@@ -8311,8 +8314,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       return;
     }
 
-    scheduleProgressionWatchdog('post-trash', TURN_HANDOFF_MS + 4550);
-    runLater(nextTurn, TURN_HANDOFF_MS + 250);
+    const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : TURN_HANDOFF_MS + 250;
+    scheduleProgressionWatchdog('post-trash', handoffDelay + 4550);
+    runLater(nextTurn, handoffDelay);
   }
 
   // ── DICE FLY TO POOL ─────────────────────────────────────────
@@ -8908,8 +8912,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (current === 'p2') {
       rollBtn.disabled = true;
       syncHeroIdleState();
-      scheduleProgressionWatchdog('cpu-turn', CPU_START_MS + ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + 5200);
-      runLater(() => { busy = false; doRoll(); }, CPU_START_MS);
+      scheduleProgressionWatchdog('cpu-turn', CPU_RESPONSE_MS + ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + 5200);
+      runLater(() => { busy = false; doRoll(); }, CPU_RESPONSE_MS);
     } else {
       setMsg('YELLOW PLAYER ROLL');
       rollBtn.disabled = false;
