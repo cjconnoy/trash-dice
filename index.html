@@ -1658,6 +1658,11 @@ body.player-roll-ready .roll-btn.p1:not(:disabled)::before {
   z-index: 0;
   box-shadow: none;
 }
+@media (min-width: 769px) {
+  body:not(.mobile-roll-smoothing) .board-blob {
+    display: none;
+  }
+}
 .board-ring-text {
   position: absolute;
   display: none;
@@ -1984,6 +1989,16 @@ body.mobile-roll-smoothing .board-wrap.player-payout-lid-dance {
   animation: canSlowTurntable 7.8s ease-in-out infinite;
   will-change: transform;
   shape-rendering: geometricPrecision;
+}
+@media (min-width: 769px) {
+  body:not(.mobile-roll-smoothing) .trash-can {
+    filter: none;
+  }
+  body:not(.mobile-roll-smoothing) .trash-can > svg:not(.can-logo-overlay) {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
 }
 .trash-can text {
   text-rendering: geometricPrecision;
