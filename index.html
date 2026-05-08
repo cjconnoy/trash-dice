@@ -2275,6 +2275,9 @@ body.fast-preview .lid-inner-glint {
   z-index: 90;
   animation: canFlash var(--can-feed-duration) cubic-bezier(.12,.82,.2,1);
 }
+.trash-can.catching-trash {
+  z-index: 170;
+}
 .trash-can.flash::after {
   animation: canImpactRing var(--can-feed-duration) cubic-bezier(.12,.82,.18,1);
 }
@@ -2463,6 +2466,7 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
 }
 .travelling-die.to-trash-physical {
   animation: dieArcToCan 0.68s cubic-bezier(.16,.72,.16,1) forwards;
+  z-index: 150;
 }
 @keyframes dieArcToLid {
   0% {
@@ -2504,7 +2508,7 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
   }
   100% {
     opacity: 0;
-    transform: translate(var(--tx), calc(var(--ty) + 18px)) rotate(var(--r3)) scale(0.08);
+    transform: translate(var(--tx), calc(var(--ty) + var(--sink, 18px))) rotate(var(--r3)) scale(0.08);
     filter: brightness(0.45);
   }
 }
@@ -2663,7 +2667,7 @@ body.mobile-roll-smoothing .payout-comet-trail {
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--tx), calc(var(--ty) + 18px), 0) rotate(var(--r3)) scale(0.08);
+    transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 18px)), 0) rotate(var(--r3)) scale(0.08);
   }
 }
 @keyframes payoutDieArcMobile {
@@ -7420,10 +7424,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const { clone, source, rect } = makeDieClone(player, color);
     const target = trashCan.getBoundingClientRect();
     const size = Math.max(18, Math.min(rect.width * 0.48, target.width * 0.34));
+    const sink = clamp(target.height * 0.11, 24, 46);
     const startCx = rect.left + rect.width / 2;
     const startCy = rect.top + rect.height / 2;
     const endCx = target.left + target.width / 2;
-    const endCy = target.top + target.height * 0.28;
+    const endCy = target.top + target.height * 0.25;
     const dx = endCx - startCx;
     const dy = endCy - startCy;
     const arc = clamp(Math.abs(dx) * 0.10 + Math.abs(dy) * 0.16, 38, 118);
@@ -7434,13 +7439,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clone.style.setProperty('--r1', (player === 'p1' ? 190 : -190) + 'deg');
     clone.style.setProperty('--r2', (player === 'p1' ? 420 : -420) + 'deg');
     clone.style.setProperty('--r3', (player === 'p1' ? 610 : -610) + 'deg');
+    clone.style.setProperty('--sink', sink.toFixed(1) + 'px');
     clone.style.setProperty('--final-scale', (size / rect.width).toFixed(3));
+    trashCan.classList.add('catching-trash');
     requestAnimationFrame(() => {
       clone.classList.add('to-trash-physical');
     });
     runLater(() => {
       clone.remove();
       source.style.opacity = '';
+      trashCan.classList.remove('catching-trash');
       clearDie(player);
       done();
     }, 740);
@@ -7632,7 +7640,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p0ReviewMode = false;
     roundResolutionState = null;
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
@@ -8259,7 +8267,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.remove('player-roll-ready');
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
@@ -8705,7 +8713,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
