@@ -4566,7 +4566,16 @@ body.mobile-roll-smoothing.fast-preview .overlay.player-win-mega .play-again-btn
 body.mobile-roll-smoothing.terminal-screen-active .overlay.victory .play-again-btn,
 body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn,
 body.mobile-roll-smoothing.terminal-screen-active .overlay.player-win-mega .play-again-btn {
-  animation: mobileTerminalButtonPulse 1.14s cubic-bezier(.16,.82,.18,1) infinite !important;
+  animation: terminalButtonPulse 1.14s cubic-bezier(.16,.82,.18,1) infinite !important;
+  opacity: 1 !important;
+  filter: none !important;
+  will-change: transform, box-shadow;
+}
+body.terminal-screen-active .overlay.victory .play-again-btn,
+body.terminal-screen-active .overlay.loss .play-again-btn,
+body.terminal-screen-active .overlay.player-win-mega .play-again-btn,
+body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-btn {
+  animation: terminalButtonPulse 1.14s cubic-bezier(.16,.82,.18,1) infinite !important;
   opacity: 1 !important;
   filter: none !important;
   will-change: transform, box-shadow;
@@ -4588,7 +4597,7 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.player-win-mega .play
     0 0 70px rgba(255,255,255,0.18);
   }
 }
-@keyframes mobileTerminalButtonPulse {
+@keyframes terminalButtonPulse {
   0%, 100% {
     opacity: 1;
     transform: translate3d(0,0,0) rotate(-1deg) scale(1);
