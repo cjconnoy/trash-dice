@@ -2275,9 +2275,6 @@ body.fast-preview .lid-inner-glint {
   z-index: 90;
   animation: canFlash var(--can-feed-duration) cubic-bezier(.12,.82,.2,1);
 }
-.trash-can.catching-trash {
-  z-index: 170;
-}
 .trash-can.flash::after {
   animation: canImpactRing var(--can-feed-duration) cubic-bezier(.12,.82,.18,1);
 }
@@ -2466,7 +2463,38 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
 }
 .travelling-die.to-trash-physical {
   animation: dieArcToCan 0.68s cubic-bezier(.16,.72,.16,1) forwards;
-  z-index: 150;
+  z-index: 160;
+}
+.trash-entry-mouth-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--mouth-w, 120px);
+  height: var(--mouth-h, 22px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 165;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  background:
+    linear-gradient(180deg, rgba(222,230,230,0.95) 0%, rgba(126,139,142,0.96) 42%, rgba(53,64,67,0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.62),
+    inset 0 -2px 3px rgba(0,0,0,0.32),
+    0 2px 2px rgba(0,0,0,0.2);
+  clip-path: polygon(0 46%, 100% 46%, 100% 100%, 0 100%);
+  animation: trashMouthCatch 0.62s cubic-bezier(.16,.72,.16,1) forwards;
+}
+@keyframes trashMouthCatch {
+  0%, 48% {
+    opacity: 0;
+  }
+  60%, 88% {
+    opacity: 0.96;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 @keyframes dieArcToLid {
   0% {
@@ -7441,14 +7469,20 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clone.style.setProperty('--r3', (player === 'p1' ? 610 : -610) + 'deg');
     clone.style.setProperty('--sink', sink.toFixed(1) + 'px');
     clone.style.setProperty('--final-scale', (size / rect.width).toFixed(3));
-    trashCan.classList.add('catching-trash');
+    const mouthMask = document.createElement('div');
+    mouthMask.className = 'trash-entry-mouth-mask';
+    mouthMask.style.left = endCx.toFixed(1) + 'px';
+    mouthMask.style.top = (target.top + target.height * 0.22).toFixed(1) + 'px';
+    mouthMask.style.setProperty('--mouth-w', (target.width * 0.76).toFixed(1) + 'px');
+    mouthMask.style.setProperty('--mouth-h', (target.height * 0.085).toFixed(1) + 'px');
+    document.body.appendChild(mouthMask);
     requestAnimationFrame(() => {
       clone.classList.add('to-trash-physical');
     });
     runLater(() => {
       clone.remove();
+      mouthMask.remove();
       source.style.opacity = '';
-      trashCan.classList.remove('catching-trash');
       clearDie(player);
       done();
     }, 740);
@@ -7639,8 +7673,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p0Autoplay = false;
     p0ReviewMode = false;
     roundResolutionState = null;
-    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
+    document.querySelectorAll('.travelling-die, .trash-entry-mouth-mask, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
@@ -8265,9 +8299,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
     document.body.classList.remove('player-roll-ready');
-    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    document.querySelectorAll('.travelling-die, .trash-entry-mouth-mask, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
@@ -8712,8 +8746,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     updateP0ReviewControl();
     document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
-    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
-    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'catching-trash', 'player-payout-can-dance', 'inline-ending-can-dance');
+    document.querySelectorAll('.travelling-die, .trash-entry-mouth-mask, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
     boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
