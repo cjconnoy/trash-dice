@@ -519,6 +519,14 @@ body.player-roll-ready .roll-panel {
   transform-origin: 50% 55%;
   will-change: transform, filter;
 }
+body.inline-game-over .roll-panel {
+  width: min(92%, 560px);
+  max-width: 560px;
+  min-height: clamp(116px, 16vw, 166px);
+  animation: inlineGameOverPanelPulse 1.18s cubic-bezier(.16,.82,.18,1) infinite;
+  transform-origin: 50% 55%;
+  will-change: transform, filter;
+}
 .player-panel.bench-celebrate {
   animation: benchPanelCelebrate 0.86s cubic-bezier(.12,.88,.16,1);
   transform-origin: 50% 54%;
@@ -1467,6 +1475,44 @@ body.player-roll-ready .roll-btn.p1:not(:disabled)::before {
   background: rgba(255,236,78,0.12);
   box-shadow: 0 0 22px rgba(245,200,0,0.28);
 }
+body.inline-game-over .roll-btn.inline-play-again {
+  border: 4px solid rgba(255,255,255,0.32);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 22% 12%, rgba(255,255,255,0.9), rgba(255,255,255,0.28) 30%, transparent 52%),
+    linear-gradient(180deg, #fff27a 0%, #f5c800 52%, #b58a00 100%);
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,0.52),
+    inset -6px -8px 13px rgba(117,72,0,0.2),
+    0 7px 0 var(--yellow-dark),
+    0 0 34px rgba(245,200,0,0.6),
+    0 16px 28px rgba(73,54,18,0.22);
+  animation: inlineGameOverButtonPulse 1.12s cubic-bezier(.16,.82,.18,1) infinite;
+  opacity: 1;
+  pointer-events: auto;
+}
+body.inline-game-over .roll-btn.inline-play-again .roll-btn-label {
+  white-space: nowrap;
+  font-size: clamp(2.05rem, 7.6vw, 4.4rem);
+  letter-spacing: 0.04em;
+  color: #e3271f;
+  transform: translateX(-1%) rotate(-5deg) skewX(-7deg) scale(0.98, 0.84);
+  text-shadow:
+    -0.8px -0.8px 0 rgba(255,164,88,0.3),
+    1.4px 1.8px 0 #711006,
+    3px 3.5px 0 rgba(75,35,0,0.34);
+}
+body.inline-game-over .status-bar.active {
+  box-shadow:
+    0 4px 13px rgba(201,160,0,0.22),
+    0 0 18px rgba(245,200,0,0.34);
+}
+body.inline-game-win .yellow-panel {
+  --panel-glow: rgba(245,200,0,0.34);
+}
+body.inline-game-loss .green-panel {
+  --panel-glow: rgba(15,95,50,0.34);
+}
 .roll-btn:disabled {
   opacity: 0.88;
   background:
@@ -1527,6 +1573,40 @@ body.player-roll-ready .roll-btn.p1:not(:disabled)::before {
 }
 
 /* ── MESSAGE ── */
+@keyframes inlineGameOverPanelPulse {
+  0%,100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  48% {
+    transform: scale(1.035);
+    filter: brightness(1.08);
+  }
+}
+@keyframes inlineGameOverButtonPulse {
+  0%,100% {
+    transform: translate3d(0,0,0) rotate(-1deg) scale(1);
+    filter: brightness(1);
+    box-shadow:
+      inset 2px 2px 0 rgba(255,255,255,0.52),
+      inset -6px -8px 13px rgba(117,72,0,0.2),
+      0 7px 0 var(--yellow-dark),
+      0 0 34px rgba(245,200,0,0.6),
+      0 16px 28px rgba(73,54,18,0.22);
+  }
+  48% {
+    transform: translate3d(0,-2px,0) rotate(-1deg) scale(1.055);
+    filter: brightness(1.12);
+    box-shadow:
+      inset 2px 2px 0 rgba(255,255,255,0.58),
+      inset -6px -8px 13px rgba(117,72,0,0.18),
+      0 9px 0 var(--yellow-dark),
+      0 0 46px rgba(245,200,0,0.74),
+      0 0 76px rgba(255,255,255,0.18),
+      0 18px 30px rgba(73,54,18,0.24);
+  }
+}
+
 .message {
   display: none;
 }
@@ -3509,6 +3589,11 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-height: clamp(62px, 16.5vw, 72px);
   }
 
+  body.inline-game-over .roll-panel {
+    width: min(100%, 27rem);
+    min-height: clamp(104px, 27vw, 132px);
+  }
+
   .roll-btn {
     inset: 5px;
     padding-left: clamp(0.78rem, 3vw, 1.18rem);
@@ -3517,6 +3602,11 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-btn-label {
     font-size: clamp(2.15rem, 10.4vw, 3.3rem);
+  }
+
+  body.inline-game-over .roll-btn.inline-play-again .roll-btn-label {
+    font-size: clamp(1.78rem, 9.2vw, 2.58rem);
+    letter-spacing: 0.02em;
   }
 
   .roll-die-stage {
@@ -3913,8 +4003,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-height: clamp(58px, 16.5vw, 65px);
   }
 
+  body.inline-game-over .roll-panel {
+    min-height: clamp(94px, 24vw, 118px);
+  }
+
   .roll-btn-label {
     font-size: clamp(1.95rem, 9.8vw, 2.95rem);
+  }
+
+  body.inline-game-over .roll-btn.inline-play-again .roll-btn-label {
+    font-size: clamp(1.54rem, 8.2vw, 2.12rem);
   }
 
   .inventory-cluster {
@@ -5316,6 +5414,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 1420 : 1620;
   const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
   const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
+  const INLINE_GAME_OVER_AUTO_RESTART_MS = 15000;
   let forcedRolls = [];
   let p0Autoplay = false;
   let p0ReviewMode = false;
@@ -5332,6 +5431,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let terminalWinner = null;
   let terminalRunId = 0;
   let terminalState = null;
+  let inlineGameOverRunId = 0;
+  let inlineGameOverState = null;
+  let inlineGameOverTimer = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -5398,6 +5500,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
     progressionWatchdogRun++;
+    inlineGameOverTimer = null;
+    inlineGameOverState = null;
+    inlineGameOverRunId++;
     roundResolutionRunId++;
     roundResolutionState = null;
   }
@@ -5443,6 +5548,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function detectProgressionIssue(includeIdleCpu = false) {
     if (!gameStarted) return null;
+    if (inlineGameOverState && inlineGameOverState.active) return null;
     if (overlay.classList.contains('show')) {
       return rollBtn.disabled && !playAgainBtn.disabled ? null : 'terminal-ui-interactive';
     }
@@ -5530,7 +5636,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       syncUI();
       scheduleProgressionWatchdog('cpu-recovery', CPU_START_MS + ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + 3200);
       runLater(() => {
-        if (!gameStarted || overlay.classList.contains('show') || current !== 'p2' || busy) return;
+        if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive() || current !== 'p2' || busy) return;
         doRoll();
       }, CPU_START_MS);
       return true;
@@ -5684,6 +5790,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const overlaySub  = document.getElementById('overlaySub');
   const overlayStats= document.getElementById('overlayStats');
   const playAgainBtn= document.getElementById('playAgainBtn');
+  const rollBtnLabel= rollBtn.querySelector('.roll-btn-label');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -6253,6 +6360,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       !busy &&
       !rollBtn.disabled &&
       !overlay.classList.contains('show') &&
+      !isInlineGameOverActive() &&
       totalDice('p1') > 0;
   }
 
@@ -7160,6 +7268,115 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     overlay.classList.remove('mobile-terminal-rest');
   }
 
+  function setRollButtonPlayAgainMode(enabled) {
+    if (rollBtnLabel) rollBtnLabel.textContent = enabled ? 'PLAY AGAIN' : 'ROLL!';
+    rollBtn.setAttribute('aria-label', enabled ? 'Start a fresh game' : 'Roll yellow die');
+    rollBtn.classList.toggle('inline-play-again', !!enabled);
+  }
+
+  function clearInlineGameOverUi() {
+    inlineGameOverRunId++;
+    inlineGameOverState = null;
+    if (inlineGameOverTimer) {
+      cancelRuntimeTimer(inlineGameOverTimer);
+      inlineGameOverTimer = null;
+    }
+    document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
+    setRollButtonPlayAgainMode(false);
+  }
+
+  function isInlineGameOverActive() {
+    return !!inlineGameOverState && inlineGameOverState.active;
+  }
+
+  function isCurrentInlineGameOverRun(runId) {
+    return !!inlineGameOverState && inlineGameOverState.active && inlineGameOverState.runId === runId;
+  }
+
+  function enterInlineGameOver(winner) {
+    const finalWinner = winner === 'p2' ? 'p2' : 'p1';
+    if (isInlineGameOverActive()) return inlineGameOverState;
+
+    const playerWon = finalWinner === 'p1';
+    clearRuntimeTimers();
+    cancelProgressionWatchdog();
+    stopTerminalAutoplayState();
+    clearTerminalState();
+    clearVictoryEffects();
+    clearBenchCelebration(false);
+    clearPlayerPayoutFanfare(false);
+    stopTitleRoundWinFanfare();
+    forcedRolls = [];
+    p0Autoplay = false;
+    p0ReviewMode = false;
+    roundResolutionState = null;
+    document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance');
+    trashCan.style.animationDuration = '';
+    trashCan.style.removeProperty('--payout-can-dance-rate');
+    boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance');
+    boardWrap.style.removeProperty('--payout-lid-dance-rate');
+    clearDie(null);
+    roundFlash.className = '';
+    overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega', 'mobile-terminal-rest');
+
+    const runId = ++inlineGameOverRunId;
+    inlineGameOverState = {
+      active: true,
+      runId,
+      winner: finalWinner,
+      playerWon,
+      autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS
+    };
+
+    gameStarted = true;
+    busy = true;
+    current = 'p1';
+    rollBtn.disabled = false;
+    rollBtn.className = 'roll-btn p1 inline-play-again';
+    setRollButtonPlayAgainMode(true);
+    playAgainBtn.disabled = false;
+
+    document.body.classList.remove('player-roll-ready');
+    document.body.classList.add('inline-game-over');
+    document.body.classList.toggle('inline-game-win', playerWon);
+    document.body.classList.toggle('inline-game-loss', !playerWon);
+
+    p1Inventory.classList.add('has-status');
+    p2Inventory.classList.add('has-status');
+    p1StatusBar.classList.add('active');
+    p2StatusBar.classList.add('active');
+    p1StatusBar.classList.remove('bench-praise', 'payout-praise');
+    p2StatusBar.classList.remove('bench-praise', 'payout-praise');
+    p1StatusText.textContent = playerWon ? 'GAME WIN' : 'GAME OVER';
+    p2StatusText.textContent = playerWon ? 'GREEN PLAYER' : 'GREEN WINS';
+    p1TurnDot.style.background = '#f5c800';
+    p2TurnDot.style.background = '#1f9652';
+    p1TurnTag.classList.remove('active');
+    p2TurnTag.classList.remove('active');
+    renderPoolCounts();
+    updatePoolVisual('p1');
+    updatePoolVisual('p2');
+    renderCanLoad();
+    setMsg(playerWon ? 'GAME WIN' : 'GAME OVER', playerWon ? 'win' : 'trash');
+    syncHeroIdleState();
+
+    if (playerWon) {
+      triggerLidWinPulse();
+      Audio.megaWinFanfare();
+    } else {
+      Audio.trashCrash(Math.max(6, totalTrashedDice()));
+    }
+
+    inlineGameOverTimer = runLater(() => {
+      if (!isCurrentInlineGameOverRun(runId)) return;
+      inlineGameOverTimer = null;
+      init();
+    }, INLINE_GAME_OVER_AUTO_RESTART_MS);
+
+    return inlineGameOverState;
+  }
+
   function isCurrentTerminalRun(runId) {
     return !!terminalState
       && terminalState.active
@@ -7405,7 +7622,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       current === 'p1' &&
       !busy &&
       !rollBtn.disabled &&
-      !overlay.classList.contains('show');
+      !overlay.classList.contains('show') &&
+      !isInlineGameOverActive();
     document.body.classList.toggle('player-roll-ready', readyForPlayerRoll);
     if (readyForPlayerRoll) scheduleInventoryMischief();
     else clearInventoryMischief();
@@ -7456,7 +7674,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       !busy &&
       current === 'p1' &&
       totalDice('p1') > 0 &&
-      !overlay.classList.contains('show');
+      !overlay.classList.contains('show') &&
+      !isInlineGameOverActive();
   }
 
   function scheduleP0Autoplay(delay = P0_AUTOPLAY_MS) {
@@ -7473,7 +7692,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function forceP0AutoplayKick(delay = P0_AUTOPLAY_MS) {
     clearP0Timer();
-    if (!gameStarted || overlay.classList.contains('show')) return;
+    if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) return;
     p0Timer = runLater(() => {
       p0Timer = null;
       if (!canRunP0Autoplay()) return;
@@ -7545,7 +7764,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function setP0Autoplay(enabled, announce = true) {
-    if (enabled && overlay.classList.contains('show')) enabled = false;
+    if (enabled && (overlay.classList.contains('show') || isInlineGameOverActive())) enabled = false;
     p0Autoplay = !!enabled;
     document.body.classList.toggle('debug-p0', p0Autoplay);
     if (p0Autoplay) {
@@ -7637,6 +7856,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearBenchCelebration(false);
     clearVictoryEffects();
     clearTerminalState();
+    clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
     document.body.classList.remove('player-roll-ready');
     document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
@@ -7685,12 +7905,21 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   // ── ROLL ─────────────────────────────────────────────────────
-  rollBtn.addEventListener('click', doRoll);
+  function handleRollButtonClick() {
+    if (isInlineGameOverActive()) {
+      init();
+      return;
+    }
+    doRoll();
+  }
+
+  rollBtn.addEventListener('click', handleRollButtonClick);
   playAgainBtn.addEventListener('click', init);
 
   async function doRoll() {
     clearP0Timer();
     clearInventoryMischief();
+    if (isInlineGameOverActive()) return;
     if (busy) return;
     if (current === 'p1' && rollBtn.disabled) return; // only block human; green rolls freely
     const humanGestureRoll = current === 'p1';
@@ -8034,11 +8263,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   // ── GAME OVER ────────────────────────────────────────────────
   function gameOver(winner) {
-    return enterTerminalScreen(winner);
+    return enterInlineGameOver(winner);
   }
 
   function ensureDevCheatGame() {
-    if (!gameStarted || overlay.classList.contains('show')) {
+    if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) {
       init();
       return;
     }
@@ -8046,13 +8275,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearBenchCelebration(false);
     clearVictoryEffects();
     clearTerminalState();
+    clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
     clearPlayerPayoutFanfare(false);
     clearP0Timer();
     p0Autoplay = false;
     p0ReviewMode = false;
     updateP0ReviewControl();
-    document.body.classList.remove('player-roll-ready', 'p0-mode');
+    document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     document.querySelectorAll('.travelling-die, .can-pour-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance');
     trashCan.style.animationDuration = '';
@@ -8112,9 +8342,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function forceTerminalGameOver(winner = 'p1') {
     const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
-    if (!gameStarted || overlay.classList.contains('show')) init();
+    if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) init();
     gameOver(forcedWinner);
-    return { winner: forcedWinner, terminal: true };
+    return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS };
   }
 
   function resetToGameStart() {
@@ -8243,6 +8473,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           trashDice: trashDice ? trashDice.slice() : [],
           board: board.map(Boolean),
           forcedRolls: forcedRolls.slice(),
+          inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
           roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
           lastProgressionRecovery: lastProgressionRecovery ? { ...lastProgressionRecovery } : null
         };
@@ -8419,6 +8650,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         mobileReviewDevice: MOBILE_REVIEW_DEVICE,
         audioState: Audio.state(),
         audio: Audio.debugState(),
+        gameStarted,
         current,
         busy,
         round,
@@ -8426,6 +8658,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         openingComebackAssist: isOpeningComebackAssistActive(),
         openingComebackAssistRolls,
         totalRolls,
+        inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
         terminal: terminalState ? { ...terminalState } : null,
         terminalWinner,
         terminalRunId,
