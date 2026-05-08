@@ -6634,6 +6634,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     let musicGain = null;
     let musicTimer = null;
     let musicActive = false;
+    let musicStartDeadline = 0;
     let audioReady = false;
     let audioGraphBuilt = false;
     let musicStarted = false;
@@ -6657,6 +6658,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       musicStarted: false,
       musicGainValue: 0,
       musicTimerActive: false,
+      musicStartDeadline: 0,
       musicStep: 0,
       callbacksQueued: 0,
       callbacksFlushed: 0,
@@ -6707,7 +6709,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         musicActive,
         musicStarted,
         musicGainValue: musicGain ? Number(musicGain.gain.value.toFixed(3)) : 0,
-        musicTimerActive: !!musicTimer
+        musicTimerActive: !!musicTimer,
+        musicStartDeadline
       });
     }
 
@@ -6742,6 +6745,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const MUSIC_BAR = MUSIC_BEAT * 4;
     const MUSIC_ROOTS = [261.63, 349.23, 392.00, 329.63];
     const MUSIC_MELODY = [0, 4, 7, 9, 7, 4, 2, 0, 5, 9, 12, 9, 7, 4, 2, 4];
+
+    function canStartMusicNow() {
+      return musicActive && (musicStep > 0 || Date.now() <= musicStartDeadline);
+    }
 
     function musicTone(freq, type, gain, at, dur) {
       if (!ctx || !musicGain) return;
@@ -6783,7 +6790,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     function scheduleMusicBar() {
       musicTimer = null;
-      if (!musicActive || !ctx || ctx.state !== 'running' || !musicGain) {
+      if (!musicActive || !ctx || ctx.state !== 'running' || !musicGain || !canStartMusicNow()) {
+        if (musicActive && musicStep === 0 && Date.now() > musicStartDeadline) musicActive = false;
         noteAudioDebug({ musicStep });
         return;
       }
@@ -6816,6 +6824,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     function setAmbientMusicActive(active) {
       musicActive = !!active;
+      musicStartDeadline = musicActive ? Date.now() + 12000 : 0;
       buildAudioGraphOnce();
       if (!ctx || !musicGain) {
         noteAudioDebug();
@@ -6829,7 +6838,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       } catch (_) {
         musicGain.gain.value = musicActive ? MUSIC_TARGET_GAIN : 0.001;
       }
-      if (musicActive && ctx.state === 'running' && !musicTimer) scheduleMusicBar();
+      if (musicActive && ctx.state === 'running' && !musicTimer && canStartMusicNow()) scheduleMusicBar();
       if (!musicActive && musicTimer) {
         clearTimeout(musicTimer);
         musicTimer = null;
@@ -6844,7 +6853,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         musicStarted = true;
       }
       audioReady = true;
-      if (musicActive && !musicTimer) scheduleMusicBar();
+      if (musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
       noteAudioDebug({ resumeResult: ctx.state });
       flushReadyCallbacks();
     }
@@ -6879,7 +6888,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         return Promise.resolve('unsupported');
       }
       if (audioReady && ctx.state === 'running') {
-        if (musicActive && !musicTimer) scheduleMusicBar();
+        if (musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
         noteAudioDebug({ lastEvent: source, resumeResult: ctx.state });
         flushReadyCallbacks();
         return Promise.resolve(ctx.state);
@@ -8318,7 +8327,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const humanGestureRoll = current === 'p1';
     busy = true;
     rollBtn.disabled = true;
-    if (gameStarted) Audio.setMusicActive(true);
     syncHeroIdleState();
     scheduleProgressionWatchdog('roll', ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + TURN_HANDOFF_MS + 5200);
     totalRolls++;
