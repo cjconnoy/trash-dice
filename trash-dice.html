@@ -5706,11 +5706,47 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (p2Dice <= 0) return 'p1';
     const openSlots = board.reduce((count, slot) => count + (slot === null ? 1 : 0), 0);
     if (openSlots <= 0) return null;
-    if (p1Dice === p2Dice) return null;
-    const leader = p1Dice > p2Dice ? 'p1' : 'p2';
-    const trailer = leader === 'p1' ? 'p2' : 'p1';
-    const trailerDice = trailer === 'p1' ? p1Dice : p2Dice;
-    return trailerDice < openSlots ? leader : null;
+    const p1CanWin = canPlayerStillWinRound('p1', p1Dice, p2Dice, openSlots, current);
+    const p2CanWin = canPlayerStillWinRound('p2', p1Dice, p2Dice, openSlots, current);
+    if (p1CanWin === p2CanWin) return null;
+    return p1CanWin ? 'p1' : 'p2';
+  }
+
+  function canPlayerStillWinRound(target, p1Dice, p2Dice, openSlots, turnPlayer) {
+    const targetPlayer = target === 'p2' ? 'p2' : 'p1';
+    const startTurn = turnPlayer === 'p2' ? 'p2' : 'p1';
+    const memo = new Map();
+    function search(p1Left, p2Left, slotsOpen, turn) {
+      if (slotsOpen <= 0) return false;
+      if (p1Left <= 0) return targetPlayer === 'p2';
+      if (p2Left <= 0) return targetPlayer === 'p1';
+      const key = `${p1Left}|${p2Left}|${slotsOpen}|${turn}`;
+      if (memo.has(key)) return memo.get(key);
+      const filledSlots = 6 - slotsOpen;
+      const nextTurn = turn === 'p1' ? 'p2' : 'p1';
+      const canPlace = slotsOpen > 0;
+      const canTrash = filledSlots > 0;
+      let possible = false;
+
+      if (canPlace) {
+        if (slotsOpen === 1) {
+          possible = turn === targetPlayer;
+        } else if (turn === 'p1') {
+          possible = search(p1Left - 1, p2Left, slotsOpen - 1, nextTurn);
+        } else {
+          possible = search(p1Left, p2Left - 1, slotsOpen - 1, nextTurn);
+        }
+      }
+      if (!possible && canTrash) {
+        possible = turn === 'p1'
+          ? search(p1Left - 1, p2Left, slotsOpen, nextTurn)
+          : search(p1Left, p2Left - 1, slotsOpen, nextTurn);
+      }
+
+      memo.set(key, possible);
+      return possible;
+    }
+    return search(p1Dice, p2Dice, openSlots, startTurn);
   }
 
   function maybeEndMathematicalGame(reason = 'mathematical-certainty') {
@@ -8939,7 +8975,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       finalRoundWin(winner = 'p1', trashLoad = 10) {
         return forceFinalRoundGameSequence(winner, trashLoad);
       },
-      mathematicalEndProof(winner = 'p1', leaderDice = 15, trailerDice = 1, filledSlots = 0) {
+      mathematicalEndProof(winner = 'p1', leaderDice = 15, trailerDice = 1, filledSlots = 0, turn = 'p1') {
         ensureQaGame();
         const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
         const loser = forcedWinner === 'p1' ? 'p2' : 'p1';
@@ -8954,7 +8990,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         board = Array.from({ length: 6 }, (_, i) => i < filled
           ? { player: forcedWinner, color: forcedWinner === 'p1' ? 'yellow' : 'green', value: i + 1 }
           : null);
-        current = loser;
+        current = turn === 'p2' ? 'p2' : 'p1';
         busy = false;
         buildSlots();
         board.forEach((die, i) => {
@@ -8969,6 +9005,36 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           ended,
           inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
           passed: detectedWinner === forcedWinner && ended && inlineGameOverState && inlineGameOverState.winner === forcedWinner
+        };
+      },
+      mathematicalPossibilityProbe(leader = 'p2', leaderDice = 7, trailerDice = 4, filledSlots = 0, turn = 'p1') {
+        ensureQaGame();
+        const forcedLeader = leader === 'p1' ? 'p1' : 'p2';
+        const forcedTrailer = forcedLeader === 'p1' ? 'p2' : 'p1';
+        const leadCount = Math.max(1, Math.floor(Number(leaderDice) || 7));
+        const trailCount = Math.max(1, Math.floor(Number(trailerDice) || 4));
+        const filled = clamp(Math.floor(Number(filledSlots) || 0), 0, 5);
+        pools = {
+          p1: { yellow: forcedLeader === 'p1' ? leadCount : trailCount, green: 0 },
+          p2: { yellow: 0, green: forcedLeader === 'p2' ? leadCount : trailCount }
+        };
+        resetPoolFaces();
+        board = Array.from({ length: 6 }, (_, i) => i < filled
+          ? { player: forcedLeader, color: forcedLeader === 'p1' ? 'yellow' : 'green', value: i + 1 }
+          : null);
+        current = turn === 'p2' ? 'p2' : 'p1';
+        busy = false;
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        syncUI();
+        return {
+          leader: forcedLeader,
+          trailer: forcedTrailer,
+          p1CanWin: canPlayerStillWinRound('p1', totalDice('p1'), totalDice('p2'), board.filter(slot => slot === null).length, current),
+          p2CanWin: canPlayerStillWinRound('p2', totalDice('p1'), totalDice('p2'), board.filter(slot => slot === null).length, current),
+          detectedWinner: findMathematicalGameOverWinner()
         };
       },
       gameWin(winner = 'p1') {
