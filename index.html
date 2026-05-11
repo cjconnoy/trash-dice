@@ -8766,7 +8766,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         s.setAttribute('fill',   'url(#pocketG)');
         s.setAttribute('stroke', '#aeb6b6');
         s.classList.remove('anim-place', 'anim-trash');
-        labelEls[i].setAttribute('fill', 'rgba(45,50,51,0.52)');
+        labelEls[i].setAttribute('fill', 'rgba(238,246,242,0.84)');
+        labelEls[i].setAttribute('stroke', 'rgba(24,31,32,0.62)');
+        labelEls[i].setAttribute('stroke-width', '1.05');
+        labelEls[i].setAttribute('paint-order', 'stroke fill');
         if (slotDiceEls[i]) {
           slotDiceEls[i].remove();
           slotDiceEls[i] = null;
