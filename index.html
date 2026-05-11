@@ -5911,7 +5911,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const label = labelEls[idx];
     slot.setAttribute('fill', '#737b7d');
     slot.setAttribute('stroke', '#b9c0c0');
-    label.setAttribute('fill', 'rgba(45,50,51,0.18)');
+    label.setAttribute('fill', 'rgba(238,246,242,0.84)');
+    label.setAttribute('stroke', 'rgba(24,31,32,0.62)');
+    label.setAttribute('stroke-width', '1.05');
+    label.setAttribute('paint-order', 'stroke fill');
 
     if (slotDiceEls[idx]) slotDiceEls[idx].remove();
     const info = slotInfo[idx];
