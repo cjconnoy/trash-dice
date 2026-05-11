@@ -5584,6 +5584,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let inlineGameOverRunId = 0;
   let inlineGameOverState = null;
   let inlineGameOverTimer = null;
+  let inlineWinWhistleTimer = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -5651,6 +5652,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     progressionWatchdogTimer = null;
     progressionWatchdogRun++;
     inlineGameOverTimer = null;
+    inlineWinWhistleTimer = null;
     inlineGameOverState = null;
     inlineGameOverRunId++;
     roundResolutionRunId++;
@@ -5694,6 +5696,37 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           slot.value <= 6
         )
       );
+  }
+
+  function findMathematicalGameOverWinner() {
+    if (!gameStarted || isInlineGameOverActive() || !hasValidPools() || !hasValidBoard()) return null;
+    const p1Dice = totalDice('p1');
+    const p2Dice = totalDice('p2');
+    if (p1Dice <= 0) return 'p2';
+    if (p2Dice <= 0) return 'p1';
+    const openSlots = board.reduce((count, slot) => count + (slot === null ? 1 : 0), 0);
+    if (openSlots <= 0) return null;
+    if (p1Dice + p2Dice >= openSlots) return null;
+    if (p1Dice === p2Dice) return null;
+    return p1Dice > p2Dice ? 'p1' : 'p2';
+  }
+
+  function maybeEndMathematicalGame(reason = 'mathematical-certainty') {
+    if (roundResolutionState && roundResolutionState.active) return false;
+    const winner = findMathematicalGameOverWinner();
+    if (!winner) return false;
+    setMsg('NOT ENOUGH DICE TO FINISH', winner === 'p1' ? 'win' : 'trash');
+    lastProgressionRecovery = {
+      reason,
+      winner,
+      round,
+      totalRolls,
+      p1Dice: totalDice('p1'),
+      p2Dice: totalDice('p2'),
+      at: Date.now()
+    };
+    gameOver(winner);
+    return true;
   }
 
   function detectProgressionIssue(includeIdleCpu = false) {
@@ -7612,9 +7645,26 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       cancelRuntimeTimer(inlineGameOverTimer);
       inlineGameOverTimer = null;
     }
+    if (inlineWinWhistleTimer) {
+      cancelRuntimeTimer(inlineWinWhistleTimer);
+      inlineWinWhistleTimer = null;
+    }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
     setRollButtonPlayAgainMode(false);
+  }
+
+  function scheduleInlineWinWhistleLoop(runId, delay = 3800) {
+    if (inlineWinWhistleTimer) {
+      cancelRuntimeTimer(inlineWinWhistleTimer);
+      inlineWinWhistleTimer = null;
+    }
+    inlineWinWhistleTimer = runLater(() => {
+      inlineWinWhistleTimer = null;
+      if (!isCurrentInlineGameOverRun(runId)) return;
+      Audio.gameWinWhistle();
+      scheduleInlineWinWhistleLoop(runId, 4300);
+    }, delay);
   }
 
   function isInlineGameOverActive() {
@@ -7639,7 +7689,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearPlayerPayoutFanfare(false);
     clearInlineEndingVisuals();
     stopTitleRoundWinFanfare();
-    Audio.setMusicActive(false);
+    Audio.setMusicActive(playerWon);
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
@@ -7700,6 +7750,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       triggerLidWinPulse();
       Audio.megaWinFanfare();
       Audio.gameWinWhistle();
+      scheduleInlineWinWhistleLoop(runId);
     } else {
       Audio.trashCrash(Math.max(6, totalTrashedDice()));
     }
@@ -8422,6 +8473,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       scheduleProgressionWatchdog('place-empty', 2200);
       runLater(() => gameOver(winner), 520);
     } else {
+      if (maybeEndMathematicalGame('post-place-insufficient-dice')) return;
       const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
       scheduleProgressionWatchdog('post-place', handoffDelay + 4200);
       runLater(nextTurn, handoffDelay);
@@ -8448,6 +8500,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       runLater(() => gameOver(winner), 950);
       return;
     }
+
+    if (maybeEndMathematicalGame('post-trash-insufficient-dice')) return;
 
     const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
     scheduleProgressionWatchdog('post-trash', handoffDelay + 4550);
@@ -8679,9 +8733,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
       if (totalDice('p1') <= 0) { gameOver('p2'); return; }
       if (totalDice('p2') <= 0) { gameOver('p1'); return; }
+      roundResolutionState = null;
+      if (maybeEndMathematicalGame('post-round-insufficient-dice')) return;
 
       current = 'p1';
-      roundResolutionState = null;
       clearDie(null);
       clearPlayerPayoutFanfare(false);
       syncUI();
@@ -8882,6 +8937,35 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       finalRoundWin(winner = 'p1', trashLoad = 10) {
         return forceFinalRoundGameSequence(winner, trashLoad);
       },
+      mathematicalEndProof(winner = 'p1') {
+        ensureQaGame();
+        const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
+        const loser = forcedWinner === 'p1' ? 'p2' : 'p1';
+        pools = {
+          p1: { yellow: forcedWinner === 'p1' ? 2 : 1, green: 0 },
+          p2: { yellow: 0, green: forcedWinner === 'p2' ? 2 : 1 }
+        };
+        resetPoolFaces();
+        board = Array.from({ length: 6 }, (_, i) => i < 2
+          ? { player: forcedWinner, color: forcedWinner === 'p1' ? 'yellow' : 'green', value: i + 1 }
+          : null);
+        current = loser;
+        busy = false;
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        syncUI();
+        const detectedWinner = findMathematicalGameOverWinner();
+        const ended = maybeEndMathematicalGame('qa-mathematical-end');
+        return {
+          expectedWinner: forcedWinner,
+          detectedWinner,
+          ended,
+          inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
+          passed: detectedWinner === forcedWinner && ended && inlineGameOverState && inlineGameOverState.winner === forcedWinner
+        };
+      },
       gameWin(winner = 'p1') {
         const needsInit = !gameStarted;
         ensureQaGame();
@@ -9050,6 +9134,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   // ── NEXT TURN ────────────────────────────────────────────────
   function nextTurn() {
     clearBenchCelebration(false);
+    if (maybeEndMathematicalGame('pre-next-turn-insufficient-dice')) return;
     current = current === 'p1' ? 'p2' : 'p1';
 
     if (totalDice(current) <= 0) {
