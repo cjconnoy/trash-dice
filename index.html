@@ -1920,35 +1920,6 @@ body.inline-game-loss .inline-result-banner {
 body.player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin) {
   animation: lidIdleWobble 5.8s cubic-bezier(.16,.82,.18,1) infinite;
 }
-.board-wrap.lid-tension-shake:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin):not(.player-payout-lid-dance):not(.inline-ending-lid-dance) {
-  animation: lidTensionShake 0.46s cubic-bezier(.18,.72,.2,1) infinite;
-  filter:
-    drop-shadow(0 5px 9px rgba(0,0,0,0.42))
-    drop-shadow(0 0 9px rgba(245,176,35,0.28));
-}
-.lid-hot-slot {
-  filter: url(#hotSlotGlow);
-  stroke: rgba(255,218,74,0.86);
-}
-.lid-hot-slot.heat-1 {
-  stroke: rgba(255,201,52,0.72);
-}
-.lid-hot-slot.heat-2 {
-  stroke: rgba(255,190,38,0.88);
-}
-.lid-hot-slot.heat-3 {
-  stroke: rgba(255,171,32,0.98);
-}
-.lid-hot-label {
-  fill: rgba(90,61,18,0.82);
-  stroke: rgba(255,244,168,0.58);
-}
-.lid-hot-slot.lid-target-pulse {
-  animation: lidTargetPulse 0.78s cubic-bezier(.14,.76,.16,1);
-}
-.lid-hot-label.lid-target-pulse {
-  animation: lidTargetLabelPulse 0.78s cubic-bezier(.14,.76,.16,1);
-}
 .board-wrap.player-payout-lid-dance,
 body.player-roll-ready .board-wrap.player-payout-lid-dance,
 .board-wrap.inline-ending-lid-dance {
@@ -2037,45 +2008,6 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
   34% { opacity: 0.72; transform: scale(1.05); }
   68% { opacity: 0.34; transform: scale(1.3); }
   100% { opacity: 0; transform: scale(1.52); }
-}
-@keyframes lidTensionShake {
-  0%, 100% {
-    transform: translateX(var(--lid-offset)) translateY(0) rotate(0deg);
-  }
-  18% {
-    transform: translateX(var(--lid-offset)) translateY(-0.6px) rotate(-0.28deg);
-  }
-  42% {
-    transform: translateX(var(--lid-offset)) translateY(0.5px) rotate(0.22deg);
-  }
-  66% {
-    transform: translateX(var(--lid-offset)) translateY(-0.4px) rotate(-0.16deg);
-  }
-  82% {
-    transform: translateX(var(--lid-offset)) translateY(0.2px) rotate(0.1deg);
-  }
-}
-@keyframes lidTargetPulse {
-  0%, 100% {
-    stroke-width: 1.9;
-    opacity: 1;
-  }
-  34% {
-    stroke-width: 3.2;
-    opacity: 1;
-  }
-  68% {
-    stroke-width: 2.45;
-    opacity: 0.96;
-  }
-}
-@keyframes lidTargetLabelPulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  38% {
-    opacity: 0.72;
-  }
 }
 .lid-place-burst {
   position: fixed;
@@ -6174,9 +6106,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       txt.setAttribute('x', f(tx)); txt.setAttribute('y', f(ty));
       txt.setAttribute('text-anchor', 'middle');
       txt.setAttribute('dominant-baseline', 'central');
-      txt.setAttribute('fill', 'rgba(255,255,255,0.38)');
+      txt.setAttribute('fill', 'rgba(238,246,242,0.84)');
+      txt.setAttribute('stroke', 'rgba(24,31,32,0.58)');
+      txt.setAttribute('stroke-width', '0.9');
+      txt.setAttribute('paint-order', 'stroke fill');
       txt.setAttribute('font-family', 'Fredoka One, Arial Black, sans-serif');
-      txt.setAttribute('font-size', '14');
+      txt.setAttribute('font-size', '15');
       txt.setAttribute('pointer-events', 'none');
       txt.textContent = val;
       svg.appendChild(txt);
@@ -6243,11 +6178,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     pocketG.appendChild(make('stop', { offset:'42%', 'stop-color':'#747f80' }));
     pocketG.appendChild(make('stop', { offset:'100%', 'stop-color':'#4a5355' }));
     defs.appendChild(pocketG);
-    const hotPocketG = make('linearGradient', { id:'hotPocketG', x1:'0', x2:'1', y1:'0', y2:'1' });
-    hotPocketG.appendChild(make('stop', { offset:'0%', 'stop-color':'#c7ba73' }));
-    hotPocketG.appendChild(make('stop', { offset:'44%', 'stop-color':'#8b815d' }));
-    hotPocketG.appendChild(make('stop', { offset:'100%', 'stop-color':'#5a5544' }));
-    defs.appendChild(hotPocketG);
     const moldedG = make('linearGradient', { id:'moldedG', x1:'0', x2:'1', y1:'0', y2:'1' });
     moldedG.appendChild(make('stop', { offset:'0%', 'stop-color':'#929d9f' }));
     moldedG.appendChild(make('stop', { offset:'52%', 'stop-color':'#6d787a' }));
@@ -6263,10 +6193,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const slotInset = make('filter', { id:'slotInset', x:'-28%', y:'-28%', width:'156%', height:'156%' });
     slotInset.appendChild(make('feDropShadow', { dx:'0', dy:'2.1', stdDeviation:'1.35', 'flood-color':'rgba(0,0,0,0.56)' }));
     defs.appendChild(slotInset);
-    const hotSlotGlow = make('filter', { id:'hotSlotGlow', x:'-72%', y:'-72%', width:'244%', height:'244%' });
-    hotSlotGlow.appendChild(make('feDropShadow', { dx:'0', dy:'0', stdDeviation:'1.7', 'flood-color':'rgba(255,226,96,0.72)' }));
-    hotSlotGlow.appendChild(make('feDropShadow', { dx:'0', dy:'0', stdDeviation:'4.2', 'flood-color':'rgba(245,135,28,0.46)' }));
-    defs.appendChild(hotSlotGlow);
     const lidGlintGlow = make('filter', { id:'lidGlintGlow', x:'-24%', y:'-24%', width:'148%', height:'148%' });
     lidGlintGlow.appendChild(make('feDropShadow', { dx:'0', dy:'0', stdDeviation:'2.2', 'flood-color':'rgba(255,255,255,0.8)' }));
     defs.appendChild(lidGlintGlow);
@@ -6325,7 +6251,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const addLabel = (val, x, y, angle, size = 18) => {
       const txt = make('text', {
         x:f(x), y:f(y), 'text-anchor':'middle', 'dominant-baseline':'central',
-        fill:'rgba(36,43,45,0.54)', stroke:'rgba(196,204,204,0.36)', 'stroke-width':'0.7',
+        fill:'rgba(238,246,242,0.84)', stroke:'rgba(24,31,32,0.62)', 'stroke-width':'1.05',
+        'paint-order':'stroke fill',
         'font-family':'Arial Black, Impact, sans-serif', 'font-size':String(size),
         transform:`rotate(${f(angle)} ${f(x)} ${f(y)})`,
         'pointer-events':'none'
@@ -6397,71 +6324,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     svg.appendChild(make('path', { d:'M86 26 C91 24 98 25 103 29', fill:'none', stroke:'#d5dddd', 'stroke-width':'1.7', opacity:'0.55', 'stroke-linecap':'round', 'pointer-events':'none' }));
 
     boardWrap.appendChild(svg);
-    updateLidPressureState();
   }
 
   function f(n) { return n.toFixed(2); }
-
-  function openLidSlotIndexes() {
-    if (!Array.isArray(board)) return [];
-    return board.reduce((slots, slot, index) => {
-      if (slot === null) slots.push(index);
-      return slots;
-    }, []);
-  }
-
-  function clearLidPressureState() {
-    slotEls.forEach((slot, index) => {
-      slot.classList.remove('lid-hot-slot', 'heat-1', 'heat-2', 'heat-3', 'lid-target-pulse');
-      if (slot.getAttribute('fill') === 'url(#hotPocketG)') slot.setAttribute('fill', 'url(#pocketG)');
-      if (slot.getAttribute('filter') === 'url(#hotSlotGlow)') slot.setAttribute('filter', 'url(#slotInset)');
-      if (labelEls[index]) labelEls[index].classList.remove('lid-hot-label', 'lid-target-pulse');
-    });
-    if (boardWrap) boardWrap.classList.remove('lid-tension-shake');
-  }
-
-  function updateLidPressureState() {
-    if (!slotEls.length || !Array.isArray(board) || isInlineGameOverActive() || (roundResolutionState && roundResolutionState.active)) {
-      clearLidPressureState();
-      return;
-    }
-    const openSlots = openLidSlotIndexes();
-    const heat = openSlots.length === 1 ? 3 : openSlots.length === 2 ? 2 : openSlots.length === 3 ? 1 : 0;
-    slotEls.forEach((slot, index) => {
-      slot.classList.remove('lid-hot-slot', 'heat-1', 'heat-2', 'heat-3');
-      if (labelEls[index]) labelEls[index].classList.remove('lid-hot-label');
-      if (!heat || !openSlots.includes(index)) {
-        if (slot.getAttribute('fill') === 'url(#hotPocketG)') slot.setAttribute('fill', 'url(#pocketG)');
-        if (slot.getAttribute('filter') === 'url(#hotSlotGlow)') slot.setAttribute('filter', 'url(#slotInset)');
-        return;
-      }
-      slot.setAttribute('fill', 'url(#hotPocketG)');
-      slot.setAttribute('filter', 'url(#hotSlotGlow)');
-      slot.classList.add('lid-hot-slot', `heat-${heat}`);
-      if (labelEls[index]) labelEls[index].classList.add('lid-hot-label');
-    });
-    if (boardWrap) boardWrap.classList.toggle('lid-tension-shake', heat >= 3 && !busy);
-  }
-
-  function triggerLidTargetPulse() {
-    updateLidPressureState();
-    const openSlots = openLidSlotIndexes();
-    if (openSlots.length < 1 || openSlots.length > 3) return;
-    openSlots.forEach(index => {
-      const slot = slotEls[index];
-      const label = labelEls[index];
-      if (slot) {
-        slot.classList.remove('lid-target-pulse');
-        void slot.getBoundingClientRect();
-        slot.classList.add('lid-target-pulse');
-      }
-      if (label) {
-        label.classList.remove('lid-target-pulse');
-        void label.getBoundingClientRect();
-        label.classList.add('lid-target-pulse');
-      }
-    });
-  }
 
   // ── POOL VISUAL — stable mini dice faces ───────────────────
   function seededPoolFace(player, color, index) {
@@ -8177,7 +8042,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
     renderCanLoad();
-    updateLidPressureState();
     syncHeroIdleState();
   }
 
@@ -8615,8 +8479,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const idx   = value - 1;
       const taken = board[idx] !== null;
       setMsg(`ROLLED ${value}`);
-      if (taken) triggerLidTargetPulse();
-      else updateLidPressureState();
       runLater(() => {
         taken
           ? travelRolledDieToTrash(current, rollColor, () => handleTrash(value, idx, rollColor))
