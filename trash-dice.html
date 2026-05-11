@@ -5706,9 +5706,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (p2Dice <= 0) return 'p1';
     const openSlots = board.reduce((count, slot) => count + (slot === null ? 1 : 0), 0);
     if (openSlots <= 0) return null;
-    if (p1Dice + p2Dice >= openSlots) return null;
     if (p1Dice === p2Dice) return null;
-    return p1Dice > p2Dice ? 'p1' : 'p2';
+    const leader = p1Dice > p2Dice ? 'p1' : 'p2';
+    const trailer = leader === 'p1' ? 'p2' : 'p1';
+    const trailerDice = trailer === 'p1' ? p1Dice : p2Dice;
+    return trailerDice < openSlots ? leader : null;
   }
 
   function maybeEndMathematicalGame(reason = 'mathematical-certainty') {
@@ -8937,16 +8939,19 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       finalRoundWin(winner = 'p1', trashLoad = 10) {
         return forceFinalRoundGameSequence(winner, trashLoad);
       },
-      mathematicalEndProof(winner = 'p1') {
+      mathematicalEndProof(winner = 'p1', leaderDice = 15, trailerDice = 1, filledSlots = 0) {
         ensureQaGame();
         const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
         const loser = forcedWinner === 'p1' ? 'p2' : 'p1';
+        const leadCount = Math.max(1, Math.floor(Number(leaderDice) || 15));
+        const trailCount = Math.max(1, Math.floor(Number(trailerDice) || 1));
+        const filled = clamp(Math.floor(Number(filledSlots) || 0), 0, 5);
         pools = {
-          p1: { yellow: forcedWinner === 'p1' ? 2 : 1, green: 0 },
-          p2: { yellow: 0, green: forcedWinner === 'p2' ? 2 : 1 }
+          p1: { yellow: forcedWinner === 'p1' ? leadCount : trailCount, green: 0 },
+          p2: { yellow: 0, green: forcedWinner === 'p2' ? leadCount : trailCount }
         };
         resetPoolFaces();
-        board = Array.from({ length: 6 }, (_, i) => i < 2
+        board = Array.from({ length: 6 }, (_, i) => i < filled
           ? { player: forcedWinner, color: forcedWinner === 'p1' ? 'yellow' : 'green', value: i + 1 }
           : null);
         current = loser;
