@@ -3599,16 +3599,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   align-content: center;
   padding-top: 0;
   padding-bottom: 0;
-  min-height: clamp(50px, 12vw, 66px);
+  min-height: clamp(56px, 13vw, 76px);
   transform: translateY(clamp(0.08rem, 0.55vw, 0.22rem));
 }
 .inventory-cluster.has-status .panel-pile .mini-die {
-  width: clamp(14px, 3.45vw, 18px);
-  height: clamp(14px, 3.45vw, 18px);
+  width: clamp(16.5px, 4vw, 22.5px);
+  height: clamp(16.5px, 4vw, 22.5px);
 }
 .inventory-cluster.has-status .panel-pile .mini-pip {
-  width: clamp(3.2px, 0.92vw, 4.5px);
-  height: clamp(3.2px, 0.92vw, 4.5px);
+  width: clamp(3.8px, 1.02vw, 5.35px);
+  height: clamp(3.8px, 1.02vw, 5.35px);
 }
 .panel-pile {
   grid-column: 2;
@@ -3616,50 +3616,96 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   flex: none;
   width: 100%;
   min-width: 0;
-  min-height: clamp(62px, 16vw, 86px);
+  min-height: clamp(68px, 16.8vw, 94px);
   overflow: visible;
   align-content: center;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2.7px;
   padding: 6px 0 9px;
-  filter: drop-shadow(0 3px 2px rgba(35,30,21,0.13));
+  filter: drop-shadow(0 4px 3px rgba(35,30,21,0.16));
 }
 .panel-pile .mini-die {
-  width: clamp(15px, 3.9vw, 20px);
-  height: clamp(15px, 3.9vw, 20px);
+  width: clamp(18px, 4.35vw, 24.5px);
+  height: clamp(18px, 4.35vw, 24.5px);
   border-radius: 22%;
+  overflow: visible;
+  isolation: isolate;
+  background-size: 100% 100%;
+  box-shadow:
+    2.4px 2.8px 0 rgba(0,0,0,0.24),
+    0 6px 10px rgba(67,52,29,0.23),
+    inset 0 1px 0 rgba(255,255,255,0.42),
+    inset -4px -4.5px 7px rgba(0,0,0,0.2);
+}
+.panel-pile .mini-die.p1 {
+  background:
+    radial-gradient(ellipse at 26% 18%, rgba(255,255,255,0.9), rgba(255,255,255,0.28) 23%, transparent 43%),
+    linear-gradient(148deg, #fff36f 0%, #f7d81d 42%, #d5a600 72%, #946c00 100%);
+  box-shadow:
+    2.7px 3px 0 #9a7400,
+    5px 6px 0 rgba(83,58,0,0.18),
+    0 7px 12px rgba(67,52,29,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.52),
+    inset -4.5px -5px 8px rgba(88,62,0,0.2);
+}
+.panel-pile .mini-die.p2 {
+  background:
+    radial-gradient(ellipse at 26% 18%, rgba(255,255,255,0.58), rgba(255,255,255,0.15) 25%, transparent 45%),
+    linear-gradient(148deg, #21a95e 0%, #0f6f39 42%, #0a4a28 72%, #042514 100%);
+  box-shadow:
+    2.7px 3px 0 #04351a,
+    5px 6px 0 rgba(0,0,0,0.2),
+    0 7px 12px rgba(35,52,36,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.24),
+    inset -4.5px -5px 8px rgba(0,0,0,0.24);
+}
+.panel-pile .mini-die::after {
+  content: '';
+  position: absolute;
+  top: 7%;
+  left: 10%;
+  width: 54%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 35% 28%, rgba(255,255,255,0.62), rgba(255,255,255,0.18) 58%, transparent 100%);
+  pointer-events: none;
+  z-index: 3;
 }
 .panel-pile .mini-pip {
-  width: clamp(3.4px, 1vw, 5px);
-  height: clamp(3.4px, 1vw, 5px);
+  width: clamp(4px, 1.1vw, 5.8px);
+  height: clamp(4px, 1.1vw, 5.8px);
+  z-index: 4;
+  box-shadow:
+    inset 0.85px 0.85px 1.3px rgba(0,0,0,0.64),
+    0 0.4px 0 rgba(255,255,255,0.16);
 }
-.inventory-cluster.pile-mid .panel-pile { gap: 3.4px; }
-.inventory-cluster.pile-low .panel-pile { gap: 4px; }
-.inventory-cluster.pile-critical .panel-pile { gap: 4.5px; }
+.inventory-cluster.pile-mid .panel-pile { gap: 3px; }
+.inventory-cluster.pile-low .panel-pile { gap: 3.6px; }
+.inventory-cluster.pile-critical .panel-pile { gap: 4px; }
 .inventory-cluster.pile-mid .panel-pile .mini-die {
-  width: clamp(16.2px, 4.2vw, 21.6px);
-  height: clamp(16.2px, 4.2vw, 21.6px);
+  width: clamp(19.5px, 4.68vw, 26px);
+  height: clamp(19.5px, 4.68vw, 26px);
 }
 .inventory-cluster.pile-low .panel-pile .mini-die {
-  width: clamp(17.4px, 4.55vw, 23.2px);
-  height: clamp(17.4px, 4.55vw, 23.2px);
+  width: clamp(21px, 5.02vw, 28.5px);
+  height: clamp(21px, 5.02vw, 28.5px);
 }
 .inventory-cluster.pile-critical .panel-pile .mini-die {
-  width: clamp(18.6px, 4.85vw, 24.8px);
-  height: clamp(18.6px, 4.85vw, 24.8px);
+  width: clamp(22.5px, 5.32vw, 31px);
+  height: clamp(22.5px, 5.32vw, 31px);
 }
 .inventory-cluster.pile-mid .panel-pile .mini-pip {
-  width: clamp(3.7px, 1.08vw, 5.4px);
-  height: clamp(3.7px, 1.08vw, 5.4px);
+  width: clamp(4.35px, 1.2vw, 6.2px);
+  height: clamp(4.35px, 1.2vw, 6.2px);
 }
 .inventory-cluster.pile-low .panel-pile .mini-pip {
-  width: clamp(3.95px, 1.16vw, 5.8px);
-  height: clamp(3.95px, 1.16vw, 5.8px);
+  width: clamp(4.72px, 1.3vw, 6.8px);
+  height: clamp(4.72px, 1.3vw, 6.8px);
 }
 .inventory-cluster.pile-critical .panel-pile .mini-pip {
-  width: clamp(4.2px, 1.24vw, 6.2px);
-  height: clamp(4.2px, 1.24vw, 6.2px);
+  width: clamp(5.05px, 1.4vw, 7.35px);
+  height: clamp(5.05px, 1.4vw, 7.35px);
 }
 .inventory-cluster .pool-count {
   grid-column: 1;
@@ -3796,73 +3842,73 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .panel-pile {
-    min-height: clamp(62px, 16.4vw, 84px);
-    gap: 2.5px;
+    min-height: clamp(66px, 17.2vw, 90px);
+    gap: 2.2px;
     padding: 4px 0 6px;
   }
 
   .panel-pile .mini-die {
-    width: clamp(15.5px, 4.22vw, 21.5px);
-    height: clamp(15.5px, 4.22vw, 21.5px);
+    width: clamp(17.2px, 4.52vw, 24.2px);
+    height: clamp(17.2px, 4.52vw, 24.2px);
   }
 
   .panel-pile .mini-pip {
-    width: clamp(3.5px, 1.08vw, 5.2px);
-    height: clamp(3.5px, 1.08vw, 5.2px);
+    width: clamp(4px, 1.18vw, 5.85px);
+    height: clamp(4px, 1.18vw, 5.85px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-die {
-    width: clamp(16.7px, 4.55vw, 23.2px);
-    height: clamp(16.7px, 4.55vw, 23.2px);
+    width: clamp(18.5px, 4.88vw, 26px);
+    height: clamp(18.5px, 4.88vw, 26px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-die {
-    width: clamp(18px, 4.9vw, 24.9px);
-    height: clamp(18px, 4.9vw, 24.9px);
+    width: clamp(20px, 5.25vw, 28px);
+    height: clamp(20px, 5.25vw, 28px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-die {
-    width: clamp(19.2px, 5.23vw, 26.7px);
-    height: clamp(19.2px, 5.23vw, 26.7px);
+    width: clamp(21.4px, 5.58vw, 30px);
+    height: clamp(21.4px, 5.58vw, 30px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-pip {
-    width: clamp(3.8px, 1.17vw, 5.6px);
-    height: clamp(3.8px, 1.17vw, 5.6px);
+    width: clamp(4.35px, 1.3vw, 6.25px);
+    height: clamp(4.35px, 1.3vw, 6.25px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-pip {
-    width: clamp(4.05px, 1.25vw, 6px);
-    height: clamp(4.05px, 1.25vw, 6px);
+    width: clamp(4.7px, 1.4vw, 6.75px);
+    height: clamp(4.7px, 1.4vw, 6.75px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-pip {
-    width: clamp(4.35px, 1.34vw, 6.45px);
-    height: clamp(4.35px, 1.34vw, 6.45px);
+    width: clamp(5.05px, 1.5vw, 7.35px);
+    height: clamp(5.05px, 1.5vw, 7.35px);
   }
 
   .inventory-cluster.has-status .panel-pile {
-    min-height: clamp(54px, 13.6vw, 70px);
+    min-height: clamp(58px, 14.4vw, 76px);
   }
 
   .inventory-cluster.has-status .panel-pile .mini-die {
-    width: clamp(14.25px, 3.88vw, 19px);
-    height: clamp(14.25px, 3.88vw, 19px);
+    width: clamp(16.1px, 4.15vw, 22.4px);
+    height: clamp(16.1px, 4.15vw, 22.4px);
   }
 
   .inventory-cluster.has-status.pile-mid .panel-pile .mini-die {
-    width: clamp(15.4px, 4.19vw, 20.5px);
-    height: clamp(15.4px, 4.19vw, 20.5px);
+    width: clamp(17.3px, 4.48vw, 24px);
+    height: clamp(17.3px, 4.48vw, 24px);
   }
 
   .inventory-cluster.has-status.pile-low .panel-pile .mini-die {
-    width: clamp(16.5px, 4.5vw, 22px);
-    height: clamp(16.5px, 4.5vw, 22px);
+    width: clamp(18.6px, 4.82vw, 25.8px);
+    height: clamp(18.6px, 4.82vw, 25.8px);
   }
 
   .inventory-cluster.has-status.pile-critical .panel-pile .mini-die {
-    width: clamp(17.7px, 4.81vw, 23.6px);
-    height: clamp(17.7px, 4.81vw, 23.6px);
+    width: clamp(20px, 5.15vw, 27.5px);
+    height: clamp(20px, 5.15vw, 27.5px);
   }
 
   .pool-count {
@@ -3961,72 +4007,72 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .panel-pile {
-    min-height: clamp(82px, 7.7vw, 106px);
-    gap: 4px;
+    min-height: clamp(90px, 8.2vw, 118px);
+    gap: 3.2px;
   }
 
   .panel-pile .mini-die {
-    width: clamp(19px, 2.22vw, 27px);
-    height: clamp(19px, 2.22vw, 27px);
+    width: clamp(22px, 2.52vw, 32.5px);
+    height: clamp(22px, 2.52vw, 32.5px);
   }
 
   .panel-pile .mini-pip {
-    width: clamp(4.25px, 0.56vw, 6.45px);
-    height: clamp(4.25px, 0.56vw, 6.45px);
+    width: clamp(5px, 0.64vw, 7.65px);
+    height: clamp(5px, 0.64vw, 7.65px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-die {
-    width: clamp(20.6px, 2.42vw, 29px);
-    height: clamp(20.6px, 2.42vw, 29px);
+    width: clamp(23.8px, 2.72vw, 35px);
+    height: clamp(23.8px, 2.72vw, 35px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-die {
-    width: clamp(22.1px, 2.62vw, 31.5px);
-    height: clamp(22.1px, 2.62vw, 31.5px);
+    width: clamp(25.6px, 2.94vw, 37.8px);
+    height: clamp(25.6px, 2.94vw, 37.8px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-die {
-    width: clamp(23.8px, 2.82vw, 34px);
-    height: clamp(23.8px, 2.82vw, 34px);
+    width: clamp(27.5px, 3.16vw, 40px);
+    height: clamp(27.5px, 3.16vw, 40px);
   }
 
   .inventory-cluster.pile-mid .panel-pile .mini-pip {
-    width: clamp(4.6px, 0.62vw, 7px);
-    height: clamp(4.6px, 0.62vw, 7px);
+    width: clamp(5.4px, 0.7vw, 8.2px);
+    height: clamp(5.4px, 0.7vw, 8.2px);
   }
 
   .inventory-cluster.pile-low .panel-pile .mini-pip {
-    width: clamp(4.95px, 0.68vw, 7.55px);
-    height: clamp(4.95px, 0.68vw, 7.55px);
+    width: clamp(5.85px, 0.76vw, 8.95px);
+    height: clamp(5.85px, 0.76vw, 8.95px);
   }
 
   .inventory-cluster.pile-critical .panel-pile .mini-pip {
-    width: clamp(5.35px, 0.74vw, 8.15px);
-    height: clamp(5.35px, 0.74vw, 8.15px);
+    width: clamp(6.3px, 0.84vw, 9.7px);
+    height: clamp(6.3px, 0.84vw, 9.7px);
   }
 
   .inventory-cluster.has-status .panel-pile {
-    min-height: clamp(68px, 6.3vw, 88px);
+    min-height: clamp(76px, 6.9vw, 98px);
   }
 
   .inventory-cluster.has-status .panel-pile .mini-die {
-    width: clamp(18.2px, 2.12vw, 25px);
-    height: clamp(18.2px, 2.12vw, 25px);
+    width: clamp(21px, 2.38vw, 30px);
+    height: clamp(21px, 2.38vw, 30px);
   }
 
   .inventory-cluster.has-status.pile-mid .panel-pile .mini-die {
-    width: clamp(19.6px, 2.28vw, 27px);
-    height: clamp(19.6px, 2.28vw, 27px);
+    width: clamp(22.5px, 2.56vw, 32px);
+    height: clamp(22.5px, 2.56vw, 32px);
   }
 
   .inventory-cluster.has-status.pile-low .panel-pile .mini-die {
-    width: clamp(21px, 2.48vw, 29px);
-    height: clamp(21px, 2.48vw, 29px);
+    width: clamp(24.2px, 2.78vw, 34.5px);
+    height: clamp(24.2px, 2.78vw, 34.5px);
   }
 
   .inventory-cluster.has-status.pile-critical .panel-pile .mini-die {
-    width: clamp(22.6px, 2.66vw, 31px);
-    height: clamp(22.6px, 2.66vw, 31px);
+    width: clamp(26px, 3vw, 37px);
+    height: clamp(26px, 3vw, 37px);
   }
 
   .pool-count {
