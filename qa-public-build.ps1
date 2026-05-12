@@ -1,5 +1,7 @@
 param(
   [string]$PublicBaseUrl = "https://tel-sight-rice-extent.trycloudflare.com",
+  [string]$BuildHash = "dc5a995",
+  [string]$ExpectedRoot = "releases\alpha-complete",
   [int]$OriginPort = 5175,
   [int]$ForbiddenPreviewPort = 4173
 )
@@ -53,16 +55,21 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
 $fullHash = Get-GitValue @("rev-parse", "HEAD")
-$shortHash = Get-GitValue @("rev-parse", "--short", "HEAD")
 $base = $PublicBaseUrl.TrimEnd("/")
-$indexUrl = "$base/index.html?v=$shortHash"
-$mirrorUrl = "$base/trash-dice.html?v=$shortHash"
+$indexUrl = "$base/index.html?v=$BuildHash"
+$mirrorUrl = "$base/trash-dice.html?v=$BuildHash"
+$aliasUrl = "$base/alpha-complete/"
 
 Assert-ListeningPort -Port $ForbiddenPreviewPort -ShouldListen $false
 Assert-ListeningPort -Port $OriginPort -ShouldListen $true
 
-$indexLocal = [System.IO.File]::ReadAllBytes((Join-Path $root "index.html"))
-$mirrorLocal = [System.IO.File]::ReadAllBytes((Join-Path $root "trash-dice.html"))
+$expectedPath = Join-Path $root $ExpectedRoot
+if (-not (Test-Path -LiteralPath $expectedPath)) {
+  throw "Expected locked build folder is missing: $expectedPath"
+}
+
+$indexLocal = [System.IO.File]::ReadAllBytes((Join-Path $expectedPath "index.html"))
+$mirrorLocal = [System.IO.File]::ReadAllBytes((Join-Path $expectedPath "trash-dice.html"))
 $indexHash = Get-Sha256 $indexLocal
 $mirrorHash = Get-Sha256 $mirrorLocal
 if ($indexHash -ne $mirrorHash) {
@@ -71,21 +78,28 @@ if ($indexHash -ne $mirrorHash) {
 
 $publicIndex = Read-HttpBytes $indexUrl
 $publicMirror = Read-HttpBytes $mirrorUrl
+$publicAlias = Read-HttpBytes $aliasUrl
 $publicIndexHash = Get-Sha256 $publicIndex
 $publicMirrorHash = Get-Sha256 $publicMirror
+$publicAliasHash = Get-Sha256 $publicAlias
 
 if ($publicIndexHash -ne $indexHash) {
-  throw "Public index.html bytes do not match local index.html."
+  throw "Public index.html bytes do not match locked Alpha Complete index.html."
 }
 if ($publicMirrorHash -ne $mirrorHash) {
-  throw "Public trash-dice.html bytes do not match local trash-dice.html."
+  throw "Public trash-dice.html bytes do not match locked Alpha Complete trash-dice.html."
+}
+if ($publicAliasHash -ne $indexHash) {
+  throw "Public alpha-complete alias bytes do not match locked Alpha Complete index.html."
 }
 
 [PSCustomObject]@{
   status = "PUBLIC BUILD OK"
-  commit = $fullHash
+  currentCommit = $fullHash
+  lockedBuild = $BuildHash
   desktopFull = $indexUrl
   mobileFull = $indexUrl
+  alphaComplete = $aliasUrl
   mirrorFull = $mirrorUrl
   localSha256 = $indexHash
   publicSha256 = $publicIndexHash
