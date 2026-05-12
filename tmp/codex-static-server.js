@@ -1,9 +1,11 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const root = path.resolve(process.argv[2] || process.cwd());
 const port = Number(process.argv[3] || 5175);
+const rooms = new Map();
 const lockedBuilds = {
   dc5a995: {
     '/': 'releases/alpha-complete/index.html',
@@ -26,6 +28,12 @@ function isInsideRoot(target) {
 }
 
 function resolveTarget(url, pathname) {
+  if (pathname === '/beta' || pathname === '/beta/' || pathname === '/beta/index.html') {
+    return path.resolve(root, 'beta/index.html');
+  }
+  if (pathname === '/beta/trash-dice.html') {
+    return path.resolve(root, 'beta/trash-dice.html');
+  }
   if (pathname === '/alpha-complete' || pathname === '/alpha-complete/' || pathname === '/alpha-complete/index.html') {
     return path.resolve(root, 'releases/alpha-complete/index.html');
   }
@@ -38,7 +46,207 @@ function resolveTarget(url, pathname) {
   return path.resolve(root, pathname.replace(/^\/+/, ''));
 }
 
-http.createServer((req, res) => {
+function makeRoomCode() {
+  for (let i = 0; i < 40; i++) {
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    if (!rooms.has(code)) return code;
+  }
+  return String(Date.now()).slice(-4);
+}
+
+function cleanRoomCode(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 4);
+}
+
+function roomSnapshot(room) {
+  return {
+    type: 'room-state',
+    roomCode: room.code,
+    seats: {
+      p1: !!room.clients.p1,
+      p2: !!room.clients.p2
+    },
+    started: room.started
+  };
+}
+
+function encodeWs(payload) {
+  const body = Buffer.from(JSON.stringify(payload));
+  if (body.length < 126) {
+    return Buffer.concat([Buffer.from([0x81, body.length]), body]);
+  }
+  if (body.length < 65536) {
+    const header = Buffer.alloc(4);
+    header[0] = 0x81;
+    header[1] = 126;
+    header.writeUInt16BE(body.length, 2);
+    return Buffer.concat([header, body]);
+  }
+  const header = Buffer.alloc(10);
+  header[0] = 0x81;
+  header[1] = 127;
+  header.writeBigUInt64BE(BigInt(body.length), 2);
+  return Buffer.concat([header, body]);
+}
+
+function sendWs(client, payload) {
+  if (!client || client.socket.destroyed) return;
+  client.socket.write(encodeWs(payload));
+}
+
+function broadcast(room, payload) {
+  Object.values(room.clients).forEach(client => sendWs(client, payload));
+}
+
+function detachClient(client) {
+  if (!client.room || !client.seat) return;
+  const room = client.room;
+  if (room.clients[client.seat] === client) {
+    delete room.clients[client.seat];
+  }
+  client.room = null;
+  client.seat = null;
+  if (!room.clients.p1 && !room.clients.p2) {
+    rooms.delete(room.code);
+    return;
+  }
+  room.started = false;
+  broadcast(room, roomSnapshot(room));
+}
+
+function attachClient(client, room, seat) {
+  detachClient(client);
+  client.room = room;
+  client.seat = seat;
+  room.clients[seat] = client;
+}
+
+function handleWsMessage(client, payload) {
+  let message;
+  try {
+    message = JSON.parse(payload);
+  } catch (_) {
+    sendWs(client, { type: 'error', message: 'Bad message' });
+    return;
+  }
+
+  if (message.type === 'create') {
+    const code = makeRoomCode();
+    const room = {
+      code,
+      createdAt: Date.now(),
+      started: false,
+      clients: {}
+    };
+    rooms.set(code, room);
+    attachClient(client, room, 'p1');
+    sendWs(client, { type: 'room-created', roomCode: code, seat: 'p1' });
+    broadcast(room, roomSnapshot(room));
+    return;
+  }
+
+  if (message.type === 'join') {
+    const code = cleanRoomCode(message.roomCode);
+    const room = rooms.get(code);
+    if (!room) {
+      sendWs(client, { type: 'error', message: 'Room not found' });
+      return;
+    }
+    if (room.clients.p2) {
+      sendWs(client, { type: 'error', message: 'Room is full' });
+      return;
+    }
+    attachClient(client, room, 'p2');
+    sendWs(client, { type: 'room-joined', roomCode: code, seat: 'p2' });
+    broadcast(room, roomSnapshot(room));
+    return;
+  }
+
+  if (!client.room || !client.seat) {
+    sendWs(client, { type: 'error', message: 'Join or create a room first' });
+    return;
+  }
+
+  if (message.type === 'start') {
+    const room = client.room;
+    if (client.seat !== 'p1') {
+      sendWs(client, { type: 'error', message: 'Only Player 1 can start' });
+      return;
+    }
+    if (!room.clients.p1 || !room.clients.p2) {
+      sendWs(client, { type: 'error', message: 'Waiting for Player 2' });
+      return;
+    }
+    room.started = true;
+    broadcast(room, { type: 'start', roomCode: room.code });
+    broadcast(room, roomSnapshot(room));
+    return;
+  }
+
+  if (message.type === 'roll') {
+    const value = Math.max(1, Math.min(6, Math.floor(Number(message.value) || 0)));
+    if (!client.room.started || value < 1 || value > 6) {
+      sendWs(client, { type: 'error', message: 'Roll rejected' });
+      return;
+    }
+    broadcast(client.room, {
+      type: 'roll',
+      roomCode: client.room.code,
+      seat: client.seat,
+      value,
+      rollId: crypto.randomBytes(6).toString('hex')
+    });
+    return;
+  }
+
+  if (message.type === 'leave') {
+    detachClient(client);
+    sendWs(client, { type: 'left' });
+  }
+}
+
+function readWsFrames(client, chunk) {
+  client.buffer = client.buffer ? Buffer.concat([client.buffer, chunk]) : chunk;
+  while (client.buffer.length >= 2) {
+    const first = client.buffer[0];
+    const second = client.buffer[1];
+    const opcode = first & 0x0f;
+    const masked = !!(second & 0x80);
+    let length = second & 0x7f;
+    let offset = 2;
+    if (length === 126) {
+      if (client.buffer.length < offset + 2) return;
+      length = client.buffer.readUInt16BE(offset);
+      offset += 2;
+    } else if (length === 127) {
+      if (client.buffer.length < offset + 8) return;
+      length = Number(client.buffer.readBigUInt64BE(offset));
+      offset += 8;
+    }
+    if (!masked) {
+      client.socket.destroy();
+      return;
+    }
+    if (client.buffer.length < offset + 4 + length) return;
+    const mask = client.buffer.subarray(offset, offset + 4);
+    offset += 4;
+    const body = Buffer.alloc(length);
+    for (let i = 0; i < length; i++) {
+      body[i] = client.buffer[offset + i] ^ mask[i % 4];
+    }
+    client.buffer = client.buffer.subarray(offset + length);
+
+    if (opcode === 0x8) {
+      client.socket.end();
+      return;
+    }
+    if (opcode === 0x1) {
+      handleWsMessage(client, body.toString('utf8'));
+    }
+  }
+}
+
+const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   let pathname = decodeURIComponent(url.pathname);
   if (pathname === '/' || pathname === '') pathname = '/index.html';
@@ -60,6 +268,44 @@ http.createServer((req, res) => {
     });
     res.end(buffer);
   });
-}).listen(port, '127.0.0.1', () => {
+});
+
+server.on('upgrade', (req, socket) => {
+  const url = new URL(req.url, 'http://127.0.0.1');
+  if (url.pathname !== '/beta-ws') {
+    socket.destroy();
+    return;
+  }
+  const key = req.headers['sec-websocket-key'];
+  if (!key) {
+    socket.destroy();
+    return;
+  }
+  const accept = crypto
+    .createHash('sha1')
+    .update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+    .digest('base64');
+  socket.write([
+    'HTTP/1.1 101 Switching Protocols',
+    'Upgrade: websocket',
+    'Connection: Upgrade',
+    `Sec-WebSocket-Accept: ${accept}`,
+    '',
+    ''
+  ].join('\r\n'));
+  const client = {
+    id: crypto.randomBytes(8).toString('hex'),
+    socket,
+    buffer: Buffer.alloc(0),
+    room: null,
+    seat: null
+  };
+  socket.on('data', chunk => readWsFrames(client, chunk));
+  socket.on('close', () => detachClient(client));
+  socket.on('error', () => detachClient(client));
+  sendWs(client, { type: 'hello', clientId: client.id });
+});
+
+server.listen(port, '127.0.0.1', () => {
   console.log(`serving ${root} on ${port}`);
 });
