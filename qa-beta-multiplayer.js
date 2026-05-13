@@ -8,6 +8,14 @@ const baseUrl = (process.argv[2] || 'http://127.0.0.1:5175').replace(/\/+$/, '')
 const chromePath = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const debugPort = 11200 + Math.floor(Math.random() * 700);
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'trash-dice-beta-'));
+const mobileViewport = {
+  width: 320,
+  height: 460,
+  deviceScaleFactor: 2,
+  mobile: true,
+  screenWidth: 320,
+  screenHeight: 568
+};
 const chrome = spawn(chromePath, [
   '--headless=new',
   '--disable-gpu',
@@ -79,6 +87,8 @@ async function main() {
     const cdp = (method, params = {}) => send(method, params, sessionId);
     await cdp('Page.enable');
     await cdp('Runtime.enable');
+    await cdp('Emulation.setDeviceMetricsOverride', mobileViewport);
+    await cdp('Emulation.setTouchEmulationEnabled', { enabled: true });
     await cdp('Page.navigate', { url });
     await sleep(1200);
     return { targetId, cdp };
@@ -102,7 +112,7 @@ async function main() {
     throw new Error(`timeout ${label}`);
   }
 
-  const player1 = await page(`${baseUrl}/beta/?qa=1`);
+  const player1 = await page(`${baseUrl}/beta/`);
   await evalValue(player1, `
     document.getElementById('betaTwoPlayerBtn').click();
     document.getElementById('betaCreateBtn').click();
@@ -110,7 +120,7 @@ async function main() {
   `);
   const roomCode = await waitEval(player1, `document.getElementById('betaRoomCode').textContent.trim()`, 'room code');
 
-  const player2 = await page(`${baseUrl}/beta/?qa=1`);
+  const player2 = await page(`${baseUrl}/beta/`);
   await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
   await waitEval(player2, `
     (() => {
@@ -150,6 +160,26 @@ async function main() {
   await evalValue(player1, `document.getElementById('rollBtn').click(); true`);
   await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 1 sees green turn');
   await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 2 sees green turn');
+  const player2RollLayout = await evalValue(player2, `
+    (() => {
+      const roll = document.querySelector('.roll-panel');
+      const badge = document.querySelector('.milestone-badge');
+      if (!roll) return null;
+      const r = roll.getBoundingClientRect();
+      const b = badge ? badge.getBoundingClientRect() : null;
+      return {
+        viewportHeight: window.innerHeight,
+        rollTop: r.top,
+        rollBottom: r.bottom,
+        rollHeight: r.height,
+        bottomClearance: window.innerHeight - r.bottom,
+        badgeOverlapsRoll: !!(b && b.right > r.left && b.left < r.right && b.bottom > r.top && b.top < r.bottom)
+      };
+    })()
+  `);
+  if (!player2RollLayout || player2RollLayout.bottomClearance < 64 || player2RollLayout.badgeOverlapsRoll) {
+    throw new Error(`player 2 SE roll layout unsafe ${JSON.stringify(player2RollLayout)}`);
+  }
 
   await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
   await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 1 sees second roll');
@@ -158,6 +188,7 @@ async function main() {
   const out = {
     ok: true,
     roomCode,
+    player2RollLayout,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
     player2: await evalValue(player2, `window.TrashDiceDebug.state().beta`)
   };
