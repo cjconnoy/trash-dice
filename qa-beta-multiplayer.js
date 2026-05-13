@@ -110,7 +110,33 @@ async function main() {
   `);
   const roomCode = await waitEval(player1, `document.getElementById('betaRoomCode').textContent.trim()`, 'room code');
 
-  const player2 = await page(`${baseUrl}/beta/?qa=1&room=${roomCode}`);
+  const player2 = await page(`${baseUrl}/beta/?qa=1`);
+  await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
+  await waitEval(player2, `
+    (() => {
+      const input = document.getElementById('betaJoinCode');
+      const label = document.getElementById('betaJoinLabel');
+      if (!input || !label) return false;
+      const rect = input.getBoundingClientRect();
+      const styles = getComputedStyle(input);
+      return styles.display !== 'none' &&
+        rect.width > 120 &&
+        rect.height >= 44 &&
+        label.textContent.includes('Enter Code');
+    })()
+  `, 'player 2 code entry visible');
+  await evalValue(player2, `document.getElementById('betaJoinBtn').click(); true`);
+  await waitEval(player2, `
+    document.activeElement &&
+    document.activeElement.id === 'betaJoinCode' &&
+    document.getElementById('betaRoomStatus').textContent.includes('4 digit code')
+  `, 'player 2 empty join focuses code input');
+  await evalValue(player2, `
+    const input = document.getElementById('betaJoinCode');
+    input.value = '${roomCode}';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    true
+  `);
   await waitEval(player1, `!document.getElementById('betaStartRoomBtn').disabled`, 'player 1 ready');
   await waitEval(player2, `
     document.getElementById('betaRoomStatus').textContent.includes('Waiting for Player 1') ||

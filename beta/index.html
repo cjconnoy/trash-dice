@@ -5199,6 +5199,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 }
 
 .beta-room-panel.has-seat #betaCreateBtn,
+.beta-room-panel.has-seat #betaJoinLabel,
 .beta-room-panel.has-seat #betaJoinCode,
 .beta-room-panel.has-seat #betaJoinBtn,
 .beta-room-panel.has-seat:not(.is-host) .beta-room-grid {
@@ -5222,17 +5223,26 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 .beta-room-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
   margin-top: 10px;
 }
 
+.beta-join-label {
+  margin: 2px 0 -3px;
+  color: #fff8c4;
+  font: 900 13px Fredoka, system-ui, sans-serif;
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .beta-room-btn,
 .beta-room-input {
-  min-height: 44px;
+  min-height: 54px;
   border-radius: 8px;
   border: 2px solid rgba(245, 200, 0, 0.58);
-  font: 800 16px Fredoka, system-ui, sans-serif;
+  font: 800 18px Fredoka, system-ui, sans-serif;
 }
 
 .beta-room-btn {
@@ -5252,6 +5262,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   text-align: center;
   color: #122016;
   background: #fffce8;
+  font-size: 24px;
+  letter-spacing: 0.12em;
+}
+
+.beta-room-input::placeholder {
+  color: rgba(18, 32, 22, 0.5);
+  letter-spacing: 0.02em;
 }
 
 .beta-room-code {
@@ -5745,7 +5762,8 @@ body.beta-multiplayer-active .debug-badge {
       <div class="beta-room-title" id="betaRoomTitle">Nearby 2 Player</div>
       <div class="beta-room-grid" id="betaRoomGrid">
         <button class="beta-room-btn" id="betaCreateBtn" type="button">Create Game</button>
-        <input class="beta-room-input" id="betaJoinCode" inputmode="numeric" maxlength="4" placeholder="Room code" aria-label="Room code">
+        <label class="beta-join-label" id="betaJoinLabel" for="betaJoinCode">Player 2: Enter Code</label>
+        <input class="beta-room-input" id="betaJoinCode" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="4" placeholder="0000" aria-label="Player 2 room code">
         <button class="beta-room-btn" id="betaJoinBtn" type="button">Join Game</button>
         <button class="beta-room-btn" id="betaStartRoomBtn" type="button" disabled>Start Game</button>
       </div>
@@ -5874,6 +5892,7 @@ body.beta-multiplayer-active .debug-badge {
   let betaRoomReady = false;
   let betaMultiplayerActive = false;
   let betaApplyingRemoteRoll = false;
+  let betaJoinPending = false;
   let p0Autoplay = false;
   let p0ReviewMode = false;
   let p0Timer = null;
@@ -6374,26 +6393,19 @@ body.beta-multiplayer-active .debug-badge {
     if (betaRoomStatus) betaRoomStatus.textContent = text;
   }
 
+  function focusBetaJoinCode() {
+    if (!betaJoinCodeInput) return;
+    runLater(() => {
+      betaJoinCodeInput.focus();
+      betaJoinCodeInput.select();
+    }, 30);
+  }
+
   function setBetaRoomUi(snapshot = null) {
     if (!betaRoomPanel) return;
     betaRoomPanel.hidden = false;
     if (betaRoomCodeEl) betaRoomCodeEl.textContent = betaRoomCode || '';
     const hasRoom = betaRoomCode.length === 4;
-    if (betaShareLink) {
-      const href = hasRoom ? betaJoinUrl(betaRoomCode) : '';
-      betaShareLink.textContent = href ? 'Open join link' : '';
-      betaShareLink.href = href || '#';
-      betaShareLink.title = href;
-      betaShareLink.hidden = !href;
-    }
-    if (betaQr) {
-      const href = hasRoom ? betaJoinUrl(betaRoomCode) : '';
-      betaQr.hidden = !href;
-      if (href) {
-        betaQr.src = 'https://quickchart.io/qr?size=220&margin=1&text=' + encodeURIComponent(href);
-      }
-    }
-    if (betaJoinCodeInput && hasRoom && betaSeat !== 'p2') betaJoinCodeInput.value = betaRoomCode;
     const p1Filled = snapshot ? !!snapshot.seats.p1 : betaSeat === 'p1';
     const p2Filled = snapshot ? !!snapshot.seats.p2 : betaSeat === 'p2';
     betaRoomReady = !!(p1Filled && p2Filled);
@@ -6402,6 +6414,22 @@ body.beta-multiplayer-active .debug-badge {
     betaRoomPanel.classList.toggle('is-host', betaSeat === 'p1');
     betaRoomPanel.classList.toggle('is-guest', betaSeat === 'p2');
     betaRoomPanel.classList.toggle('room-ready', betaRoomReady);
+    const showInvite = hasRoom && betaSeat === 'p1' && !betaRoomReady;
+    if (betaShareLink) {
+      const href = showInvite ? betaJoinUrl(betaRoomCode) : '';
+      betaShareLink.textContent = href ? 'Open join link' : '';
+      betaShareLink.href = href || '#';
+      betaShareLink.title = href;
+      betaShareLink.hidden = !href;
+    }
+    if (betaQr) {
+      const href = showInvite ? betaJoinUrl(betaRoomCode) : '';
+      betaQr.hidden = !href;
+      if (href) {
+        betaQr.src = 'https://quickchart.io/qr?size=220&margin=1&text=' + encodeURIComponent(href);
+      }
+    }
+    if (betaJoinCodeInput && hasRoom && betaSeat !== 'p2') betaJoinCodeInput.value = betaRoomCode;
     if (betaStartRoomBtn) betaStartRoomBtn.disabled = !(betaSeat === 'p1' && betaRoomReady);
     if (betaCreateBtn) betaCreateBtn.disabled = !!betaSeat;
     if (betaJoinBtn) betaJoinBtn.disabled = !!betaSeat;
@@ -6410,6 +6438,8 @@ body.beta-multiplayer-active .debug-badge {
     else if (betaRoomReady) setBetaStatus('Connected. Waiting for Player 1 to start.');
     else if (betaSeat === 'p1') setBetaStatus('Show this QR code or room code to Player 2.');
     else if (betaSeat === 'p2') setBetaStatus('Joined. Waiting for Player 1.');
+    else if (hasRoom) setBetaStatus(`Joining room ${betaRoomCode}...`);
+    else setBetaStatus('Player 1 creates. Player 2 enters code.');
   }
 
   function betaSend(message) {
@@ -6441,6 +6471,7 @@ body.beta-multiplayer-active .debug-badge {
     });
     betaSocket.addEventListener('close', () => {
       betaConnected = false;
+      betaJoinPending = false;
       if (betaMultiplayerActive) {
         rollBtn.disabled = true;
         setMsg('CONNECTION LOST');
@@ -6448,6 +6479,7 @@ body.beta-multiplayer-active .debug-badge {
       setBetaStatus('Connection lost. Create or join again.');
     });
     betaSocket.addEventListener('error', () => {
+      betaJoinPending = false;
       setBetaStatus('Connection error. Is the Beta server running?');
     });
   }
@@ -6456,6 +6488,7 @@ body.beta-multiplayer-active .debug-badge {
     if (message.type === 'room-created' || message.type === 'room-joined') {
       betaRoomCode = cleanRoomCode(message.roomCode);
       betaSeat = message.seat;
+      betaJoinPending = false;
       setBetaRoomUi();
       return;
     }
@@ -6476,7 +6509,9 @@ body.beta-multiplayer-active .debug-badge {
       return;
     }
     if (message.type === 'error') {
+      betaJoinPending = false;
       setBetaStatus(message.message || 'Room error');
+      if (!betaSeat) focusBetaJoinCode();
     }
   }
 
@@ -6496,10 +6531,14 @@ body.beta-multiplayer-active .debug-badge {
   function betaJoinRoom() {
     const code = cleanRoomCode(betaJoinCodeInput ? betaJoinCodeInput.value : betaRoomCode);
     if (code.length !== 4) {
-      setBetaStatus('Enter the 4 digit room code.');
+      setBetaStatus("Tap the code box and enter Player 1's 4 digit code.");
+      focusBetaJoinCode();
       return;
     }
+    if (betaJoinPending && betaRoomCode === code) return;
     betaRoomCode = code;
+    betaJoinPending = true;
+    setBetaStatus(`Joining room ${code}...`);
     betaConnect(() => betaSend({ type: 'join', roomCode: code }));
   }
 
@@ -9783,6 +9822,7 @@ body.beta-multiplayer-active .debug-badge {
   if (betaJoinCodeInput) {
     betaJoinCodeInput.addEventListener('input', () => {
       betaJoinCodeInput.value = cleanRoomCode(betaJoinCodeInput.value);
+      if (!betaSeat && betaJoinCodeInput.value.length === 4) betaJoinRoom();
     });
     betaJoinCodeInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') betaJoinRoom();
