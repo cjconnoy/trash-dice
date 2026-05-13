@@ -25,6 +25,18 @@ Beta v1 should focus on a very simple nearby two-player online mode plus PWA pol
 
 The guiding multiplayer target is: someone says "scan this," and both players are playing in under 10 seconds.
 
+This is a hard Beta requirement, not a preference: Trash Dice two-player must be easy to understand, easy to access, and playable from a shared link on normal phones. Every Beta multiplayer, PWA, layout, hosting, or onboarding change must protect the path from "tap link" to "playing with someone." A player should not need an explanation from CJ, an app install, an account, a desktop browser, or prior knowledge of the prototype.
+
+Acceptance expectations for the easy-access requirement:
+
+- On iPhone Safari, including small devices such as iPhone SE, the full game state and primary action must remain visible and tappable.
+- The `2 PLAYER` entry point must be obvious from the first screen.
+- Player 1 must be able to create a room and immediately show a QR code, room code, or share link.
+- Player 2 must be able to join by scanning/opening the room link or by entering the room code into an obvious visible input.
+- The interface must clearly communicate whose turn it is, what to tap next, and whether the other player is connected.
+- The `ROLL!` action panel must never be hidden beneath mobile browser chrome or blocked by badges/debug UI.
+- QA for reviewable Beta builds must include a two-client multiplayer pass and a small-phone mobile layout pass for the join flow and in-game roll state.
+
 Beta v1 multiplayer should be strictly two players on two separate phones, no spectators, no accounts, no lobby browser, no chat, and no server-generated dice rolls. The flow should be:
 
 - Player 1 taps `2 PLAYER`, then `Create Game`.
