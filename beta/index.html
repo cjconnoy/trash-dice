@@ -5141,9 +5141,37 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   gap: 10px;
   width: min(420px, 92vw);
   margin-top: 10px;
+  z-index: 8;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(16px, 4vw, 22px);
+  transform: translateX(-50%);
 }
 
-.start-btn.beta-secondary {
+.beta-actions .start-btn {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 54px;
+  min-height: 54px;
+  padding: 0 14px;
+  border: 2px solid rgba(255,255,255,0.46);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f5c800 0%, #d7ab00 100%);
+  color: #173a21;
+  -webkit-text-stroke: 0;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-shadow: none;
+  animation: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    0 8px 18px rgba(42,48,18,0.24);
+}
+
+.beta-actions .start-btn.beta-secondary {
   background: linear-gradient(180deg, #f6f8f4 0%, #d9e1d9 100%);
   color: #12351f;
   border-color: #f5c800;
@@ -5151,16 +5179,37 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 .beta-room-panel {
   width: min(440px, 92vw);
-  margin-top: 12px;
+  margin: 12px auto 0;
   padding: 14px;
   border: 2px solid rgba(245, 200, 0, 0.72);
   border-radius: 8px;
   background: rgba(12, 28, 18, 0.86);
   box-shadow: 0 10px 30px rgba(0,0,0,0.28);
   color: #f7f4dc;
+  position: relative;
+  z-index: 12;
 }
 
 .beta-room-panel[hidden] {
+  display: none;
+}
+
+.beta-room-panel.has-seat .beta-room-grid {
+  grid-template-columns: 1fr;
+}
+
+.beta-room-panel.has-seat #betaCreateBtn,
+.beta-room-panel.has-seat #betaJoinCode,
+.beta-room-panel.has-seat #betaJoinBtn,
+.beta-room-panel.has-seat:not(.is-host) .beta-room-grid {
+  display: none;
+}
+
+.beta-room-panel:not(.is-host) #betaStartRoomBtn {
+  display: none;
+}
+
+.beta-room-panel.is-host:not(.room-ready) #betaStartRoomBtn {
   display: none;
 }
 
@@ -5224,6 +5273,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   background: #fff;
 }
 
+.beta-qr[hidden],
+.beta-share-link[hidden] {
+  display: none;
+}
+
 .beta-share-link {
   display: block;
   margin-top: 10px;
@@ -5231,6 +5285,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   color: #c9f0d5;
   font: 700 13px Fredoka, system-ui, sans-serif;
   text-align: center;
+}
+
+.beta-room-panel.has-seat .beta-share-link {
+  color: #173a21;
+  background: #d9f57a;
+  border: 2px solid rgba(255,255,255,0.42);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-decoration: none;
 }
 
 .beta-room-status {
@@ -5245,13 +5308,72 @@ body.beta-multiplayer-active .debug-badge {
   display: none;
 }
 
+.start-overlay.beta-room-open {
+  justify-content: flex-start;
+  gap: 10px;
+  overflow-y: auto;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 40px)
+    12px
+    calc(env(safe-area-inset-bottom, 0px) + 22px);
+}
+
+.start-overlay.beta-room-open .title-wrap.big {
+  width: min(220px, 58vw);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.start-overlay.beta-room-open .title-wrap.big .title-logo {
+  width: min(220px, 58vw);
+}
+
+.start-overlay.beta-room-open .start-blob-wrap {
+  width: min(440px, 94vw);
+  height: auto;
+  min-height: 0;
+  display: block;
+}
+
+.start-overlay.beta-room-open .start-blob,
+.start-overlay.beta-room-open .start-lurker-can,
+.start-overlay.beta-room-open .start-dice-row,
+.start-overlay.beta-room-open .beta-actions,
+.start-overlay.beta-room-open .start-tagline {
+  display: none;
+}
+
+.start-overlay.beta-room-open .beta-room-panel {
+  margin-top: 0;
+}
+
 @media (max-width: 520px) {
   .beta-actions,
   .beta-room-grid {
     grid-template-columns: 1fr;
   }
+  .beta-actions {
+    width: min(260px, 76vw);
+    grid-template-columns: 1fr 1fr;
+  }
+  .beta-actions .start-btn {
+    height: 48px;
+    min-height: 48px;
+    font-size: 15px;
+  }
+  .beta-room-panel {
+    width: min(292px, calc(100vw - 32px));
+    padding: 12px;
+  }
   .beta-room-code {
-    font-size: 36px;
+    font-size: 34px;
+  }
+  .beta-qr {
+    width: 154px;
+    height: 154px;
+  }
+  .start-overlay.beta-room-open {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 34px);
   }
 }
 </style>
@@ -6217,6 +6339,7 @@ body.beta-multiplayer-active .debug-badge {
   const betaQr = document.getElementById('betaQr');
   const betaShareLink = document.getElementById('betaShareLink');
   const betaRoomStatus = document.getElementById('betaRoomStatus');
+  const startOverlayEl = document.getElementById('startOverlay');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -6258,8 +6381,9 @@ body.beta-multiplayer-active .debug-badge {
     const hasRoom = betaRoomCode.length === 4;
     if (betaShareLink) {
       const href = hasRoom ? betaJoinUrl(betaRoomCode) : '';
-      betaShareLink.textContent = href;
+      betaShareLink.textContent = href ? 'Open join link' : '';
       betaShareLink.href = href || '#';
+      betaShareLink.title = href;
       betaShareLink.hidden = !href;
     }
     if (betaQr) {
@@ -6273,6 +6397,11 @@ body.beta-multiplayer-active .debug-badge {
     const p1Filled = snapshot ? !!snapshot.seats.p1 : betaSeat === 'p1';
     const p2Filled = snapshot ? !!snapshot.seats.p2 : betaSeat === 'p2';
     betaRoomReady = !!(p1Filled && p2Filled);
+    betaRoomPanel.classList.toggle('has-room', hasRoom);
+    betaRoomPanel.classList.toggle('has-seat', !!betaSeat);
+    betaRoomPanel.classList.toggle('is-host', betaSeat === 'p1');
+    betaRoomPanel.classList.toggle('is-guest', betaSeat === 'p2');
+    betaRoomPanel.classList.toggle('room-ready', betaRoomReady);
     if (betaStartRoomBtn) betaStartRoomBtn.disabled = !(betaSeat === 'p1' && betaRoomReady);
     if (betaCreateBtn) betaCreateBtn.disabled = !!betaSeat;
     if (betaJoinBtn) betaJoinBtn.disabled = !!betaSeat;
@@ -6353,6 +6482,7 @@ body.beta-multiplayer-active .debug-badge {
 
   function betaShowRoomPanel() {
     if (betaRoomPanel) betaRoomPanel.hidden = false;
+    if (startOverlayEl) startOverlayEl.classList.add('beta-room-open');
     setBetaRoomUi();
     if (betaRoomCode && !betaSeat) {
       betaConnect(() => betaSend({ type: 'join', roomCode: betaRoomCode }));
