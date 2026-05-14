@@ -24,6 +24,7 @@ Future handoffs must explicitly include this rule and point to:
 - `ALPHA_COMPLETE_LINKS.md`
 - `releases/alpha-complete/README.md`
 - `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
+- `GAME2_RESOURCE_SUPPORT_PACKET.md`
 - `CLAUDE.md`
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
@@ -35,6 +36,12 @@ Game 2 uses Codex as CJ's single front door, game maker, CTO/integrator, release
 Claude Code can help with read-only exploration, docs drift, asset manifests, tests, narrow helper fixes, and second-pass review. Claude must not push, deploy, Slack, alter public links, touch secrets, touch production infrastructure, touch Alpha Complete, or claim readiness.
 
 Codex may proactively use Claude Code as bounded Game 2 support when it helps throughput, coverage, QA, inventories, docs drift, test scaffolding, or second-pass review. CJ has explicitly authorized this as part of the CTO autonomy mandate; CJ should receive executive-facing recaps, not AI labor coordination chores.
+
+## Resource-Aware Game 2 Support
+
+Game 2 chat capacity should be treated as scarce high-context creative/product time. Studio Ops should absorb routine checks, visual QA evidence, link verification, docs drift, Claude worker packets, stale context compression, and paste-ready support packets whenever possible.
+
+Use `GAME2_RESOURCE_SUPPORT_PACKET.md` as the short operating packet for how Ops supports Game 2 without making CJ spend game-chat capacity on technical mechanics.
 
 ## Mobile Visual QA Gate
 

@@ -15,6 +15,7 @@ Default rules:
 - Do not modify scheduled task cadence or Ops monitors.
 - Preserve the Beta v1 direction: nearby online QR/code two-player on separate phones, PWA first, tap link to playing with someone in under 10 seconds.
 - Codex may route you proactively for bounded support work under the CTO autonomy mandate; CJ does not coordinate your work.
+- Game 2 uses `GAME2_RESOURCE_SUPPORT_PACKET.md` to conserve game-chat capacity. Your support work should reduce Codex/CJ context load, not create new coordination work.
 - Mobile visual QA now uses `odg-pipeline\test-mobile-visual-qc.ps1`. Current Game 2 truth from 2026-05-14: win/loss terminal states pass at 5s and 12s, but fail at 20s because game-over auto-resets around 15s. Treat that as a hardening target unless Codex explicitly scopes something else.
 - Report changed files, tests run, risks, assumptions, and anything Codex must review.
 - Leave final verification, commits, pushes, deploys, public links, and CJ-facing status to Codex.
