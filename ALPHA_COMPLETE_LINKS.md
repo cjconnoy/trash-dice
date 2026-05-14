@@ -2,14 +2,18 @@
 
 Alpha Complete is locked to approved build `dc5a995`.
 
-Primary share links:
+Current working primary share links:
 
-- Desktop full: https://tel-sight-rice-extent.trycloudflare.com/alpha-complete/
-- Mobile full: https://tel-sight-rice-extent.trycloudflare.com/alpha-complete/
+- Desktop full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
+- Mobile full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
 
-Already shared evaluator links, preserved by the local public server:
+Retired legacy quick-tunnel links:
 
 - Desktop full: https://tel-sight-rice-extent.trycloudflare.com/index.html?v=dc5a995
 - Mobile full: https://tel-sight-rice-extent.trycloudflare.com/index.html?v=dc5a995
+- Desktop alias: https://tel-sight-rice-extent.trycloudflare.com/alpha-complete/
+- Mobile alias: https://tel-sight-rice-extent.trycloudflare.com/alpha-complete/
+
+The legacy `trycloudflare.com` hostname failed on 2026-05-14 after the local quick tunnel died. Use the custom-domain link above for evaluator sharing. The custom-domain copy is byte-locked to the frozen build and must not be reused for Beta.
 
 The frozen game files live in `releases/alpha-complete/`. Future builds must use a new release folder or a new public alias and must not replace these files.

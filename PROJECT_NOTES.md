@@ -6,10 +6,17 @@ ALPHA COMPLETE is frozen forever at approved build `dc5a995`.
 
 Do not edit, overwrite, rebalance, patch, rename, repurpose, or replace the Alpha Complete build files. Future development must happen under a new build name, new release folder, and new share URL.
 
-The exact already-shared Alpha Complete evaluator link must remain reserved for the frozen Alpha Complete build:
+The current working Alpha Complete evaluator link is:
+
+- Desktop full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
+- Mobile full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
+
+The old already-shared quick-tunnel link is retired after its local `trycloudflare.com` tunnel died on 2026-05-14:
 
 - Desktop full: https://tel-sight-rice-extent.trycloudflare.com/index.html?v=dc5a995
 - Mobile full: https://tel-sight-rice-extent.trycloudflare.com/index.html?v=dc5a995
+
+Do not try to reuse or revive that quick-tunnel hostname as the source of truth. The custom-domain copy is byte-locked to the frozen Alpha Complete build and must not be reused for Beta.
 
 Future handoffs must explicitly include this rule and point to:
 
