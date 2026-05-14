@@ -8,8 +8,8 @@ Do not edit, overwrite, rebalance, patch, rename, repurpose, or replace the Alph
 
 The current working Alpha Complete evaluator link is:
 
-- Desktop full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
-- Mobile full: https://playonedaygames.com/private/trash-dice-alpha-complete-dc5a995/
+- Desktop full: https://playonedaygames.com/trash-dice/alpha-complete/
+- Mobile full: https://playonedaygames.com/trash-dice/alpha-complete/
 
 The old already-shared quick-tunnel link is retired after its local `trycloudflare.com` tunnel died on 2026-05-14:
 
@@ -56,3 +56,4 @@ The server should sync the shared room state and reject impossible moves/desyncs
 Do not pivot Beta v1 toward local same-device pass-and-play unless CJ explicitly changes direction. The intended table flow is each player using their own phone.
 
 The app direction for Beta v1 is PWA first: install-to-home-screen polish, app icon, standalone display, and mobile-friendly launch behavior. Players must not need to install the app to play; the share link should work immediately in a browser, with installation as an optional convenience.
+
