@@ -70,6 +70,29 @@ function roomSnapshot(room) {
   };
 }
 
+function firstRollSnapshot(room) {
+  const firstRoll = room.firstRoll || { round: 0, values: {} };
+  return {
+    type: 'first-roll-state',
+    roomCode: room.code,
+    round: firstRoll.round || 0,
+    values: {
+      p1: firstRoll.values && firstRoll.values.p1 || null,
+      p2: firstRoll.values && firstRoll.values.p2 || null
+    }
+  };
+}
+
+function beginFirstRoll(room) {
+  room.started = false;
+  room.firstRoll = {
+    active: true,
+    round: 1,
+    values: {},
+    winner: null
+  };
+}
+
 function encodeWs(payload) {
   const body = Buffer.from(JSON.stringify(payload));
   if (body.length < 126) {
@@ -111,6 +134,7 @@ function detachClient(client) {
     return;
   }
   room.started = false;
+  room.firstRoll = null;
   broadcast(room, roomSnapshot(room));
 }
 
@@ -136,6 +160,7 @@ function handleWsMessage(client, payload) {
       code,
       createdAt: Date.now(),
       started: false,
+      firstRoll: null,
       clients: {}
     };
     rooms.set(code, room);
@@ -177,8 +202,55 @@ function handleWsMessage(client, payload) {
       sendWs(client, { type: 'error', message: 'Waiting for Player 2' });
       return;
     }
+    beginFirstRoll(room);
+    broadcast(room, { type: 'start', roomCode: room.code, firstRollRound: room.firstRoll.round });
+    broadcast(room, firstRollSnapshot(room));
+    broadcast(room, roomSnapshot(room));
+    return;
+  }
+
+  if (message.type === 'first-roll') {
+    const room = client.room;
+    const firstRoll = room.firstRoll;
+    const value = Math.max(1, Math.min(6, Math.floor(Number(message.value) || 0)));
+    const round = Math.floor(Number(message.round) || 0);
+    if (!firstRoll || !firstRoll.active || room.started || firstRoll.round !== round || value < 1 || value > 6) {
+      sendWs(client, { type: 'error', message: 'Opening roll rejected' });
+      return;
+    }
+    if (firstRoll.values[client.seat]) {
+      sendWs(client, firstRollSnapshot(room));
+      return;
+    }
+    firstRoll.values[client.seat] = value;
+    broadcast(room, firstRollSnapshot(room));
+    if (!firstRoll.values.p1 || !firstRoll.values.p2) return;
+
+    const values = { p1: firstRoll.values.p1, p2: firstRoll.values.p2 };
+    if (values.p1 === values.p2) {
+      firstRoll.round += 1;
+      firstRoll.values = {};
+      broadcast(room, {
+        type: 'first-roll-tie',
+        roomCode: room.code,
+        round,
+        nextRound: firstRoll.round,
+        values
+      });
+      return;
+    }
+
+    const winner = values.p1 > values.p2 ? 'p1' : 'p2';
+    firstRoll.active = false;
+    firstRoll.winner = winner;
     room.started = true;
-    broadcast(room, { type: 'start', roomCode: room.code });
+    broadcast(room, {
+      type: 'first-roll-result',
+      roomCode: room.code,
+      round,
+      values,
+      winner
+    });
     broadcast(room, roomSnapshot(room));
     return;
   }

@@ -6069,6 +6069,14 @@ body.beta-multiplayer-active .debug-badge {
   let betaMultiplayerActive = false;
   let betaApplyingRemoteRoll = false;
   let betaJoinPending = false;
+  let betaFirstRoll = {
+    active: false,
+    settling: false,
+    round: 0,
+    sentRound: 0,
+    values: { p1: null, p2: null },
+    winner: null
+  };
   let p0Autoplay = false;
   let p0ReviewMode = false;
   let p0Timer = null;
@@ -6674,10 +6682,24 @@ body.beta-multiplayer-active .debug-badge {
       return;
     }
     if (message.type === 'start') {
+      const firstRollRound = clamp(Math.floor(Number(message.firstRollRound) || 1), 1, 999);
+      betaPrimeFirstRoll(firstRollRound);
       betaMultiplayerActive = true;
       document.body.classList.add('beta-multiplayer-active');
       startGameFromOverlay(true);
-      runLater(() => syncBetaTurnState('start'), 700);
+      runLater(() => betaBeginFirstRoll(firstRollRound), 700);
+      return;
+    }
+    if (message.type === 'first-roll-state') {
+      betaApplyFirstRollState(message);
+      return;
+    }
+    if (message.type === 'first-roll-tie') {
+      betaHandleFirstRollTie(message);
+      return;
+    }
+    if (message.type === 'first-roll-result') {
+      betaFinishFirstRoll(message);
       return;
     }
     if (message.type === 'roll') {
@@ -6722,12 +6744,129 @@ body.beta-multiplayer-active .debug-badge {
     betaSend({ type: 'start' });
   }
 
+  function betaNormalizeFirstRollValue(value) {
+    const number = Math.floor(Number(value) || 0);
+    return number >= 1 && number <= 6 ? number : null;
+  }
+
+  function betaNormalizeFirstRollValues(values = {}) {
+    return {
+      p1: betaNormalizeFirstRollValue(values.p1),
+      p2: betaNormalizeFirstRollValue(values.p2)
+    };
+  }
+
+  function betaPrimeFirstRoll(round = 1) {
+    betaFirstRoll = {
+      active: true,
+      settling: false,
+      round,
+      sentRound: betaFirstRoll.round === round ? betaFirstRoll.sentRound : 0,
+      values: { p1: null, p2: null },
+      winner: null
+    };
+  }
+
+  function betaRenderFirstRoll(label = '') {
+    const values = betaNormalizeFirstRollValues(betaFirstRoll.values);
+    const fallback = betaFirstRoll.winner
+      ? `${PLAYER_NAME[betaFirstRoll.winner].toUpperCase()} STARTS`
+      : 'ROLL FOR FIRST';
+    p1Inventory.classList.add('has-status');
+    p2Inventory.classList.add('has-status');
+    p1StatusBar.classList.add('active');
+    p2StatusBar.classList.add('active');
+    p1StatusBar.classList.remove('bench-praise', 'payout-praise');
+    p2StatusBar.classList.remove('bench-praise', 'payout-praise');
+    if (p1StatusText) p1StatusText.textContent = values.p1 ? `YELLOW ${values.p1}` : 'YELLOW READY';
+    if (p2StatusText) p2StatusText.textContent = values.p2 ? `GREEN ${values.p2}` : 'GREEN READY';
+    [['p1', values.p1], ['p2', values.p2]].forEach(([player, value]) => {
+      if (value) {
+        const stage = getDieStage(player);
+        if (stage) stage.classList.add('active');
+        renderDie(value, player, playerScoreColor(player));
+        getDie(player).classList.add('roll-resolved');
+      } else {
+        clearDie(player);
+      }
+    });
+    rollBtn.disabled = true;
+    setMsg(label || fallback);
+    syncHeroIdleState();
+  }
+
+  function betaBeginFirstRoll(round = 1, label = 'ROLL FOR FIRST') {
+    const safeRound = clamp(Math.floor(Number(round) || 1), 1, 999);
+    if (!betaFirstRoll.active || betaFirstRoll.round !== safeRound) {
+      betaPrimeFirstRoll(safeRound);
+    }
+    betaRenderFirstRoll(label);
+    const delay = betaSeat === 'p1' ? 440 : 760;
+    runLater(() => betaSubmitFirstRoll(safeRound), delay);
+  }
+
+  function betaSubmitFirstRoll(round) {
+    if (!betaMultiplayerActive || !betaFirstRoll.active || betaFirstRoll.round !== round || betaFirstRoll.sentRound === round || !betaSeat) return;
+    const value = randomDieFace();
+    betaFirstRoll.sentRound = round;
+    betaFirstRoll.values = { ...betaFirstRoll.values, [betaSeat]: value };
+    betaRenderFirstRoll(`${PLAYER_NAME[betaSeat].toUpperCase()} ROLLED ${value}`);
+    betaSend({ type: 'first-roll', round, value });
+  }
+
+  function betaApplyFirstRollState(message) {
+    const round = clamp(Math.floor(Number(message.round) || betaFirstRoll.round || 1), 1, 999);
+    if (!betaFirstRoll.active || betaFirstRoll.round !== round) betaPrimeFirstRoll(round);
+    betaFirstRoll.values = betaNormalizeFirstRollValues(message.values || {});
+    betaRenderFirstRoll('ROLL FOR FIRST');
+  }
+
+  function betaHandleFirstRollTie(message) {
+    const round = clamp(Math.floor(Number(message.round) || betaFirstRoll.round || 1), 1, 999);
+    const nextRound = clamp(Math.floor(Number(message.nextRound) || (round + 1)), 1, 999);
+    betaFirstRoll.active = true;
+    betaFirstRoll.settling = false;
+    betaFirstRoll.round = round;
+    betaFirstRoll.values = betaNormalizeFirstRollValues(message.values || {});
+    betaFirstRoll.winner = null;
+    const p1Value = betaFirstRoll.values.p1 || '-';
+    const p2Value = betaFirstRoll.values.p2 || '-';
+    betaRenderFirstRoll(`TIE ${p1Value}-${p2Value}. ROLL AGAIN`);
+    runLater(() => betaBeginFirstRoll(nextRound, 'TIE - ROLL AGAIN'), 900);
+  }
+
+  function betaFinishFirstRoll(message) {
+    const winner = message.winner === 'p2' ? 'p2' : 'p1';
+    betaFirstRoll.active = false;
+    betaFirstRoll.settling = true;
+    betaFirstRoll.round = clamp(Math.floor(Number(message.round) || betaFirstRoll.round || 1), 1, 999);
+    betaFirstRoll.values = betaNormalizeFirstRollValues(message.values || betaFirstRoll.values);
+    betaFirstRoll.winner = winner;
+    current = winner;
+    busy = false;
+    betaRenderFirstRoll(`${PLAYER_NAME[winner].toUpperCase()} STARTS`);
+    runLater(() => {
+      if (betaFirstRoll.winner !== winner || betaFirstRoll.active) return;
+      betaFirstRoll.settling = false;
+      current = winner;
+      busy = false;
+      clearDie(null);
+      syncUI();
+      syncBetaTurnState('first-roll-result');
+      setMsg(`${PLAYER_NAME[winner].toUpperCase()} STARTS`);
+    }, 850);
+  }
+
   function betaIsMyTurn() {
     return betaMultiplayerActive && betaSeat === current;
   }
 
   function syncBetaTurnState(reason = '') {
     if (!betaMultiplayerActive) return;
+    if (betaFirstRoll.active || betaFirstRoll.settling) {
+      betaRenderFirstRoll();
+      return;
+    }
     const mine = betaIsMyTurn();
     rollBtn.disabled = !mine || busy || isInlineGameOverActive();
     setMsg(mine ? `${PLAYER_NAME[current].toUpperCase()} ROLL` : `WAITING FOR ${PLAYER_NAME[current].toUpperCase()}`);
@@ -6736,14 +6875,14 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function betaRequestRoll() {
-    if (!betaMultiplayerActive || !betaIsMyTurn() || busy) return;
+    if (!betaMultiplayerActive || betaFirstRoll.active || betaFirstRoll.settling || !betaIsMyTurn() || busy) return;
     const value = randomDieFace();
     rollBtn.disabled = true;
     betaSend({ type: 'roll', value });
   }
 
   function betaApplyRoll(seat, value) {
-    if (!betaMultiplayerActive || seat !== current || busy) return;
+    if (!betaMultiplayerActive || betaFirstRoll.active || betaFirstRoll.settling || seat !== current || busy) return;
     betaApplyingRemoteRoll = true;
     forcedRolls = [clamp(Math.floor(Number(value) || 1), 1, 6)];
     doRoll();
@@ -9128,10 +9267,15 @@ body.beta-multiplayer-active .debug-badge {
       current = 'p1';
       clearDie(null);
       syncUI();
-      setMsg('YELLOW PLAYER STARTS');
       if (betaMultiplayerActive) {
-        syncBetaTurnState('init');
+        if (betaFirstRoll.active || betaFirstRoll.settling) {
+          betaRenderFirstRoll('ROLL FOR FIRST');
+        } else {
+          setMsg('YELLOW PLAYER STARTS');
+          syncBetaTurnState('init');
+        }
       } else {
+        setMsg('YELLOW PLAYER STARTS');
         rollBtn.disabled = false;
         syncHeroIdleState();
         scheduleP0Autoplay(1200);
@@ -9160,6 +9304,7 @@ body.beta-multiplayer-active .debug-badge {
     clearInventoryMischief();
     if (isInlineGameOverActive()) return;
     if (busy) return;
+    if (betaMultiplayerActive && (betaFirstRoll.active || betaFirstRoll.settling)) return;
     if (betaMultiplayerActive && !betaApplyingRemoteRoll) return;
     if (current === 'p1' && rollBtn.disabled && !betaApplyingRemoteRoll) return; // only block human; green rolls freely
     const humanGestureRoll = current === 'p1';
@@ -10165,7 +10310,15 @@ body.beta-multiplayer-active .debug-badge {
           seat: betaSeat,
           connected: betaConnected,
           ready: betaRoomReady,
-          multiplayerActive: betaMultiplayerActive
+          multiplayerActive: betaMultiplayerActive,
+          firstRoll: {
+            active: betaFirstRoll.active,
+            settling: betaFirstRoll.settling,
+            round: betaFirstRoll.round,
+            sentRound: betaFirstRoll.sentRound,
+            values: { ...betaFirstRoll.values },
+            winner: betaFirstRoll.winner
+          }
         },
         lastProgressionRecovery
       };

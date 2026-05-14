@@ -157,10 +157,49 @@ async function main() {
   await waitEval(player1, `window.TrashDiceDebug.state().gameStarted && window.TrashDiceDebug.state().beta.multiplayerActive`, 'player 1 started');
   await waitEval(player2, `window.TrashDiceDebug.state().gameStarted && window.TrashDiceDebug.state().beta.multiplayerActive`, 'player 2 started');
 
-  await evalValue(player1, `document.getElementById('rollBtn').click(); true`);
-  await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 1 sees green turn');
-  await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 2 sees green turn');
-  const player2RollLayout = await evalValue(player2, `
+  await waitEval(player1, `
+    (() => {
+      const state = window.TrashDiceDebug.state();
+      return state.beta.firstRoll &&
+        !state.beta.firstRoll.active &&
+        !state.beta.firstRoll.settling &&
+        !!state.beta.firstRoll.winner &&
+        state.current === state.beta.firstRoll.winner;
+    })()
+  `, 'player 1 first roll resolved', 20000);
+  await waitEval(player2, `
+    (() => {
+      const state = window.TrashDiceDebug.state();
+      return state.beta.firstRoll &&
+        !state.beta.firstRoll.active &&
+        !state.beta.firstRoll.settling &&
+        !!state.beta.firstRoll.winner &&
+        state.current === state.beta.firstRoll.winner;
+    })()
+  `, 'player 2 first roll resolved', 20000);
+  const firstRoll = await evalValue(player1, `window.TrashDiceDebug.state().beta.firstRoll`);
+  if (!firstRoll.values || !firstRoll.values.p1 || !firstRoll.values.p2 || firstRoll.values.p1 === firstRoll.values.p2) {
+    throw new Error(`opening first roll did not resolve cleanly ${JSON.stringify(firstRoll)}`);
+  }
+  const expectedStarter = firstRoll.values.p1 > firstRoll.values.p2 ? 'p1' : 'p2';
+  if (firstRoll.winner !== expectedStarter) {
+    throw new Error(`opening first roll picked ${firstRoll.winner}, expected ${expectedStarter}: ${JSON.stringify(firstRoll)}`);
+  }
+
+  async function waitForRollReady(pageRef, player, label) {
+    await waitEval(pageRef, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        return state.current === '${player}' &&
+          !state.busy &&
+          !state.beta.firstRoll.active &&
+          !state.beta.firstRoll.settling &&
+          !document.getElementById('rollBtn').disabled;
+      })()
+    `, label, 12000);
+  }
+  async function readPlayer2RollLayout() {
+    return evalValue(player2, `
     (() => {
       const roll = document.querySelector('.roll-panel');
       const badge = document.querySelector('.milestone-badge');
@@ -177,17 +216,37 @@ async function main() {
       };
     })()
   `);
+  }
+
+  let player2RollLayout;
+  if (firstRoll.winner === 'p2') {
+    await waitForRollReady(player2, 'p2', 'green starter ready');
+    player2RollLayout = await readPlayer2RollLayout();
+    await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
+    await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p1'`, 'player 1 sees yellow turn');
+    await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p1'`, 'player 2 sees yellow turn');
+    await waitForRollReady(player1, 'p1', 'yellow second ready');
+    await evalValue(player1, `document.getElementById('rollBtn').click(); true`);
+  } else {
+    await waitForRollReady(player1, 'p1', 'yellow starter ready');
+    await evalValue(player1, `document.getElementById('rollBtn').click(); true`);
+    await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 1 sees green turn');
+    await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 2 sees green turn');
+    await waitForRollReady(player2, 'p2', 'green second ready');
+    player2RollLayout = await readPlayer2RollLayout();
+    await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
+  }
   if (!player2RollLayout || player2RollLayout.bottomClearance < 64 || player2RollLayout.badgeOverlapsRoll) {
     throw new Error(`player 2 SE roll layout unsafe ${JSON.stringify(player2RollLayout)}`);
   }
 
-  await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
   await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 1 sees second roll');
   await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 2 sees second roll');
 
   const out = {
     ok: true,
     roomCode,
+    firstRoll,
     player2RollLayout,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
     player2: await evalValue(player2, `window.TrashDiceDebug.state().beta`)
