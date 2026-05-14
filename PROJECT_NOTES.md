@@ -34,6 +34,22 @@ Game 2 uses Codex as CJ's single front door, game maker, CTO/integrator, release
 
 Claude Code can help with read-only exploration, docs drift, asset manifests, tests, narrow helper fixes, and second-pass review. Claude must not push, deploy, Slack, alter public links, touch secrets, touch production infrastructure, touch Alpha Complete, or claim readiness.
 
+Codex may proactively use Claude Code as bounded Game 2 support when it helps throughput, coverage, QA, inventories, docs drift, test scaffolding, or second-pass review. CJ has explicitly authorized this as part of the CTO autonomy mandate; CJ should receive executive-facing recaps, not AI labor coordination chores.
+
+## Mobile Visual QA Gate
+
+Studio Ops installed `odg-pipeline\test-mobile-visual-qc.ps1` as the reusable mobile visual QA lane for Game 2 and future games.
+
+The gate launches a mobile-sized browser, forces Trash Dice win/loss terminal states through the debug API, captures screenshots, writes a manifest under `.odg-studio-state\mobile-visual-qc`, and fails if debug chrome bleeds through, Play Again is missing or off-screen, runtime errors occur, or the terminal/game-over state resets before the required wait window.
+
+Current Game 2 finding from 2026-05-14:
+
+- 5s win/loss terminal screenshots: GREEN
+- 12s win/loss terminal screenshots: GREEN
+- 20s win/loss terminal screenshots: RED because the game-over state auto-resets around 15s
+
+Game 2 must not claim long-window mobile terminal stability until that 20s reset behavior is intentionally fixed or product-approved. The next Game 2 technical focus should include making terminal/game-over persistence match the review and release promise.
+
 ## Trash Dice Beta v1 Direction
 
 Beta v1 should focus on a very simple nearby two-player online mode plus PWA polish. Nearby online QR/code two-player is the primary Beta multiplayer target, not pass-and-play.

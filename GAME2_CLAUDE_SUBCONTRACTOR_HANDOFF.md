@@ -38,6 +38,8 @@ Claude may help with:
 - focused bug reproduction notes
 - non-active-file refactors explicitly assigned by Codex
 
+Codex may proactively use Claude Code as bounded Game 2 support when it helps throughput, coverage, QA, inventories, docs drift, test scaffolding, or second-pass review. CJ has explicitly authorized this as part of the CTO autonomy mandate. CJ should receive executive-facing recaps, not AI labor coordination chores.
+
 ## Hard Boundaries
 
 Claude must not:
@@ -78,6 +80,20 @@ Trash Dice Beta v1 is focused on nearby online two-player:
 
 Do not pivot toward pass-and-play unless CJ explicitly changes product direction through Codex.
 
+## Mobile Visual QA Update
+
+Studio Ops installed `odg-pipeline\test-mobile-visual-qc.ps1` as the reusable mobile visual QA lane for Game 2 and future games.
+
+The gate launches a mobile-sized browser, forces Trash Dice win/loss terminal states through the debug API, captures screenshots, writes a manifest under `.odg-studio-state\mobile-visual-qc`, and fails if debug chrome bleeds through, Play Again is missing or off-screen, runtime errors occur, or the terminal/game-over state resets before the required wait window.
+
+Current finding from 2026-05-14:
+
+- 5s win/loss terminal screenshots: GREEN
+- 12s win/loss terminal screenshots: GREEN
+- 20s win/loss terminal screenshots: RED because the game-over state auto-resets around 15s
+
+Game 2 must not claim long-window mobile terminal stability until that 20s reset behavior is intentionally fixed or product-approved. Treat the 20s result as a Game 2 hardening target, not a CJ testing chore.
+
 ## How Codex Game 2 Can Use Claude
 
 For read-only checks from the Studio Ops router:
@@ -112,5 +128,4 @@ Codex must review the diff, run relevant tests, and decide whether to integrate.
 
 Read `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`, `CLAUDE.md`, and `PROJECT_NOTES.md`.
 
-Use Codex as CJ's single Game 2 front door. Codex may subcontract Claude Code for bounded background tasks using the ODG router in `odg-pipeline\invoke-claude-worker.ps1`, but CJ must not manage Claude, worktrees, diffs, or AI labor. Keep Codex as game maker, CTO/integrator, release owner, and CJ-facing truth. Claude is only a bounded worker for read-only checks, docs drift, asset inventories, test scaffolding, narrow script fixes, and second-pass review. Do not let Claude push, deploy, Slack, alter public links, touch secrets, touch production infra, or touch Alpha Complete. Preserve Beta v1 direction: nearby online QR/code two-player on separate phones, PWA first, playing in under 10 seconds.
-
+Use Codex as CJ's single Game 2 front door. Codex may subcontract Claude Code for bounded background tasks using the ODG router in `odg-pipeline\invoke-claude-worker.ps1`, but CJ must not manage Claude, worktrees, diffs, or AI labor. This delegation can be proactive under the CTO autonomy mandate when it makes Game 2 or Studio Ops better. Keep Codex as game maker, CTO/integrator, release owner, and CJ-facing truth. Claude is only a bounded worker for read-only checks, docs drift, asset inventories, test scaffolding, narrow script fixes, and second-pass review. Do not let Claude push, deploy, Slack, alter public links, touch secrets, touch production infra, or touch Alpha Complete. Preserve Beta v1 direction: nearby online QR/code two-player on separate phones, PWA first, playing in under 10 seconds. Also inherit the new mobile visual QA gate: `test-mobile-visual-qc.ps1` is green at 5s/12s for current Trash Dice win/loss terminal states and red at 20s because game-over auto-resets around 15s; fix or explicitly product-approve that before claiming long-window terminal stability.
