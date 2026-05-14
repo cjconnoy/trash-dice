@@ -23,8 +23,16 @@ Future handoffs must explicitly include this rule and point to:
 - `PROJECT_NOTES.md`
 - `ALPHA_COMPLETE_LINKS.md`
 - `releases/alpha-complete/README.md`
+- `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
+- `CLAUDE.md`
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
+
+## AI Worker Routing
+
+Game 2 uses Codex as CJ's single front door, game maker, CTO/integrator, release owner, and CJ-facing source of truth. Codex may subcontract Claude Code for bounded background work using `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md` and `CLAUDE.md`, but CJ does not manage Claude, worktrees, diffs, or AI labor handoffs.
+
+Claude Code can help with read-only exploration, docs drift, asset manifests, tests, narrow helper fixes, and second-pass review. Claude must not push, deploy, Slack, alter public links, touch secrets, touch production infrastructure, touch Alpha Complete, or claim readiness.
 
 ## Trash Dice Beta v1 Direction
 

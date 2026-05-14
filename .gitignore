@@ -25,3 +25,4 @@ stay-sharp-last-response.txt
 cloudflared.exe
 *.out.log
 *.err.log
+.claude/worktrees/
