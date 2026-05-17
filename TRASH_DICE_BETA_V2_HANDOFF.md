@@ -9,6 +9,7 @@ This handoff starts the new chat `Trash Dice Beta (v2)`. It inherits the canoniz
 - `releases/alpha-complete/README.md`
 - `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
 - `GAME2_RESOURCE_SUPPORT_PACKET.md`
+- `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
 - `CLAUDE.md`
 
 ## Current Repo State
@@ -29,6 +30,10 @@ Current pushed HEAD after Beta v2 public-link work:
 
 `f04ef4a Record Beta v2 Slack post`
 
+Current pushed HEAD after nearby two-player ship-quality hardening:
+
+`b778d64 Record nearby two-player ship hardening`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -39,11 +44,11 @@ Origin:
 
 Origin `master` matches local HEAD as of this handoff.
 
-The latest committed Beta gameplay/code change is:
+The latest committed Beta gameplay/room hardening code change is:
 
-`b2414fb Add Beta first-player roll`
+`db988dc Harden nearby two-player ship flow`
 
-There are later documentation/protocol commits after `b2414fb`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `b2414fb` Beta state.
+There are later documentation/protocol commits after `db988dc`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `db988dc` Beta state.
 
 Current dirty worktree items at handoff:
 
@@ -102,15 +107,15 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
 
 Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
 
@@ -143,6 +148,10 @@ Latest public Slack post:
 `https://onedaygames.slack.com/archives/C0AU29TPER4/p1779033726867529`
 
 That Slack thread/message was updated after the nearby two-player hardening pass.
+
+Enterprise Beta quality protocol:
+
+`BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
 
 The previous Beta review links were:
 
@@ -322,6 +331,18 @@ Current helper:
 
 ```powershell
 .\qa-beta-public-build.ps1 -PublicUrl "https://playonedaygames.com/trash-dice/beta-v2/" -RunMultiplayerQa
+```
+
+Enterprise release gate:
+
+```powershell
+.\qa-beta-enterprise.ps1
+```
+
+Local enterprise gate while iterating:
+
+```powershell
+.\qa-beta-enterprise.ps1 -SkipPublic
 ```
 
 13. Verify Alpha Complete still works and byte-matches the frozen SHA.

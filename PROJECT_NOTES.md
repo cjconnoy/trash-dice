@@ -25,6 +25,7 @@ Future handoffs must explicitly include this rule and point to:
 - `releases/alpha-complete/README.md`
 - `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
 - `GAME2_RESOURCE_SUPPORT_PACKET.md`
+- `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
 - `CLAUDE.md`
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
@@ -42,6 +43,24 @@ Codex may proactively use Claude Code as bounded Game 2 support when it helps th
 Game 2 chat capacity should be treated as scarce high-context creative/product time. Studio Ops should absorb routine checks, visual QA evidence, link verification, docs drift, Claude worker packets, stale context compression, and paste-ready support packets whenever possible.
 
 Use `GAME2_RESOURCE_SUPPORT_PACKET.md` as the short operating packet for how Ops supports Game 2 without making CJ spend game-chat capacity on technical mechanics.
+
+## Enterprise Beta Quality Bar
+
+Trash Dice Beta v2 is now partner-facing commercial infrastructure. Treat Big Discoveries interest as a real platform-quality escalation: Codex owns release readiness, QA evidence, public-link safety, Worker health, docs drift, and regression capture so CJ can stay creative.
+
+The canonical protocol is `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`. Before any partner-facing Beta release or Slack announcement, run the enterprise gate:
+
+```powershell
+.\qa-beta-enterprise.ps1
+```
+
+During implementation, use the local gate:
+
+```powershell
+.\qa-beta-enterprise.ps1 -SkipPublic
+```
+
+Auto-fixes are allowed only when bounded and validated. The current safe auto-fix is Beta mirror repair through `.\qa-beta-enterprise.ps1 -AutoFix`; future auto-fixes must not touch Alpha Complete, secrets, DNS, Slack, partner links, or game-rule logic without explicit validation.
 
 ## Mobile Visual QA Gate
 
@@ -61,8 +80,8 @@ Game 2 must not claim long-window mobile terminal stability until that 20s reset
 
 Current Beta v2 review path as of 2026-05-17:
 
-- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc
-- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc
+- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64
+- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64
 
 The stable custom-domain path serves the actual Beta game bytes, not the generic One Day Games shell. The public room backend is the Cloudflare Worker `trash-dice-beta-room` at `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`. Public two-client QA passed on 2026-05-17, including host invite controls on a 320px viewport, create/join/start, first-player roll, gameplay rolls, Player 2 small-phone roll-panel clearance, and protocol checks for guest starts, out-of-turn rolls, and duplicate-turn rolls. Do not share a future Beta build until `qa-beta-public-build.ps1 -RunMultiplayerQa` passes for the exact public URL and Alpha Complete still byte-matches its frozen SHA.
 
