@@ -23,7 +23,7 @@ Branch:
 
 Current HEAD at handoff:
 
-`28e978e Add Game 2 resource support packet`
+`4b3abd9 Add Trash Dice Beta v2 handoff`
 
 Origin:
 
@@ -337,6 +337,81 @@ Claude must not:
 - claim readiness
 
 Codex must review, accept/reject, test, commit, push, and communicate.
+
+## Claude Speed-Lane For Beta Iteration
+
+CJ is creative. Codex is the aggressive, proactive Tech Lead. Codex owns implementation, architecture, QA, review links, commits, docs drift, release risk, and continuity. CJ should not have to manage routine technical mechanics or AI labor.
+
+Claude/Claude Code should be used heavily as a sidecar to keep iteration fast, but not as the main driver. Codex should keep moving locally while Claude handles bounded parallel tasks.
+
+Use Claude for work that can run in parallel without blocking Codex's next action:
+
+- codebase reconnaissance
+- bug reproduction notes
+- CSS/layout audits
+- rules-engine sanity checks
+- test gap discovery
+- copy/docs/handoff drafting
+- alternate implementation sketches
+- QA checklists
+- risk review before commits
+- "what did we miss?" passes
+
+Do not wait on Claude for immediate blocking work unless the task is genuinely independent and likely to return fast. Codex should not delegate the next critical-path edit and sit idle.
+
+Every Claude task should be concrete and bounded:
+
+```text
+You are a sidecar engineer on Trash Dice Beta. CJ is creative; Codex is Tech Lead.
+
+Task:
+[one specific outcome]
+
+Scope:
+[files/modules Claude may inspect or edit]
+
+Do:
+- [specific checks or edits]
+- [specific output needed]
+
+Do not:
+- rewrite unrelated systems
+- revert user/Codex changes
+- change files outside scope
+- invent product direction
+
+Return:
+- summary
+- files changed, if any
+- commands/tests run
+- risks or open questions
+```
+
+Best Claude task lanes:
+
+1. Explorer lane: use when Codex needs quick context. Example: inspect the Beta repo and identify gameplay state flow, UI entry points, scoring/rules modules, and tests. Do not edit. Return a concise map with file paths and high-risk coupling.
+
+2. QA lane: use after visible UI or rules changes. Example: review the latest Beta build for desktop/mobile risks, layout clipping, unreadable labels, tap targets, game-state stalls, and confusing player feedback. Do not edit. Return prioritized findings.
+
+3. Rules/test lane: use when scoring or turn logic changes. Example: audit dice scoring and turn progression tests. Identify missing edge cases for busts, banking, rerolls, end-of-round, and game-over conditions. Add focused tests only if the existing test style is clear.
+
+4. UI sidecar lane: use for narrow CSS/component improvements. Example: improve mobile readability for the dice/action panel only. Own only the relevant CSS/component files. Preserve gameplay behavior. Return changed files and screenshots/checks if available.
+
+5. Docs/continuity lane: use whenever decisions are made quickly. Example: update the Beta handoff/project notes with today's locked decisions, current build links, known risks, and next priorities. Keep it concise and canonical.
+
+Integration rule: Codex must review Claude output before accepting it. Claude can suggest or patch, but Codex owns final judgment, testing, commits, and Slack/review messaging.
+
+Speed rule: while Claude works, Codex should keep moving on non-overlapping work. Ideal pattern:
+
+1. Codex starts implementation.
+2. Claude audits related risk or tests in parallel.
+3. Codex builds and browser-checks.
+4. Codex integrates only useful Claude findings.
+5. Codex commits, posts review link, and keeps CJ moving.
+
+Main risk: over-delegation. Claude slows things down when tasks are vague, overlapping, or blocking. Keep each Claude ask small, specific, and disposable.
+
+Second risk: split-brain product direction. CJ's live creative direction wins. Claude should never reinterpret the game vision; it should support the direction Codex and CJ are actively shaping.
 
 ## Core Game Rules To Preserve
 
