@@ -29,6 +29,10 @@ Current pushed HEAD after Beta v2 public-link work:
 
 `f04ef4a Record Beta v2 Slack post`
 
+Nearby two-player ship-quality hardening commit:
+
+`db988dc Harden nearby two-player ship flow`
+
 Origin:
 
 `https://github.com/cjconnoy/trash-dice.git`
@@ -98,19 +102,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=db988dc`
 
 Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
 
-`bbdc04db922890c4584544cc161411fec9c164c363432edf71905a294c6e2089`
+`9e289cf0d7a2511bd4d8e91d9a8c61823a0af6d7b5f59ce9330120b593931082`
 
 The public room backend is the Cloudflare Worker:
 
@@ -137,6 +141,8 @@ Final Slack-continuity commit:
 Latest public Slack post:
 
 `https://onedaygames.slack.com/archives/C0AU29TPER4/p1779033726867529`
+
+That Slack thread/message was updated after the nearby two-player hardening pass.
 
 The previous Beta review links were:
 
@@ -205,6 +211,7 @@ Current room behavior:
 
 - Player 1 taps `2 PLAYER`, then creates a room.
 - Player 1 gets a room code, QR code, and share link.
+- Player 1 also gets explicit `Share Link`, `Copy Link`, and `Copy Code` controls.
 - Player 2 taps `2 PLAYER`, uses an obvious `Player 2: Enter Code` flow, and can auto-join when the 4th digit is entered.
 - Host `Start Game` appears only after Player 2 is connected.
 - When the room starts, both phones auto-roll one die to determine who goes first.
@@ -213,8 +220,15 @@ Current room behavior:
 - Gameplay does not unlock until both phones agree on the resolved starter.
 - The active player's device generates gameplay roll values and sends them through the room.
 - The server rejects gameplay rolls before the room is actually started.
+- The room backend rejects guest starts, out-of-turn rolls, and duplicate-turn rolls.
+- If Player 2 disconnects, Player 1 is returned to the room panel and can invite again.
+- If Player 1 disconnects, the room closes for Player 2.
 
-Latest Beta gameplay commit:
+Latest nearby two-player hardening commit:
+
+`db988dc Harden nearby two-player ship flow`
+
+Original Beta first-player gameplay commit:
 
 `b2414fb Add Beta first-player roll`
 
@@ -239,9 +253,12 @@ Verified locally on 2026-05-17:
 - `tmp/codex-static-server.js` parses.
 - Local two-client Beta QA passes on `127.0.0.1:5175`.
 - Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
+- Public room protocol QA passes against `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`.
+- Host invite controls pass small-phone QA: QR present, share/copy controls tappable, and invite URL includes the room code.
 - The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
-- Public Beta bytes match the committed Beta artifact hash `bbdc04db922890c4584544cc161411fec9c164c363432edf71905a294c6e2089`.
+- Public Beta bytes match the committed Beta artifact hash `9e289cf0d7a2511bd4d8e91d9a8c61823a0af6d7b5f59ce9330120b593931082`.
 - Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
+- Canonical mobile visual QC remains GREEN at 5s/12s and RED at 20s because of the known 15s auto-reset behavior; this was reconfirmed on 2026-05-17 and is not a new two-player regression.
 
 Previously, at the `b2414fb` build, local and public two-client QA passed. The public QA then used the old quick-tunnel URL, which is now dead, so the next reviewable Beta v2 build needs a fresh public verification.
 
