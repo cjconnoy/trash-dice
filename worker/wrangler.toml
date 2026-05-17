@@ -1,0 +1,14 @@
+name = "trash-dice-beta-room"
+main = "index.js"
+compatibility_date = "2026-05-17"
+account_id = "9a47380c4fe2be36e624d33094f09e07"
+workers_dev = true
+preview_urls = false
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "TrashDiceBetaRoomHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TrashDiceBetaRoomHub"]

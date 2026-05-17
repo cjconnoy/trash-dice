@@ -58,6 +58,49 @@ function cleanRoomCode(value) {
   return String(value || '').replace(/\D/g, '').slice(0, 4);
 }
 
+function otherSeat(seat) {
+  return seat === 'p1' ? 'p2' : 'p1';
+}
+
+function resetGameplayState(room, starter = 'p1') {
+  room.board = Array(6).fill(null);
+  room.dice = { p1: 20, p2: 20 };
+  room.expectedSeat = starter === 'p2' ? 'p2' : 'p1';
+  room.gameOver = false;
+  room.rollCount = 0;
+}
+
+function applyGameplayRoll(room, seat, value) {
+  if (!room.board || !room.dice || !room.expectedSeat) resetGameplayState(room, room.expectedSeat || seat);
+  if (room.gameOver) return { ok: false, message: 'Game already ended' };
+  if (seat !== room.expectedSeat) return { ok: false, message: 'Not your turn' };
+  if (room.dice[seat] <= 0) return { ok: false, message: 'No dice left' };
+
+  room.dice[seat] -= 1;
+  room.rollCount += 1;
+
+  const index = value - 1;
+  if (!room.board[index]) {
+    room.board[index] = { seat, value };
+    const lidCount = room.board.filter(Boolean).length;
+    if (lidCount === 6) {
+      room.dice[seat] += lidCount;
+      room.board = Array(6).fill(null);
+      room.expectedSeat = 'p1';
+      return { ok: true };
+    }
+  }
+
+  if (room.dice[seat] <= 0) {
+    room.gameOver = true;
+    room.expectedSeat = null;
+    return { ok: true };
+  }
+
+  room.expectedSeat = otherSeat(seat);
+  return { ok: true };
+}
+
 function roomSnapshot(room) {
   return {
     type: 'room-state',
@@ -161,6 +204,11 @@ function handleWsMessage(client, payload) {
       createdAt: Date.now(),
       started: false,
       firstRoll: null,
+      board: Array(6).fill(null),
+      dice: { p1: 20, p2: 20 },
+      expectedSeat: null,
+      gameOver: false,
+      rollCount: 0,
       clients: {}
     };
     rooms.set(code, room);
@@ -244,6 +292,7 @@ function handleWsMessage(client, payload) {
     firstRoll.active = false;
     firstRoll.winner = winner;
     room.started = true;
+    resetGameplayState(room, winner);
     broadcast(room, {
       type: 'first-roll-result',
       roomCode: room.code,
@@ -259,6 +308,11 @@ function handleWsMessage(client, payload) {
     const value = Math.max(1, Math.min(6, Math.floor(Number(message.value) || 0)));
     if (!client.room.started || value < 1 || value > 6) {
       sendWs(client, { type: 'error', message: 'Roll rejected' });
+      return;
+    }
+    const rollResult = applyGameplayRoll(client.room, client.seat, value);
+    if (!rollResult.ok) {
+      sendWs(client, { type: 'error', message: rollResult.message || 'Roll rejected' });
       return;
     }
     broadcast(client.room, {

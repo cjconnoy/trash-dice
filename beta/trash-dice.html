@@ -6009,6 +6009,7 @@ body.beta-multiplayer-active .debug-badge {
   const PLAYER_NAME = { p1: 'Yellow', p2: 'Green' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
+  const PUBLIC_BETA_WS_URL = 'wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws';
   const LOCAL_PREVIEW = ['127.0.0.1', 'localhost', '::1'].includes(window.location.hostname);
   const MOBILE_REVIEW_DEVICE = /Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent)
     || ('ontouchstart' in window && window.innerWidth < 900);
@@ -6561,12 +6562,21 @@ body.beta-multiplayer-active .debug-badge {
 
   function betaWsUrl() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const explicitUrl = String(URL_OPTIONS.get('ws') || window.TRASH_DICE_BETA_WS_URL || '').trim();
+    if (/^wss?:\/\//i.test(explicitUrl)) return explicitUrl;
+    if (explicitUrl.startsWith('/')) return `${protocol}//${window.location.host}${explicitUrl}`;
+    const publicHost = /(^|\.)playonedaygames\.com$/i.test(window.location.hostname) ||
+      /(^|\.)playonedaygames\.pages\.dev$/i.test(window.location.hostname) ||
+      window.location.hostname === 'onedaygames.github.io';
+    if (publicHost) return PUBLIC_BETA_WS_URL;
     return `${protocol}//${window.location.host}/beta-ws`;
   }
 
   function betaJoinUrl(code = betaRoomCode) {
     const url = new URL(window.location.href);
-    url.pathname = '/beta/';
+    url.pathname = window.location.pathname.endsWith('/')
+      ? window.location.pathname
+      : window.location.pathname.replace(/[^/]*$/, '');
     url.search = '';
     url.hash = '';
     url.searchParams.set('room', cleanRoomCode(code));

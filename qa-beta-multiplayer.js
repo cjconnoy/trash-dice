@@ -35,6 +35,16 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function betaPageUrl() {
+  const url = new URL(baseUrl);
+  const path = url.pathname.replace(/\/+$/, '');
+  if (/\/beta(?:-[a-z0-9]+)?$/i.test(path) || /\.html$/i.test(path)) {
+    return url.toString();
+  }
+  url.pathname = `${path}/beta/`.replace(/\/{2,}/g, '/');
+  return url.toString();
+}
+
 function requestJson(url) {
   return new Promise((resolve, reject) => {
     http.get(url, res => {
@@ -112,7 +122,8 @@ async function main() {
     throw new Error(`timeout ${label}`);
   }
 
-  const player1 = await page(`${baseUrl}/beta/`);
+  const gameUrl = betaPageUrl();
+  const player1 = await page(gameUrl);
   await evalValue(player1, `
     document.getElementById('betaTwoPlayerBtn').click();
     document.getElementById('betaCreateBtn').click();
@@ -120,7 +131,7 @@ async function main() {
   `);
   const roomCode = await waitEval(player1, `document.getElementById('betaRoomCode').textContent.trim()`, 'room code');
 
-  const player2 = await page(`${baseUrl}/beta/`);
+  const player2 = await page(gameUrl);
   await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
   await waitEval(player2, `
     (() => {
