@@ -61,8 +61,8 @@ Game 2 must not claim long-window mobile terminal stability until that 20s reset
 
 Current Beta v2 review path as of 2026-05-17:
 
-- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd
-- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd
+- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626
+- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626
 
 The stable custom-domain path serves the actual Beta game bytes, not the generic One Day Games shell. The public room backend is the Cloudflare Worker `trash-dice-beta-room` at `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`. Public two-client QA passed on 2026-05-17, including a natural first-roll tie/reroll and Player 2 small-phone roll-panel clearance. Do not share a future Beta build until `qa-beta-public-build.ps1 -RunMultiplayerQa` passes for the exact public URL and Alpha Complete still byte-matches its frozen SHA.
 

@@ -94,15 +94,15 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
 
 Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
 
@@ -117,6 +117,18 @@ Browser clients connect to:
 `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`
 
 The Worker uses a Durable Object room hub and rejects out-of-turn gameplay rolls. The client still uses the same-origin local `/beta-ws` endpoint on localhost/LAN previews.
+
+Beta game/room-backend implementation commit:
+
+`3db7bdd Add Beta v2 public room backend`
+
+Verified Beta v2 link-readiness commit:
+
+`f6b1626 Record Beta v2 public link readiness`
+
+Latest public Slack post:
+
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779033726867529`
 
 The previous Beta review links were:
 
@@ -203,7 +215,7 @@ That commit also updated:
 - `qa-beta-multiplayer.js`
 - `tmp/codex-static-server.js`
 
-Last known public Slack post for `b2414fb`:
+Previous public Slack post for `b2414fb`:
 
 `https://onedaygames.slack.com/archives/C0AU29TPER4/p1778732962897089`
 
