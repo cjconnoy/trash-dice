@@ -8,6 +8,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Net.Http
 
 function Get-GitValue {
   param([string[]]$Arguments)
@@ -48,13 +49,72 @@ function Get-Sha256 {
 
 function Read-HttpBytes {
   param([string]$Url)
-  $client = [System.Net.Http.HttpClient]::new()
+
+  $current = [Uri]$Url
+  for ($i = 0; $i -lt 8; $i++) {
+    $request = [System.Net.HttpWebRequest]::Create($current)
+    $request.Method = "GET"
+    $request.AllowAutoRedirect = $false
+    $response = $null
+    try {
+      $response = $request.GetResponse()
+    } catch [System.Net.WebException] {
+      if ($_.Exception.Response) {
+        $response = $_.Exception.Response
+      } else {
+        throw "HTTP fetch failed for ${current}: $($_.Exception.Message)"
+      }
+    }
+
+    try {
+      $status = [int]$response.StatusCode
+      if ($status -ge 300 -and $status -lt 400) {
+        $location = $response.Headers["Location"]
+        if (-not $location) { throw "HTTP redirect without Location for ${current}." }
+        $current = [Uri]::new($current, $location)
+        continue
+      }
+      if ($status -ne 200) {
+        throw "${current} returned HTTP $status."
+      }
+      $memory = [System.IO.MemoryStream]::new()
+      try {
+        $response.GetResponseStream().CopyTo($memory)
+        return $memory.ToArray()
+      } finally {
+        $memory.Dispose()
+      }
+    } finally {
+      if ($response) { $response.Dispose() }
+    }
+  }
+
+  throw "Too many redirects while fetching ${Url}."
+}
+
+function Read-GitBlobBytes {
+  param([string]$Path)
+
+  $gitPath = $Path.Replace("\", "/")
+  $psi = [System.Diagnostics.ProcessStartInfo]::new()
+  $psi.FileName = "git"
+  $psi.Arguments = "show HEAD:$gitPath"
+  $psi.RedirectStandardOutput = $true
+  $psi.RedirectStandardError = $true
+  $psi.UseShellExecute = $false
+  $process = [System.Diagnostics.Process]::Start($psi)
+  $memory = [System.IO.MemoryStream]::new()
   try {
-    return $client.GetByteArrayAsync($Url).GetAwaiter().GetResult()
-  } catch {
-    throw "HTTP fetch failed for ${Url}: $($_.Exception.Message)"
+    $process.StandardOutput.BaseStream.CopyTo($memory)
+    $errorText = $process.StandardError.ReadToEnd()
+    $process.WaitForExit()
+    if ($process.ExitCode -ne 0) {
+      throw "git show HEAD:$gitPath failed: $errorText"
+    }
+    return $memory.ToArray()
   } finally {
-    $client.Dispose()
+    $memory.Dispose()
+    $process.Dispose()
   }
 }
 
@@ -67,7 +127,7 @@ function Join-PublicUrl {
   $cleanBase = $Base.TrimEnd("/")
   $cleanPath = $Path.TrimStart("/")
   $url = if ($cleanPath) { "$cleanBase/$cleanPath" } else { "$cleanBase/" }
-  if ($CacheBust) { return "$url?v=$CacheBust" }
+  if ($CacheBust) { return "${url}?v=$CacheBust" }
   return $url
 }
 
@@ -79,11 +139,10 @@ if (Test-ListeningPort $ForbiddenPreviewPort) {
 }
 
 $commit = Get-GitValue @("rev-parse", "--short", "HEAD")
-$expectedPath = Join-Path $root $ExpectedRoot
+$frozenAlphaSha256 = "b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f"
 $alphaPath = Join-Path $root $AlphaRoot
-
-$localIndex = [System.IO.File]::ReadAllBytes((Join-Path $expectedPath "index.html"))
-$localMirror = [System.IO.File]::ReadAllBytes((Join-Path $expectedPath "trash-dice.html"))
+$localIndex = Read-GitBlobBytes "$ExpectedRoot/index.html"
+$localMirror = Read-GitBlobBytes "$ExpectedRoot/trash-dice.html"
 $localAlpha = [System.IO.File]::ReadAllBytes((Join-Path $alphaPath "index.html"))
 
 $localIndexHash = Get-Sha256 $localIndex
@@ -91,6 +150,9 @@ $localMirrorHash = Get-Sha256 $localMirror
 $localAlphaHash = Get-Sha256 $localAlpha
 if ($localIndexHash -ne $localMirrorHash) {
   throw "Local Beta index.html and trash-dice.html differ."
+}
+if ($localAlphaHash -ne $frozenAlphaSha256) {
+  throw "Local Alpha Complete bytes do not match the frozen Alpha SHA."
 }
 
 $publicIndexUrl = Join-PublicUrl $PublicUrl "" $commit
@@ -111,7 +173,7 @@ if ($publicIndexHash -ne $localIndexHash) {
 if ($publicMirrorHash -ne $localMirrorHash) {
   throw "Public Beta trash-dice.html bytes do not match local beta/trash-dice.html."
 }
-if ($publicAlphaHash -ne $localAlphaHash) {
+if ($publicAlphaHash -ne $frozenAlphaSha256) {
   throw "Public Alpha Complete bytes do not match frozen local Alpha Complete."
 }
 

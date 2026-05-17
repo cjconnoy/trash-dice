@@ -82,15 +82,41 @@ Never edit, overwrite, rebalance, patch, rename, repurpose, or replace:
 
 All Beta and later work must use new paths, release folders, and share URLs.
 
-## Public Link Truth At Handoff
+## Public Link Truth
 
 Alpha:
 
 `https://playonedaygames.com/trash-dice/alpha-complete/` is working and byte-verified.
 
-Beta:
+Beta v2:
 
-There is no confirmed working public Beta game link at handoff.
+`https://playonedaygames.com/trash-dice/beta-v2/` is now the current reviewable Beta v2 custom-domain path.
+
+Verified build URL:
+
+`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+
+Desktop full:
+
+`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+
+Mobile full:
+
+`https://playonedaygames.com/trash-dice/beta-v2/?v=3db7bdd`
+
+Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
+
+`bbdc04db922890c4584544cc161411fec9c164c363432edf71905a294c6e2089`
+
+The public room backend is the Cloudflare Worker:
+
+`https://trash-dice-beta-room.play-onedaygames.workers.dev`
+
+Browser clients connect to:
+
+`wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`
+
+The Worker uses a Durable Object room hub and rejects out-of-turn gameplay rolls. The client still uses the same-origin local `/beta-ws` endpoint on localhost/LAN previews.
 
 The previous Beta review links were:
 
@@ -111,7 +137,7 @@ The following paths returned HTTP 200 on 2026-05-17 but served the generic `One 
 - `https://playonedaygames.com/trash-dice/beta-v1/`
 - `https://playonedaygames.com/trash-dice/beta-v2/`
 
-Next chat should treat stable Beta v2 public hosting/link creation and verification as a top infrastructure task before any external sharing.
+Stable Beta v2 public hosting/link creation is no longer open, but future reviewable builds must still rerun byte verification and public two-client QA before sharing.
 
 ## Product Direction For Beta v2
 
@@ -191,6 +217,11 @@ Verified locally on 2026-05-17:
 - Beta mirror matches.
 - `qa-beta-multiplayer.js` parses.
 - `tmp/codex-static-server.js` parses.
+- Local two-client Beta QA passes on `127.0.0.1:5175`.
+- Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
+- The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
+- Public Beta bytes match the committed Beta artifact hash `bbdc04db922890c4584544cc161411fec9c164c363432edf71905a294c6e2089`.
+- Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
 
 Previously, at the `b2414fb` build, local and public two-client QA passed. The public QA then used the old quick-tunnel URL, which is now dead, so the next reviewable Beta v2 build needs a fresh public verification.
 
@@ -249,6 +280,12 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\shove\OneDrive\Desktop\OneDay
 11. Compare public bytes/hash to local Beta file for the exact build.
 
 12. Run public two-client Beta QA against the exact public URL.
+
+Current helper:
+
+```powershell
+.\qa-beta-public-build.ps1 -PublicUrl "https://playonedaygames.com/trash-dice/beta-v2/" -RunMultiplayerQa
+```
 
 13. Verify Alpha Complete still works and byte-matches the frozen SHA.
 
