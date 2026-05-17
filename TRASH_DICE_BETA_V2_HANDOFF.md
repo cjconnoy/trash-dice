@@ -25,6 +25,10 @@ Current HEAD at handoff:
 
 `4b3abd9 Add Trash Dice Beta v2 handoff`
 
+Current pushed HEAD after Beta v2 public-link work:
+
+`f04ef4a Record Beta v2 Slack post`
+
 Origin:
 
 `https://github.com/cjconnoy/trash-dice.git`
@@ -94,15 +98,15 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=f6b1626`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=f04ef4a`
 
 Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
 
@@ -125,6 +129,10 @@ Beta game/room-backend implementation commit:
 Verified Beta v2 link-readiness commit:
 
 `f6b1626 Record Beta v2 public link readiness`
+
+Final Slack-continuity commit:
+
+`f04ef4a Record Beta v2 Slack post`
 
 Latest public Slack post:
 
@@ -551,4 +559,4 @@ Most important v2 truth:
 
 Alpha Complete is safe and permanent at the custom domain.
 
-Beta gameplay exists locally, but there is no currently verified public Beta game link. Fixing that link/public-hosting gap is the first clean Beta v2 move before external review or Slack sharing.
+Beta v2 has a verified public game link and public room backend. The next clean Beta v2 move is PWA/mobile polish or the mobile terminal 20s hardening target, with the usual public byte/QA/Alpha-lock gates before any new Slack build.
