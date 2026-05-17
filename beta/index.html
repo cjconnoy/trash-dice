@@ -5382,6 +5382,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   display: none;
 }
 
+.beta-room-panel:not(.is-host) .beta-share-tools,
+.beta-room-panel:not(.is-host) .beta-share-link {
+  display: none;
+}
+
 .beta-room-panel:not(.is-host) #betaStartRoomBtn {
   display: none;
 }
@@ -5467,8 +5472,27 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 }
 
 .beta-qr[hidden],
+.beta-share-tools[hidden],
 .beta-share-link[hidden] {
   display: none;
+}
+
+.beta-share-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.beta-room-btn.beta-mini {
+  min-height: 44px;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  padding: 0 10px;
+}
+
+.beta-room-btn.beta-share-primary {
+  grid-column: 1 / -1;
 }
 
 .beta-share-link {
@@ -5564,6 +5588,11 @@ body.beta-multiplayer-active .debug-badge {
   .beta-qr {
     width: 154px;
     height: 154px;
+  }
+  .beta-room-btn.beta-mini {
+    min-height: 42px;
+    font-size: 12px;
+    padding: 0 7px;
   }
   .start-overlay.beta-room-open {
     padding-top: calc(env(safe-area-inset-top, 0px) + 34px);
@@ -5945,6 +5974,11 @@ body.beta-multiplayer-active .debug-badge {
       </div>
       <span class="beta-room-code" id="betaRoomCode"></span>
       <img class="beta-qr" id="betaQr" alt="Join room QR code" hidden>
+      <div class="beta-share-tools" id="betaShareTools" hidden>
+        <button class="beta-room-btn beta-mini beta-share-primary" id="betaShareBtn" type="button">Share Link</button>
+        <button class="beta-room-btn beta-mini" id="betaCopyLinkBtn" type="button">Copy Link</button>
+        <button class="beta-room-btn beta-mini" id="betaCopyCodeBtn" type="button">Copy Code</button>
+      </div>
       <a class="beta-share-link" id="betaShareLink" target="_blank" rel="noopener"></a>
       <div class="beta-room-status" id="betaRoomStatus">Create a room or join with a code.</div>
     </div>
@@ -6070,6 +6104,9 @@ body.beta-multiplayer-active .debug-badge {
   let betaMultiplayerActive = false;
   let betaApplyingRemoteRoll = false;
   let betaJoinPending = false;
+  let betaCreatePending = false;
+  let betaConnectQueue = [];
+  let betaCurrentInviteHref = '';
   let betaFirstRoll = {
     active: false,
     settling: false,
@@ -6541,6 +6578,10 @@ body.beta-multiplayer-active .debug-badge {
   const betaJoinCodeInput = document.getElementById('betaJoinCode');
   const betaRoomCodeEl = document.getElementById('betaRoomCode');
   const betaQr = document.getElementById('betaQr');
+  const betaShareTools = document.getElementById('betaShareTools');
+  const betaShareBtn = document.getElementById('betaShareBtn');
+  const betaCopyLinkBtn = document.getElementById('betaCopyLinkBtn');
+  const betaCopyCodeBtn = document.getElementById('betaCopyCodeBtn');
   const betaShareLink = document.getElementById('betaShareLink');
   const betaRoomStatus = document.getElementById('betaRoomStatus');
   const startOverlayEl = document.getElementById('startOverlay');
@@ -6583,6 +6624,73 @@ body.beta-multiplayer-active .debug-badge {
     return url.toString();
   }
 
+  function betaInviteText() {
+    return `Trash Dice room ${betaRoomCode}: ${betaCurrentInviteHref || betaJoinUrl(betaRoomCode)}`;
+  }
+
+  function betaFallbackClipboard(text) {
+    const box = document.createElement('textarea');
+    box.value = text;
+    box.setAttribute('readonly', '');
+    box.style.position = 'fixed';
+    box.style.left = '-999px';
+    box.style.top = '0';
+    document.body.appendChild(box);
+    box.focus();
+    box.select();
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch (_) {
+      copied = false;
+    }
+    box.remove();
+    return copied;
+  }
+
+  async function betaCopyText(text, successText) {
+    const value = String(text || '').trim();
+    if (!value) return false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+      } else if (!betaFallbackClipboard(value)) {
+        throw new Error('clipboard unavailable');
+      }
+      setBetaStatus(successText);
+      return true;
+    } catch (_) {
+      setBetaStatus('Copy failed. Use the room code.');
+      return false;
+    }
+  }
+
+  async function betaShareInvite() {
+    if (!betaCurrentInviteHref) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Trash Dice',
+          text: `Trash Dice room ${betaRoomCode}`,
+          url: betaCurrentInviteHref
+        });
+        setBetaStatus('Link shared. Waiting for Player 2.');
+        return;
+      } catch (error) {
+        if (error && error.name === 'AbortError') return;
+      }
+    }
+    await betaCopyText(betaCurrentInviteHref, 'Link copied. Waiting for Player 2.');
+  }
+
+  function betaCopyInviteLink() {
+    return betaCopyText(betaCurrentInviteHref, 'Link copied. Waiting for Player 2.');
+  }
+
+  function betaCopyInviteCode() {
+    return betaCopyText(betaRoomCode, 'Code copied. Waiting for Player 2.');
+  }
+
   function setBetaStatus(text) {
     if (betaRoomStatus) betaRoomStatus.textContent = text;
   }
@@ -6593,6 +6701,36 @@ body.beta-multiplayer-active .debug-badge {
       betaJoinCodeInput.focus();
       betaJoinCodeInput.select();
     }, 30);
+  }
+
+  function betaReturnToRoomPanel(statusText, gameText = 'PLAYER LEFT') {
+    clearRuntimeTimers();
+    cancelProgressionWatchdog();
+    betaMultiplayerActive = false;
+    betaRoomReady = false;
+    betaJoinPending = false;
+    betaCreatePending = false;
+    betaFirstRoll = {
+      active: false,
+      settling: false,
+      round: 0,
+      sentRound: 0,
+      values: { p1: null, p2: null },
+      winner: null
+    };
+    busy = false;
+    rollBtn.disabled = true;
+    document.body.classList.remove('beta-multiplayer-active', 'player-roll-ready');
+    if (startOverlayEl) {
+      startOverlayEl.style.display = 'flex';
+      startOverlayEl.classList.remove('hide');
+      startOverlayEl.classList.add('beta-room-open');
+    }
+    if (betaRoomPanel) betaRoomPanel.hidden = false;
+    setBetaRoomUi();
+    if (statusText) setBetaStatus(statusText);
+    if (gameText) setMsg(gameText);
+    syncHeroIdleState();
   }
 
   function setBetaRoomUi(snapshot = null) {
@@ -6609,23 +6747,30 @@ body.beta-multiplayer-active .debug-badge {
     betaRoomPanel.classList.toggle('is-guest', betaSeat === 'p2');
     betaRoomPanel.classList.toggle('room-ready', betaRoomReady);
     const showInvite = hasRoom && betaSeat === 'p1' && !betaRoomReady;
+    betaCurrentInviteHref = showInvite ? betaJoinUrl(betaRoomCode) : '';
     if (betaShareLink) {
-      const href = showInvite ? betaJoinUrl(betaRoomCode) : '';
-      betaShareLink.textContent = href ? 'Open join link' : '';
-      betaShareLink.href = href || '#';
-      betaShareLink.title = href;
-      betaShareLink.hidden = !href;
+      betaShareLink.textContent = betaCurrentInviteHref ? 'Join link ready' : '';
+      betaShareLink.href = betaCurrentInviteHref || '#';
+      betaShareLink.title = betaCurrentInviteHref;
+      betaShareLink.hidden = !betaCurrentInviteHref;
+    }
+    if (betaShareTools) betaShareTools.hidden = !betaCurrentInviteHref;
+    [betaShareBtn, betaCopyLinkBtn, betaCopyCodeBtn].forEach(button => {
+      if (button) button.disabled = !betaCurrentInviteHref;
+    });
+    if (betaShareBtn) {
+      betaShareBtn.textContent = navigator.share ? 'Share Link' : 'Copy Invite';
     }
     if (betaQr) {
-      const href = showInvite ? betaJoinUrl(betaRoomCode) : '';
-      betaQr.hidden = !href;
-      if (href) {
-        betaQr.src = 'https://quickchart.io/qr?size=220&margin=1&text=' + encodeURIComponent(href);
+      betaQr.hidden = !betaCurrentInviteHref;
+      if (betaCurrentInviteHref) {
+        const nextSrc = 'https://quickchart.io/qr?size=220&margin=1&text=' + encodeURIComponent(betaCurrentInviteHref);
+        if (betaQr.src !== nextSrc) betaQr.src = nextSrc;
       }
     }
     if (betaJoinCodeInput && hasRoom && betaSeat !== 'p2') betaJoinCodeInput.value = betaRoomCode;
     if (betaStartRoomBtn) betaStartRoomBtn.disabled = !(betaSeat === 'p1' && betaRoomReady);
-    if (betaCreateBtn) betaCreateBtn.disabled = !!betaSeat;
+    if (betaCreateBtn) betaCreateBtn.disabled = !!betaSeat || betaCreatePending;
     if (betaJoinBtn) betaJoinBtn.disabled = !!betaSeat;
     document.body.classList.toggle('beta-multiplayer-active', betaMultiplayerActive || !!betaSeat);
     if (betaRoomReady && betaSeat === 'p1') setBetaStatus('Player 2 connected. Start when ready.');
@@ -6646,8 +6791,10 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function betaConnect(onReady = null) {
+    if (typeof onReady === 'function') betaConnectQueue.push(onReady);
     if (betaSocket && betaSocket.readyState === WebSocket.OPEN) {
-      if (typeof onReady === 'function') onReady();
+      const queue = betaConnectQueue.splice(0);
+      queue.forEach(callback => callback());
       return;
     }
     if (betaSocket && betaSocket.readyState === WebSocket.CONNECTING) return;
@@ -6656,7 +6803,8 @@ body.beta-multiplayer-active .debug-badge {
     betaSocket.addEventListener('open', () => {
       betaConnected = true;
       setBetaStatus('Connected.');
-      if (typeof onReady === 'function') onReady();
+      const queue = betaConnectQueue.splice(0);
+      queue.forEach(callback => callback());
     });
     betaSocket.addEventListener('message', event => {
       let message;
@@ -6666,6 +6814,8 @@ body.beta-multiplayer-active .debug-badge {
     betaSocket.addEventListener('close', () => {
       betaConnected = false;
       betaJoinPending = false;
+      betaCreatePending = false;
+      betaConnectQueue = [];
       if (betaMultiplayerActive) {
         rollBtn.disabled = true;
         setMsg('CONNECTION LOST');
@@ -6674,6 +6824,8 @@ body.beta-multiplayer-active .debug-badge {
     });
     betaSocket.addEventListener('error', () => {
       betaJoinPending = false;
+      betaCreatePending = false;
+      betaConnectQueue = [];
       setBetaStatus('Connection error. Is the Beta server running?');
     });
   }
@@ -6683,6 +6835,7 @@ body.beta-multiplayer-active .debug-badge {
       betaRoomCode = cleanRoomCode(message.roomCode);
       betaSeat = message.seat;
       betaJoinPending = false;
+      betaCreatePending = false;
       setBetaRoomUi();
       return;
     }
@@ -6716,8 +6869,20 @@ body.beta-multiplayer-active .debug-badge {
       betaApplyRoll(message.seat, message.value);
       return;
     }
+    if (message.type === 'peer-left') {
+      betaReturnToRoomPanel('Player 2 left. Share the code again.', 'PLAYER LEFT');
+      return;
+    }
+    if (message.type === 'room-closed') {
+      betaSeat = null;
+      betaRoomCode = '';
+      betaCurrentInviteHref = '';
+      betaReturnToRoomPanel('Room closed. Create or join again.', 'ROOM CLOSED');
+      return;
+    }
     if (message.type === 'error') {
       betaJoinPending = false;
+      betaCreatePending = false;
       setBetaStatus(message.message || 'Room error');
       if (!betaSeat) focusBetaJoinCode();
     }
@@ -6733,6 +6898,9 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function betaCreateRoom() {
+    if (betaCreatePending || betaSeat) return;
+    betaCreatePending = true;
+    setBetaRoomUi();
     betaConnect(() => betaSend({ type: 'create' }));
   }
 
@@ -6751,6 +6919,8 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function betaStartRoom() {
+    if (betaStartRoomBtn) betaStartRoomBtn.disabled = true;
+    setBetaStatus('Starting...');
     betaSend({ type: 'start' });
   }
 
@@ -10150,6 +10320,17 @@ body.beta-multiplayer-active .debug-badge {
   if (betaCreateBtn) betaCreateBtn.addEventListener('click', betaCreateRoom);
   if (betaJoinBtn) betaJoinBtn.addEventListener('click', betaJoinRoom);
   if (betaStartRoomBtn) betaStartRoomBtn.addEventListener('click', betaStartRoom);
+  if (betaShareBtn) betaShareBtn.addEventListener('click', betaShareInvite);
+  if (betaCopyLinkBtn) betaCopyLinkBtn.addEventListener('click', betaCopyInviteLink);
+  if (betaCopyCodeBtn) betaCopyCodeBtn.addEventListener('click', betaCopyInviteCode);
+  if (betaQr) {
+    betaQr.addEventListener('error', () => {
+      if (!betaQr.hidden && betaCurrentInviteHref) {
+        betaQr.hidden = true;
+        setBetaStatus('QR unavailable. Share link or code.');
+      }
+    });
+  }
   if (betaJoinCodeInput) {
     betaJoinCodeInput.addEventListener('input', () => {
       betaJoinCodeInput.value = cleanRoomCode(betaJoinCodeInput.value);
@@ -10321,6 +10502,7 @@ body.beta-multiplayer-active .debug-badge {
           connected: betaConnected,
           ready: betaRoomReady,
           multiplayerActive: betaMultiplayerActive,
+          inviteHref: betaCurrentInviteHref,
           firstRoll: {
             active: betaFirstRoll.active,
             settling: betaFirstRoll.settling,

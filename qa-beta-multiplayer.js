@@ -130,6 +130,43 @@ async function main() {
     true
   `);
   const roomCode = await waitEval(player1, `document.getElementById('betaRoomCode').textContent.trim()`, 'room code');
+  const inviteLayout = await waitEval(player1, `
+    (() => {
+      const overlay = document.getElementById('startOverlay');
+      const panel = document.getElementById('betaRoomPanel');
+      const qr = document.getElementById('betaQr');
+      const share = document.getElementById('betaShareBtn');
+      const copyLink = document.getElementById('betaCopyLinkBtn');
+      const copyCode = document.getElementById('betaCopyCodeBtn');
+      const link = document.getElementById('betaShareLink');
+      if (!overlay || !panel || !qr || !share || !copyLink || !copyCode || !link) return null;
+      const overlayStyle = getComputedStyle(overlay);
+      const panelRect = panel.getBoundingClientRect();
+      const shareRect = share.getBoundingClientRect();
+      const copyLinkRect = copyLink.getBoundingClientRect();
+      const copyCodeRect = copyCode.getBoundingClientRect();
+      const href = window.TrashDiceDebug.state().beta.inviteHref;
+      const scrollSafe = overlay.scrollHeight <= overlay.clientHeight + 2 || /(auto|scroll)/.test(overlayStyle.overflowY);
+      const tapTargetsSafe = [shareRect, copyLinkRect, copyCodeRect].every(rect => rect.width >= 96 && rect.height >= 40);
+      return scrollSafe &&
+        panelRect.width <= window.innerWidth - 20 &&
+        tapTargetsSafe &&
+        !qr.hidden &&
+        qr.getBoundingClientRect().width >= 140 &&
+        !share.disabled &&
+        !copyLink.disabled &&
+        !copyCode.disabled &&
+        link.textContent.includes('Join link') &&
+        href && href.includes('room=${roomCode}');
+    })()
+  `, 'host invite controls safe');
+  if (!inviteLayout) {
+    throw new Error('host invite controls were not safe on small viewport');
+  }
+  await evalValue(player1, `document.getElementById('betaCopyCodeBtn').click(); true`);
+  await waitEval(player1, `
+    /Code copied|Copy failed/.test(document.getElementById('betaRoomStatus').textContent)
+  `, 'copy code button responds');
 
   const player2 = await page(gameUrl);
   await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);

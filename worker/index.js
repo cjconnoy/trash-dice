@@ -1,4 +1,5 @@
 const ROOM_HUB_NAME = 'trash-dice-beta-v2';
+const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -63,8 +64,8 @@ export class TrashDiceBetaRoomHub {
     this.sessions.set(socket, session);
     socket.accept();
     socket.addEventListener('message', event => this.handleMessage(session, event.data));
-    socket.addEventListener('close', () => this.detachSession(session));
-    socket.addEventListener('error', () => this.detachSession(session));
+    socket.addEventListener('close', () => this.detachSession(session, true));
+    socket.addEventListener('error', () => this.detachSession(session, true));
     this.send(session, { type: 'hello', clientId: session.id });
   }
 
@@ -78,6 +79,7 @@ export class TrashDiceBetaRoomHub {
   }
 
   makeRoomCode() {
+    this.cleanupRooms();
     for (let i = 0; i < 40; i++) {
       const code = String(Math.floor(1000 + Math.random() * 9000));
       if (!this.rooms.has(code)) return code;
@@ -87,6 +89,15 @@ export class TrashDiceBetaRoomHub {
 
   cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
+  }
+
+  cleanupRooms(now = Date.now()) {
+    for (const [code, room] of this.rooms) {
+      const occupied = !!(room.clients && (room.clients.p1 || room.clients.p2));
+      if (!occupied || now - room.createdAt > ROOM_TTL_MS) {
+        this.rooms.delete(code);
+      }
+    }
   }
 
   otherSeat(seat) {
@@ -190,6 +201,7 @@ export class TrashDiceBetaRoomHub {
   }
 
   joinRoom(session, roomCode) {
+    this.cleanupRooms();
     const code = this.cleanRoomCode(roomCode);
     const room = this.rooms.get(code);
     if (!room) {
@@ -206,28 +218,47 @@ export class TrashDiceBetaRoomHub {
   }
 
   attachSession(session, room, seat) {
-    this.detachSession(session);
+    this.detachSession(session, false);
     session.room = room;
     session.seat = seat;
     room.clients[seat] = session;
   }
 
-  detachSession(session) {
-    if (!session || !session.room || !session.seat) return;
+  detachSession(session, removeSession = false) {
+    if (!session || !session.room || !session.seat) {
+      if (removeSession && session) this.sessions.delete(session.socket);
+      return;
+    }
     const room = session.room;
+    const leavingSeat = session.seat;
     if (room.clients[session.seat] === session) delete room.clients[session.seat];
     session.room = null;
     session.seat = null;
 
+    if (leavingSeat === 'p1') {
+      this.broadcast(room, { type: 'room-closed', roomCode: room.code, message: 'Player 1 left' });
+      Object.values(room.clients).forEach(remaining => {
+        remaining.room = null;
+        remaining.seat = null;
+      });
+      this.rooms.delete(room.code);
+      if (removeSession) this.sessions.delete(session.socket);
+      return;
+    }
+
     if (!room.clients.p1 && !room.clients.p2) {
       this.rooms.delete(room.code);
+      if (removeSession) this.sessions.delete(session.socket);
       return;
     }
 
     room.started = false;
     room.firstRoll = null;
     room.expectedSeat = null;
+    room.gameOver = false;
+    this.broadcast(room, { type: 'peer-left', roomCode: room.code, seat: leavingSeat });
     this.broadcast(room, this.roomSnapshot(room));
+    if (removeSession) this.sessions.delete(session.socket);
   }
 
   handleMessage(session, data) {
@@ -262,6 +293,11 @@ export class TrashDiceBetaRoomHub {
       }
       if (!room.clients.p1 || !room.clients.p2) {
         this.send(session, { type: 'error', message: 'Waiting for Player 2' });
+        return;
+      }
+      if ((room.firstRoll && room.firstRoll.active) || room.started) {
+        this.send(session, this.roomSnapshot(room));
+        if (room.firstRoll && room.firstRoll.active) this.send(session, this.firstRollSnapshot(room));
         return;
       }
       this.beginFirstRoll(room);

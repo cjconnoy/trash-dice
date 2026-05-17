@@ -182,6 +182,10 @@ if ($RunMultiplayerQa) {
   if ($LASTEXITCODE -ne 0) {
     throw "Public Beta multiplayer QA failed."
   }
+  & node .\qa-beta-room-protocol.js $PublicUrl
+  if ($LASTEXITCODE -ne 0) {
+    throw "Public Beta room protocol QA failed."
+  }
 }
 
 [PSCustomObject]@{

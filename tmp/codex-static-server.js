@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const root = path.resolve(process.argv[2] || process.cwd());
 const port = Number(process.argv[3] || 5175);
 const rooms = new Map();
+const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const lockedBuilds = {
   dc5a995: {
     '/': 'releases/alpha-complete/index.html',
@@ -47,6 +48,7 @@ function resolveTarget(url, pathname) {
 }
 
 function makeRoomCode() {
+  cleanupRooms();
   for (let i = 0; i < 40; i++) {
     const code = String(Math.floor(1000 + Math.random() * 9000));
     if (!rooms.has(code)) return code;
@@ -56,6 +58,15 @@ function makeRoomCode() {
 
 function cleanRoomCode(value) {
   return String(value || '').replace(/\D/g, '').slice(0, 4);
+}
+
+function cleanupRooms(now = Date.now()) {
+  for (const [code, room] of rooms) {
+    const occupied = !!(room.clients && (room.clients.p1 || room.clients.p2));
+    if (!occupied || now - room.createdAt > ROOM_TTL_MS) {
+      rooms.delete(code);
+    }
+  }
 }
 
 function otherSeat(seat) {
@@ -167,17 +178,30 @@ function broadcast(room, payload) {
 function detachClient(client) {
   if (!client.room || !client.seat) return;
   const room = client.room;
+  const leavingSeat = client.seat;
   if (room.clients[client.seat] === client) {
     delete room.clients[client.seat];
   }
   client.room = null;
   client.seat = null;
+  if (leavingSeat === 'p1') {
+    broadcast(room, { type: 'room-closed', roomCode: room.code, message: 'Player 1 left' });
+    Object.values(room.clients).forEach(remaining => {
+      remaining.room = null;
+      remaining.seat = null;
+    });
+    rooms.delete(room.code);
+    return;
+  }
   if (!room.clients.p1 && !room.clients.p2) {
     rooms.delete(room.code);
     return;
   }
   room.started = false;
   room.firstRoll = null;
+  room.expectedSeat = null;
+  room.gameOver = false;
+  broadcast(room, { type: 'peer-left', roomCode: room.code, seat: leavingSeat });
   broadcast(room, roomSnapshot(room));
 }
 
@@ -219,6 +243,7 @@ function handleWsMessage(client, payload) {
   }
 
   if (message.type === 'join') {
+    cleanupRooms();
     const code = cleanRoomCode(message.roomCode);
     const room = rooms.get(code);
     if (!room) {
@@ -248,6 +273,11 @@ function handleWsMessage(client, payload) {
     }
     if (!room.clients.p1 || !room.clients.p2) {
       sendWs(client, { type: 'error', message: 'Waiting for Player 2' });
+      return;
+    }
+    if ((room.firstRoll && room.firstRoll.active) || room.started) {
+      sendWs(client, roomSnapshot(room));
+      if (room.firstRoll && room.firstRoll.active) sendWs(client, firstRollSnapshot(room));
       return;
     }
     beginFirstRoll(room);
