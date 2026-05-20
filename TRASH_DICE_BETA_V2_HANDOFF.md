@@ -47,6 +47,10 @@ Current pushed HEAD after tagline layout fix:
 
 `cb1dda6 Fix Beta tagline visibility on tablet and phone`
 
+Current pushed HEAD after opening roll-off clarity fix:
+
+`5fd4fec Clarify Beta two-player opening roll-off`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -59,9 +63,9 @@ Origin `master` matches local HEAD as of this handoff.
 
 The latest committed Beta gameplay/layout code change is:
 
-`cb1dda6 Fix Beta tagline visibility on tablet and phone`
+`5fd4fec Clarify Beta two-player opening roll-off`
 
-There may be later documentation/protocol commits after `cb1dda6`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `cb1dda6` Beta state until the next Beta code change.
+There may be later documentation/protocol commits after `5fd4fec`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `5fd4fec` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -120,19 +124,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
 
 Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`08c1fdd879b4586861533f04d70b348217d07048ca8f3f60a0a69811cfbb5464`
+`c20db36045d8cf2e5c1ca81d5003962515ebe19ed55bd9d761f88382be961a0f`
 
 The public room backend is the Cloudflare Worker:
 
@@ -158,9 +162,9 @@ Final Slack-continuity commit:
 
 Latest public Slack post:
 
-`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779242907652409`
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779243550114319`
 
-That Slack message was posted after the tagline layout fix.
+That Slack message was posted after the opening roll-off clarity fix.
 
 Enterprise Beta quality protocol:
 
@@ -276,6 +280,18 @@ Current title/tagline layout behavior:
 - The tagline remains visible on compact iPhone layouts instead of being hidden below 700px viewport height.
 - `qa-beta-ipad-layout.js` now covers iPad 1024x980, iPad Mini 768x920, iPhone 390x664, and iPhone SE 320x568 active-game viewports.
 - Public QA on 2026-05-19 passed all four title/tagline visibility targets with no title/tagline, tagline/panel, board/yellow, or roll-panel overlap.
+
+Latest opening roll-off clarity commit:
+
+`5fd4fec Clarify Beta two-player opening roll-off`
+
+Current opening roll-off behavior:
+
+- Once both players are connected, the host button says `Roll For First` instead of `Start Game`.
+- The room status says Player 1 will roll once to see who starts.
+- The in-game opening phase uses explicit labels such as `ROLLING FOR FIRST TURN`, `HIGH ROLL STARTS`, and `ROLL-OFF`.
+- Tie rerolls are labeled as tie rerolls and use the shorter retry timing.
+- Public nearby QA on 2026-05-19 measured first-roll resolution at 3283ms with a 3500ms ceiling.
 
 Current handoff behavior:
 

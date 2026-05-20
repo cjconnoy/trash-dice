@@ -15,7 +15,7 @@ Intent: two people near each other, each on their own device, can start playing 
 Current verified coverage:
 
 - Public two-client create/join/start flow.
-- First-player roll with tie/reroll handling.
+- First-player roll-off is explicitly labeled, resolves under the QA ceiling, and has tie/reroll handling.
 - Deterministic Player 2 starts path with measured Player 2-to-Player 1 handoff readiness.
 - Player 2 small-phone roll-panel clearance.
 - Guest start rejection.

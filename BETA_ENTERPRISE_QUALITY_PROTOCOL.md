@@ -84,6 +84,7 @@ For every partner-facing Beta build, capture or record:
 - Frozen Alpha SHA-256 verification.
 - Local nearby two-client QA result.
 - Public nearby two-client QA result.
+- Opening roll-off clarity and timing result.
 - CPU-to-player handoff QA result for both lid and trash outcomes.
 - Room protocol QA result against public Worker.
 - Tablet/phone active-game layout QA result, including title/tagline visibility.
