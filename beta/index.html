@@ -2212,8 +2212,31 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
 .trash-can text {
   text-rendering: geometricPrecision;
 }
-.can-label-logo {
+.can-label-logo,
+.can-logo-overlay {
   display: none;
+}
+.can-label-wordmark {
+  pointer-events: none;
+  text-rendering: geometricPrecision;
+  shape-rendering: geometricPrecision;
+}
+.can-label-wordmark text {
+  font-family: 'Chewy', 'Cooper Black', 'Fredoka One', 'Arial Black', sans-serif;
+  font-weight: 900;
+  text-anchor: middle;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.can-label-wordmark .can-wordmark-shadow {
+  fill: #ef7040;
+  stroke: #07572a;
+  stroke-width: 5.2;
+}
+.can-label-wordmark .can-wordmark-face {
+  fill: #ffb53c;
+  stroke: #07572a;
+  stroke-width: 1.9;
 }
 .trash-can .can-logo-overlay {
   position: absolute;
@@ -5945,6 +5968,12 @@ body.beta-multiplayer-active .debug-badge {
           </g>
           <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
           <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.2)" stroke-width="1" opacity="0.46"/>
+          <g class="can-label-wordmark" filter="url(#labelShadow)" transform="rotate(-5 60 96)">
+            <text class="can-wordmark-shadow" x="60" y="91" font-size="31">Trash</text>
+            <text class="can-wordmark-face" x="60" y="91" font-size="31">Trash</text>
+            <text class="can-wordmark-shadow" x="60" y="116" font-size="35">Dice</text>
+            <text class="can-wordmark-face" x="60" y="116" font-size="35">Dice</text>
+          </g>
           </g>
           <path class="can-hero-glint" d="M-28 28 L6 24 L58 156 L25 158 Z" fill="url(#canHeroGlintG)" filter="url(#canHeroGlintGlow)"/>
           <g class="can-label-logo" clip-path="url(#labelClip)">

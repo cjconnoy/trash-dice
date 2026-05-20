@@ -196,9 +196,12 @@ async function main() {
         const roll = pick('.roll-panel');
         const message = pick('.message');
         const badge = pick('.milestone-badge');
+        const trashCan = pick('.trash-can');
+        const trashCanLogo = pick('.trash-can .can-label-wordmark');
+        const legacyCanLogoOverlay = pick('.trash-can .can-logo-overlay');
         const problems = [];
         const viewport = { width: window.innerWidth, height: window.innerHeight };
-        const required = { title, tagline, green, board, yellow, roll, message };
+        const required = { title, tagline, green, board, yellow, roll, message, trashCan, trashCanLogo };
         const visibleRects = [title, tagline, green, board, yellow, roll, message]
           .filter(rect => rect && rect.width > 0 && rect.height > 0);
         const visibleBottom = Math.max(...visibleRects.map(rect => rect.bottom));
@@ -226,6 +229,19 @@ async function main() {
         }
         if (badge && roll && badge.right > roll.left && badge.left < roll.right && badge.bottom > roll.top && badge.top < roll.bottom) {
           problems.push('milestone badge overlaps roll panel');
+        }
+        if (!trashCanLogo || trashCanLogo.display === 'none' || trashCanLogo.visibility === 'hidden' || trashCanLogo.opacity < 0.7) {
+          problems.push('trash can logo hidden');
+        } else if (trashCan) {
+          if (trashCanLogo.width < trashCan.width * 0.42 || trashCanLogo.height < trashCan.height * 0.12) {
+            problems.push('trash can logo clipped or undersized');
+          }
+          if (trashCanLogo.left < trashCan.left + trashCan.width * 0.04 || trashCanLogo.right > trashCan.right - trashCan.width * 0.04) {
+            problems.push('trash can logo escapes can label safe area');
+          }
+        }
+        if (legacyCanLogoOverlay && legacyCanLogoOverlay.display !== 'none' && legacyCanLogoOverlay.width > 1) {
+          problems.push('legacy trash can logo overlay still visible');
         }
 
         return {
