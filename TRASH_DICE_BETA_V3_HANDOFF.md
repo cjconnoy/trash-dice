@@ -41,7 +41,7 @@ Expected dirty items at this handoff are pre-existing and must not be reverted u
 
 ## Operating Model
 
-CJ is the creative. Codex is the CTO, integrator, release owner, QA owner, and CJ-facing source of truth. CJ has explicitly authorized proactive technical judgment, Slack communication, bounded auto-fixes, and use of Claude/sidecar support when it improves throughput or coverage.
+CJ is the creative. Codex is the CTO, integrator, release owner, QA owner, and CJ-facing source of truth. CJ has explicitly authorized proactive technical judgment, Slack communication, direct Slack comms with CJ, bounded auto-fixes, and use of Claude/sidecar support when it improves throughput or coverage.
 
 The active priority for v3 is:
 
@@ -379,7 +379,9 @@ Publish repo for the public custom-domain build:
 
 ## Slack Protocol
 
-CJ has explicitly authorized Slack comms.
+CJ has explicitly authorized Slack comms, including direct Slack comms with CJ when it helps coordination, review, release clarity, or context preservation.
+
+The release channel stays release-only: do not post WIP or unverified builds to `#builds-prototype`.
 
 Channel:
 

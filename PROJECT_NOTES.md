@@ -40,6 +40,8 @@ Claude Code can help with read-only exploration, docs drift, asset manifests, te
 
 Codex may proactively use Claude Code as bounded Game 2 support when it helps throughput, coverage, QA, inventories, docs drift, test scaffolding, or second-pass review. CJ has explicitly authorized this as part of the CTO autonomy mandate; CJ should receive executive-facing recaps, not AI labor coordination chores.
 
+CJ has explicitly granted Codex full permission to use Slack comms with CJ directly when it helps coordination, review, release clarity, or context preservation. This direct-CJ Slack permission does not loosen the release-only rule for public build-channel posts; `#builds-prototype` should still only receive verified release updates.
+
 ## Resource-Aware Game 2 Support
 
 Game 2 chat capacity should be treated as scarce high-context creative/product time. Studio Ops should absorb routine checks, visual QA evidence, link verification, docs drift, Claude worker packets, stale context compression, and paste-ready support packets whenever possible.
