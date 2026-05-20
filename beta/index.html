@@ -489,6 +489,12 @@ body.inline-game-over .dev-cheat-bar {
   min-height: 0;
 }
 
+body.beta-room-recovery .game-area {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* ── PLAYER PANELS — horizontal strips ── */
 .player-panel {
   --panel-accent: #f5c800;
@@ -5696,6 +5702,7 @@ body.beta-multiplayer-active .debug-badge {
   justify-content: flex-start;
   gap: 10px;
   overflow-y: auto;
+  z-index: 10020;
   padding:
     calc(env(safe-area-inset-top, 0px) + 40px)
     12px
@@ -6280,6 +6287,7 @@ body.beta-multiplayer-active .debug-badge {
   let betaCreatePending = false;
   let betaConnectQueue = [];
   let betaCurrentInviteHref = '';
+  let betaRoomRecoveryStatusText = '';
   let betaFirstRoll = {
     active: false,
     settling: false,
@@ -6877,6 +6885,52 @@ body.beta-multiplayer-active .debug-badge {
     }, 30);
   }
 
+  function resetBetaRoomRecoveryScene() {
+    clearBenchCelebration(false);
+    clearVictoryEffects();
+    clearTerminalState();
+    clearInlineGameOverUi();
+    stopTitleRoundWinFanfare();
+    clearPlayerPayoutFanfare(false);
+    clearInventoryMischief();
+    document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+    board = Array(6).fill(null);
+    pools = { p1: { yellow: 20, green: 0 }, p2: { yellow: 0, green: 20 } };
+    resetPoolFaces();
+    trashed = { p1: 0, p2: 0 };
+    trashDice = [];
+    canLoadSignature = null;
+    forcedRolls = [];
+    current = 'p1';
+    round = 1;
+    busy = false;
+    totalRolls = 0;
+    gameStarted = false;
+    playerClutchMagnetUsedThisRound = false;
+    enduranceAssistRolls = 0;
+    enduranceAssistUsedThisRound = false;
+    lastEnduranceAssist = null;
+    roundWins = { p1: 0, p2: 0 };
+    openingComebackAssistRolls = 0;
+    if (trashCan) {
+      trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
+      trashCan.style.animationDuration = '';
+      trashCan.style.removeProperty('--payout-can-dance-rate');
+    }
+    if (boardScene) boardScene.classList.remove('lid-weight-hit', 'can-weight-hit');
+    if (boardWrap) {
+      boardWrap.classList.remove('player-payout-lid-dance', 'inline-ending-lid-dance');
+      boardWrap.style.removeProperty('--payout-lid-dance-rate');
+    }
+    if (overlay) overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega', 'mobile-terminal-rest');
+    buildSlots();
+    clearDie(null);
+    setRollButtonPlayAgainMode(false);
+    rollBtn.disabled = true;
+    syncUI();
+    Audio.setMusicActive(false);
+  }
+
   function betaReturnToRoomPanel(statusText, gameText = 'PLAYER LEFT') {
     clearRuntimeTimers();
     cancelProgressionWatchdog();
@@ -6892,9 +6946,10 @@ body.beta-multiplayer-active .debug-badge {
       values: { p1: null, p2: null },
       winner: null
     };
-    busy = false;
-    rollBtn.disabled = true;
+    betaRoomRecoveryStatusText = statusText || '';
+    resetBetaRoomRecoveryScene();
     document.body.classList.remove('beta-multiplayer-active', 'player-roll-ready');
+    document.body.classList.add('beta-room-recovery');
     if (startOverlayEl) {
       startOverlayEl.style.display = 'flex';
       startOverlayEl.classList.remove('hide');
@@ -6949,8 +7004,9 @@ body.beta-multiplayer-active .debug-badge {
     }
     if (betaCreateBtn) betaCreateBtn.disabled = !!betaSeat || betaCreatePending;
     if (betaJoinBtn) betaJoinBtn.disabled = !!betaSeat;
-    document.body.classList.toggle('beta-multiplayer-active', betaMultiplayerActive || !!betaSeat);
-    if (betaRoomReady && betaSeat === 'p1') setBetaStatus('Player 2 connected. Roll once to see who starts.');
+    document.body.classList.toggle('beta-multiplayer-active', (betaMultiplayerActive || !!betaSeat) && !document.body.classList.contains('beta-room-recovery'));
+    if (document.body.classList.contains('beta-room-recovery') && betaRoomRecoveryStatusText && !betaRoomReady) setBetaStatus(betaRoomRecoveryStatusText);
+    else if (betaRoomReady && betaSeat === 'p1') setBetaStatus('Player 2 connected. Roll once to see who starts.');
     else if (betaRoomReady) setBetaStatus('Connected. Waiting for Player 1 to roll for first turn.');
     else if (betaSeat === 'p1') setBetaStatus('Show this QR code or room code to Player 2.');
     else if (betaSeat === 'p2') setBetaStatus('Joined. Waiting for Player 1.');
@@ -6993,9 +7049,12 @@ body.beta-multiplayer-active .debug-badge {
       betaJoinPending = false;
       betaCreatePending = false;
       betaConnectQueue = [];
-      if (betaMultiplayerActive) {
-        rollBtn.disabled = true;
-        setMsg('CONNECTION LOST');
+      if (betaMultiplayerActive || gameStarted) {
+        betaSeat = null;
+        betaRoomCode = '';
+        betaCurrentInviteHref = '';
+        betaReturnToRoomPanel('Connection lost. Create or join again.', 'CONNECTION LOST');
+        return;
       }
       setBetaStatus('Connection lost. Create or join again.');
     });
@@ -7076,6 +7135,7 @@ body.beta-multiplayer-active .debug-badge {
 
   function betaCreateRoom() {
     if (betaCreatePending || betaSeat) return;
+    betaRoomRecoveryStatusText = '';
     betaCreatePending = true;
     setBetaRoomUi();
     betaConnect(() => betaSend({ type: 'create' }));
@@ -7089,6 +7149,7 @@ body.beta-multiplayer-active .debug-badge {
       return;
     }
     if (betaJoinPending && betaRoomCode === code) return;
+    betaRoomRecoveryStatusText = '';
     betaRoomCode = code;
     betaJoinPending = true;
     setBetaStatus(`Joining room ${code}...`);
@@ -9559,6 +9620,8 @@ body.beta-multiplayer-active .debug-badge {
 
   async function startGameFromOverlay(playAudio = true) {
     if (gameStarted) return;
+    betaRoomRecoveryStatusText = '';
+    document.body.classList.remove('beta-room-recovery');
     if (playAudio) {
       Audio.unlock('start-overlay', () => {
         Audio.startFanfare();
@@ -9581,7 +9644,7 @@ body.beta-multiplayer-active .debug-badge {
     clearTerminalState();
     clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
-    document.body.classList.remove('player-roll-ready');
+    document.body.classList.remove('player-roll-ready', 'beta-room-recovery');
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');

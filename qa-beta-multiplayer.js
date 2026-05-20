@@ -121,6 +121,73 @@ async function main() {
     }
     throw new Error(`timeout ${label}`);
   }
+  async function waitForDisconnectRecovery(pageRef, label, timeout = 12000) {
+    const expression = `(() => {
+      const state = window.TrashDiceDebug.state();
+      const overlay = document.getElementById('startOverlay');
+      const panel = document.getElementById('betaRoomPanel');
+      const status = document.getElementById('betaRoomStatus');
+      const roll = document.getElementById('rollBtn');
+      const gameArea = document.querySelector('.game-area');
+      const trash = document.getElementById('trashCan');
+      const overlayStyle = overlay ? getComputedStyle(overlay) : null;
+      const gameStyle = gameArea ? getComputedStyle(gameArea) : null;
+      const trashClasses = trash ? Array.from(trash.classList) : [];
+      const hotTrashClasses = ['flash', 'pour', 'player-payout-can-dance', 'inline-ending-can-dance', 'victory-erupt'];
+      const leftovers = document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').length;
+      let trashTopmost = false;
+      if (trash) {
+        const rect = trash.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + Math.min(rect.height * 0.18, rect.height / 2));
+          trashTopmost = !!(top && (top === trash || trash.contains(top)));
+        }
+      }
+      const report = {
+        gameStarted: state.gameStarted,
+        multiplayerActive: state.beta.multiplayerActive,
+        seat: state.beta.seat,
+        roomCode: state.beta.roomCode,
+        bodyRecovery: document.body.classList.contains('beta-room-recovery'),
+        overlayDisplay: overlayStyle ? overlayStyle.display : null,
+        overlayOpacity: overlayStyle ? overlayStyle.opacity : null,
+        overlayZ: overlayStyle ? Number(overlayStyle.zIndex) : null,
+        overlayOpen: !!(overlay && overlay.classList.contains('beta-room-open') && !overlay.classList.contains('hide')),
+        panelVisible: !!(panel && !panel.hidden && getComputedStyle(panel).display !== 'none'),
+        statusText: status ? status.textContent : '',
+        rollDisabled: roll ? roll.disabled : null,
+        gameVisibility: gameStyle ? gameStyle.visibility : null,
+        gameOpacity: gameStyle ? gameStyle.opacity : null,
+        leftovers,
+        trashClasses,
+        trashTopmost
+      };
+      report.ok =
+        report.bodyRecovery &&
+        report.overlayDisplay !== 'none' &&
+        report.overlayOpen &&
+        report.overlayZ >= 10000 &&
+        report.panelVisible &&
+        /left|closed|lost/i.test(report.statusText) &&
+        report.gameStarted === false &&
+        report.multiplayerActive === false &&
+        report.rollDisabled === true &&
+        report.gameVisibility === 'hidden' &&
+        Number(report.gameOpacity) === 0 &&
+        report.leftovers === 0 &&
+        !report.trashTopmost &&
+        !hotTrashClasses.some(className => report.trashClasses.includes(className));
+      return report;
+    })()`;
+    const startedAt = Date.now();
+    let lastReport = null;
+    while (Date.now() - startedAt < timeout) {
+      lastReport = await evalValue(pageRef, expression);
+      if (lastReport && lastReport.ok) return lastReport;
+      await sleep(100);
+    }
+    throw new Error(`timeout ${label} ${JSON.stringify(lastReport)}`);
+  }
 
   const gameUrl = betaPageUrl();
   const player1 = await page(gameUrl);
@@ -170,6 +237,7 @@ async function main() {
   `, 'copy code button responds');
 
   const player2 = await page(gameUrl);
+  let player2ClosedForRecovery = false;
   await evalValue(player2, `Math.random = () => 0.92; true`);
   await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
   await waitEval(player2, `
@@ -384,6 +452,10 @@ async function main() {
   await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 1 sees second roll');
   await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 2 sees second roll');
 
+  await send('Target.closeTarget', { targetId: player2.targetId });
+  player2ClosedForRecovery = true;
+  const hostDisconnectRecovery = await waitForDisconnectRecovery(player1, 'host recovery after player 2 disconnect');
+
   const out = {
     ok: true,
     roomCode,
@@ -392,12 +464,15 @@ async function main() {
     maxFirstRollMs,
     player2RollLayout,
     p2ToP1Handoff,
+    hostDisconnectRecovery,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
-    player2: await evalValue(player2, `window.TrashDiceDebug.state().beta`)
+    player2ClosedForRecovery
   };
   console.log(JSON.stringify(out, null, 2));
   await send('Target.closeTarget', { targetId: player1.targetId });
-  await send('Target.closeTarget', { targetId: player2.targetId });
+  if (!player2ClosedForRecovery) {
+    await send('Target.closeTarget', { targetId: player2.targetId });
+  }
   ws.close();
 }
 
