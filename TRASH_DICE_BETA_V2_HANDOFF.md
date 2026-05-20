@@ -264,6 +264,7 @@ Verified locally on 2026-05-17:
 - Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
 - Public room protocol QA passes against `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`.
 - Host invite controls pass small-phone QA: QR present, share/copy controls tappable, and invite URL includes the room code.
+- iPad active-game layout QA is required for Beta releases so the roll panel cannot slip below iPad Safari's usable viewport.
 - The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
 - Public Beta bytes match the committed Beta artifact hash `9e289cf0d7a2511bd4d8e91d9a8c61823a0af6d7b5f59ce9330120b593931082`.
 - Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
@@ -294,6 +295,7 @@ node -e "const fs=require('fs'); for (const f of ['beta/index.html','beta/trash-
 ```powershell
 node --check .\tmp\codex-static-server.js
 node --check .\qa-beta-multiplayer.js
+node --check .\qa-beta-ipad-layout.js
 ```
 
 4. Run:
@@ -311,6 +313,7 @@ git diff --check
 
 ```powershell
 node .\qa-beta-multiplayer.js http://127.0.0.1:5175
+node .\qa-beta-ipad-layout.js http://127.0.0.1:5175/beta/
 ```
 
 8. Run mobile visual QA when the change affects mobile, terminal states, or reviewability:

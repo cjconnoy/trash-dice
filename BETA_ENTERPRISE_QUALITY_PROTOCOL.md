@@ -38,7 +38,7 @@ For changes that affect terminal states, mobile layout, or reviewability, add th
 .\qa-beta-enterprise.ps1 -RunMobileVisualQc
 ```
 
-The enterprise gate wraps the existing focused checks instead of replacing them. It verifies the Beta mirror, script parsing, QA script syntax, room server syntax, Worker syntax, git whitespace health, readiness dry run, forbidden preview port, local two-client multiplayer QA, local room protocol QA, Worker deploy dry run, optional mobile visual QC, and public byte/protocol/multiplayer QA when not skipped.
+The enterprise gate wraps the existing focused checks instead of replacing them. It verifies the Beta mirror, script parsing, QA script syntax, room server syntax, Worker syntax, git whitespace health, readiness dry run, forbidden preview port, local two-client multiplayer QA, local iPad active-game layout QA, local room protocol QA, Worker deploy dry run, optional mobile visual QC, and public byte/protocol/multiplayer/iPad layout QA when not skipped.
 
 ## Auto-Fix Doctrine
 
@@ -85,6 +85,7 @@ For every partner-facing Beta build, capture or record:
 - Local nearby two-client QA result.
 - Public nearby two-client QA result.
 - Room protocol QA result against public Worker.
+- iPad active-game layout QA result.
 - Worker deploy dry-run result.
 - Mobile visual QC status, including whether the known 20s terminal reset remains red.
 - Any manual real-device spot checks and device/browser names.
