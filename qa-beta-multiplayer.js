@@ -197,15 +197,31 @@ async function main() {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     true
   `);
-  await waitEval(player1, `!document.getElementById('betaStartRoomBtn').disabled`, 'player 1 ready');
+  await waitEval(player1, `
+    (() => {
+      const button = document.getElementById('betaStartRoomBtn');
+      const status = document.getElementById('betaRoomStatus').textContent;
+      return button &&
+        !button.disabled &&
+        button.textContent.includes('Roll For First') &&
+        status.includes('Roll once to see who starts');
+    })()
+  `, 'player 1 ready to roll for first');
   await waitEval(player2, `
     document.getElementById('betaRoomStatus').textContent.includes('Waiting for Player 1') ||
     document.getElementById('betaRoomStatus').textContent.includes('Connected')
   `, 'player 2 ready');
 
+  const firstRollStartedAt = Date.now();
   await evalValue(player1, `document.getElementById('betaStartRoomBtn').click(); true`);
   await waitEval(player1, `window.TrashDiceDebug.state().gameStarted && window.TrashDiceDebug.state().beta.multiplayerActive`, 'player 1 started');
   await waitEval(player2, `window.TrashDiceDebug.state().gameStarted && window.TrashDiceDebug.state().beta.multiplayerActive`, 'player 2 started');
+  await waitEval(player1, `
+    /ROLLING FOR FIRST|HIGH ROLL|ROLL-OFF/.test(document.getElementById('message').textContent)
+  `, 'player 1 first roll purpose visible');
+  await waitEval(player2, `
+    /ROLLING FOR FIRST|HIGH ROLL|ROLL-OFF/.test(document.getElementById('message').textContent)
+  `, 'player 2 first roll purpose visible');
 
   await waitEval(player1, `
     (() => {
@@ -228,6 +244,11 @@ async function main() {
     })()
   `, 'player 2 first roll resolved', 20000);
   const firstRoll = await evalValue(player1, `window.TrashDiceDebug.state().beta.firstRoll`);
+  const firstRollMs = Date.now() - firstRollStartedAt;
+  const maxFirstRollMs = 3500;
+  if (firstRollMs > maxFirstRollMs) {
+    throw new Error(`opening roll-off took ${firstRollMs}ms, expected <= ${maxFirstRollMs}ms`);
+  }
   if (!firstRoll.values || !firstRoll.values.p1 || !firstRoll.values.p2 || firstRoll.values.p1 === firstRoll.values.p2) {
     throw new Error(`opening first roll did not resolve cleanly ${JSON.stringify(firstRoll)}`);
   }
@@ -367,6 +388,8 @@ async function main() {
     ok: true,
     roomCode,
     firstRoll,
+    firstRollMs,
+    maxFirstRollMs,
     player2RollLayout,
     p2ToP1Handoff,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
