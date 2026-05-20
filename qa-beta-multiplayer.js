@@ -188,6 +188,25 @@ async function main() {
     }
     throw new Error(`timeout ${label} ${JSON.stringify(lastReport)}`);
   }
+  async function assertFullRoundWinEvent(pageRef, winner, label) {
+    const report = await evalValue(pageRef, `window.TrashDiceDebug.roundWinEventProbe('${winner}')`);
+    const problems = [];
+    if (!report.fullEvent) problems.push('fullEvent=false');
+    if (report.spillDuration <= report.expectedCpuDuration) problems.push(`spillDuration ${report.spillDuration} <= cpu ${report.expectedCpuDuration}`);
+    if (report.spillDuration < report.fullDuration) problems.push(`spillDuration ${report.spillDuration} < full ${report.fullDuration}`);
+    if (!report.titleFanfareActive) problems.push('title fanfare inactive');
+    if (!report.lidDance) problems.push('lid payout dance inactive');
+    if (!report.canDance) problems.push('can payout dance inactive');
+    if (!report.payoutPanelActive) problems.push('winner panel payout inactive');
+    if (!report.payoutInventoryActive) problems.push('winner inventory payout inactive');
+    if (!report.payoutStatusActive || report.payoutStatusText !== 'PAYDAY!') problems.push(`winner status unsafe: ${report.payoutStatusText}`);
+    if (report.payoutComets < 6) problems.push(`expected payout comets, saw ${report.payoutComets}`);
+    if (!/GREEN WINS THE ROUND/.test(report.message)) problems.push(`message unsafe: ${report.message}`);
+    if (problems.length) {
+      throw new Error(`${label} full round win event failed: ${problems.join(', ')} ${JSON.stringify(report)}`);
+    }
+    return report;
+  }
 
   const gameUrl = betaPageUrl();
   const player1 = await page(gameUrl);
@@ -452,6 +471,11 @@ async function main() {
   await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 1 sees second roll');
   await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 2`, 'player 2 sees second roll');
 
+  const multiplayerRoundWinEvent = {
+    player1: await assertFullRoundWinEvent(player1, 'p2', 'player 1 observes green round win'),
+    player2: await assertFullRoundWinEvent(player2, 'p2', 'player 2 observes green round win')
+  };
+
   await send('Target.closeTarget', { targetId: player2.targetId });
   player2ClosedForRecovery = true;
   const hostDisconnectRecovery = await waitForDisconnectRecovery(player1, 'host recovery after player 2 disconnect');
@@ -464,6 +488,7 @@ async function main() {
     maxFirstRollMs,
     player2RollLayout,
     p2ToP1Handoff,
+    multiplayerRoundWinEvent,
     hostDisconnectRecovery,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
     player2ClosedForRecovery

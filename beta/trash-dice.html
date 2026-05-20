@@ -572,26 +572,26 @@ body.inline-game-over .roll-panel {
 .status-bar.bench-praise .status-text {
   color: #0f5f32;
 }
-.yellow-panel.player-payout-fanfare {
+.player-panel.player-payout-fanfare {
   animation: playerPayoutPanelFanfare 0.72s cubic-bezier(.14,.82,.16,1) infinite;
   transform-origin: 50% 54%;
   will-change: transform, filter;
 }
-.yellow-panel.player-payout-fanfare::before {
-  border-color: rgba(245,200,0,0.42);
+.player-panel.player-payout-fanfare::before {
+  border-color: var(--panel-accent);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.92),
     inset 0 -2px 5px rgba(35,45,41,0.08),
-    0 0 22px rgba(245,200,0,0.46),
+    0 0 22px var(--panel-glow),
     0 0 42px rgba(255,230,88,0.28);
 }
-.yellow-panel.player-payout-fanfare::after {
+.player-panel.player-payout-fanfare::after {
   width: 8px;
-  background: linear-gradient(180deg, #fff38a, #f5c800 38%, #0f5f32 78%);
+  background: linear-gradient(180deg, #fff38a, var(--panel-accent) 38%, #0f5f32 78%);
   box-shadow:
     inset 1px 0 0 rgba(255,255,255,0.55),
-    0 0 18px rgba(245,200,0,0.76),
-    0 0 34px rgba(245,200,0,0.42);
+    0 0 18px var(--panel-glow),
+    0 0 34px var(--panel-glow);
   animation: playerPayoutRailChase 0.42s linear infinite;
 }
 .inventory-cluster.player-payout-fanfare {
@@ -6333,6 +6333,7 @@ body.beta-multiplayer-active .debug-badge {
   let benchCelebrateTimer = null;
   let playerPayoutFanfareTimer = null;
   let playerPayoutFanfareActive = false;
+  let playerPayoutFanfarePlayer = 'p1';
   let lastPlayerHitPraise = null;
   let playerClutchMagnetUsedThisRound = false;
   let enduranceAssistRolls = 0;
@@ -6409,6 +6410,7 @@ body.beta-multiplayer-active .debug-badge {
     benchCelebrateTimer = null;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
+    playerPayoutFanfarePlayer = 'p1';
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
@@ -7733,17 +7735,44 @@ body.beta-multiplayer-active .debug-badge {
     panel.addEventListener('animationend', () => panel.classList.remove('payout-tick'), { once: true });
   }
 
+  function getPlayerUi(player) {
+    const isP1 = player === 'p1';
+    const inventory = isP1 ? p1Inventory : p2Inventory;
+    return {
+      player: isP1 ? 'p1' : 'p2',
+      inventory,
+      panel: inventory ? inventory.closest('.player-panel') : null,
+      statusBar: isP1 ? p1StatusBar : p2StatusBar,
+      statusText: isP1 ? p1StatusText : p2StatusText,
+      poolEl: isP1 ? p1PoolEl : p2PoolEl
+    };
+  }
+
+  function restorePayoutStatusText(player) {
+    const ui = getPlayerUi(player);
+    if (!ui.statusText) return;
+    if (ui.player === 'p1') {
+      ui.statusText.textContent = current === 'p1' ? 'YOUR TURN' : 'YELLOW PLAYER';
+    } else {
+      ui.statusText.textContent = current === 'p2' ? 'GREEN ROLL' : 'GREEN PLAYER';
+    }
+  }
+
   function clearPlayerPayoutFanfare(resetStatus = false) {
     if (playerPayoutFanfareTimer) {
       cancelRuntimeTimer(playerPayoutFanfareTimer);
       playerPayoutFanfareTimer = null;
     }
     playerPayoutFanfareActive = false;
-    const panel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
-    if (panel) panel.classList.remove('player-payout-fanfare');
-    if (p1Inventory) p1Inventory.classList.remove('player-payout-fanfare');
-    if (p1StatusBar) p1StatusBar.classList.remove('payout-praise');
-    if (p1PoolEl) p1PoolEl.classList.remove('payout-jackpot');
+    playerPayoutFanfarePlayer = 'p1';
+    ['p1', 'p2'].forEach(player => {
+      const ui = getPlayerUi(player);
+      if (ui.panel) ui.panel.classList.remove('player-payout-fanfare');
+      if (ui.inventory) ui.inventory.classList.remove('player-payout-fanfare');
+      if (ui.statusBar) ui.statusBar.classList.remove('payout-praise');
+      if (ui.poolEl) ui.poolEl.classList.remove('payout-jackpot');
+      if (resetStatus) restorePayoutStatusText(player);
+    });
     if (boardWrap) {
       boardWrap.classList.remove('player-payout-lid-dance');
       boardWrap.style.removeProperty('--payout-lid-dance-rate');
@@ -7752,23 +7781,23 @@ body.beta-multiplayer-active .debug-badge {
       trashCan.classList.remove('player-payout-can-dance');
       trashCan.style.removeProperty('--payout-can-dance-rate');
     }
-    if (resetStatus && p1StatusText) p1StatusText.textContent = current === 'p1' ? 'YOUR TURN' : 'YELLOW PLAYER';
   }
 
-  function startPlayerPayoutFanfare(duration = 1800) {
-    if (!p1Inventory) return;
+  function startPlayerPayoutFanfare(player = 'p1', duration = 1800) {
+    const ui = getPlayerUi(player);
+    if (!ui.inventory) return;
     clearPlayerPayoutFanfare(false);
     clearBenchCelebration(false);
     playerPayoutFanfareActive = true;
-    const panel = p1Inventory.closest('.player-panel');
-    if (panel) {
-      void panel.offsetWidth;
-      panel.classList.add('player-payout-fanfare');
+    playerPayoutFanfarePlayer = ui.player;
+    if (ui.panel) {
+      void ui.panel.offsetWidth;
+      ui.panel.classList.add('player-payout-fanfare');
     }
-    p1Inventory.classList.add('player-payout-fanfare');
-    if (p1StatusText) p1StatusText.textContent = 'PAYDAY!';
-    if (p1StatusBar) p1StatusBar.classList.add('payout-praise');
-    if (p1PoolEl) p1PoolEl.classList.add('payout-jackpot');
+    ui.inventory.classList.add('player-payout-fanfare');
+    if (ui.statusText) ui.statusText.textContent = 'PAYDAY!';
+    if (ui.statusBar) ui.statusBar.classList.add('payout-praise');
+    if (ui.poolEl) ui.poolEl.classList.add('payout-jackpot');
     playerPayoutFanfareTimer = runLater(() => {
       playerPayoutFanfareTimer = null;
       clearPlayerPayoutFanfare(true);
@@ -7780,10 +7809,12 @@ body.beta-multiplayer-active .debug-badge {
       cancelRuntimeTimer(benchCelebrateTimer);
       benchCelebrateTimer = null;
     }
-    const panel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
-    if (panel) panel.classList.remove('bench-celebrate');
-    if (p1Inventory) p1Inventory.classList.remove('bench-celebrate');
-    if (p1StatusBar) p1StatusBar.classList.remove('bench-praise');
+    ['p1', 'p2'].forEach(player => {
+      const ui = getPlayerUi(player);
+      if (ui.panel) ui.panel.classList.remove('bench-celebrate');
+      if (ui.inventory) ui.inventory.classList.remove('bench-celebrate');
+      if (ui.statusBar) ui.statusBar.classList.remove('bench-praise');
+    });
     if (resetStatus && p1StatusText) p1StatusText.textContent = 'YOUR TURN';
     document.querySelectorAll('.bench-cheer-die').forEach(die => {
       die.classList.remove('bench-cheer-die');
@@ -7807,28 +7838,30 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function triggerBenchCelebration(player, isRoundWin = false) {
-    if (player !== 'p1' || !p1Pile || !p1Inventory) return;
+    if (player !== 'p1' && !(betaMultiplayerActive && player === 'p2')) return;
+    const ui = getPlayerUi(player);
+    const pile = player === 'p1' ? p1Pile : p2Pile;
+    if (!pile || !ui.inventory) return;
     clearBenchCelebration(false);
     clearInventoryMischief();
 
-    const panel = p1Inventory.closest('.player-panel');
-    if (panel) {
-      void panel.offsetWidth;
-      panel.classList.add('bench-celebrate');
+    if (ui.panel) {
+      void ui.panel.offsetWidth;
+      ui.panel.classList.add('bench-celebrate');
     }
-    p1Inventory.classList.add('bench-celebrate');
-    if (p1StatusText) {
-      p1StatusText.textContent = choosePlayerHitPraise(isRoundWin);
+    ui.inventory.classList.add('bench-celebrate');
+    if (ui.statusText) {
+      ui.statusText.textContent = choosePlayerHitPraise(isRoundWin);
     }
-    if (p1StatusBar) {
-      p1StatusBar.classList.remove('bench-praise');
-      void p1StatusBar.offsetWidth;
-      p1StatusBar.classList.add('bench-praise');
+    if (ui.statusBar) {
+      ui.statusBar.classList.remove('bench-praise');
+      void ui.statusBar.offsetWidth;
+      ui.statusBar.classList.add('bench-praise');
     }
 
-    const dice = Array.from(p1Pile.querySelectorAll('.mini-die'));
+    const dice = Array.from(pile.querySelectorAll('.mini-die'));
     dice.forEach(die => die.classList.remove('bench-cheer-die'));
-    void p1Pile.offsetWidth;
+    void pile.offsetWidth;
     dice.forEach((die, i) => {
       const stagger = Math.min(i, 20) * 22;
       const tilt = (i % 2 === 0 ? -1 : 1) * (8 + (i % 4) * 2);
@@ -9337,14 +9370,19 @@ body.beta-multiplayer-active .debug-badge {
     p1StatusBar.classList.toggle('active', isP1);
     p2StatusBar.classList.toggle('active', !isP1);
     p1StatusBar.classList.remove('bench-praise');
+    p2StatusBar.classList.remove('bench-praise');
     if (playerPayoutFanfareActive) {
-      p1Inventory.classList.add('has-status');
-      p1StatusBar.classList.add('active', 'payout-praise');
-      if (p1StatusText) p1StatusText.textContent = 'PAYDAY!';
-    } else if (p1StatusText) {
+      const payoutUi = getPlayerUi(playerPayoutFanfarePlayer);
+      if (payoutUi.inventory) payoutUi.inventory.classList.add('has-status');
+      if (payoutUi.statusBar) payoutUi.statusBar.classList.add('active', 'payout-praise');
+      if (payoutUi.statusText) payoutUi.statusText.textContent = 'PAYDAY!';
+    }
+    if ((!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== 'p1') && p1StatusText) {
       p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'YELLOW PLAYER';
     }
-    if (p2StatusText) p2StatusText.textContent = isP1 ? 'GREEN PLAYER' : 'GREEN ROLL';
+    if ((!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== 'p2') && p2StatusText) {
+      p2StatusText.textContent = isP1 ? 'GREEN PLAYER' : 'GREEN ROLL';
+    }
     p1TurnDot.style.background = '#f5c800';
     p2TurnDot.style.background = '#1f9652';
     rollBtn.className = 'roll-btn ' + current;
@@ -9882,9 +9920,13 @@ body.beta-multiplayer-active .debug-badge {
     return clamp(1300 + count * 520 + Math.max(0, count - 6) * 180, 1600, 9000);
   }
 
+  function isFullRoundWinEvent(winner) {
+    return winner === 'p1' || betaMultiplayerActive;
+  }
+
   function roundSpillDurationForWinner(winner, diceWon) {
     const duration = spillDurationForDice(diceWon);
-    return winner === 'p2' ? Math.min(duration, 2800) : duration;
+    return isFullRoundWinEvent(winner) ? duration : Math.min(duration, 2800);
   }
 
   function animateLidPayoutToPool(winner, lidDice, spillDuration = spillDurationForDice(lidDice.length), spillLoad = lidDice.length, onDieArrive = null) {
@@ -9897,7 +9939,7 @@ body.beta-multiplayer-active .debug-badge {
     const pourLeadInMs = 220;
     const pourTailMs = 360;
     const lidDanceMs = clamp(spillDuration * 0.92, 1300, 8500);
-    const playerPayout = winner === 'p1';
+    const playerPayout = isFullRoundWinEvent(winner);
     trashCan.classList.remove('flash', 'pour', 'player-payout-can-dance');
     trashCan.style.animationDuration = '';
     trashCan.style.removeProperty('--payout-can-dance-rate');
@@ -10058,12 +10100,12 @@ body.beta-multiplayer-active .debug-badge {
     roundFlash.className = '';
     void roundFlash.offsetWidth;
     roundFlash.className = 'round-flash ' + winner;
-    const fanfareDuration = winner === 'p2'
-      ? clamp(spillDuration * 0.42, 850, 1700)
-      : spillDuration;
+    const fanfareDuration = isFullRoundWinEvent(winner)
+      ? spillDuration
+      : clamp(spillDuration * 0.42, 850, 1700);
     triggerTitleRoundWinFanfare(fanfareDuration);
     Audio.roundWonFanfare(fanfareDuration);
-    if (winner === 'p1') startPlayerPayoutFanfare(spillDuration + 420);
+    if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
 
     // Only dice still sitting in the lid pay out; trash dice are already lost.
     showClaimBadge(winner, payoutDice, spillDuration);
@@ -10870,6 +10912,63 @@ body.beta-multiplayer-active .debug-badge {
     },
     recover() {
       return recoverProgressionState('debug');
+    },
+    roundWinEventProbe(winner = 'p2') {
+      if (!gameStarted) init();
+      clearRuntimeTimers();
+      cancelProgressionWatchdog();
+      clearBenchCelebration(false);
+      clearPlayerPayoutFanfare(false);
+      clearInventoryMischief();
+      clearDie(null);
+      document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+      trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
+      trashCan.style.animationDuration = '';
+      trashCan.style.removeProperty('--payout-can-dance-rate');
+      boardWrap.classList.remove('lid-weight-hit', 'can-weight-hit', 'lid-place-pulse', 'lid-win-pulse', 'game-win-spin', 'player-payout-lid-dance', 'inline-ending-lid-dance');
+      boardWrap.style.removeProperty('--payout-lid-dance-rate');
+      roundResolutionState = null;
+      const forcedWinner = winner === 'p1' ? 'p1' : 'p2';
+      current = forcedWinner;
+      busy = false;
+      rollBtn.disabled = true;
+      board = Array.from({ length: 6 }, (_, i) => ({
+        player: i % 2 ? 'p2' : 'p1',
+        color: i % 2 ? 'green' : 'yellow',
+        value: i + 1
+      }));
+      trashDice = [];
+      canLoadSignature = null;
+      buildSlots();
+      board.forEach((die, i) => paintSlot(i, die));
+      syncUI();
+      const fullDuration = spillDurationForDice(board.length);
+      const expectedCpuDuration = Math.min(fullDuration, 2800);
+      const spillDuration = roundSpillDurationForWinner(forcedWinner, board.length);
+      const fullEvent = isFullRoundWinEvent(forcedWinner);
+      endRound();
+      return new Promise(resolve => {
+        runLater(() => {
+          const ui = getPlayerUi(forcedWinner);
+          resolve({
+            winner: forcedWinner,
+            multiplayerActive: betaMultiplayerActive,
+            fullEvent,
+            spillDuration,
+            fullDuration,
+            expectedCpuDuration,
+            message: msgEl ? msgEl.textContent : '',
+            titleFanfareActive: heroTitle.classList.contains('round-win-title-fanfare') || heroTitle.classList.contains('round-win-title-sustain'),
+            lidDance: boardWrap.classList.contains('player-payout-lid-dance'),
+            canDance: trashCan.classList.contains('player-payout-can-dance'),
+            payoutPanelActive: !!(ui.panel && ui.panel.classList.contains('player-payout-fanfare')),
+            payoutInventoryActive: !!(ui.inventory && ui.inventory.classList.contains('player-payout-fanfare')),
+            payoutStatusActive: !!(ui.statusBar && ui.statusBar.classList.contains('payout-praise')),
+            payoutStatusText: ui.statusText ? ui.statusText.textContent : '',
+            payoutComets: document.querySelectorAll('.player-payout-comet').length
+          });
+        }, 180);
+      });
     },
     mischief(scene) {
       const requested = INVENTORY_MISCHIEF_SCENES.includes(scene)
