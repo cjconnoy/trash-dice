@@ -124,6 +124,7 @@ async function main() {
 
   const gameUrl = betaPageUrl();
   const player1 = await page(gameUrl);
+  await evalValue(player1, `Math.random = () => 0.08; true`);
   await evalValue(player1, `
     document.getElementById('betaTwoPlayerBtn').click();
     document.getElementById('betaCreateBtn').click();
@@ -169,6 +170,7 @@ async function main() {
   `, 'copy code button responds');
 
   const player2 = await page(gameUrl);
+  await evalValue(player2, `Math.random = () => 0.92; true`);
   await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
   await waitEval(player2, `
     (() => {
@@ -266,11 +268,76 @@ async function main() {
   `);
   }
 
+  async function readPlayer1TurnSnapshot() {
+    return evalValue(player1, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        const rollBtn = document.getElementById('rollBtn');
+        return {
+          current: state.current,
+          busy: state.busy,
+          rollDisabled: rollBtn.disabled,
+          totalRolls: state.totalRolls,
+          message: document.getElementById('message').textContent.trim()
+        };
+      })()
+    `);
+  }
+
+  async function observeP2ToP1Handoff() {
+    const startedAt = Date.now();
+    const maxTotalMs = 9000;
+    const maxHandoffMs = 850;
+    let completedAt = null;
+    let completionMessage = '';
+    const events = [];
+    let lastSnapshot = '';
+
+    while (Date.now() - startedAt < maxTotalMs) {
+      const state = await readPlayer1TurnSnapshot();
+      const now = Date.now();
+      const snapshot = `${state.current}|${state.busy}|${state.rollDisabled}|${state.totalRolls}|${state.message}`;
+      if (snapshot !== lastSnapshot) {
+        lastSnapshot = snapshot;
+        events.push({ ...state, t: now - startedAt });
+      }
+      if (!completedAt && state.current === 'p2' && state.busy && /^(LID|TRASH)\b/.test(state.message)) {
+        completedAt = now;
+        completionMessage = state.message;
+      }
+      if (completedAt && state.current === 'p1' && !state.busy && !state.rollDisabled) {
+        const report = {
+          completionMessage,
+          totalMs: now - startedAt,
+          handoffMs: now - completedAt,
+          events: events.slice(-16),
+          maxHandoffMs
+        };
+        if (report.handoffMs > maxHandoffMs) {
+          throw new Error(`p2-to-p1 handoff exceeded ${maxHandoffMs}ms ${JSON.stringify(report)}`);
+        }
+        return report;
+      }
+      await sleep(35);
+    }
+
+    throw new Error(`timeout p2-to-p1 handoff ${JSON.stringify({
+      completionMessage,
+      handoffMs: completedAt ? Date.now() - completedAt : null,
+      events: events.slice(-16),
+      maxHandoffMs
+    })}`);
+  }
+
   let player2RollLayout;
+  let p2ToP1Handoff;
   if (firstRoll.winner === 'p2') {
     await waitForRollReady(player2, 'p2', 'green starter ready');
     player2RollLayout = await readPlayer2RollLayout();
+    const p2ToP1Probe = observeP2ToP1Handoff();
     await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
+    await send('Target.activateTarget', { targetId: player1.targetId });
+    p2ToP1Handoff = await p2ToP1Probe;
     await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p1'`, 'player 1 sees yellow turn');
     await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p1'`, 'player 2 sees yellow turn');
     await waitForRollReady(player1, 'p1', 'yellow second ready');
@@ -282,7 +349,12 @@ async function main() {
     await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 1 && window.TrashDiceDebug.state().current === 'p2'`, 'player 2 sees green turn');
     await waitForRollReady(player2, 'p2', 'green second ready');
     player2RollLayout = await readPlayer2RollLayout();
+    const p2ToP1Probe = observeP2ToP1Handoff();
     await evalValue(player2, `document.getElementById('rollBtn').click(); true`);
+    await send('Target.activateTarget', { targetId: player1.targetId });
+    p2ToP1Handoff = await p2ToP1Probe;
+    await waitEval(player1, `window.TrashDiceDebug.state().totalRolls === 2 && window.TrashDiceDebug.state().current === 'p1'`, 'player 1 sees yellow return');
+    await waitEval(player2, `window.TrashDiceDebug.state().totalRolls === 2 && window.TrashDiceDebug.state().current === 'p1'`, 'player 2 sees yellow return');
   }
   if (!player2RollLayout || player2RollLayout.bottomClearance < 64 || player2RollLayout.badgeOverlapsRoll) {
     throw new Error(`player 2 SE roll layout unsafe ${JSON.stringify(player2RollLayout)}`);
@@ -296,6 +368,7 @@ async function main() {
     roomCode,
     firstRoll,
     player2RollLayout,
+    p2ToP1Handoff,
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
     player2: await evalValue(player2, `window.TrashDiceDebug.state().beta`)
   };

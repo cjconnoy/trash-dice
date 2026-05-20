@@ -6240,6 +6240,7 @@ body.beta-multiplayer-active .debug-badge {
   const ENDURANCE_ASSIST_PLAYER_CLUTCH_BEHIND_CHANCE = 0.48;
   const ENDURANCE_ASSIST_CPU_BRAKE_CHANCE = 0.16;
   const ENDURANCE_ASSIST_CPU_BRAKE_BEHIND_CHANCE = 0.24;
+  const MATHEMATICAL_CERTAINTY_DICE_MARGIN = 2;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   document.body.classList.toggle('dev-cheats', DEV_CHEATS_ENABLED);
@@ -6249,7 +6250,7 @@ body.beta-multiplayer-active .debug-badge {
   const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 1420 : 1620;
   const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
   const PLAYER_TO_CPU_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 90 : 140;
-  const CPU_TO_PLAYER_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 220 : 500;
+  const CPU_TO_PLAYER_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 160 : 250;
   const CPU_RESPONSE_MS = 500;
   const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 15000;
@@ -6416,6 +6417,7 @@ body.beta-multiplayer-active .debug-badge {
     if (p2Dice <= 0) return 'p1';
     const openSlots = board.reduce((count, slot) => count + (slot === null ? 1 : 0), 0);
     if (openSlots <= 0) return null;
+    if (Math.min(p1Dice, p2Dice) > openSlots + MATHEMATICAL_CERTAINTY_DICE_MARGIN) return null;
     const p1CanWin = canPlayerStillWinRound('p1', p1Dice, p2Dice, openSlots, current);
     const p2CanWin = canPlayerStillWinRound('p2', p1Dice, p2Dice, openSlots, current);
     if (p1CanWin === p2CanWin) return null;
@@ -9602,7 +9604,7 @@ body.beta-multiplayer-active .debug-badge {
 
     requestAnimationFrame(() => {
       buildSlots();
-      current = 'p1';
+      current = betaMultiplayerActive && betaFirstRoll.winner ? betaFirstRoll.winner : 'p1';
       clearDie(null);
       syncUI();
       if (betaMultiplayerActive) {
@@ -10339,6 +10341,81 @@ body.beta-multiplayer-active .debug-badge {
         syncUI();
 
         return { context, counts, samples, openSlots };
+      },
+      cpuHandoffProbe(value = 1, mode = 'place') {
+        ensureQaGame();
+        clearRuntimeTimers();
+        cancelProgressionWatchdog();
+        clearBenchCelebration(false);
+        clearInventoryMischief();
+        clearDie(null);
+        document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+        const rollValue = clamp(Math.floor(Number(value) || 1), 1, 6);
+        const shouldTrash = String(mode || '').toLowerCase() === 'trash';
+        board = Array(6).fill(null);
+        if (shouldTrash) {
+          board[rollValue - 1] = { player: 'p1', color: 'yellow', value: rollValue };
+        }
+        pools = { p1: { yellow: 20, green: 0 }, p2: { yellow: 0, green: 20 } };
+        resetPoolFaces();
+        trashDice = [];
+        trashed = { p1: 0, p2: 0 };
+        current = 'p2';
+        busy = false;
+        forcedRolls = [rollValue];
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        syncUI();
+        rollBtn.disabled = true;
+        setMsg('GREEN PLAYER ROLL');
+
+        return new Promise((resolve, reject) => {
+          const runStart = performance.now();
+          let cpuCompletedAt = null;
+          let completionMessage = '';
+          const events = [];
+          let lastSnapshot = '';
+          const timeout = runLater(() => {
+            reject(new Error('timeout player roll ready after CPU'));
+          }, 7000);
+          const tick = () => {
+            const message = document.getElementById('message').textContent.trim();
+            const snapshot = `${current}|${busy}|${rollBtn.disabled}|${message}`;
+            if (snapshot !== lastSnapshot) {
+              lastSnapshot = snapshot;
+              events.push({
+                t: Math.round(performance.now() - runStart),
+                current,
+                busy,
+                rollDisabled: rollBtn.disabled,
+                message
+              });
+            }
+            if (!cpuCompletedAt && current === 'p2' && busy && /^(LID|TRASH)\b/.test(message)) {
+              cpuCompletedAt = performance.now();
+              completionMessage = message;
+            }
+            if (cpuCompletedAt && current === 'p1' && !busy && !rollBtn.disabled) {
+              cancelRuntimeTimer(timeout);
+              resolve({
+                current,
+                busy,
+                rollEnabled: !rollBtn.disabled,
+                completionMessage,
+                expectedHandoffMs: CPU_TO_PLAYER_HANDOFF_MS,
+                totalMs: Math.round(performance.now() - runStart),
+                handoffMs: Math.round(performance.now() - cpuCompletedAt),
+                events: events.slice(-16)
+              });
+              return;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          doRoll();
+        });
       },
       breakProgression(kind = 'player-blocked') {
         ensureQaGame();

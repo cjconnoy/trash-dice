@@ -182,6 +182,10 @@ if ($RunMultiplayerQa) {
   if ($LASTEXITCODE -ne 0) {
     throw "Public Beta multiplayer QA failed."
   }
+  & node .\qa-beta-cpu-handoff.js $publicIndexUrl
+  if ($LASTEXITCODE -ne 0) {
+    throw "Public Beta CPU-to-player handoff QA failed."
+  }
   & node .\qa-beta-ipad-layout.js $publicIndexUrl
   if ($LASTEXITCODE -ne 0) {
     throw "Public Beta iPad layout QA failed."
