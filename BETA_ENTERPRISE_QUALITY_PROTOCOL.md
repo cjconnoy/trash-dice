@@ -72,7 +72,7 @@ The nearby two-player Beta is now ship-hardened for the current public review fl
 - Browser matrix is not yet enterprise complete. Headless QA is strong, but real iPhone Safari and Android Chrome spot checks should become recurring release evidence.
 - Visual regression evidence is not yet automated for every nearby-mode state. Current QA checks layout geometry; screenshot diffing should cover invite, joined, starter roll, active turn, peer-left, and room-closed states.
 - Long-window terminal-state mobile QC is still red at 20s because the game auto-resets around 15s. This is not a two-player regression, but it must be fixed or explicitly product-approved before claiming long-window terminal stability.
-- The full six-slot board cycle, end-of-game, disconnect/rejoin, and copy/share fallback paths need deeper automated coverage.
+- The full six-slot board cycle, end-of-game, same-room rejoin after disconnect, and copy/share fallback paths need deeper automated coverage. Basic public peer-left visual recovery is now covered as of `8d6e71e`.
 - Platform ownership is not yet procurement-clean. Access, deploy keys, Cloudflare ownership, rollback steps, privacy/analytics posture, and partner licensing assumptions need an owner-visible inventory.
 
 ## QA Evidence Standard
@@ -85,6 +85,7 @@ For every partner-facing Beta build, capture or record:
 - Local nearby two-client QA result.
 - Public nearby two-client QA result.
 - Opening roll-off clarity and timing result.
+- Nearby peer-left/room-closed visual recovery result.
 - CPU-to-player handoff QA result for both lid and trash outcomes.
 - Room protocol QA result against public Worker.
 - Tablet/phone active-game layout QA result, including title/tagline visibility.

@@ -51,6 +51,10 @@ Current pushed HEAD after opening roll-off clarity fix:
 
 `5fd4fec Clarify Beta two-player opening roll-off`
 
+Current pushed HEAD after nearby disconnect recovery fix:
+
+`8d6e71e Fix Beta nearby disconnect recovery`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -63,9 +67,9 @@ Origin `master` matches local HEAD as of this handoff.
 
 The latest committed Beta gameplay/layout code change is:
 
-`5fd4fec Clarify Beta two-player opening roll-off`
+`8d6e71e Fix Beta nearby disconnect recovery`
 
-There may be later documentation/protocol commits after `5fd4fec`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `5fd4fec` Beta state until the next Beta code change.
+There may be later documentation/protocol commits after `8d6e71e`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `8d6e71e` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -124,19 +128,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=5fd4fec`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
 
 Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`c20db36045d8cf2e5c1ca81d5003962515ebe19ed55bd9d761f88382be961a0f`
+`50d3f7051aad340a5ba36dd5b93504628064cd8495ebd5e6594b47c643e80c5e`
 
 The public room backend is the Cloudflare Worker:
 
@@ -162,9 +166,9 @@ Final Slack-continuity commit:
 
 Latest public Slack post:
 
-`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779243550114319`
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779245035757509`
 
-That Slack message was posted after the opening roll-off clarity fix.
+That Slack message was posted after the nearby disconnect recovery fix.
 
 Enterprise Beta quality protocol:
 
@@ -259,8 +263,8 @@ Current room behavior:
 - The active player's device generates gameplay roll values and sends them through the room.
 - The server rejects gameplay rolls before the room is actually started.
 - The room backend rejects guest starts, out-of-turn rolls, and duplicate-turn rolls.
-- If Player 2 disconnects, Player 1 is returned to the room panel and can invite again.
-- If Player 1 disconnects, the room closes for Player 2.
+- If Player 2 disconnects or sleeps mid-game, Player 1 is returned to a clean room panel and can invite again. The stale gameplay scene is reset/hidden, high-z roll/trash/victory leftovers are stripped, `gameStarted` is reset to false, and the old trash can cannot remain topmost over the menu.
+- If Player 1 disconnects, the room closes for Player 2 and the same clean recovery path returns the client to create/join.
 
 Latest nearby two-player hardening commit:
 
@@ -285,21 +289,32 @@ Latest opening roll-off clarity commit:
 
 `5fd4fec Clarify Beta two-player opening roll-off`
 
+Latest nearby disconnect recovery commit:
+
+`8d6e71e Fix Beta nearby disconnect recovery`
+
 Current opening roll-off behavior:
 
 - Once both players are connected, the host button says `Roll For First` instead of `Start Game`.
 - The room status says Player 1 will roll once to see who starts.
 - The in-game opening phase uses explicit labels such as `ROLLING FOR FIRST TURN`, `HIGH ROLL STARTS`, and `ROLL-OFF`.
 - Tie rerolls are labeled as tie rerolls and use the shorter retry timing.
-- Public nearby QA on 2026-05-19 measured first-roll resolution at 3283ms with a 3500ms ceiling.
+- Public nearby QA on 2026-05-19 measured first-roll resolution at 2850ms with a 3500ms ceiling on `8d6e71e`.
 
 Current handoff behavior:
 
 - Production CPU-to-player handoff is 250ms.
 - Public nearby QA deterministically forces Player 2 to win the first roll and measures Player 2-to-Player 1 readiness.
 - Public QA on 2026-05-19 measured nearby Green-to-Yellow readiness at 235ms.
-- CPU handoff QA covers both `LID` and `TRASH` outcomes; public QA measured 271ms and 247ms respectively.
+- CPU handoff QA covers both `LID` and `TRASH` outcomes; public QA measured 270ms and 302ms respectively on `8d6e71e`.
 - `a1b0045` also fixes a delayed first-turn race where a backgrounded nearby client could run the start-game render frame late and reset `current` back to Yellow after Green won first turn.
+
+Current nearby disconnect recovery behavior:
+
+- `betaReturnToRoomPanel()` now resets the live gameplay scene, clears high-z animation leftovers, disables the roll button, stops active audio, resets `gameStarted=false`, and marks the body with `beta-room-recovery`.
+- Room recovery raises the room overlay above gameplay/victory layers and hides `.game-area` so the trash can cannot persist over the create/join menu.
+- The recovery status text is preserved after late room-state updates, so Player 1 sees `Player 2 left. Share the code again.` instead of a generic invite-state message.
+- `qa-beta-multiplayer.js` now closes Player 2 mid-game and asserts clean host recovery: room panel visible, overlay open, `gameStarted=false`, multiplayer inactive, roll disabled, game area hidden, no leftover travel/payout nodes, no hot trash-can classes, and trash can not topmost.
 
 Original Beta first-player gameplay commit:
 
@@ -328,9 +343,10 @@ Verified locally and publicly through 2026-05-19:
 - Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
 - Public room protocol QA passes against `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`.
 - Host invite controls pass small-phone QA: QR present, share/copy controls tappable, and invite URL includes the room code.
-- iPad active-game layout QA passes publicly on 2026-05-19 at `28aba0e`, covering 1024x980 desktop-class iPad Safari and 768x920 iPad Mini portrait viewports so the roll panel cannot slip below tablet Safari's usable viewport.
+- iPad/iPhone active-game layout QA passes publicly on 2026-05-19 at `8d6e71e`, covering 1024x980 desktop-class iPad Safari, 768x920 iPad Mini portrait, 390x664 iPhone Safari, and 320x568 iPhone SE viewports so the title/tagline remain visible and the roll panel cannot slip below the usable viewport.
+- Nearby disconnect visual recovery QA passes publicly on 2026-05-19 at `8d6e71e` after closing Player 2 mid-game.
 - The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
-- Public Beta bytes match the committed Beta artifact hash `9d66923cd18b4b4c7249a7d594830bd261f3df13cab9ce21189207b4c02dda4c`.
+- Public Beta bytes match the committed Beta artifact hash `50d3f7051aad340a5ba36dd5b93504628064cd8495ebd5e6594b47c643e80c5e`.
 - Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
 - Canonical mobile visual QC remains GREEN at 5s/12s and RED at 20s because of the known 15s auto-reset behavior; this was reconfirmed on 2026-05-17 and is not a new two-player regression.
 

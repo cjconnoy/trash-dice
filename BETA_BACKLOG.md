@@ -8,7 +8,7 @@ This backlog is the active Beta spine for Trash Dice. CJ owns the creative feel;
 
 ### 1. Nearby Two-Player Mode
 
-Status: ship-hardened for the current Beta v2 review flow, still the top product/technical priority.
+Status: ship-hardened for the current Beta v2 review flow, including public disconnect recovery at `8d6e71e`; still the top product/technical priority.
 
 Intent: two people near each other, each on their own device, can start playing from QR/code/link with no account, lobby, chat, install, or explanation.
 
@@ -21,12 +21,13 @@ Current verified coverage:
 - Guest start rejection.
 - Out-of-turn roll rejection.
 - Duplicate-turn roll rejection.
-- Player 2 disconnect returns Player 1 to invite state.
+- Player 2 disconnect/sleep returns Player 1 to a clean invite state with the gameplay scene reset/hidden and the trash can unable to persist above the room menu.
 - Player 1 disconnect closes the room for Player 2.
+- Browser QA now simulates Player 2 disappearing mid-game and asserts clean host recovery.
 
 Ship-quality backlog:
 
-- Add browser QA for disconnect/rejoin behavior, not just protocol-level checks.
+- Extend browser QA from disconnect recovery into same-room rejoin and second-start behavior.
 - Add full six-slot board cycle QA in nearby mode.
 - Add end-of-game nearby-mode QA.
 - Add copy/share fallback QA on browsers without Web Share or Clipboard API.
@@ -71,7 +72,7 @@ Definition of done:
 
 ### 3. iPad / Tablet Layout
 
-Status: fixed and publicly verified in Beta v2 at `cb1dda6`; guarded by `qa-beta-ipad-layout.js`.
+Status: fixed and publicly verified in Beta v2 at `8d6e71e`; guarded by `qa-beta-ipad-layout.js`.
 
 Intent: active gameplay must fit inside iPad Safari's usable portrait viewport with the roll panel visible and tappable above browser chrome.
 
