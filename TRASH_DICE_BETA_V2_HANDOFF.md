@@ -10,6 +10,7 @@ This handoff starts the new chat `Trash Dice Beta (v2)`. It inherits the canoniz
 - `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
 - `GAME2_RESOURCE_SUPPORT_PACKET.md`
 - `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
+- `BETA_BACKLOG.md`
 - `CLAUDE.md`
 
 ## Current Repo State
@@ -157,6 +158,10 @@ Enterprise Beta quality protocol:
 
 `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
 
+Active Beta backlog spine:
+
+`BETA_BACKLOG.md`
+
 The previous Beta review links were:
 
 Desktop full:
@@ -183,6 +188,14 @@ Stable Beta v2 public hosting/link creation is no longer open, but future review
 The Beta direction remains:
 
 Nearby online QR/code two-player on two separate phones, plus PWA-first app polish.
+
+The active Beta backlog spine is:
+
+- Nearby two-player mode
+- QR / join reliability
+- iPad / tablet layout
+
+See `BETA_BACKLOG.md` for status and definition-of-done.
 
 CJ explicitly does not want pass-and-play as the primary Beta flow. Assume each player has their own phone.
 

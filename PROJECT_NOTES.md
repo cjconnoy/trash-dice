@@ -26,6 +26,7 @@ Future handoffs must explicitly include this rule and point to:
 - `GAME2_CLAUDE_SUBCONTRACTOR_HANDOFF.md`
 - `GAME2_RESOURCE_SUPPORT_PACKET.md`
 - `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`
+- `BETA_BACKLOG.md`
 - `CLAUDE.md`
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
@@ -47,6 +48,8 @@ Use `GAME2_RESOURCE_SUPPORT_PACKET.md` as the short operating packet for how Ops
 ## Enterprise Beta Quality Bar
 
 Trash Dice Beta v2 is now partner-facing commercial infrastructure. Treat Big Discoveries interest as a real platform-quality escalation: Codex owns release readiness, QA evidence, public-link safety, Worker health, docs drift, and regression capture so CJ can stay creative.
+
+The active Beta backlog spine is `BETA_BACKLOG.md`: nearby two-player mode, QR/join reliability, and iPad/tablet layout. Treat those as priority product infrastructure, not optional polish.
 
 The canonical protocol is `BETA_ENTERPRISE_QUALITY_PROTOCOL.md`. Before any partner-facing Beta release or Slack announcement, run the enterprise gate:
 
