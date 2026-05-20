@@ -1,6 +1,6 @@
 # Trash Dice Beta Backlog
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 This backlog is the active Beta spine for Trash Dice. CJ owns the creative feel; Codex owns the technical path, QA gates, public release safety, and regression capture.
 
@@ -23,12 +23,12 @@ Current verified coverage:
 - Out-of-turn roll rejection.
 - Duplicate-turn roll rejection.
 - Player 2 disconnect/sleep returns Player 1 to a clean invite state with the gameplay scene reset/hidden and the trash can unable to persist above the room menu.
+- Same-room rejoin after Player 2 disconnect is covered by public two-client QA: a fresh Player 2 can rejoin the original room code, Player 1 can start a second `Roll For First`, and both clients enter the next game with recovery cleared and total rolls reset.
 - Player 1 disconnect closes the room for Player 2.
 - Browser QA now simulates Player 2 disappearing mid-game and asserts clean host recovery.
 
 Ship-quality backlog:
 
-- Extend browser QA from disconnect recovery into same-room rejoin and second-start behavior.
 - Add full six-slot board cycle QA in nearby mode.
 - Add end-of-game nearby-mode QA.
 - Add copy/share fallback QA on browsers without Web Share or Clipboard API.

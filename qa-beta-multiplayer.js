@@ -207,6 +207,65 @@ async function main() {
     }
     return report;
   }
+  async function waitForFirstRollResolved(pageRef, label) {
+    await waitEval(pageRef, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        return state.beta.firstRoll &&
+          !state.beta.firstRoll.active &&
+          !state.beta.firstRoll.settling &&
+          !!state.beta.firstRoll.winner &&
+          state.current === state.beta.firstRoll.winner;
+      })()
+    `, label, 20000);
+  }
+  function assertFirstRollOutcome(firstRoll, label) {
+    if (!firstRoll.values || !firstRoll.values.p1 || !firstRoll.values.p2 || firstRoll.values.p1 === firstRoll.values.p2) {
+      throw new Error(`${label} first roll did not resolve cleanly ${JSON.stringify(firstRoll)}`);
+    }
+    const expectedStarter = firstRoll.values.p1 > firstRoll.values.p2 ? 'p1' : 'p2';
+    if (firstRoll.winner !== expectedStarter) {
+      throw new Error(`${label} first roll picked ${firstRoll.winner}, expected ${expectedStarter}: ${JSON.stringify(firstRoll)}`);
+    }
+  }
+  async function joinByRoomCode(pageRef, roomCode, label) {
+    await evalValue(pageRef, `document.getElementById('betaTwoPlayerBtn').click(); true`);
+    await waitEval(pageRef, `
+      (() => {
+        const input = document.getElementById('betaJoinCode');
+        const label = document.getElementById('betaJoinLabel');
+        if (!input || !label) return false;
+        const rect = input.getBoundingClientRect();
+        const styles = getComputedStyle(input);
+        return styles.display !== 'none' &&
+          rect.width > 120 &&
+          rect.height >= 44 &&
+          label.textContent.includes('Enter Code');
+      })()
+    `, `${label} code entry visible`);
+    await evalValue(pageRef, `document.getElementById('betaJoinBtn').click(); true`);
+    await waitEval(pageRef, `
+      document.activeElement &&
+      document.activeElement.id === 'betaJoinCode' &&
+      document.getElementById('betaRoomStatus').textContent.includes('4 digit code')
+    `, `${label} empty join focuses code input`);
+    await evalValue(pageRef, `
+      const input = document.getElementById('betaJoinCode');
+      input.value = '${roomCode}';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      true
+    `);
+    await waitEval(pageRef, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        const status = document.getElementById('betaRoomStatus').textContent;
+        return state.beta.roomCode === '${roomCode}' &&
+          state.beta.seat === 'p2' &&
+          state.beta.ready &&
+          (status.includes('Waiting for Player 1') || status.includes('Connected'));
+      })()
+    `, `${label} ready`);
+  }
 
   const gameUrl = betaPageUrl();
   const player1 = await page(gameUrl);
@@ -257,33 +316,9 @@ async function main() {
 
   const player2 = await page(gameUrl);
   let player2ClosedForRecovery = false;
+  let player2RejoinClosed = false;
   await evalValue(player2, `Math.random = () => 0.92; true`);
-  await evalValue(player2, `document.getElementById('betaTwoPlayerBtn').click(); true`);
-  await waitEval(player2, `
-    (() => {
-      const input = document.getElementById('betaJoinCode');
-      const label = document.getElementById('betaJoinLabel');
-      if (!input || !label) return false;
-      const rect = input.getBoundingClientRect();
-      const styles = getComputedStyle(input);
-      return styles.display !== 'none' &&
-        rect.width > 120 &&
-        rect.height >= 44 &&
-        label.textContent.includes('Enter Code');
-    })()
-  `, 'player 2 code entry visible');
-  await evalValue(player2, `document.getElementById('betaJoinBtn').click(); true`);
-  await waitEval(player2, `
-    document.activeElement &&
-    document.activeElement.id === 'betaJoinCode' &&
-    document.getElementById('betaRoomStatus').textContent.includes('4 digit code')
-  `, 'player 2 empty join focuses code input');
-  await evalValue(player2, `
-    const input = document.getElementById('betaJoinCode');
-    input.value = '${roomCode}';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    true
-  `);
+  await joinByRoomCode(player2, roomCode, 'player 2');
   await waitEval(player1, `
     (() => {
       const button = document.getElementById('betaStartRoomBtn');
@@ -310,39 +345,15 @@ async function main() {
     /ROLLING FOR FIRST|HIGH ROLL|ROLL-OFF/.test(document.getElementById('message').textContent)
   `, 'player 2 first roll purpose visible');
 
-  await waitEval(player1, `
-    (() => {
-      const state = window.TrashDiceDebug.state();
-      return state.beta.firstRoll &&
-        !state.beta.firstRoll.active &&
-        !state.beta.firstRoll.settling &&
-        !!state.beta.firstRoll.winner &&
-        state.current === state.beta.firstRoll.winner;
-    })()
-  `, 'player 1 first roll resolved', 20000);
-  await waitEval(player2, `
-    (() => {
-      const state = window.TrashDiceDebug.state();
-      return state.beta.firstRoll &&
-        !state.beta.firstRoll.active &&
-        !state.beta.firstRoll.settling &&
-        !!state.beta.firstRoll.winner &&
-        state.current === state.beta.firstRoll.winner;
-    })()
-  `, 'player 2 first roll resolved', 20000);
+  await waitForFirstRollResolved(player1, 'player 1 first roll resolved');
+  await waitForFirstRollResolved(player2, 'player 2 first roll resolved');
   const firstRoll = await evalValue(player1, `window.TrashDiceDebug.state().beta.firstRoll`);
   const firstRollMs = Date.now() - firstRollStartedAt;
   const maxFirstRollMs = 3500;
   if (firstRollMs > maxFirstRollMs) {
     throw new Error(`opening roll-off took ${firstRollMs}ms, expected <= ${maxFirstRollMs}ms`);
   }
-  if (!firstRoll.values || !firstRoll.values.p1 || !firstRoll.values.p2 || firstRoll.values.p1 === firstRoll.values.p2) {
-    throw new Error(`opening first roll did not resolve cleanly ${JSON.stringify(firstRoll)}`);
-  }
-  const expectedStarter = firstRoll.values.p1 > firstRoll.values.p2 ? 'p1' : 'p2';
-  if (firstRoll.winner !== expectedStarter) {
-    throw new Error(`opening first roll picked ${firstRoll.winner}, expected ${expectedStarter}: ${JSON.stringify(firstRoll)}`);
-  }
+  assertFirstRollOutcome(firstRoll, 'opening');
 
   async function waitForRollReady(pageRef, player, label) {
     await waitEval(pageRef, `
@@ -479,7 +490,110 @@ async function main() {
   await send('Target.closeTarget', { targetId: player2.targetId });
   player2ClosedForRecovery = true;
   const hostDisconnectRecovery = await waitForDisconnectRecovery(player1, 'host recovery after player 2 disconnect');
+  const player2Rejoin = await page(gameUrl);
+  await evalValue(player2Rejoin, `Math.random = () => 0.88; true`);
+  await joinByRoomCode(player2Rejoin, roomCode, 'rejoining player 2');
+  const sameRoomRejoinReady = await waitEval(player1, `
+    (() => {
+      const state = window.TrashDiceDebug.state();
+      const button = document.getElementById('betaStartRoomBtn');
+      const status = document.getElementById('betaRoomStatus').textContent;
+      return state.beta.roomCode === '${roomCode}' &&
+        state.beta.seat === 'p1' &&
+        state.beta.ready &&
+        !state.gameStarted &&
+        !state.beta.multiplayerActive &&
+        document.body.classList.contains('beta-room-recovery') &&
+        button &&
+        !button.disabled &&
+        button.textContent.includes('Roll For First') &&
+        status.includes('Roll once to see who starts');
+    })()
+  `, 'host ready after same-room rejoin');
 
+  const secondStartAt = Date.now();
+  await evalValue(player1, `document.getElementById('betaStartRoomBtn').click(); true`);
+  await waitEval(player1, `
+    (() => {
+      const state = window.TrashDiceDebug.state();
+      return state.gameStarted &&
+        state.beta.multiplayerActive &&
+        state.beta.roomCode === '${roomCode}' &&
+        state.beta.firstRoll.active &&
+        state.beta.firstRoll.round === 1 &&
+        !document.body.classList.contains('beta-room-recovery');
+    })()
+  `, 'host second start entered first roll');
+  await waitEval(player2Rejoin, `
+    (() => {
+      const state = window.TrashDiceDebug.state();
+      return state.gameStarted &&
+        state.beta.multiplayerActive &&
+        state.beta.roomCode === '${roomCode}' &&
+        state.beta.seat === 'p2' &&
+        state.beta.firstRoll.active &&
+        state.beta.firstRoll.round === 1 &&
+        !document.body.classList.contains('beta-room-recovery');
+    })()
+  `, 'rejoined player second start entered first roll');
+  await waitForFirstRollResolved(player1, 'host second first roll resolved');
+  await waitForFirstRollResolved(player2Rejoin, 'rejoined player second first roll resolved');
+  const secondFirstRoll = await evalValue(player1, `window.TrashDiceDebug.state().beta.firstRoll`);
+  const secondFirstRollMs = Date.now() - secondStartAt;
+  if (secondFirstRollMs > maxFirstRollMs) {
+    throw new Error(`second opening roll-off took ${secondFirstRollMs}ms, expected <= ${maxFirstRollMs}ms`);
+  }
+  assertFirstRollOutcome(secondFirstRoll, 'second opening');
+  const sameRoomSecondStartState = {
+    player1: await evalValue(player1, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        return {
+          roomCode: state.beta.roomCode,
+          seat: state.beta.seat,
+          ready: state.beta.ready,
+          multiplayerActive: state.beta.multiplayerActive,
+          gameStarted: state.gameStarted,
+          current: state.current,
+          totalRolls: state.totalRolls,
+          rollDisabled: document.getElementById('rollBtn').disabled,
+          bodyRecovery: document.body.classList.contains('beta-room-recovery')
+        };
+      })()
+    `),
+    player2: await evalValue(player2Rejoin, `
+      (() => {
+        const state = window.TrashDiceDebug.state();
+        return {
+          roomCode: state.beta.roomCode,
+          seat: state.beta.seat,
+          ready: state.beta.ready,
+          multiplayerActive: state.beta.multiplayerActive,
+          gameStarted: state.gameStarted,
+          current: state.current,
+          totalRolls: state.totalRolls,
+          rollDisabled: document.getElementById('rollBtn').disabled,
+          bodyRecovery: document.body.classList.contains('beta-room-recovery')
+        };
+      })()
+    `)
+  };
+  if (
+    sameRoomSecondStartState.player1.roomCode !== roomCode ||
+    sameRoomSecondStartState.player2.roomCode !== roomCode ||
+    !sameRoomSecondStartState.player1.gameStarted ||
+    !sameRoomSecondStartState.player2.gameStarted ||
+    !sameRoomSecondStartState.player1.multiplayerActive ||
+    !sameRoomSecondStartState.player2.multiplayerActive ||
+    sameRoomSecondStartState.player1.totalRolls !== 0 ||
+    sameRoomSecondStartState.player2.totalRolls !== 0 ||
+    sameRoomSecondStartState.player1.bodyRecovery ||
+    sameRoomSecondStartState.player2.bodyRecovery ||
+    sameRoomSecondStartState.player1.current !== secondFirstRoll.winner ||
+    sameRoomSecondStartState.player2.current !== secondFirstRoll.winner
+  ) {
+    throw new Error(`same-room second start state unsafe ${JSON.stringify(sameRoomSecondStartState)}`);
+  }
   const out = {
     ok: true,
     roomCode,
@@ -490,9 +604,19 @@ async function main() {
     p2ToP1Handoff,
     multiplayerRoundWinEvent,
     hostDisconnectRecovery,
+    sameRoomRejoin: {
+      ready: sameRoomRejoinReady,
+      secondFirstRoll,
+      secondFirstRollMs,
+      sameRoomSecondStartState
+    },
     player1: await evalValue(player1, `window.TrashDiceDebug.state().beta`),
-    player2ClosedForRecovery
+    player2ClosedForRecovery,
+    player2RejoinClosed
   };
+  await send('Target.closeTarget', { targetId: player2Rejoin.targetId });
+  player2RejoinClosed = true;
+  out.player2RejoinClosed = player2RejoinClosed;
   console.log(JSON.stringify(out, null, 2));
   await send('Target.closeTarget', { targetId: player1.targetId });
   if (!player2ClosedForRecovery) {
