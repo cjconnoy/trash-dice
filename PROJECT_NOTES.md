@@ -78,12 +78,12 @@ Game 2 must not claim long-window mobile terminal stability until that 20s reset
 
 ## Trash Dice Beta v1 Direction
 
-Current Beta v2 review path as of 2026-05-17:
+Current Beta v2 review path as of 2026-05-19:
 
-- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64
-- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64
+- Desktop full: https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e
+- Mobile full: https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e
 
-The stable custom-domain path serves the actual Beta game bytes, not the generic One Day Games shell. The public room backend is the Cloudflare Worker `trash-dice-beta-room` at `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`. Public two-client QA passed on 2026-05-17, including host invite controls on a 320px viewport, create/join/start, first-player roll, gameplay rolls, Player 2 small-phone roll-panel clearance, and protocol checks for guest starts, out-of-turn rolls, and duplicate-turn rolls. iPad active-game layout QA is now part of the Beta release gate so the roll panel cannot be clipped by tablet Safari's usable viewport. Do not share a future Beta build until `qa-beta-public-build.ps1 -RunMultiplayerQa` passes for the exact public URL and Alpha Complete still byte-matches its frozen SHA.
+The stable custom-domain path serves the actual Beta game bytes, not the generic One Day Games shell. The public room backend is the Cloudflare Worker `trash-dice-beta-room` at `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`. Public two-client QA passed on 2026-05-19, including host invite controls on a 320px viewport, create/join/start, first-player roll, gameplay rolls, Player 2 small-phone roll-panel clearance, public iPad active-game layout at 1024x980 and 768x920 tablet viewports, and protocol checks for guest starts, out-of-turn rolls, and duplicate-turn rolls. Do not share a future Beta build until `qa-beta-public-build.ps1 -RunMultiplayerQa` passes for the exact public URL and Alpha Complete still byte-matches its frozen SHA.
 
 Beta v1 should focus on a very simple nearby two-player online mode plus PWA polish. Nearby online QR/code two-player is the primary Beta multiplayer target, not pass-and-play.
 

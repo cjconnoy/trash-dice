@@ -34,6 +34,10 @@ Current pushed HEAD after nearby two-player ship-quality hardening:
 
 `b778d64 Record nearby two-player ship hardening`
 
+Current pushed HEAD after iPad active-game layout fix:
+
+`28aba0e Fix Beta iPad active-game layout`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -44,11 +48,11 @@ Origin:
 
 Origin `master` matches local HEAD as of this handoff.
 
-The latest committed Beta gameplay/room hardening code change is:
+The latest committed Beta gameplay/layout code change is:
 
-`db988dc Harden nearby two-player ship flow`
+`28aba0e Fix Beta iPad active-game layout`
 
-There are later documentation/protocol commits after `db988dc`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `db988dc` Beta state.
+There may be later documentation/protocol commits after `28aba0e`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `28aba0e` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -107,19 +111,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=b778d64`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
 
-Public Beta v2 bytes were verified on 2026-05-17 against the committed Beta build artifact:
+Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`9e289cf0d7a2511bd4d8e91d9a8c61823a0af6d7b5f59ce9330120b593931082`
+`9d66923cd18b4b4c7249a7d594830bd261f3df13cab9ce21189207b4c02dda4c`
 
 The public room backend is the Cloudflare Worker:
 
@@ -254,7 +258,7 @@ Important: that Slack post contains the now-dead old quick-tunnel Beta link. Do 
 
 ## Current Beta QA Status
 
-Verified locally on 2026-05-17:
+Verified locally and publicly through 2026-05-19:
 
 - `beta/index.html` and `beta/trash-dice.html` scripts parse.
 - Beta mirror matches.
@@ -264,9 +268,9 @@ Verified locally on 2026-05-17:
 - Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
 - Public room protocol QA passes against `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`.
 - Host invite controls pass small-phone QA: QR present, share/copy controls tappable, and invite URL includes the room code.
-- iPad active-game layout QA is required for Beta releases so the roll panel cannot slip below iPad Safari's usable viewport.
+- iPad active-game layout QA passes publicly on 2026-05-19 at `28aba0e`, covering 1024x980 desktop-class iPad Safari and 768x920 iPad Mini portrait viewports so the roll panel cannot slip below tablet Safari's usable viewport.
 - The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
-- Public Beta bytes match the committed Beta artifact hash `9e289cf0d7a2511bd4d8e91d9a8c61823a0af6d7b5f59ce9330120b593931082`.
+- Public Beta bytes match the committed Beta artifact hash `9d66923cd18b4b4c7249a7d594830bd261f3df13cab9ce21189207b4c02dda4c`.
 - Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
 - Canonical mobile visual QC remains GREEN at 5s/12s and RED at 20s because of the known 15s auto-reset behavior; this was reconfirmed on 2026-05-17 and is not a new two-player regression.
 
