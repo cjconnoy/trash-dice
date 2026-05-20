@@ -39,6 +39,10 @@ Current pushed HEAD after iPad active-game layout fix:
 
 `28aba0e Fix Beta iPad active-game layout`
 
+Current pushed HEAD after CPU/player handoff tuning:
+
+`a1b0045 Tune Beta player handoff timing`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -51,9 +55,9 @@ Origin `master` matches local HEAD as of this handoff.
 
 The latest committed Beta gameplay/layout code change is:
 
-`28aba0e Fix Beta iPad active-game layout`
+`a1b0045 Tune Beta player handoff timing`
 
-There may be later documentation/protocol commits after `28aba0e`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `28aba0e` Beta state until the next Beta code change.
+There may be later documentation/protocol commits after `a1b0045`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `a1b0045` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -112,19 +116,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=28aba0e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
 
 Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`9d66923cd18b4b4c7249a7d594830bd261f3df13cab9ce21189207b4c02dda4c`
+`349c84de8f99a01220ecc6853732843c67bc0b57cd1b6adade3c778f2b34530b`
 
 The public room backend is the Cloudflare Worker:
 
@@ -150,9 +154,9 @@ Final Slack-continuity commit:
 
 Latest public Slack post:
 
-`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779033726867529`
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779242250720249`
 
-That Slack thread/message was updated after the nearby two-player hardening pass.
+That Slack message was posted after the CPU/player handoff tuning pass.
 
 Enterprise Beta quality protocol:
 
@@ -253,6 +257,18 @@ Current room behavior:
 Latest nearby two-player hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
+
+Latest CPU/player handoff tuning commit:
+
+`a1b0045 Tune Beta player handoff timing`
+
+Current handoff behavior:
+
+- Production CPU-to-player handoff is 250ms.
+- Public nearby QA deterministically forces Player 2 to win the first roll and measures Player 2-to-Player 1 readiness.
+- Public QA on 2026-05-19 measured nearby Green-to-Yellow readiness at 235ms.
+- CPU handoff QA covers both `LID` and `TRASH` outcomes; public QA measured 271ms and 247ms respectively.
+- `a1b0045` also fixes a delayed first-turn race where a backgrounded nearby client could run the start-game render frame late and reset `current` back to Yellow after Green won first turn.
 
 Original Beta first-player gameplay commit:
 
