@@ -5313,14 +5313,14 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
   left: 50%;
   top: calc(env(safe-area-inset-top, 0px) + clamp(0.52rem, 2.2vh, 0.9rem));
   z-index: 10050;
-  width: min(92vw, 440px);
+  width: min(94vw, 460px);
   display: none;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.58rem;
-  padding: 0.54rem 0.62rem 0.56rem 0.7rem;
+  gap: 0.5rem 0.62rem;
+  padding: 0.58rem 0.64rem 0.6rem 0.72rem;
   border: 2px solid rgba(255,255,255,0.52);
-  border-radius: 12px;
+  border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.08)),
     linear-gradient(135deg, rgba(15,95,50,0.96), rgba(6,48,25,0.96));
@@ -5338,20 +5338,87 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
   pointer-events: auto;
 }
 .pwa-share-icon {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   flex: 0 0 auto;
   color: #f5c800;
   filter: drop-shadow(0 2px 0 rgba(0,0,0,0.34));
 }
+.pwa-install-body {
+  min-width: 0;
+}
+.pwa-install-kicker {
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.58rem, 2.2vw, 0.72rem);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f5c800;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.36);
+  margin-bottom: 0.16rem;
+}
 .pwa-install-copy {
   min-width: 0;
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.72rem, 2.8vw, 0.92rem);
+  font-size: clamp(0.7rem, 2.7vw, 0.9rem);
   line-height: 1.15;
   letter-spacing: 0.02em;
   text-align: left;
   text-shadow: 0 2px 0 rgba(0,0,0,0.34);
+}
+.pwa-install-steps {
+  display: none;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  margin-top: 0.36rem;
+}
+.pwa-install-steps li {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 100%;
+  padding: 0.18rem 0.42rem 0.22rem;
+  border-radius: 999px;
+  background: rgba(255,246,188,0.14);
+  color: #fff6bc;
+  font-size: clamp(0.58rem, 2.35vw, 0.72rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px rgba(255,246,188,0.24);
+}
+.pwa-install-steps span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  margin-right: 0.28rem;
+  border-radius: 50%;
+  background: #f5c800;
+  color: #0f5f32;
+  font-size: 0.58rem;
+}
+.pwa-install-card.is-ios {
+  top: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.72rem, 2.1vh, 1.05rem));
+  transform: translateX(-50%) rotate(-0.6deg);
+}
+.pwa-install-card.is-ios::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid rgba(6,48,25,0.96);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 4px 0 rgba(3,28,14,0.62));
+}
+.pwa-install-card.is-ios .pwa-install-steps {
+  display: flex;
 }
 .pwa-install-action,
 .pwa-install-close {
@@ -5394,6 +5461,26 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
     right: clamp(0.9rem, 2vw, 1.4rem);
     top: clamp(0.9rem, 2.5vh, 1.4rem);
     transform: rotate(-0.8deg);
+  }
+  .pwa-install-card.is-ios {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.9rem, 2vh, 1.3rem));
+    transform: translateX(-50%) rotate(-0.6deg);
+  }
+}
+@media (max-height: 640px) {
+  .pwa-install-card.is-ios {
+    padding: 0.46rem 0.56rem 0.5rem 0.62rem;
+  }
+  .pwa-install-card.is-ios .pwa-share-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .pwa-install-card.is-ios .pwa-install-steps {
+    gap: 0.22rem;
+    margin-top: 0.28rem;
   }
 }
 .overlay.victory .play-again-btn {
@@ -6300,9 +6387,17 @@ body.beta-multiplayer-active .debug-badge {
     <path d="M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M6 10v8.5A2.5 2.5 0 0 0 8.5 21h7A2.5 2.5 0 0 0 18 18.5V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
   </svg>
-  <div class="pwa-install-copy" id="pwaInstallCopy">To play anytime, add Trash Dice to your Home Screen.</div>
+  <div class="pwa-install-body">
+    <div class="pwa-install-kicker" id="pwaInstallKicker">Play without the box</div>
+    <div class="pwa-install-copy" id="pwaInstallCopy">Save Trash Dice to your Home Screen for one-tap play anytime.</div>
+    <ol class="pwa-install-steps" id="pwaInstallSteps" hidden aria-hidden="true">
+      <li><span>1</span>Tap Share</li>
+      <li><span>2</span>Add to Home Screen</li>
+      <li><span>3</span>Tap Add</li>
+    </ol>
+  </div>
   <button class="pwa-install-close" id="pwaInstallClose" type="button" aria-label="Dismiss install hint">x</button>
-  <button class="pwa-install-action" id="pwaInstallButton" type="button" hidden>Add to Home Screen - play anytime</button>
+  <button class="pwa-install-action" id="pwaInstallButton" type="button" hidden>Add to Home Screen</button>
 </div>
 
 <script>
@@ -6913,7 +7008,9 @@ body.beta-multiplayer-active .debug-badge {
   const betaRoomStatus = document.getElementById('betaRoomStatus');
   const startOverlayEl = document.getElementById('startOverlay');
   const pwaInstallCard = document.getElementById('pwaInstallCard');
+  const pwaInstallKicker = document.getElementById('pwaInstallKicker');
   const pwaInstallCopy = document.getElementById('pwaInstallCopy');
+  const pwaInstallSteps = document.getElementById('pwaInstallSteps');
   const pwaInstallButton = document.getElementById('pwaInstallButton');
   const pwaInstallClose = document.getElementById('pwaInstallClose');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
@@ -6962,6 +7059,10 @@ body.beta-multiplayer-active .debug-badge {
       pwaInstallCard.hidden = true;
       pwaInstallCard.classList.remove('is-visible', 'is-ios', 'is-android');
     }
+    if (pwaInstallSteps) {
+      pwaInstallSteps.hidden = true;
+      pwaInstallSteps.setAttribute('aria-hidden', 'true');
+    }
   }
 
   function showPwaInstallHint(mode) {
@@ -6974,10 +7075,20 @@ body.beta-multiplayer-active .debug-badge {
     pwaInstallCard.classList.toggle('is-ios', safeMode === 'ios');
     pwaInstallCard.classList.toggle('is-android', safeMode === 'android');
     pwaInstallCard.classList.add('is-visible');
+    if (pwaInstallKicker) {
+      pwaInstallKicker.textContent = safeMode === 'android'
+        ? 'Play without the box'
+        : 'Save it for later';
+    }
     if (pwaInstallCopy) {
       pwaInstallCopy.textContent = safeMode === 'android'
         ? 'Add Trash Dice to your Home Screen for one-tap play anytime.'
-        : 'To play anytime, tap Share, then Add to Home Screen.';
+        : 'On iPhone, use the Safari Share button once.';
+    }
+    if (pwaInstallSteps) {
+      const showSteps = safeMode === 'ios';
+      pwaInstallSteps.hidden = !showSteps;
+      pwaInstallSteps.setAttribute('aria-hidden', showSteps ? 'false' : 'true');
     }
     if (pwaInstallButton) {
       pwaInstallButton.hidden = safeMode !== 'android';

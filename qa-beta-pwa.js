@@ -237,11 +237,16 @@ async function main() {
       const card = document.getElementById('pwaInstallCard');
       const button = document.getElementById('pwaInstallButton');
       const copy = document.getElementById('pwaInstallCopy');
+      const steps = document.getElementById('pwaInstallSteps');
+      const rect = card && card.getBoundingClientRect();
+      const hintText = (copy ? copy.textContent : '') + ' ' + (steps ? steps.textContent : '');
       return !!(state && state.inlineGameOver && state.pwa.installVisible &&
         state.pwa.installMode === 'ios' &&
         card && !card.hidden && card.classList.contains('is-visible') &&
         button && button.hidden &&
-        copy && /Share/.test(copy.textContent) && /Add to Home Screen/.test(copy.textContent));
+        steps && !steps.hidden &&
+        rect && rect.top > window.innerHeight * 0.45 &&
+        /Share/.test(hintText) && /Add to Home Screen/.test(hintText) && /Tap Add/.test(hintText));
     })()
   `, 'iOS install hint');
 
