@@ -85,6 +85,7 @@ For every partner-facing Beta build, capture or record:
 - Local nearby two-client QA result.
 - Public nearby two-client QA result.
 - Opening roll-off clarity and timing result.
+- Nearby two-human round-win event result, including Green/Player 2 full-event proof on both clients.
 - Nearby peer-left/room-closed visual recovery result.
 - CPU-to-player handoff QA result for both lid and trash outcomes.
 - Room protocol QA result against public Worker.

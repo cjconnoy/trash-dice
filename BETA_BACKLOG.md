@@ -17,6 +17,7 @@ Current verified coverage:
 - Public two-client create/join/start flow.
 - First-player roll-off is explicitly labeled, resolves under the QA ceiling, and has tie/reroll handling.
 - Deterministic Player 2 starts path with measured Player 2-to-Player 1 handoff readiness.
+- Nearby Green/Player 2 round wins receive the full human round-win event on both browser clients instead of the abbreviated one-player CPU event.
 - Player 2 small-phone roll-panel clearance.
 - Guest start rejection.
 - Out-of-turn roll rejection.
