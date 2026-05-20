@@ -6940,6 +6940,10 @@ body.beta-multiplayer-active .debug-badge {
     return player === 'p2' ? 'green' : 'yellow';
   }
 
+  function isHumanControlledRoundWinner(player) {
+    return player === 'p1' || (player === 'p2' && betaMultiplayerActive && !!betaSeat);
+  }
+
   function slotColors(color) {
     return color === 'yellow'
       ? { fill: '#f5c800', hi: '#ffe86a', low: '#b78c00', stroke: '#987300', label: '#1a5c1a', side: '#8f6900' }
@@ -8278,7 +8282,7 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function triggerBenchCelebration(player, isRoundWin = false) {
-    if (player !== 'p1' && !(betaMultiplayerActive && player === 'p2')) return;
+    if (!isHumanControlledRoundWinner(player)) return;
     const ui = getPlayerUi(player);
     const pile = player === 'p1' ? p1Pile : p2Pile;
     if (!pile || !ui.inventory) return;
@@ -10366,7 +10370,7 @@ body.beta-multiplayer-active .debug-badge {
   }
 
   function isFullRoundWinEvent(winner) {
-    return winner === 'p1' || betaMultiplayerActive;
+    return isHumanControlledRoundWinner(winner);
   }
 
   function roundSpillDurationForWinner(winner, diceWon) {
@@ -11412,6 +11416,7 @@ body.beta-multiplayer-active .debug-badge {
           resolve({
             winner: forcedWinner,
             multiplayerActive: betaMultiplayerActive,
+            humanControlledWinner: isHumanControlledRoundWinner(forcedWinner),
             fullEvent,
             spillDuration,
             fullDuration,

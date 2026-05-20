@@ -192,6 +192,7 @@ async function main() {
     const report = await evalValue(pageRef, `window.TrashDiceDebug.roundWinEventProbe('${winner}')`);
     const problems = [];
     if (!report.fullEvent) problems.push('fullEvent=false');
+    if (!report.humanControlledWinner) problems.push('humanControlledWinner=false');
     if (report.spillDuration <= report.expectedCpuDuration) problems.push(`spillDuration ${report.spillDuration} <= cpu ${report.expectedCpuDuration}`);
     if (report.spillDuration < report.fullDuration) problems.push(`spillDuration ${report.spillDuration} < full ${report.fullDuration}`);
     if (!report.titleFanfareActive) problems.push('title fanfare inactive');
@@ -204,6 +205,24 @@ async function main() {
     if (!/GREEN WINS THE ROUND/.test(report.message)) problems.push(`message unsafe: ${report.message}`);
     if (problems.length) {
       throw new Error(`${label} full round win event failed: ${problems.join(', ')} ${JSON.stringify(report)}`);
+    }
+    return report;
+  }
+  async function assertAbbreviatedCpuRoundWinEvent(pageRef, label) {
+    const report = await evalValue(pageRef, `window.TrashDiceDebug.roundWinEventProbe('p2')`);
+    const problems = [];
+    if (report.multiplayerActive) problems.push('multiplayerActive=true');
+    if (report.humanControlledWinner) problems.push('humanControlledWinner=true');
+    if (report.fullEvent) problems.push('fullEvent=true');
+    if (report.spillDuration !== report.expectedCpuDuration) problems.push(`spillDuration ${report.spillDuration} !== cpu ${report.expectedCpuDuration}`);
+    if (report.spillDuration >= report.fullDuration) problems.push(`spillDuration ${report.spillDuration} >= full ${report.fullDuration}`);
+    if (report.canDance) problems.push('can payout dance active');
+    if (report.payoutPanelActive) problems.push('cpu payout panel active');
+    if (report.payoutInventoryActive) problems.push('cpu payout inventory active');
+    if (report.payoutStatusActive) problems.push('cpu payout status active');
+    if (report.payoutComets > 0) problems.push(`cpu payout comets ${report.payoutComets}`);
+    if (problems.length) {
+      throw new Error(`${label} abbreviated CPU round win failed: ${problems.join(', ')} ${JSON.stringify(report)}`);
     }
     return report;
   }
@@ -268,6 +287,10 @@ async function main() {
   }
 
   const gameUrl = betaPageUrl();
+  const soloCpuProbePage = await page(gameUrl);
+  const cpuRoundWinEvent = await assertAbbreviatedCpuRoundWinEvent(soloCpuProbePage, 'solo CPU green round win');
+  await send('Target.closeTarget', { targetId: soloCpuProbePage.targetId });
+
   const player1 = await page(gameUrl);
   await evalValue(player1, `Math.random = () => 0.08; true`);
   await evalValue(player1, `
@@ -604,6 +627,7 @@ async function main() {
     p2ToP1Handoff,
     multiplayerRoundWinEvent,
     hostDisconnectRecovery,
+    cpuRoundWinEvent,
     sameRoomRejoin: {
       ready: sameRoomRejoinReady,
       secondFirstRoll,
