@@ -88,7 +88,7 @@ For every partner-facing Beta build, capture or record:
 - Nearby peer-left/room-closed visual recovery result.
 - CPU-to-player handoff QA result for both lid and trash outcomes.
 - Room protocol QA result against public Worker.
-- Tablet/phone active-game layout QA result, including title/tagline visibility.
+- Tablet/phone active-game layout QA result, including title/tagline visibility and trash-can wordmark visibility.
 - Worker deploy dry-run result.
 - Mobile visual QC status, including whether the known 20s terminal reset remains red.
 - Any manual real-device spot checks and device/browser names.

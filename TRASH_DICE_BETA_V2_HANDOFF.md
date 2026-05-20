@@ -55,6 +55,10 @@ Current pushed HEAD after nearby disconnect recovery fix:
 
 `8d6e71e Fix Beta nearby disconnect recovery`
 
+Current pushed HEAD after iPad trash-can wordmark fix:
+
+`95fcf94 Fix Beta trash can wordmark on iPad`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -67,9 +71,9 @@ Origin `master` matches local HEAD as of this handoff.
 
 The latest committed Beta gameplay/layout code change is:
 
-`8d6e71e Fix Beta nearby disconnect recovery`
+`95fcf94 Fix Beta trash can wordmark on iPad`
 
-There may be later documentation/protocol commits after `8d6e71e`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `8d6e71e` Beta state until the next Beta code change.
+There may be later documentation/protocol commits after `95fcf94`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `95fcf94` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -128,19 +132,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=95fcf94`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=95fcf94`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=8d6e71e`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=95fcf94`
 
 Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`50d3f7051aad340a5ba36dd5b93504628064cd8495ebd5e6594b47c643e80c5e`
+`5a4ee67b9c51fe913013f906ce5af732138be57f75fdbcbf36bfe05c9fac1de7`
 
 The public room backend is the Cloudflare Worker:
 
@@ -166,9 +170,9 @@ Final Slack-continuity commit:
 
 Latest public Slack post:
 
-`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779245035757509`
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779245805778129`
 
-That Slack message was posted after the nearby disconnect recovery fix.
+That Slack message was posted after the iPad trash-can wordmark fix.
 
 Enterprise Beta quality protocol:
 
@@ -283,6 +287,8 @@ Current title/tagline layout behavior:
 - `ROLL, WIN, AVOID THE BIN!` has protected spacing under the title on iPad/tablet.
 - The tagline remains visible on compact iPhone layouts instead of being hidden below 700px viewport height.
 - `qa-beta-ipad-layout.js` now covers iPad 1024x980, iPad Mini 768x920, iPhone 390x664, and iPhone SE 320x568 active-game viewports.
+- The in-game trash can now uses a self-contained SVG wordmark inside the can label; the old separate absolute SVG overlay is hidden so iPad Safari cannot clip half the can logo.
+- The iPad layout QA now asserts the trash-can wordmark is visible, not undersized/clipped, inside the can label safe area, and that the old fragile overlay is not visible.
 - Public QA on 2026-05-19 passed all four title/tagline visibility targets with no title/tagline, tagline/panel, board/yellow, or roll-panel overlap.
 
 Latest opening roll-off clarity commit:
@@ -293,20 +299,24 @@ Latest nearby disconnect recovery commit:
 
 `8d6e71e Fix Beta nearby disconnect recovery`
 
+Latest iPad trash-can wordmark commit:
+
+`95fcf94 Fix Beta trash can wordmark on iPad`
+
 Current opening roll-off behavior:
 
 - Once both players are connected, the host button says `Roll For First` instead of `Start Game`.
 - The room status says Player 1 will roll once to see who starts.
 - The in-game opening phase uses explicit labels such as `ROLLING FOR FIRST TURN`, `HIGH ROLL STARTS`, and `ROLL-OFF`.
 - Tie rerolls are labeled as tie rerolls and use the shorter retry timing.
-- Public nearby QA on 2026-05-19 measured first-roll resolution at 2850ms with a 3500ms ceiling on `8d6e71e`.
+- Public nearby QA on 2026-05-19 measured first-roll resolution at 2620ms with a 3500ms ceiling on `95fcf94`.
 
 Current handoff behavior:
 
 - Production CPU-to-player handoff is 250ms.
 - Public nearby QA deterministically forces Player 2 to win the first roll and measures Player 2-to-Player 1 readiness.
-- Public QA on 2026-05-19 measured nearby Green-to-Yellow readiness at 235ms.
-- CPU handoff QA covers both `LID` and `TRASH` outcomes; public QA measured 270ms and 302ms respectively on `8d6e71e`.
+- Public QA on 2026-05-19 measured nearby Green-to-Yellow readiness at 276ms.
+- CPU handoff QA covers both `LID` and `TRASH` outcomes; public QA measured 263ms and 270ms respectively on `95fcf94`.
 - `a1b0045` also fixes a delayed first-turn race where a backgrounded nearby client could run the start-game render frame late and reset `current` back to Yellow after Green won first turn.
 
 Current nearby disconnect recovery behavior:
@@ -343,10 +353,10 @@ Verified locally and publicly through 2026-05-19:
 - Public custom-domain two-client Beta QA passes on `https://playonedaygames.com/trash-dice/beta-v2/`.
 - Public room protocol QA passes against `wss://trash-dice-beta-room.play-onedaygames.workers.dev/beta-ws`.
 - Host invite controls pass small-phone QA: QR present, share/copy controls tappable, and invite URL includes the room code.
-- iPad/iPhone active-game layout QA passes publicly on 2026-05-19 at `8d6e71e`, covering 1024x980 desktop-class iPad Safari, 768x920 iPad Mini portrait, 390x664 iPhone Safari, and 320x568 iPhone SE viewports so the title/tagline remain visible and the roll panel cannot slip below the usable viewport.
-- Nearby disconnect visual recovery QA passes publicly on 2026-05-19 at `8d6e71e` after closing Player 2 mid-game.
+- iPad/iPhone active-game layout QA passes publicly on 2026-05-19 at `95fcf94`, covering 1024x980 desktop-class iPad Safari, 768x920 iPad Mini portrait, 390x664 iPhone Safari, and 320x568 iPhone SE viewports so the title/tagline remain visible, the trash-can wordmark is visible and safely sized, and the roll panel cannot slip below the usable viewport.
+- Nearby disconnect visual recovery QA passes publicly on 2026-05-19 at `95fcf94` after closing Player 2 mid-game.
 - The public QA pass on 2026-05-17 naturally hit a first-roll tie, auto-rerolled to round 2, and correctly started Green after the reroll.
-- Public Beta bytes match the committed Beta artifact hash `50d3f7051aad340a5ba36dd5b93504628064cd8495ebd5e6594b47c643e80c5e`.
+- Public Beta bytes match the committed Beta artifact hash `5a4ee67b9c51fe913013f906ce5af732138be57f75fdbcbf36bfe05c9fac1de7`.
 - Alpha Complete still byte-matches frozen SHA `b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d395f31f`.
 - Canonical mobile visual QC remains GREEN at 5s/12s and RED at 20s because of the known 15s auto-reset behavior; this was reconfirmed on 2026-05-17 and is not a new two-player regression.
 

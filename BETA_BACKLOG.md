@@ -72,7 +72,7 @@ Definition of done:
 
 ### 3. iPad / Tablet Layout
 
-Status: fixed and publicly verified in Beta v2 at `8d6e71e`; guarded by `qa-beta-ipad-layout.js`.
+Status: fixed and publicly verified in Beta v2 at `95fcf94`; guarded by `qa-beta-ipad-layout.js`.
 
 Intent: active gameplay must fit inside iPad Safari's usable portrait viewport with the roll panel visible and tappable above browser chrome.
 
@@ -82,6 +82,7 @@ Current verified coverage:
 - Public iPad Mini portrait layout passes at 768x920.
 - Public iPhone active-game title/tagline layout passes at 390x664 and 320x568.
 - `ROLL, WIN, AVOID THE BIN!` remains visible and clear below the title instead of hidden or covered.
+- The in-game trash-can wordmark is visible and safely sized on tablet/phone; the old fragile separate overlay is hidden.
 - The roll panel no longer slips below the visible viewport.
 - The milestone badge does not overlap the roll panel.
 
