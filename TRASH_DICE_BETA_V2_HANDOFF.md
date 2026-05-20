@@ -43,6 +43,10 @@ Current pushed HEAD after CPU/player handoff tuning:
 
 `a1b0045 Tune Beta player handoff timing`
 
+Current pushed HEAD after tagline layout fix:
+
+`cb1dda6 Fix Beta tagline visibility on tablet and phone`
+
 Nearby two-player ship-quality hardening commit:
 
 `db988dc Harden nearby two-player ship flow`
@@ -55,9 +59,9 @@ Origin `master` matches local HEAD as of this handoff.
 
 The latest committed Beta gameplay/layout code change is:
 
-`a1b0045 Tune Beta player handoff timing`
+`cb1dda6 Fix Beta tagline visibility on tablet and phone`
 
-There may be later documentation/protocol commits after `a1b0045`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `a1b0045` Beta state until the next Beta code change.
+There may be later documentation/protocol commits after `cb1dda6`; do not assume `HEAD` means a new Beta gameplay build. The gameplay files still reflect the `cb1dda6` Beta state until the next Beta code change.
 
 Current dirty worktree items at handoff:
 
@@ -116,19 +120,19 @@ Beta v2:
 
 Verified build URL:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
 
 Desktop full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
 
 Mobile full:
 
-`https://playonedaygames.com/trash-dice/beta-v2/?v=a1b0045`
+`https://playonedaygames.com/trash-dice/beta-v2/?v=cb1dda6`
 
 Public Beta v2 bytes were verified on 2026-05-19 against the committed Beta build artifact:
 
-`349c84de8f99a01220ecc6853732843c67bc0b57cd1b6adade3c778f2b34530b`
+`08c1fdd879b4586861533f04d70b348217d07048ca8f3f60a0a69811cfbb5464`
 
 The public room backend is the Cloudflare Worker:
 
@@ -154,9 +158,9 @@ Final Slack-continuity commit:
 
 Latest public Slack post:
 
-`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779242250720249`
+`https://onedaygames.slack.com/archives/C0AU29TPER4/p1779242907652409`
 
-That Slack message was posted after the CPU/player handoff tuning pass.
+That Slack message was posted after the tagline layout fix.
 
 Enterprise Beta quality protocol:
 
@@ -261,6 +265,17 @@ Latest nearby two-player hardening commit:
 Latest CPU/player handoff tuning commit:
 
 `a1b0045 Tune Beta player handoff timing`
+
+Latest title/tagline layout fix commit:
+
+`cb1dda6 Fix Beta tagline visibility on tablet and phone`
+
+Current title/tagline layout behavior:
+
+- `ROLL, WIN, AVOID THE BIN!` has protected spacing under the title on iPad/tablet.
+- The tagline remains visible on compact iPhone layouts instead of being hidden below 700px viewport height.
+- `qa-beta-ipad-layout.js` now covers iPad 1024x980, iPad Mini 768x920, iPhone 390x664, and iPhone SE 320x568 active-game viewports.
+- Public QA on 2026-05-19 passed all four title/tagline visibility targets with no title/tagline, tagline/panel, board/yellow, or roll-panel overlap.
 
 Current handoff behavior:
 
