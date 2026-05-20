@@ -239,12 +239,17 @@ async function main() {
       const copy = document.getElementById('pwaInstallCopy');
       const steps = document.getElementById('pwaInstallSteps');
       const rect = card && card.getBoundingClientRect();
+      const firstStep = steps && steps.querySelector('li');
+      const firstStepFont = firstStep ? parseFloat(getComputedStyle(firstStep).fontSize) : 0;
       const hintText = (copy ? copy.textContent : '') + ' ' + (steps ? steps.textContent : '');
       return !!(state && state.inlineGameOver && state.pwa.installVisible &&
         state.pwa.installMode === 'ios' &&
+        state.inlineGameOver.autoRestartMs === null &&
+        state.inlineGameOver.autoRestartPausedForPwa === true &&
         card && !card.hidden && card.classList.contains('is-visible') &&
         button && button.hidden &&
         steps && !steps.hidden &&
+        firstStepFont >= 13 &&
         rect && rect.top > window.innerHeight * 0.45 &&
         /Share/.test(hintText) && /Add to Home Screen/.test(hintText) && /Tap Add/.test(hintText));
     })()
@@ -264,6 +269,8 @@ async function main() {
       const button = document.getElementById('pwaInstallButton');
       return !!(state && state.inlineGameOver && state.pwa.installVisible &&
         state.pwa.installMode === 'android' &&
+        state.inlineGameOver.autoRestartMs === null &&
+        state.inlineGameOver.autoRestartPausedForPwa === true &&
         card && !card.hidden && card.classList.contains('is-visible') &&
         button && !button.hidden && !button.disabled &&
         /Add to Home Screen/.test(button.textContent));
