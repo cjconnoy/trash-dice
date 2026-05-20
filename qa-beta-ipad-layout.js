@@ -26,6 +26,24 @@ const viewports = [
     mobile: true,
     screenWidth: 768,
     screenHeight: 1024
+  },
+  {
+    name: 'iphone-portrait-safari',
+    width: 390,
+    height: 664,
+    deviceScaleFactor: 3,
+    mobile: true,
+    screenWidth: 390,
+    screenHeight: 844
+  },
+  {
+    name: 'iphone-se-portrait',
+    width: 320,
+    height: 568,
+    deviceScaleFactor: 2,
+    mobile: true,
+    screenWidth: 320,
+    screenHeight: 568
   }
 ];
 
@@ -157,13 +175,17 @@ async function main() {
           const el = document.querySelector(selector);
           if (!el) return null;
           const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
           return {
             top: rect.top,
             right: rect.right,
             bottom: rect.bottom,
             left: rect.left,
             width: rect.width,
-            height: rect.height
+            height: rect.height,
+            display: style.display,
+            visibility: style.visibility,
+            opacity: Number(style.opacity)
           };
         };
         const title = pick('.title-wrap:not(.big)');
@@ -181,7 +203,16 @@ async function main() {
           .filter(rect => rect && rect.width > 0 && rect.height > 0);
         const visibleBottom = Math.max(...visibleRects.map(rect => rect.bottom));
 
+        const titleTaglineGap = viewport.width <= 720 ? 3 : 7;
         if (title.top < -2) problems.push('title clipped above viewport');
+        const minTaglineWidth = viewport.width <= 720 ? 92 : 140;
+        if (!tagline || tagline.display === 'none' || tagline.visibility === 'hidden' || tagline.opacity < 0.4 || tagline.width < minTaglineWidth || tagline.height < 5) {
+          problems.push('tagline hidden or unreadable');
+        }
+        if (title && tagline && tagline.top < title.bottom + titleTaglineGap) {
+          problems.push('title overlaps tagline');
+        }
+        if (tagline && green && tagline.bottom > green.top - 2) problems.push('tagline overlaps green panel');
         if (visibleBottom > viewport.height - 8) problems.push('active game content extends below viewport');
         if (green.bottom > board.top + 4) problems.push('green panel overlaps board scene');
         if (board.bottom > yellow.top + 4) problems.push('board scene overlaps yellow panel');
