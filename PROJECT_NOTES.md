@@ -20,6 +20,7 @@ Do not try to reuse or revive that quick-tunnel hostname as the source of truth.
 
 Future handoffs must explicitly include this rule and point to:
 
+- `TRASH_DICE_BETA_V3_HANDOFF.md`
 - `PROJECT_NOTES.md`
 - `ALPHA_COMPLETE_LINKS.md`
 - `releases/alpha-complete/README.md`
