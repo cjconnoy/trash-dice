@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Trash Dice app icon">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fff4a8"/>
+      <stop offset="42%" stop-color="#f5c800"/>
+      <stop offset="100%" stop-color="#0f5f32"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="38%" cy="18%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.86"/>
+      <stop offset="38%" stop-color="#fff27a" stop-opacity="0.44"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="canBody" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#485356"/>
+      <stop offset="18%" stop-color="#b6c0c0"/>
+      <stop offset="44%" stop-color="#879397"/>
+      <stop offset="62%" stop-color="#d3dad9"/>
+      <stop offset="100%" stop-color="#374144"/>
+    </linearGradient>
+    <linearGradient id="canRim" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#dce3e3"/>
+      <stop offset="45%" stop-color="#929fa1"/>
+      <stop offset="100%" stop-color="#4d595c"/>
+    </linearGradient>
+    <linearGradient id="canLid" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#edf3f2"/>
+      <stop offset="52%" stop-color="#8f9b9d"/>
+      <stop offset="100%" stop-color="#4a5558"/>
+    </linearGradient>
+    <linearGradient id="label" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fff27a"/>
+      <stop offset="52%" stop-color="#f5c800"/>
+      <stop offset="100%" stop-color="#d69a00"/>
+    </linearGradient>
+    <filter id="shadow" x="-28%" y="-28%" width="156%" height="156%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#08120c" flood-opacity="0.48"/>
+    </filter>
+    <filter id="dieShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="8" dy="10" stdDeviation="6" flood-color="#08120c" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="104" fill="url(#glow)"/>
+  <path d="M36 403 C122 351 216 354 287 396 C352 354 432 355 495 401 L495 512 L36 512 Z" fill="#0b3f22" opacity="0.92"/>
+  <g filter="url(#dieShadow)">
+    <g transform="translate(64 302) rotate(-15 78 78)">
+      <rect x="0" y="0" width="156" height="156" rx="24" fill="#f5c800"/>
+      <path d="M0 32 C44 7 111 8 156 30 L156 0 L0 0 Z" fill="#fff27a" opacity="0.58"/>
+      <path d="M132 10 L158 31 L158 156 L132 156 Z" fill="#9f7600" opacity="0.46"/>
+      <circle cx="43" cy="43" r="14" fill="#1a5c1a"/>
+      <circle cx="112" cy="43" r="14" fill="#1a5c1a"/>
+      <circle cx="78" cy="78" r="14" fill="#1a5c1a"/>
+      <circle cx="43" cy="113" r="14" fill="#1a5c1a"/>
+      <circle cx="112" cy="113" r="14" fill="#1a5c1a"/>
+    </g>
+    <g transform="translate(292 316) rotate(14 72 72)">
+      <rect x="0" y="0" width="144" height="144" rx="23" fill="#0f6a37"/>
+      <path d="M0 30 C40 7 103 8 144 29 L144 0 L0 0 Z" fill="#40b06c" opacity="0.42"/>
+      <path d="M120 9 L146 30 L146 144 L120 144 Z" fill="#052916" opacity="0.48"/>
+      <circle cx="41" cy="41" r="13" fill="#f5c800"/>
+      <circle cx="103" cy="41" r="13" fill="#f5c800"/>
+      <circle cx="41" cy="103" r="13" fill="#f5c800"/>
+      <circle cx="103" cy="103" r="13" fill="#f5c800"/>
+    </g>
+  </g>
+  <g filter="url(#shadow)" transform="translate(151 73) scale(1.76)">
+    <ellipse cx="60" cy="154" rx="44" ry="6" fill="#263033" opacity="0.5"/>
+    <path d="M14 29 C14 24 106 24 106 29 L106 149 C106 158 14 158 14 149 Z" fill="url(#canBody)" stroke="#dfe7e6" stroke-width="2"/>
+    <path d="M23 34 C34 38 38 49 38 90 C38 132 34 146 24 153" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.25"/>
+    <path d="M59 30 C65 45 65 132 60 154" fill="none" stroke="#ffffff" stroke-width="5" opacity="0.34"/>
+    <path d="M14 64 C29 69 91 69 106 64 L106 122 C91 128 29 128 14 122 Z" fill="url(#label)" stroke="#245d1d" stroke-width="2.1"/>
+    <path d="M18 74 C34 64 86 64 102 75 L102 119 C82 109 38 109 18 119 Z" fill="#0f5f32" opacity="0.96"/>
+    <text x="60" y="92" text-anchor="middle" font-family="Bangers, Impact, Arial Black, sans-serif" font-size="30" fill="#f5c800" stroke="#082f17" stroke-width="3" paint-order="stroke fill">Trash</text>
+    <text x="60" y="118" text-anchor="middle" font-family="Bangers, Impact, Arial Black, sans-serif" font-size="34" fill="#f5c800" stroke="#082f17" stroke-width="3" paint-order="stroke fill">Dice</text>
+    <ellipse cx="60" cy="26" rx="48" ry="16" fill="#151b1d"/>
+    <path d="M11 25 C11 12 109 12 109 25 L109 37 C109 49 11 49 11 37 Z" fill="url(#canRim)" stroke="#dce4e4" stroke-width="2.2"/>
+    <path d="M15 28 C29 38 91 38 105 28 L105 38 C91 49 29 49 15 38 Z" fill="#30393c" opacity="0.52"/>
+    <ellipse cx="60" cy="23" rx="44" ry="13" fill="#202b2e" opacity="0.94"/>
+    <path d="M24 24 C35 16 85 16 96 24 C87 29 33 29 24 24 Z" fill="url(#canLid)" stroke="#6a7679" stroke-width="1.8"/>
+    <path d="M45 18 L45 12 C45 9 75 9 75 12 L75 18" fill="none" stroke="#657174" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17 25 C31 11 89 11 103 25" stroke="#eff5f4" stroke-width="2.2" opacity="0.88" fill="none"/>
+  </g>
+</svg>

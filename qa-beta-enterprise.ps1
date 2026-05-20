@@ -132,6 +132,7 @@ console.log('beta scripts and mirror ok');
 Invoke-EnterpriseStep "QA and server syntax" {
   Invoke-CheckedCommand "static server syntax" "node" @("--check", ".\tmp\codex-static-server.js") | Out-Null
   Invoke-CheckedCommand "multiplayer QA syntax" "node" @("--check", ".\qa-beta-multiplayer.js") | Out-Null
+  Invoke-CheckedCommand "PWA QA syntax" "node" @("--check", ".\qa-beta-pwa.js") | Out-Null
   Invoke-CheckedCommand "CPU handoff QA syntax" "node" @("--check", ".\qa-beta-cpu-handoff.js") | Out-Null
   Invoke-CheckedCommand "iPad layout QA syntax" "node" @("--check", ".\qa-beta-ipad-layout.js") | Out-Null
   Invoke-CheckedCommand "room protocol QA syntax" "node" @("--check", ".\qa-beta-room-protocol.js") | Out-Null
@@ -180,6 +181,7 @@ Invoke-EnterpriseStep "Local nearby mode and room protocol" {
     }
 
     Invoke-CheckedCommand "local room protocol QA" "node" @(".\qa-beta-room-protocol.js", "http://127.0.0.1:$LocalPort") | Out-Null
+    Invoke-CheckedCommand "local PWA QA" "node" @(".\qa-beta-pwa.js", "http://127.0.0.1:$LocalPort") | Out-Null
     Invoke-CheckedCommand "local two-client multiplayer QA" "node" @(".\qa-beta-multiplayer.js", "http://127.0.0.1:$LocalPort") | Out-Null
     Invoke-CheckedCommand "local CPU-to-player handoff QA" "node" @(".\qa-beta-cpu-handoff.js", "http://127.0.0.1:$LocalPort/beta/") | Out-Null
     Invoke-CheckedCommand "local iPad active-game layout QA" "node" @(".\qa-beta-ipad-layout.js", "http://127.0.0.1:$LocalPort/beta/") | Out-Null

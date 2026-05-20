@@ -143,10 +143,26 @@ $frozenAlphaSha256 = "b2ad4757102fd844021574a67231a669148c32a9f2e236c7d5f03396d3
 $alphaPath = Join-Path $root $AlphaRoot
 $localIndex = Read-GitBlobBytes "$ExpectedRoot/index.html"
 $localMirror = Read-GitBlobBytes "$ExpectedRoot/trash-dice.html"
+$pwaAssetPaths = @(
+  "manifest.webmanifest",
+  "sw.js",
+  "icons/trash-dice-192.png",
+  "icons/trash-dice-512.png",
+  "icons/apple-touch-icon-180.png"
+)
+$localPwaAssets = @{}
+foreach ($assetPath in $pwaAssetPaths) {
+  $repoPath = "$ExpectedRoot/$assetPath"
+  $localPwaAssets[$assetPath] = Read-GitBlobBytes $repoPath
+}
 $localAlpha = [System.IO.File]::ReadAllBytes((Join-Path $alphaPath "index.html"))
 
 $localIndexHash = Get-Sha256 $localIndex
 $localMirrorHash = Get-Sha256 $localMirror
+$localPwaHashes = @{}
+foreach ($assetPath in $pwaAssetPaths) {
+  $localPwaHashes[$assetPath] = Get-Sha256 $localPwaAssets[$assetPath]
+}
 $localAlphaHash = Get-Sha256 $localAlpha
 if ($localIndexHash -ne $localMirrorHash) {
   throw "Local Beta index.html and trash-dice.html differ."
@@ -161,10 +177,18 @@ $publicAlphaUrl = Join-PublicUrl $AlphaUrl "" "dc5a995"
 
 $publicIndex = Read-HttpBytes $publicIndexUrl
 $publicMirror = Read-HttpBytes $publicMirrorUrl
+$publicPwaAssets = @{}
+foreach ($assetPath in $pwaAssetPaths) {
+  $publicPwaAssets[$assetPath] = Read-HttpBytes (Join-PublicUrl $PublicUrl $assetPath $commit)
+}
 $publicAlpha = Read-HttpBytes $publicAlphaUrl
 
 $publicIndexHash = Get-Sha256 $publicIndex
 $publicMirrorHash = Get-Sha256 $publicMirror
+$publicPwaHashes = @{}
+foreach ($assetPath in $pwaAssetPaths) {
+  $publicPwaHashes[$assetPath] = Get-Sha256 $publicPwaAssets[$assetPath]
+}
 $publicAlphaHash = Get-Sha256 $publicAlpha
 
 if ($publicIndexHash -ne $localIndexHash) {
@@ -173,11 +197,20 @@ if ($publicIndexHash -ne $localIndexHash) {
 if ($publicMirrorHash -ne $localMirrorHash) {
   throw "Public Beta trash-dice.html bytes do not match local beta/trash-dice.html."
 }
+foreach ($assetPath in $pwaAssetPaths) {
+  if ($publicPwaHashes[$assetPath] -ne $localPwaHashes[$assetPath]) {
+    throw "Public Beta PWA asset $assetPath bytes do not match local beta/$assetPath."
+  }
+}
 if ($publicAlphaHash -ne $frozenAlphaSha256) {
   throw "Public Alpha Complete bytes do not match frozen local Alpha Complete."
 }
 
 if ($RunMultiplayerQa) {
+  & node .\qa-beta-pwa.js $PublicUrl
+  if ($LASTEXITCODE -ne 0) {
+    throw "Public Beta PWA QA failed."
+  }
   & node .\qa-beta-multiplayer.js $PublicUrl
   if ($LASTEXITCODE -ne 0) {
     throw "Public Beta multiplayer QA failed."
@@ -203,6 +236,7 @@ if ($RunMultiplayerQa) {
   mobileFull = $PublicUrl
   betaSha256 = $localIndexHash
   publicBetaSha256 = $publicIndexHash
+  pwaAssetSha256 = $localPwaHashes
   alphaComplete = $AlphaUrl
   alphaSha256 = $localAlphaHash
   multiplayerQa = [bool]$RunMultiplayerQa

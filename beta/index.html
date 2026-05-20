@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Trash Dice Beta</title>
-<link rel="icon" href="data:,">
+<meta name="theme-color" content="#f5c800">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trash Dice">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/trash-dice-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/trash-dice-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Chewy&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -5301,6 +5308,94 @@ body.mobile-roll-smoothing.terminal-screen-active .overlay.loss .play-again-btn 
   font-size: clamp(1.58rem, 7vw, 2.18rem);
   border-radius: 18px;
 }
+.pwa-install-card {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + clamp(0.52rem, 2.2vh, 0.9rem));
+  z-index: 10050;
+  width: min(92vw, 440px);
+  display: none;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.58rem;
+  padding: 0.54rem 0.62rem 0.56rem 0.7rem;
+  border: 2px solid rgba(255,255,255,0.52);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.08)),
+    linear-gradient(135deg, rgba(15,95,50,0.96), rgba(6,48,25,0.96));
+  color: #fff6bc;
+  box-shadow:
+    0 5px 0 rgba(3,28,14,0.72),
+    0 15px 26px rgba(0,0,0,0.34);
+  transform: translateX(-50%) rotate(-0.8deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.pwa-install-card.is-visible {
+  display: grid;
+  opacity: 1;
+  pointer-events: auto;
+}
+.pwa-share-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  color: #f5c800;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.34));
+}
+.pwa-install-copy {
+  min-width: 0;
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.72rem, 2.8vw, 0.92rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.34);
+}
+.pwa-install-action,
+.pwa-install-close {
+  font-family: inherit;
+  cursor: pointer;
+}
+.pwa-install-action {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  min-height: 42px;
+  border: 0;
+  border-radius: 9px;
+  background:
+    radial-gradient(ellipse at 22% 12%, rgba(255,255,255,0.82), rgba(255,255,255,0.22) 30%, transparent 52%),
+    linear-gradient(180deg, #fff27a 0%, #f5c800 52%, #b58a00 100%);
+  color: #0f5f32;
+  font-size: clamp(0.82rem, 3.3vw, 1rem);
+  letter-spacing: 0.04em;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.48),
+    0 4px 0 #9c7200;
+}
+.pwa-install-action[hidden] {
+  display: none;
+}
+.pwa-install-close {
+  align-self: start;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(5,24,13,0.58);
+  color: #fff6bc;
+  font-size: 1rem;
+  line-height: 1;
+}
+@media (min-width: 700px) {
+  .pwa-install-card {
+    left: auto;
+    right: clamp(0.9rem, 2vw, 1.4rem);
+    top: clamp(0.9rem, 2.5vh, 1.4rem);
+    transform: rotate(-0.8deg);
+  }
+}
 .overlay.victory .play-again-btn {
   animation: winButtonPulse 1.08s cubic-bezier(.16,.82,.18,1) infinite;
 }
@@ -6199,6 +6294,16 @@ body.beta-multiplayer-active .debug-badge {
     <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
   </div>
 </div>
+<div class="pwa-install-card" id="pwaInstallCard" hidden role="region" aria-label="Install Trash Dice">
+  <svg class="pwa-share-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 3v12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 10v8.5A2.5 2.5 0 0 0 8.5 21h7A2.5 2.5 0 0 0 18 18.5V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>
+  <div class="pwa-install-copy" id="pwaInstallCopy">To play anytime, add Trash Dice to your Home Screen.</div>
+  <button class="pwa-install-close" id="pwaInstallClose" type="button" aria-label="Dismiss install hint">x</button>
+  <button class="pwa-install-action" id="pwaInstallButton" type="button" hidden>Add to Home Screen - play anytime</button>
+</div>
 
 <script>
 (function () {
@@ -6261,6 +6366,8 @@ body.beta-multiplayer-active .debug-badge {
     URL_HASH.includes('review')
   );
   const QA_ENABLED = URL_OPTIONS.has('qa') || URL_HASH.includes('qa');
+  const PWA_LAUNCH_SOURCE = (URL_OPTIONS.get('source') || '').toLowerCase();
+  const PWA_INSTALL_QA_MODE = QA_ENABLED ? (URL_OPTIONS.get('pwaHint') || URL_OPTIONS.get('pwa') || '').toLowerCase() : '';
   const P0_START_ENABLED = URL_OPTIONS.has('p0') || URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p0') || URL_HASH.includes('p-0');
   const P0_DEBUG_AUTOPLAY_START = URL_OPTIONS.has('p-0') || URL_OPTIONS.has('debug-p0') || URL_OPTIONS.get('p') === '0' || URL_OPTIONS.get('autoplay') === 'p0' || URL_HASH.includes('p-0') || URL_HASH.includes('debug-p0');
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
@@ -6317,6 +6424,13 @@ body.beta-multiplayer-active .debug-badge {
   let betaConnectQueue = [];
   let betaCurrentInviteHref = '';
   let betaRoomRecoveryStatusText = '';
+  let pwaDeferredInstallPrompt = null;
+  let pwaInstallVisible = false;
+  let pwaInstallMode = '';
+  let pwaInstallDismissed = false;
+  let pwaInstallShownThisSession = false;
+  let pwaInstalled = false;
+  let pwaServiceWorkerStatus = 'unregistered';
   let betaFirstRoll = {
     active: false,
     settling: false,
@@ -6798,6 +6912,10 @@ body.beta-multiplayer-active .debug-badge {
   const betaShareLink = document.getElementById('betaShareLink');
   const betaRoomStatus = document.getElementById('betaRoomStatus');
   const startOverlayEl = document.getElementById('startOverlay');
+  const pwaInstallCard = document.getElementById('pwaInstallCard');
+  const pwaInstallCopy = document.getElementById('pwaInstallCopy');
+  const pwaInstallButton = document.getElementById('pwaInstallButton');
+  const pwaInstallClose = document.getElementById('pwaInstallClose');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -6813,6 +6931,138 @@ body.beta-multiplayer-active .debug-badge {
   function cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
   }
+
+  function pwaSessionGet(key) {
+    try { return window.sessionStorage && window.sessionStorage.getItem(key); } catch (_) { return null; }
+  }
+
+  function pwaSessionSet(key, value) {
+    try { if (window.sessionStorage) window.sessionStorage.setItem(key, value); } catch (_) {}
+  }
+
+  function isPwaStandalone() {
+    return !!(
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true
+    );
+  }
+
+  function isIosSafari() {
+    const ua = navigator.userAgent || '';
+    const isIos = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isWebKit = /WebKit/i.test(ua);
+    const excluded = /CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
+    return isIos && isWebKit && !excluded;
+  }
+
+  function hidePwaInstallHint() {
+    pwaInstallVisible = false;
+    pwaInstallMode = '';
+    if (pwaInstallCard) {
+      pwaInstallCard.hidden = true;
+      pwaInstallCard.classList.remove('is-visible', 'is-ios', 'is-android');
+    }
+  }
+
+  function showPwaInstallHint(mode) {
+    if (!pwaInstallCard || pwaInstalled || isPwaStandalone() || pwaInstallDismissed) return false;
+    const safeMode = mode === 'android' ? 'android' : 'ios';
+    if (safeMode === 'ios' && pwaInstallShownThisSession) return false;
+    pwaInstallVisible = true;
+    pwaInstallMode = safeMode;
+    pwaInstallCard.hidden = false;
+    pwaInstallCard.classList.toggle('is-ios', safeMode === 'ios');
+    pwaInstallCard.classList.toggle('is-android', safeMode === 'android');
+    pwaInstallCard.classList.add('is-visible');
+    if (pwaInstallCopy) {
+      pwaInstallCopy.textContent = safeMode === 'android'
+        ? 'Add Trash Dice to your Home Screen for one-tap play anytime.'
+        : 'To play anytime, tap Share, then Add to Home Screen.';
+    }
+    if (pwaInstallButton) {
+      pwaInstallButton.hidden = safeMode !== 'android';
+      pwaInstallButton.disabled = safeMode === 'android' && !pwaDeferredInstallPrompt && PWA_INSTALL_QA_MODE !== 'android';
+    }
+    if (safeMode === 'ios') {
+      pwaInstallShownThisSession = true;
+      pwaSessionSet('trashDicePwaIosHintShown', '1');
+    }
+    return true;
+  }
+
+  function updatePwaInstallHint() {
+    if (!pwaInstallCard || pwaInstalled || isPwaStandalone() || pwaInstallDismissed || !isInlineGameOverActive()) {
+      hidePwaInstallHint();
+      return false;
+    }
+    if (PWA_INSTALL_QA_MODE === 'ios') return showPwaInstallHint('ios');
+    if (PWA_INSTALL_QA_MODE === 'android') return showPwaInstallHint('android');
+    if (pwaDeferredInstallPrompt) return showPwaInstallHint('android');
+    if (isIosSafari()) return showPwaInstallHint('ios');
+    hidePwaInstallHint();
+    return false;
+  }
+
+  function dismissPwaInstallHint() {
+    pwaInstallDismissed = true;
+    pwaSessionSet('trashDicePwaInstallDismissed', '1');
+    hidePwaInstallHint();
+  }
+
+  async function triggerPwaInstallPrompt() {
+    if (!pwaDeferredInstallPrompt) {
+      dismissPwaInstallHint();
+      return;
+    }
+    const promptEvent = pwaDeferredInstallPrompt;
+    pwaDeferredInstallPrompt = null;
+    try {
+      promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        pwaInstalled = true;
+      } else {
+        pwaInstallDismissed = true;
+        pwaSessionSet('trashDicePwaInstallDismissed', '1');
+      }
+    } catch (_) {
+      pwaInstallDismissed = true;
+      pwaSessionSet('trashDicePwaInstallDismissed', '1');
+    }
+    hidePwaInstallHint();
+  }
+
+  function registerPwaServiceWorker() {
+    pwaInstalled = isPwaStandalone();
+    pwaInstallDismissed = pwaSessionGet('trashDicePwaInstallDismissed') === '1';
+    pwaInstallShownThisSession = pwaSessionGet('trashDicePwaIosHintShown') === '1';
+    document.body.classList.toggle('pwa-standalone', pwaInstalled);
+    if (!('serviceWorker' in navigator) || window.location.protocol === 'file:') {
+      pwaServiceWorkerStatus = 'unsupported';
+      return;
+    }
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(registration => {
+          pwaServiceWorkerStatus = registration.active ? 'active' : 'registered';
+        })
+        .catch(() => {
+          pwaServiceWorkerStatus = 'failed';
+        });
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    pwaDeferredInstallPrompt = event;
+    updatePwaInstallHint();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    pwaInstalled = true;
+    pwaDeferredInstallPrompt = null;
+    hidePwaInstallHint();
+  });
 
   function betaWsUrl() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -6834,6 +7084,7 @@ body.beta-multiplayer-active .debug-badge {
     url.search = '';
     url.hash = '';
     url.searchParams.set('room', cleanRoomCode(code));
+    url.searchParams.set('source', 'invite');
     return url.toString();
   }
 
@@ -9034,6 +9285,7 @@ body.beta-multiplayer-active .debug-badge {
       inlineWinWhistleTimer = null;
     }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
+    hidePwaInstallHint();
     clearInlineEndingVisuals();
     setRollButtonPlayAgainMode(false);
   }
@@ -9110,6 +9362,7 @@ body.beta-multiplayer-active .debug-badge {
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
     startInlineEndingVisuals(playerWon);
+    updatePwaInstallHint();
 
     p1Inventory.classList.add('has-status');
     p2Inventory.classList.add('has-status');
@@ -10701,6 +10954,7 @@ body.beta-multiplayer-active .debug-badge {
   document.addEventListener('touchend', unlockAudioForInput, { capture: true, passive: true });
   document.addEventListener('click', unlockAudioForInput, { capture: true, passive: true });
   document.addEventListener('keydown', unlockAudioForInput, { capture: true });
+  registerPwaServiceWorker();
   document.getElementById('startBtn').addEventListener('click', () => startGameFromOverlay(true));
   if (betaTwoPlayerBtn) betaTwoPlayerBtn.addEventListener('click', betaShowRoomPanel);
   if (betaCreateBtn) betaCreateBtn.addEventListener('click', betaCreateRoom);
@@ -10709,6 +10963,8 @@ body.beta-multiplayer-active .debug-badge {
   if (betaShareBtn) betaShareBtn.addEventListener('click', betaShareInvite);
   if (betaCopyLinkBtn) betaCopyLinkBtn.addEventListener('click', betaCopyInviteLink);
   if (betaCopyCodeBtn) betaCopyCodeBtn.addEventListener('click', betaCopyInviteCode);
+  if (pwaInstallButton) pwaInstallButton.addEventListener('click', triggerPwaInstallPrompt);
+  if (pwaInstallClose) pwaInstallClose.addEventListener('click', dismissPwaInstallHint);
   if (betaQr) {
     betaQr.addEventListener('error', () => {
       if (!betaQr.hidden && betaCurrentInviteHref) {
@@ -10880,6 +11136,17 @@ body.beta-multiplayer-active .debug-badge {
         terminal: terminalState ? { ...terminalState } : null,
         terminalWinner,
         terminalRunId,
+        pwa: {
+          source: PWA_LAUNCH_SOURCE,
+          standalone: isPwaStandalone(),
+          installed: pwaInstalled,
+          installVisible: pwaInstallVisible,
+          installMode: pwaInstallMode,
+          installDismissed: pwaInstallDismissed,
+          installShownThisSession: pwaInstallShownThisSession,
+          deferredPromptReady: !!pwaDeferredInstallPrompt,
+          serviceWorkerStatus: pwaServiceWorkerStatus
+        },
         roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
         roundResolutionRunId,
         beta: {
