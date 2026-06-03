@@ -1,0 +1,20 @@
+{
+  "name": "Trash Dice Ambient Alpha",
+  "source": "releases/alpha-complete/index.html",
+  "sourceCommit": "dc5a995",
+  "generatedAt": "2026-06-03T00:01:32.284Z",
+  "generator": "tools/render-trash-dice-ambient.js",
+  "loop": true,
+  "loopBars": 4,
+  "bpm": 132,
+  "durationSeconds": 7.272729,
+  "sampleRate": 48000,
+  "channels": 2,
+  "peak": 0.055338,
+  "seed": 500174,
+  "files": [
+    "assets/audio/trash-dice-ambient-alpha.wav",
+    "assets/audio/trash-dice-ambient-alpha.mp3",
+    "assets/audio/trash-dice-ambient-alpha.ogg"
+  ]
+}
