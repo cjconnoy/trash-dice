@@ -202,6 +202,12 @@ async function main() {
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
         quitButton: !!document.getElementById('quitGameBtn'),
+        quitRect: (() => {
+          const btn = document.getElementById('quitGameBtn');
+          if (!btn) return null;
+          const r = btn.getBoundingClientRect();
+          return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight };
+        })(),
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
@@ -213,7 +219,7 @@ async function main() {
           const legal = document.querySelector('.title-legal');
           const rect = el => {
             const r = el.getBoundingClientRect();
-            return { top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+            return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
           };
           const presenterRect = rect(presenterLogo);
           const titleRect = rect(titleLogo);
@@ -246,6 +252,24 @@ async function main() {
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
+      assert(initial.quitRect.width >= 88 && initial.quitRect.height >= 42, `${viewport.name}: quit button is too small ${JSON.stringify(initial.quitRect)}`);
+      assert(initial.quitRect.right <= initial.quitRect.viewportWidth - 6 && initial.quitRect.left >= 0, `${viewport.name}: quit button is not right aligned in viewport ${JSON.stringify(initial.quitRect)}`);
+      if (viewport.width <= 720) {
+        assert(initial.quitRect.height >= 52, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
+        assert(initial.quitRect.top >= initial.quitRect.viewportHeight * 0.55, `${viewport.name}: mobile quit button should sit in lower thumb zone ${JSON.stringify(initial.quitRect)}`);
+        const clearTagline = initial.quitRect.top >= initial.titleLayout.taglineRect.bottom + 4 ||
+          initial.quitRect.left >= initial.titleLayout.taglineRect.right + 4 ||
+          initial.quitRect.right <= initial.titleLayout.taglineRect.left - 4 ||
+          initial.quitRect.bottom <= initial.titleLayout.taglineRect.top - 4;
+        const clearLegal = initial.quitRect.top >= initial.titleLayout.legalRect.bottom + 4 ||
+          initial.quitRect.left >= initial.titleLayout.legalRect.right + 4 ||
+          initial.quitRect.right <= initial.titleLayout.legalRect.left - 4 ||
+          initial.quitRect.bottom <= initial.titleLayout.legalRect.top - 4;
+        assert(clearTagline, `${viewport.name}: mobile quit button overlaps title tagline ${JSON.stringify({ quit: initial.quitRect, tagline: initial.titleLayout.taglineRect })}`);
+        assert(clearLegal, `${viewport.name}: mobile quit button overlaps legal copy ${JSON.stringify({ quit: initial.quitRect, legal: initial.titleLayout.legalRect })}`);
+      } else {
+        assert(initial.quitRect.top <= 24, `${viewport.name}: desktop/tablet quit button should remain easy to find at top right ${JSON.stringify(initial.quitRect)}`);
+      }
       assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
@@ -301,20 +325,25 @@ async function main() {
         const panel = document.querySelector('.roll-panel');
         const p0Button = document.getElementById('devP0Btn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
+        const quitButton = document.getElementById('quitGameBtn');
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
         const br = p0Button.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
+        const qr = quitButton.getBoundingClientRect();
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
+          quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
+          quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           disabled: roll.disabled,
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
+          quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
           viewport: { width: window.innerWidth, height: window.innerHeight }
         };
       })()`);
@@ -322,6 +351,11 @@ async function main() {
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
+      if (viewport.width <= 720) {
+        assert(activeLayout.quitButtonRect.top >= activeLayout.viewport.height * 0.45, `${viewport.name}: active mobile quit button should remain in lower thumb zone ${JSON.stringify(activeLayout)}`);
+      }
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);

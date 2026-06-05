@@ -29,6 +29,7 @@ function contentType(filePath) {
   if (filePath.endsWith('.js')) return 'text/javascript; charset=utf-8';
   if (filePath.endsWith('.css')) return 'text/css; charset=utf-8';
   if (filePath.endsWith('.png')) return 'image/png';
+  if (filePath.endsWith('.webp')) return 'image/webp';
   if (filePath.endsWith('.svg')) return 'image/svg+xml; charset=utf-8';
   if (filePath.endsWith('.ico')) return 'image/x-icon';
   return 'application/octet-stream';
@@ -286,6 +287,11 @@ async function main() {
         })()
       }))()`);
       assert(quitInputProbe.manualClick === true, `${viewport.name}: quit input did not hit button ${JSON.stringify(quitInputProbe)}`);
+      assert(quitInputProbe.buttonRect.width >= 88 && quitInputProbe.buttonRect.height >= 42, `${viewport.name}: quit button touch target too small ${JSON.stringify(quitInputProbe)}`);
+      if (viewport.width <= 720) {
+        assert(quitInputProbe.buttonRect.top >= viewport.height * 0.45, `${viewport.name}: mobile quit button should sit in lower thumb zone ${JSON.stringify(quitInputProbe)}`);
+        assert(quitInputProbe.buttonRect.right <= viewport.width - 6, `${viewport.name}: mobile quit button should stay inside right edge ${JSON.stringify(quitInputProbe)}`);
+      }
       await waitEval(gamePage, `(() => {
         const sheet = document.getElementById('quitReturnSheet');
         return !!(sheet && !sheet.hidden);

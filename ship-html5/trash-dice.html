@@ -241,8 +241,9 @@ body {
     line-height: 1.05;
   }
   .title-legal {
+    left: calc(50% - 1.4rem);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
-    max-width: min(78vw, 300px);
+    max-width: min(53vw, 214px);
     font-size: clamp(0.42rem, 2.35vw, 0.52rem);
     line-height: 1.08;
   }
@@ -441,22 +442,30 @@ body.fast-preview .start-overlay .title-hero-glint {
   z-index: 145;
   top: calc(env(safe-area-inset-top, 0px) + 8px);
   right: calc(env(safe-area-inset-right, 0px) + 8px);
-  min-width: 60px;
-  min-height: 34px;
-  padding: 0.34rem 0.62rem 0.28rem;
-  border: 1px solid rgba(15,95,50,0.28);
+  min-width: 96px;
+  min-height: 46px;
+  padding: 0.48rem 0.9rem 0.42rem;
+  border: 3px solid rgba(15,95,50,0.78);
   border-radius: 999px;
-  background: rgba(255,252,223,0.9);
-  color: #124928;
+  background: linear-gradient(180deg, #fff86c 0%, #f5c800 60%, #d9a800 100%);
+  color: #0f5f32;
   font-family: Fredoka, system-ui, sans-serif;
-  font-size: clamp(0.7rem, 2.6vw, 0.86rem);
+  font-size: clamp(0.92rem, 2.6vw, 1.08rem);
+  font-weight: 900;
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   box-shadow:
-    0 7px 18px rgba(45,55,40,0.16),
-    inset 0 1px 0 rgba(255,255,255,0.72);
+    0 10px 24px rgba(15,60,32,0.28),
+    0 0 0 3px rgba(255,255,255,0.5),
+    inset 0 2px 0 rgba(255,255,255,0.78),
+    inset 0 -3px 0 rgba(130,91,0,0.16);
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.quit-game-btn:hover {
+  filter: brightness(1.05) saturate(1.08);
 }
 
 .quit-game-btn:active {
@@ -3853,6 +3862,26 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-height: 100svh;
     padding: 0.22rem 0.34rem calc(env(safe-area-inset-bottom, 0px) + 1.55rem);
     gap: clamp(0.08rem, 0.62vh, 0.22rem);
+  }
+
+  .quit-game-btn {
+    top: auto;
+    right: calc(env(safe-area-inset-right, 0px) + 0.72rem);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.85rem);
+    min-width: 94px;
+    min-height: 56px;
+    padding: 0.58rem 0.9rem 0.5rem;
+    border-width: 3px;
+    font-size: clamp(0.88rem, 4.25vw, 1.08rem);
+    box-shadow:
+      0 12px 28px rgba(15,60,32,0.32),
+      0 0 0 4px rgba(255,255,255,0.54),
+      inset 0 2px 0 rgba(255,255,255,0.78),
+      inset 0 -3px 0 rgba(130,91,0,0.18);
+  }
+
+  body[data-game-started="true"] .quit-game-btn {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(9.5rem, 26vh, 11.5rem));
   }
 
   .title-wrap:not(.big) {
