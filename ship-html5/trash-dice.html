@@ -503,6 +503,58 @@ body.quit-return-open .debug-p0-btn {
   pointer-events: none;
 }
 
+.debug-outcome-controls {
+  position: fixed;
+  z-index: 144;
+  display: none;
+  flex-direction: row;
+  gap: 4px;
+  top: calc(env(safe-area-inset-top, 0px) + 84px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+}
+
+body[data-game-started="true"] .debug-outcome-controls {
+  display: flex;
+}
+
+.debug-outcome-btn {
+  min-width: 48px;
+  min-height: 28px;
+  padding: 0.23rem 0.38rem 0.18rem;
+  border: 1px solid rgba(255,252,223,0.36);
+  border-radius: 999px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(0.56rem, 2vw, 0.68rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow:
+    0 5px 14px rgba(15,40,24,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.debug-outcome-btn.win {
+  background: rgba(245,200,0,0.9);
+  color: #123d25;
+  border-color: rgba(15,95,50,0.36);
+}
+
+.debug-outcome-btn.lose {
+  background: rgba(19,92,48,0.86);
+  color: #fff6ad;
+}
+
+.debug-outcome-btn:active {
+  transform: translateY(1px);
+}
+
+body.quit-return-open .debug-outcome-controls {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .quit-return-sheet[hidden] {
   display: none;
 }
@@ -4474,6 +4526,20 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     padding-left: 0.38rem;
     padding-right: 0.38rem;
   }
+
+  .debug-outcome-controls {
+    flex-direction: row;
+    top: calc(env(safe-area-inset-top, 0px) + 78px);
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    gap: 3px;
+  }
+
+  .debug-outcome-btn {
+    min-width: 44px;
+    min-height: 26px;
+    padding-left: 0.32rem;
+    padding-right: 0.32rem;
+  }
 }
 
 @media (max-width: 720px) and (max-height: 700px) {
@@ -4714,6 +4780,15 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     top: calc(env(safe-area-inset-top, 0px) + 40px);
     min-width: 40px;
     min-height: 28px;
+  }
+
+  .debug-outcome-controls {
+    top: calc(env(safe-area-inset-top, 0px) + 70px);
+  }
+
+  .debug-outcome-btn {
+    min-width: 40px;
+    min-height: 24px;
   }
 }
 
@@ -5659,6 +5734,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <div class="milestone-badge">BETA WIP - NOT LIVE</div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
+<div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
+  <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
+  <button class="debug-outcome-btn lose" id="devLoseBtn" type="button" aria-label="Lose game now">LOSE</button>
+</div>
 <div class="quit-return-sheet" id="quitReturnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="quitReturnTitle">
   <div class="quit-return-card">
     <div class="quit-return-eyebrow">Done playing?</div>
@@ -6819,6 +6898,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
+  const debugOutcomeControls = document.getElementById('debugOutcomeControls');
   const devWinBtn = document.getElementById('devWinBtn');
   const devLoseBtn = document.getElementById('devLoseBtn');
   const devStartBtn = document.getElementById('devStartBtn');
@@ -10798,6 +10878,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.addEventListener('pointerdown', event => {
     if (!p0ReviewMode) return;
     if (p0ReviewToggle && event.target === p0ReviewToggle) return;
+    if (devP0Btn && event.target === devP0Btn) return;
+    if (debugOutcomeControls && debugOutcomeControls.contains(event.target)) return;
     if (devCheatBar && devCheatBar.contains(event.target)) return;
     event.preventDefault();
     event.stopPropagation();

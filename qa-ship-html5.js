@@ -197,6 +197,9 @@ async function main() {
         devControls: !!document.querySelector('#devCheatBar,#p0ReviewToggle,#debugBadge'),
         p0Button: !!document.getElementById('devP0Btn'),
         p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+        winButton: !!document.getElementById('devWinBtn'),
+        loseButton: !!document.getElementById('devLoseBtn'),
+        outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
         quitButton: !!document.getElementById('quitGameBtn'),
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
@@ -211,6 +214,9 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
       assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
+      assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
+      assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
+      assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
       assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
@@ -258,23 +264,28 @@ async function main() {
         const roll = document.getElementById('rollBtn');
         const panel = document.querySelector('.roll-panel');
         const p0Button = document.getElementById('devP0Btn');
+        const outcomeControls = document.getElementById('debugOutcomeControls');
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
         const br = p0Button.getBoundingClientRect();
+        const or = outcomeControls.getBoundingClientRect();
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
+          outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           disabled: roll.disabled,
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
+          outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           viewport: { width: window.innerWidth, height: window.innerHeight }
         };
       })()`);
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
@@ -373,6 +384,30 @@ async function main() {
     assert(p0Off.ariaPressed === 'false', `P-0 probe: aria pressed not false ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0Active === false, `P-0 probe: autoplay did not stop ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0ButtonVisible === true, `P-0 probe: button hidden after stop ${JSON.stringify(p0Off)}`);
+
+    for (const outcome of [
+      { id: 'devWinBtn', winner: 'p1', label: 'win' },
+      { id: 'devLoseBtn', winner: 'p2', label: 'lose' }
+    ]) {
+      const outcomeProbe = await openPage(`${baseUrl}?source=qa&qa=1&outcome=${outcome.label}`, viewports[0]);
+      await evalValue(outcomeProbe, `document.getElementById('startBtn').click(); true`);
+      await waitEval(outcomeProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${outcome.label} probe game start`);
+      await evalValue(outcomeProbe, `document.getElementById(${JSON.stringify(outcome.id)}).click(); true`);
+      await waitEval(outcomeProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${outcome.label} probe wrap-up`);
+      const outcomeState = await evalValue(outcomeProbe, `(() => {
+        const state = window.TrashDiceQA.state();
+        return {
+          winner: state.inlineGameOver && state.inlineGameOver.winner,
+          active: state.inlineGameOver && state.inlineGameOver.active,
+          rollButtonText: (document.getElementById('rollBtn') || {}).textContent || '',
+          outcomeVisible: getComputedStyle(document.getElementById('debugOutcomeControls')).display !== 'none'
+        };
+      })()`);
+      assert(outcomeState.active === true, `${outcome.label} probe: wrap-up not active ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.rollButtonText.includes('PLAY AGAIN'), `${outcome.label} probe: play-again CTA missing ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
+    }
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));
     assert(forbiddenHits.length === 0, `forbidden network requests: ${forbiddenHits.join(', ')}`);
