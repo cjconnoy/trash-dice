@@ -6191,9 +6191,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let titleRoundWinTimer = null;
   let titleRoundWinStageTimer = null;
   let benchCelebrateTimer = null;
+  let terminalDiceCelebrateTimer = null;
+  let terminalDiceCelebrateRun = 0;
   let playerPayoutFanfareTimer = null;
   let playerPayoutFanfareActive = false;
   let playerPayoutFanfarePlayer = 'p1';
+  let playerPayoutFanfareText = 'PAYDAY!';
   let lastPlayerHitPraise = null;
   let playerClutchMagnetUsedThisRound = false;
   let enduranceAssistRolls = 0;
@@ -6512,9 +6515,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     titleRoundWinTimer = null;
     titleRoundWinStageTimer = null;
     benchCelebrateTimer = null;
+    terminalDiceCelebrateTimer = null;
+    terminalDiceCelebrateRun++;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
+    playerPayoutFanfareText = 'PAYDAY!';
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
@@ -7856,6 +7862,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
+    playerPayoutFanfareText = 'PAYDAY!';
     ['p1', 'p2'].forEach(player => {
       const ui = getPlayerUi(player);
       if (ui.panel) ui.panel.classList.remove('player-payout-fanfare');
@@ -7874,25 +7881,28 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
   }
 
-  function startPlayerPayoutFanfare(player = 'p1', duration = 1800) {
+  function startPlayerPayoutFanfare(player = 'p1', duration = 1800, label = 'PAYDAY!') {
     const ui = getPlayerUi(player);
     if (!ui.inventory) return;
     clearPlayerPayoutFanfare(false);
     clearBenchCelebration(false);
     playerPayoutFanfareActive = true;
     playerPayoutFanfarePlayer = ui.player;
+    playerPayoutFanfareText = label || 'PAYDAY!';
     if (ui.panel) {
       void ui.panel.offsetWidth;
       ui.panel.classList.add('player-payout-fanfare');
     }
     ui.inventory.classList.add('player-payout-fanfare');
-    if (ui.statusText) ui.statusText.textContent = 'PAYDAY!';
+    if (ui.statusText) ui.statusText.textContent = playerPayoutFanfareText;
     if (ui.statusBar) ui.statusBar.classList.add('payout-praise');
     if (ui.poolEl) ui.poolEl.classList.add('payout-jackpot');
-    playerPayoutFanfareTimer = runLater(() => {
-      playerPayoutFanfareTimer = null;
-      clearPlayerPayoutFanfare(true);
-    }, duration);
+    if (duration > 0) {
+      playerPayoutFanfareTimer = runLater(() => {
+        playerPayoutFanfareTimer = null;
+        clearPlayerPayoutFanfare(true);
+      }, duration);
+    }
   }
 
   function clearBenchCelebration(resetStatus = false) {
@@ -7915,6 +7925,65 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       die.style.removeProperty('--bench-tilt');
       die.style.removeProperty('--bench-tilt-small');
     });
+  }
+
+  function benchCelebrationCycleMs(diceCount) {
+    return Math.max(
+      Math.min(1560, 980 + diceCount * 24),
+      PLAYER_PLACE_CELEBRATE_HANDOFF_MS + 80
+    );
+  }
+
+  function applyBenchDiceCelebration(player) {
+    const pile = player === 'p1' ? p1Pile : p2Pile;
+    if (!pile) return 0;
+    const dice = Array.from(pile.querySelectorAll('.mini-die'));
+    dice.forEach(die => die.classList.remove('bench-cheer-die'));
+    void pile.offsetWidth;
+    dice.forEach((die, i) => {
+      const stagger = Math.min(i, 20) * 22;
+      const tilt = (i % 2 === 0 ? -1 : 1) * (8 + (i % 4) * 2);
+      const hop = -(10 + (i % 5) * 2);
+      die.style.setProperty('--bench-delay', stagger + 'ms');
+      die.style.setProperty('--bench-hop', hop + 'px');
+      die.style.setProperty('--bench-hop-small', Math.round(hop * 0.58) + 'px');
+      die.style.setProperty('--bench-tilt', tilt + 'deg');
+      die.style.setProperty('--bench-tilt-small', Math.round(tilt * -0.55) + 'deg');
+      die.classList.add('bench-cheer-die');
+    });
+    return dice.length;
+  }
+
+  function clearTerminalDiceCelebration() {
+    if (terminalDiceCelebrateTimer) {
+      cancelRuntimeTimer(terminalDiceCelebrateTimer);
+      terminalDiceCelebrateTimer = null;
+    }
+    terminalDiceCelebrateRun++;
+    document.querySelectorAll('.bench-cheer-die').forEach(die => {
+      die.classList.remove('bench-cheer-die');
+      die.style.removeProperty('--bench-delay');
+      die.style.removeProperty('--bench-hop');
+      die.style.removeProperty('--bench-hop-small');
+      die.style.removeProperty('--bench-tilt');
+      die.style.removeProperty('--bench-tilt-small');
+    });
+  }
+
+  function startTerminalDiceCelebration(player, runId) {
+    const finalPlayer = player === 'p2' ? 'p2' : 'p1';
+    const localRun = ++terminalDiceCelebrateRun;
+    const loop = () => {
+      if (
+        terminalDiceCelebrateRun !== localRun ||
+        !isCurrentInlineGameOverRun(runId) ||
+        !inlineGameOverState ||
+        inlineGameOverState.winner !== finalPlayer
+      ) return;
+      const diceCount = applyBenchDiceCelebration(finalPlayer);
+      terminalDiceCelebrateTimer = runLater(loop, benchCelebrationCycleMs(diceCount));
+    };
+    loop();
   }
 
   function choosePlayerHitPraise(isRoundWin = false) {
@@ -7950,25 +8019,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       ui.statusBar.classList.add('bench-praise');
     }
 
-    const dice = Array.from(pile.querySelectorAll('.mini-die'));
-    dice.forEach(die => die.classList.remove('bench-cheer-die'));
-    void pile.offsetWidth;
-    dice.forEach((die, i) => {
-      const stagger = Math.min(i, 20) * 22;
-      const tilt = (i % 2 === 0 ? -1 : 1) * (8 + (i % 4) * 2);
-      const hop = -(10 + (i % 5) * 2);
-      die.style.setProperty('--bench-delay', stagger + 'ms');
-      die.style.setProperty('--bench-hop', hop + 'px');
-      die.style.setProperty('--bench-hop-small', Math.round(hop * 0.58) + 'px');
-      die.style.setProperty('--bench-tilt', tilt + 'deg');
-      die.style.setProperty('--bench-tilt-small', Math.round(tilt * -0.55) + 'deg');
-      die.classList.add('bench-cheer-die');
-    });
-
-    const clearDelay = Math.max(
-      Math.min(1560, 980 + dice.length * 24),
-      PLAYER_PLACE_CELEBRATE_HANDOFF_MS + 80
-    );
+    const diceCount = applyBenchDiceCelebration(player);
+    const clearDelay = benchCelebrationCycleMs(diceCount);
     benchCelebrateTimer = runLater(() => {
       benchCelebrateTimer = null;
       clearBenchCelebration(current === 'p1');
@@ -9003,7 +9055,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     heroTitle.style.removeProperty('--round-title-sustain-rate');
   }
 
-  function triggerTitleRoundWinFanfare(durationMs = 1180) {
+  function triggerTitleRoundWinFanfare(durationMs = 1180, persist = false) {
     if (!heroTitle) return;
     stopTitleRoundWinFanfare();
     const totalMs = Math.round(clamp(durationMs + 260, 1180, 9600));
@@ -9019,10 +9071,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         heroTitle.classList.add('round-win-title-sustain');
       }
     }, sustainDelay);
-    titleRoundWinTimer = runLater(() => {
-      titleRoundWinTimer = null;
-      stopTitleRoundWinFanfare();
-    }, totalMs);
+    if (!persist) {
+      titleRoundWinTimer = runLater(() => {
+        titleRoundWinTimer = null;
+        stopTitleRoundWinFanfare();
+      }, totalMs);
+    }
   }
 
   function triggerLidPlacePulse(color, idx) {
@@ -9126,6 +9180,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
     hidePwaInstallHint();
+    clearTerminalDiceCelebration();
     clearInlineEndingVisuals();
     setRollButtonPlayAgainMode(false);
   }
@@ -9163,6 +9218,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearVictoryEffects();
     clearBenchCelebration(false);
     clearPlayerPayoutFanfare(false);
+    clearTerminalDiceCelebration();
     clearInlineEndingVisuals();
     stopTitleRoundWinFanfare();
     Audio.setMusicActive(playerWon);
@@ -9231,6 +9287,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     syncHeroIdleState();
 
     if (playerWon) {
+      const winnerFanfareDuration = roundSpillDurationForWinner('p1', clamp(totalDice('p1'), 6, 18));
+      triggerTitleRoundWinFanfare(winnerFanfareDuration, true);
+      startPlayerPayoutFanfare('p1', 0, 'WINNER');
+      startTerminalDiceCelebration('p1', runId);
       triggerLidWinPulse();
       Audio.megaWinFanfare();
       Audio.gameWinWhistle();
@@ -9475,7 +9535,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const payoutUi = getPlayerUi(playerPayoutFanfarePlayer);
       if (payoutUi.inventory) payoutUi.inventory.classList.add('has-status');
       if (payoutUi.statusBar) payoutUi.statusBar.classList.add('active', 'payout-praise');
-      if (payoutUi.statusText) payoutUi.statusText.textContent = 'PAYDAY!';
+      if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
     if ((!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== 'p1') && p1StatusText) {
       p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'YELLOW PLAYER';

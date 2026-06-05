@@ -331,10 +331,53 @@ async function main() {
       const terminal = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
         pwaVisible: !!document.querySelector('#pwaInstallCard.is-visible'),
+        titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
+        winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
+        winnerPile: document.getElementById('p1Inventory').classList.contains('player-payout-fanfare'),
+        winnerPraise: document.getElementById('p1StatusBar').classList.contains('payout-praise'),
+        winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
+        winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
+        celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
+      assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerPanel === true, `${viewport.name}: winner panel fanfare missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerPile === true, `${viewport.name}: winner dice pile fanfare missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerPraise === true, `${viewport.name}: winner praise state missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
+      assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
+      await sleep(1700);
+      const terminalLoop = await evalValue(page, `(() => ({
+        stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
+        titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
+        winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
+        winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
+        celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length
+      }))()`);
+      assert(terminalLoop.stillComplete, `${viewport.name}: game over cleared before Play Again ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.winnerPanel === true, `${viewport.name}: winner panel fanfare did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.winnerLabel === 'WINNER', `${viewport.name}: winner label did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} play again restart`);
+      const terminalCleared = await evalValue(page, `(() => ({
+        titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
+        winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
+        winnerPile: document.getElementById('p1Inventory').classList.contains('player-payout-fanfare'),
+        winnerPraise: document.getElementById('p1StatusBar').classList.contains('payout-praise'),
+        winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
+        celebratingDice: document.querySelectorAll('.bench-cheer-die').length
+      }))()`);
+      assert(terminalCleared.titleFanfare === false, `${viewport.name}: title fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.winnerPanel === false, `${viewport.name}: winner panel fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.winnerPile === false, `${viewport.name}: winner dice pile fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.winnerPraise === false, `${viewport.name}: winner praise leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.winnerCount === false, `${viewport.name}: winner count fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.celebratingDice === 0, `${viewport.name}: dice celebration leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
