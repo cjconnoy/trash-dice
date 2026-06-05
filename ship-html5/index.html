@@ -169,7 +169,7 @@ body {
   pointer-events: none;
 }
 .title-presenter {
-  top: calc(env(safe-area-inset-top, 0px) + clamp(0.55rem, 2vh, 0.95rem));
+  top: calc(env(safe-area-inset-top, 0px) + clamp(0.32rem, 1.1vh, 0.62rem));
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -180,15 +180,18 @@ body {
   text-shadow: 0 1px 0 rgba(255,255,255,0.42);
   white-space: nowrap;
 }
-.title-presenter-brand {
-  font-size: clamp(0.92rem, 2.45vw, 1.28rem);
-  letter-spacing: 0.08em;
+.title-presenter-logo {
+  display: block;
+  width: clamp(138px, 11vw, 150px);
+  height: auto;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.28));
+  opacity: 0.94;
 }
 .title-presenter-sub {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.48rem, 1.3vw, 0.64rem);
-  letter-spacing: 0.16em;
-  opacity: 0.78;
+  font-size: clamp(0.42rem, 0.75vw, 0.52rem);
+  letter-spacing: 0.14em;
+  opacity: 0.76;
 }
 .title-legal {
   bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.42rem, 1.6vh, 0.72rem));
@@ -200,14 +203,32 @@ body {
   text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,0.36);
 }
+@media (min-width: 721px) {
+  .title-wrap.big .title-logo {
+    width: clamp(306px, 38vw, 430px);
+  }
+  .start-overlay .title-wrap.big {
+    transform: translateY(5.5rem);
+  }
+  .start-overlay .start-blob-wrap,
+  .start-overlay .start-tagline {
+    transform: translateY(3rem);
+  }
+}
 @media (max-width: 720px) {
   .start-overlay {
     gap: clamp(0.62rem, 1.9vh, 0.86rem);
   }
+  .title-presenter-logo {
+    width: clamp(176px, 55vw, 216px);
+  }
+  .title-presenter-sub {
+    font-size: clamp(0.42rem, 1.4vw, 0.5rem);
+  }
   .start-overlay .title-wrap.big,
   .start-overlay .start-blob-wrap,
   .start-overlay .start-tagline {
-    transform: translateY(-4rem);
+    transform: translateY(3.2rem);
   }
   .title-legal {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 2.15rem);
@@ -5784,7 +5805,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
   <div class="title-presenter" aria-label="Big Discoveries presents">
-    <span class="title-presenter-brand">BIG DISCOVERIES</span>
+    <img class="title-presenter-logo" src="assets/brand/big-discoveries-secondary-logo.png" alt="Big Discoveries" decoding="async">
     <span class="title-presenter-sub">Presents</span>
   </div>
   <div class="title-wrap big">
