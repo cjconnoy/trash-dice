@@ -4,9 +4,9 @@ Stable launcher flow for CJ.
 
 ## Target
 
-`https://playonedaygames.com/trash-dice/ios-preview/`
+`https://playonedaygames.com/trash-dice/play/`
 
-This is the protected, stable Trash Dice preview URL. Do not point launchers at Slack links, `trycloudflare.com` tunnels, or iteration-specific preview URLs.
+This is the protected, stable Trash Dice HTML5 Beta review URL. Do not point launchers at Slack links, `trycloudflare.com` tunnels, local IPs, or iteration-specific preview URLs.
 
 ## Created Locally
 
@@ -33,7 +33,7 @@ If Windows does not show the pin option, open `TD` once, then right-click the ru
 
 Use Safari, not a temporary preview link:
 
-1. Open `https://playonedaygames.com/trash-dice/ios-preview/` in Safari.
+1. Open `https://playonedaygames.com/trash-dice/play/` in Safari.
 2. Authenticate if prompted.
 3. Tap Share.
 4. Tap Add to Home Screen.
@@ -47,4 +47,4 @@ Keeping Open as Web App OFF helps the launcher open in Safari and share Safari's
 
 The icon can stay static. The game content updates because the shortcut points at a stable URL. When the protected preview route is updated/deployed, the desktop shortcut and iPhone Home Screen icon should load the latest deployed content without changing the shortcut.
 
-The route currently returns `Cache-Control: no-store` when unauthenticated, which is what we want for preview refresh behavior.
+The route currently returns `Cache-Control: no-store`, which is what we want for preview refresh behavior.

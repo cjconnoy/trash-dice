@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$stableUrl = "https://playonedaygames.com/trash-dice/ios-preview/"
+$stableUrl = "https://playonedaygames.com/trash-dice/play/"
 $launcherDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $iconPath = Join-Path $launcherDir "TD.ico"
 $desktopDir = [Environment]::GetFolderPath("Desktop")

@@ -159,6 +159,52 @@ This is local same-Wi-Fi review, not a deployed public route. The IP can change 
 
 `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site\play`
 
+## TD Launcher Workflow
+
+CJ should use a stable `TD` launcher instead of chasing Slack/session links for iteration review.
+
+Canonical protected HTML5 Beta review URL:
+
+`https://playonedaygames.com/trash-dice/play/`
+
+Launcher doctrine:
+
+- Desktop launcher, Start Menu launcher, and iPhone Home Screen icon should all point to the canonical protected Beta review URL above.
+- Do not use temporary Cloudflare tunnel URLs, local IPs, Slack links, or build-specific preview URLs for launchers.
+- Do not embed passwords in shortcut files, URLs, docs, Slack, or launcher scripts.
+- Do not point this ship-lane launcher at `/trash-dice/ios-preview/` unless CJ explicitly switches the review workflow to the separate iOS thread.
+- Do not touch Alpha Complete.
+
+Windows launcher source:
+
+- `launchers/install-td-launcher.ps1`
+- `launchers/TD.ico`
+- `launchers/TD_LAUNCHER_README.md`
+
+The installer creates:
+
+- Desktop shortcut: `TD.lnk`
+- Start Menu shortcut: `TD.lnk`
+- Repo backup shortcut: `launchers\TD.lnk`
+- Repo fallback URL file: `launchers\TD.url`
+
+Windows taskbar:
+
+- Prefer pinning the Start Menu `TD` shortcut manually.
+- If Windows only pins the browser app, keep the Desktop `TD` shortcut as the reliable launcher.
+
+iPhone Home Screen:
+
+1. Open `https://playonedaygames.com/trash-dice/play/` in Safari.
+2. Authenticate if prompted.
+3. Tap Share.
+4. Tap Add to Home Screen.
+5. Name it `TD`.
+6. Turn Open as Web App OFF if iOS shows that option.
+7. Tap Add.
+
+Keeping Open as Web App OFF makes the launcher open in Safari and share Safari's auth/session. The icon can stay static; game content updates because the shortcut points to the stable protected URL.
+
 ## Live Route Reality
 
 As of this handoff:
@@ -567,4 +613,3 @@ Claude must not:
 - claim release readiness
 
 CJ should not manage Claude. Codex owns any sidecar coordination and summarizes only useful outcomes.
-
