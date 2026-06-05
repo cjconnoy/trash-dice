@@ -310,6 +310,15 @@ Recent start-button checks:
 Re-run after any meaningful edit:
 
 ```powershell
+.\sync-ship-html5.ps1
+.\qa-ship-iteration.ps1
+```
+
+The helper scripts replace the manual mirror-copy and repeated QA paste flow. `sync-ship-html5.ps1` copies `ship-html5/index.html` to `ship-html5/trash-dice.html` and both Studio Site review files, asserts all four hashes match, parses the game script, and verifies Alpha Complete diffs are empty before and after. `qa-ship-iteration.ps1` runs sync first and then runs `node qa-ship-html5.js` plus `node qa-retail-loop.js` in parallel by default.
+
+Manual fallback:
+
+```powershell
 node -e "const fs=require('fs'); const a='ship-html5/index.html',b='ship-html5/trash-dice.html'; const A=fs.readFileSync(a,'utf8'),B=fs.readFileSync(b,'utf8'); if(A!==B) throw new Error('ship mirror mismatch'); const m=A.match(/<script>([\s\S]*?)<\/script>/); if(!m) throw new Error('missing script'); new Function(m[1]); console.log('ship mirror/script ok');"
 node qa-ship-html5.js
 node qa-retail-loop.js

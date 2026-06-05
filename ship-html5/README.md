@@ -21,3 +21,12 @@ Retail loop gate:
 ```powershell
 node qa-retail-loop.js
 ```
+
+Fast iteration helpers:
+
+```powershell
+.\sync-ship-html5.ps1
+.\qa-ship-iteration.ps1
+```
+
+`sync-ship-html5.ps1` copies `ship-html5/index.html` to the ship mirror and Studio Site play mirrors, parses scripts, checks matching hashes, and verifies Alpha Complete diffs are empty before and after. `qa-ship-iteration.ps1` runs sync first, then runs the ship and retail-loop browser QA jobs in parallel by default.
