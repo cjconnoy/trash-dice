@@ -216,6 +216,65 @@ body {
     transform: translateY(3rem);
   }
 }
+@media (min-width: 721px) and (max-width: 1180px) and (orientation: portrait) {
+  .start-overlay {
+    gap: clamp(0.56rem, 1.25vh, 0.86rem);
+  }
+
+  .title-presenter {
+    top: calc(env(safe-area-inset-top, 0px) + clamp(0.72rem, 1.55vh, 1rem));
+    opacity: 0.9;
+  }
+
+  .title-presenter-logo {
+    width: clamp(112px, 14vw, 128px);
+  }
+
+  .title-presenter-sub {
+    font-size: clamp(0.36rem, 0.72vw, 0.44rem);
+    letter-spacing: 0.12em;
+  }
+
+  .title-wrap.big .title-logo {
+    width: clamp(352px, 53vw, 438px);
+  }
+
+  .start-overlay .title-wrap.big {
+    transform: translateY(-1.15rem);
+  }
+
+  .start-overlay .start-blob-wrap {
+    width: clamp(300px, 48vw, 386px);
+    height: clamp(226px, 34vw, 276px);
+    transform: translateY(0.32rem);
+  }
+
+  .start-overlay .start-tagline {
+    transform: translateY(0.18rem);
+    font-size: clamp(1.04rem, 2.75vw, 1.26rem);
+  }
+
+  .start-overlay .start-lurker-can {
+    animation: none;
+    left: 0;
+    top: 51%;
+    width: clamp(126px, 17vw, 156px);
+    opacity: 0.94;
+    transform: translate(-92%, -39%) rotate(-7deg) scale(1.03);
+    filter:
+      drop-shadow(0 14px 16px rgba(33,44,34,0.3))
+      drop-shadow(0 0 16px rgba(255,255,255,0.42));
+  }
+
+  .start-die {
+    width: clamp(96px, 15.2vw, 118px);
+    height: clamp(96px, 15.2vw, 118px);
+  }
+
+  .start-btn {
+    font-size: clamp(2.12rem, 5.2vw, 3.1rem);
+  }
+}
 @media (max-width: 720px) {
   .start-overlay {
     gap: clamp(0.62rem, 1.9vh, 0.86rem);
@@ -6041,7 +6100,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         <ellipse cx="36" cy="82" rx="24" ry="4" fill="rgba(37,42,37,0.28)"/>
         <path d="M16 18 C16 13 56 13 56 18 L54 74 C53 81 19 81 18 74 Z" fill="url(#startCanBodyG)" stroke="#e2e9e7" stroke-width="1.8"/>
         <path d="M18 34 C26 37 46 37 54 34 L54 53 C45 57 27 57 18 53 Z" fill="#f5c800" stroke="#0f5f32" stroke-width="1.6"/>
-        <image href="assets/brand/trash-dice-logo-can.png" x="17.6" y="35.4" width="36.8" height="16.2" preserveAspectRatio="xMidYMid meet" clip-path="url(#startCanLabelClip)"/>
+        <image href="assets/brand/trash-dice-logo-can.png" x="14.8" y="34.4" width="42.4" height="18.6" preserveAspectRatio="xMidYMid meet" clip-path="url(#startCanLabelClip)"/>
         <path d="M18 28 C27 31 45 31 54 28 M18 61 C27 65 45 65 54 61 M19 69 C28 72 44 72 53 69" fill="none" stroke="#586568" stroke-width="2.3" opacity="0.72"/>
         <path d="M31 19 C34 34 34 62 31 78" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" opacity="0.74"/>
         <ellipse class="start-can-mouth" cx="36" cy="16" rx="28" ry="9" fill="#140f12"/>

@@ -217,6 +217,7 @@ async function main() {
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
           const tagline = document.querySelector('.start-tagline');
           const legal = document.querySelector('.title-legal');
+          const startCan = document.querySelector('.start-lurker-can');
           const rect = el => {
             const r = el.getBoundingClientRect();
             return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
@@ -225,16 +226,20 @@ async function main() {
           const titleRect = rect(titleLogo);
           const startCard = document.querySelector('.start-blob-wrap');
           const startCardRect = rect(startCard);
+          const startCanRect = rect(startCan);
           const taglineRect = rect(tagline);
           const legalRect = rect(legal);
           return {
             presenterLogoWidth: presenterRect.width,
             presenterToTitle: titleRect.top - presenterRect.bottom,
+            titleToStartCard: startCardRect.top - titleRect.bottom,
+            startCanToCard: startCardRect.left - startCanRect.right,
             startCardToTagline: taglineRect.top - startCardRect.bottom,
             taglineToLegal: legalRect.top - taglineRect.bottom,
             presenterRect,
             titleRect,
             startCardRect,
+            startCanRect,
             taglineRect,
             legalRect
           };
@@ -280,6 +285,13 @@ async function main() {
         assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
         if (viewport.width <= 720) {
           assert(initial.titleLayout.presenterLogoWidth <= 125, `${viewport.name}: mobile presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+        } else {
+          assert(initial.titleLayout.presenterLogoWidth <= 132, `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.presenterToTitle >= 28, `${viewport.name}: tablet presenter needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.titleToStartCard >= 28 && initial.titleLayout.titleToStartCard <= 115, `${viewport.name}: tablet title-to-start-card spacing is off ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.startCanRect.left >= 0, `${viewport.name}: tablet title can should not be cut off ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.startCanRect.width >= 120, `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.startCanToCard >= -24 && initial.titleLayout.startCanToCard <= 36, `${viewport.name}: tablet title can should sit near the start card ${JSON.stringify(initial.titleLayout)}`);
         }
       }
 
