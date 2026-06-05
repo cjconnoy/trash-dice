@@ -15,3 +15,9 @@ Required local gate:
 ```powershell
 node qa-ship-html5.js
 ```
+
+Retail loop gate:
+
+```powershell
+node qa-retail-loop.js
+```

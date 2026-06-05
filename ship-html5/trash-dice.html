@@ -6275,7 +6275,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       elapsed_seconds: elapsedSeconds,
       yellow_dice: totalPoolDice('p1'),
       green_dice: totalPoolDice('p2'),
-      trash_dice: typeof totalTrashedDice === 'function' ? totalTrashedDice() : 0,
+      trash_dice: trashed && typeof totalTrashedDice === 'function' ? totalTrashedDice() : 0,
       round_wins_yellow: roundWins && roundWins.p1 ? roundWins.p1 : 0,
       round_wins_green: roundWins && roundWins.p2 ? roundWins.p2 : 0,
       ...extra

@@ -212,6 +212,23 @@ async function main() {
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
 
+      await evalValue(page, `window.__tdForceQuitFallback = true; document.getElementById('quitGameBtn').click(); true`);
+      await waitEval(page, `(() => {
+        const sheet = document.getElementById('quitReturnSheet');
+        return !!(sheet && !sheet.hidden && document.body.classList.contains('quit-return-open'));
+      })()`, `${viewport.name} title quit fallback visible`);
+      const titleQuit = await evalValue(page, `(() => ({
+        sheetVisible: !document.getElementById('quitReturnSheet').hidden,
+        copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
+        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
+      }))()`);
+      assert(titleQuit.sheetVisible === true, `${viewport.name}: title quit fallback did not show`);
+      assert(titleQuit.copy.length > 20, `${viewport.name}: title quit fallback copy missing`);
+      assert(titleQuit.events.includes('td_quit_click'), `${viewport.name}: missing title quit click analytics`);
+      assert(titleQuit.events.includes('td_quit_fallback'), `${viewport.name}: missing title quit fallback analytics`);
+      await evalValue(page, `document.getElementById('quitKeepPlayingBtn').click(); window.__tdForceQuitFallback = false; true`);
+      await waitEval(page, `document.getElementById('quitReturnSheet').hidden === true`, `${viewport.name} title quit fallback dismissed`);
+
       await evalValue(page, `document.getElementById('startBtn').click(); true`);
       await sleep(400);
       const postStart = await evalValue(page, `(() => {
