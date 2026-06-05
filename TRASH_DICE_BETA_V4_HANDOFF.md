@@ -205,6 +205,23 @@ iPhone Home Screen:
 
 Keeping Open as Web App OFF makes the launcher open in Safari and share Safari's auth/session. The icon can stay static; game content updates because the shortcut points to the stable protected URL.
 
+## CJ Review Notes Workflow
+
+Codex owns iteration-workflow improvements. CJ can paste rough notes in chat, and Codex should convert them into scoped ship-lane tasks, identify risks, implement accepted low-risk changes, run QA, and report verified status.
+
+Canonical workflow doc:
+
+`CJ_REVIEW_WORKFLOW.md`
+
+Optional local queue helper:
+
+```powershell
+.\add-cj-review-note.ps1 -Area feel -Priority p1 -Note "Opening still feels too punishing on first play."
+.\add-cj-review-note.ps1 -List
+```
+
+The helper writes local rough notes to `review-notes\cj-review-queue.jsonl`, which is ignored by default. Do not let review notes loosen the V4 boundaries: no Alpha edits, no iOS app work, no PWA/install/login/PII, no password-in-file behavior, and no review launcher target other than `https://playonedaygames.com/trash-dice/play/`.
+
 ## Live Route Reality
 
 As of this handoff:
