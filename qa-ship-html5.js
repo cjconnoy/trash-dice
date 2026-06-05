@@ -204,7 +204,34 @@ async function main() {
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
-        version: document.body.dataset.trashDiceVersion || ''
+        version: document.body.dataset.trashDiceVersion || '',
+        titleLayout: (() => {
+          const presenterLogo = document.querySelector('.title-presenter-logo');
+          const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
+          const tagline = document.querySelector('.start-tagline');
+          const legal = document.querySelector('.title-legal');
+          const rect = el => {
+            const r = el.getBoundingClientRect();
+            return { top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+          };
+          const presenterRect = rect(presenterLogo);
+          const titleRect = rect(titleLogo);
+          const startCard = document.querySelector('.start-blob-wrap');
+          const startCardRect = rect(startCard);
+          const taglineRect = rect(tagline);
+          const legalRect = rect(legal);
+          return {
+            presenterLogoWidth: presenterRect.width,
+            presenterToTitle: titleRect.top - presenterRect.bottom,
+            startCardToTagline: taglineRect.top - startCardRect.bottom,
+            taglineToLegal: legalRect.top - taglineRect.bottom,
+            presenterRect,
+            titleRect,
+            startCardRect,
+            taglineRect,
+            legalRect
+          };
+        })()
       }))()`);
       assert(initial.title.includes('Trash Dice'), `${viewport.name}: title missing`);
       assert(initial.manifest === false, `${viewport.name}: manifest link present`);
@@ -222,6 +249,14 @@ async function main() {
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
+      assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
+      if (viewport.mobile) {
+        assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
+        assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
+        if (viewport.width <= 720) {
+          assert(initial.titleLayout.presenterLogoWidth <= 125, `${viewport.name}: mobile presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+        }
+      }
 
       await evalValue(page, `window.__tdForceQuitFallback = true; document.getElementById('quitGameBtn').click(); true`);
       await waitEval(page, `(() => {

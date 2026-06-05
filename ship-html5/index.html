@@ -219,20 +219,31 @@ body {
   .start-overlay {
     gap: clamp(0.62rem, 1.9vh, 0.86rem);
   }
+  .title-presenter {
+    top: calc(env(safe-area-inset-top, 0px) + clamp(0.45rem, 1.8vh, 0.85rem));
+  }
   .title-presenter-logo {
-    width: clamp(176px, 55vw, 216px);
+    width: clamp(94px, 28vw, 116px);
   }
   .title-presenter-sub {
-    font-size: clamp(0.42rem, 1.4vw, 0.5rem);
+    font-size: clamp(0.34rem, 1.05vw, 0.42rem);
+    letter-spacing: 0.12em;
   }
   .start-overlay .title-wrap.big,
-  .start-overlay .start-blob-wrap,
+  .start-overlay .start-blob-wrap {
+    transform: translateY(2.45rem);
+  }
   .start-overlay .start-tagline {
-    transform: translateY(3.2rem);
+    max-width: min(90vw, 340px);
+    transform: translateY(2.05rem);
+    font-size: clamp(0.84rem, 4vw, 1.02rem);
+    line-height: 1.05;
   }
   .title-legal {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 2.15rem);
-    max-width: min(84vw, 320px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+    max-width: min(78vw, 300px);
+    font-size: clamp(0.42rem, 2.35vw, 0.52rem);
+    line-height: 1.08;
   }
 }
 .title-hero-glint {
