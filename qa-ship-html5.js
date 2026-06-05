@@ -195,6 +195,8 @@ async function main() {
         twoPlayer: !!document.getElementById('betaTwoPlayerBtn'),
         roomPanel: !!document.getElementById('betaRoomPanel'),
         devControls: !!document.querySelector('#devCheatBar,#p0ReviewToggle,#debugBadge'),
+        p0Button: !!document.getElementById('devP0Btn'),
+        p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
         quitButton: !!document.getElementById('quitGameBtn'),
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
@@ -207,6 +209,8 @@ async function main() {
       assert(initial.twoPlayer === false, `${viewport.name}: 2-player button present`);
       assert(initial.roomPanel === false, `${viewport.name}: room panel present`);
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
+      assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
+      assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
       assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
@@ -253,19 +257,24 @@ async function main() {
       const activeLayout = await evalValue(page, `(() => {
         const roll = document.getElementById('rollBtn');
         const panel = document.querySelector('.roll-panel');
+        const p0Button = document.getElementById('devP0Btn');
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
+        const br = p0Button.getBoundingClientRect();
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
+          p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           disabled: roll.disabled,
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
+          p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           viewport: { width: window.innerWidth, height: window.innerHeight }
         };
       })()`);
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
@@ -318,6 +327,52 @@ async function main() {
     assert(roomState.twoPlayerButton === false, 'room probe: 2-player button present');
     assert(roomState.multiplayerActiveClass === false, 'room probe: multiplayer class should stay inactive');
     assert(roomState.startText.trim() === EXPECTED_START_CTA, 'room probe: start CTA changed');
+
+    const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
+    await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(p0Probe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'P-0 probe game start');
+    const p0On = await evalValue(p0Probe, `(() => {
+      const btn = document.getElementById('devP0Btn');
+      btn.click();
+      const qa = window.TrashDiceQA.state();
+      return {
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        p0Active: !!(qa.p0Autoplay || qa.p0ReviewMode),
+        p0ButtonVisible: qa.p0ButtonVisible,
+        bodyP0: document.body.classList.contains('debug-p0') || document.body.classList.contains('p0-mode')
+      };
+    })()`);
+    assert(p0On.buttonText === 'P1', `P-0 probe: button did not switch to P1 ${JSON.stringify(p0On)}`);
+    assert(p0On.ariaPressed === 'true', `P-0 probe: aria pressed not true ${JSON.stringify(p0On)}`);
+    assert(p0On.p0Active === true, `P-0 probe: autoplay did not activate ${JSON.stringify(p0On)}`);
+    assert(p0On.p0ButtonVisible === true, `P-0 probe: button not visible after start ${JSON.stringify(p0On)}`);
+    assert(p0On.bodyP0 === true, `P-0 probe: body mode class missing ${JSON.stringify(p0On)}`);
+    await waitEval(p0Probe, `window.TrashDiceQA.state().totalRolls > 0`, 'P-0 probe CPU-vs-CPU first roll', 7000);
+    const p0Rolling = await evalValue(p0Probe, `(() => {
+      const qa = window.TrashDiceQA.state();
+      return {
+        totalRolls: qa.totalRolls,
+        current: qa.current,
+        message: (document.getElementById('message') || {}).textContent || ''
+      };
+    })()`);
+    assert(p0Rolling.totalRolls > 0, `P-0 probe: CPU-vs-CPU did not roll ${JSON.stringify(p0Rolling)}`);
+    const p0Off = await evalValue(p0Probe, `(() => {
+      const btn = document.getElementById('devP0Btn');
+      btn.click();
+      const qa = window.TrashDiceQA.state();
+      return {
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        p0Active: !!(qa.p0Autoplay || qa.p0ReviewMode),
+        p0ButtonVisible: qa.p0ButtonVisible
+      };
+    })()`);
+    assert(p0Off.buttonText === 'P-0', `P-0 probe: button did not switch back to P-0 ${JSON.stringify(p0Off)}`);
+    assert(p0Off.ariaPressed === 'false', `P-0 probe: aria pressed not false ${JSON.stringify(p0Off)}`);
+    assert(p0Off.p0Active === false, `P-0 probe: autoplay did not stop ${JSON.stringify(p0Off)}`);
+    assert(p0Off.p0ButtonVisible === true, `P-0 probe: button hidden after stop ${JSON.stringify(p0Off)}`);
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));
     assert(forbiddenHits.length === 0, `forbidden network requests: ${forbiddenHits.join(', ')}`);

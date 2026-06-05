@@ -456,6 +456,53 @@ body.quit-return-open .quit-game-btn {
   pointer-events: none;
 }
 
+.debug-p0-btn {
+  position: fixed;
+  z-index: 144;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  top: calc(env(safe-area-inset-top, 0px) + 48px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  min-width: 48px;
+  min-height: 32px;
+  padding: 0.25rem 0.44rem 0.2rem;
+  border: 1px solid rgba(255,252,223,0.38);
+  border-radius: 999px;
+  background: rgba(19,44,30,0.78);
+  color: #fff6ad;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(0.62rem, 2.2vw, 0.74rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow:
+    0 6px 16px rgba(15,40,24,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+body[data-game-started="true"] .debug-p0-btn {
+  display: inline-flex;
+}
+
+body.debug-p0 .debug-p0-btn,
+body.p0-mode .debug-p0-btn {
+  background: rgba(245,200,0,0.92);
+  border-color: rgba(15,95,50,0.42);
+  color: #123d25;
+}
+
+.debug-p0-btn:active {
+  transform: translateY(1px);
+}
+
+body.quit-return-open .debug-p0-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .quit-return-sheet[hidden] {
   display: none;
 }
@@ -4418,6 +4465,15 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     font-size: 0.52rem;
     opacity: 0.78;
   }
+
+  .debug-p0-btn {
+    top: calc(env(safe-area-inset-top, 0px) + 44px);
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    min-width: 44px;
+    min-height: 30px;
+    padding-left: 0.38rem;
+    padding-right: 0.38rem;
+  }
 }
 
 @media (max-width: 720px) and (max-height: 700px) {
@@ -4652,6 +4708,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     transform: scale(0.84);
     transform-origin: top left;
     opacity: 0.72;
+  }
+
+  .debug-p0-btn {
+    top: calc(env(safe-area-inset-top, 0px) + 40px);
+    min-width: 40px;
+    min-height: 28px;
   }
 }
 
@@ -5596,6 +5658,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <body>
 <div class="milestone-badge">BETA WIP - NOT LIVE</div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
+<button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <div class="quit-return-sheet" id="quitReturnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="quitReturnTitle">
   <div class="quit-return-card">
     <div class="quit-return-eyebrow">Done playing?</div>
@@ -10598,7 +10661,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           p0Autoplay,
           reviewBuild: REVIEW_BUILD,
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
-          p0ButtonVisible: !!p0ReviewToggle && !p0ReviewToggle.hidden,
+          p0ButtonVisible: !!devP0Btn && getComputedStyle(devP0Btn).display !== 'none',
           pools: JSON.parse(JSON.stringify(pools)),
           diceTotals: qaDiceTotals(),
           trashed: { ...trashed },
