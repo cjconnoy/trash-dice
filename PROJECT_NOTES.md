@@ -20,6 +20,7 @@ Do not try to reuse or revive that quick-tunnel hostname as the source of truth.
 
 Future handoffs must explicitly include this rule and point to:
 
+- `TRASH_DICE_BETA_V4_HANDOFF.md`
 - `TRASH_DICE_BETA_V3_HANDOFF.md`
 - `PROJECT_NOTES.md`
 - `ALPHA_COMPLETE_LINKS.md`
@@ -31,6 +32,8 @@ Future handoffs must explicitly include this rule and point to:
 - `CLAUDE.md`
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
+
+Current standing handoff for the HTML5 instant-play shipping lane is `TRASH_DICE_BETA_V4_HANDOFF.md`. It supersedes older Beta/PWA/two-player direction for the current ship thread: V4 is one-player, no PWA, no iOS, no account/login, and focused on a stable playable review URL, retail brand asset replacement, anonymous analytics, and public ship readiness.
 
 ## AI Worker Routing
 

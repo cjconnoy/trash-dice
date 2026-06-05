@@ -5575,53 +5575,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 }
 
-.beta-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  width: min(310px, 82vw);
-  margin-top: 10px;
-  z-index: 8;
-  position: absolute;
-  left: 50%;
-  bottom: clamp(16px, 4vw, 22px);
-  transform: translateX(-50%);
-}
-
-.beta-actions .start-btn {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  height: 54px;
-  min-height: 54px;
-  padding: 0 14px;
-  border: 2px solid rgba(255,255,255,0.46);
-  border-radius: 8px;
-  background: linear-gradient(180deg, #f5c800 0%, #d7ab00 100%);
-  color: #173a21;
-  -webkit-text-stroke: 0;
-  font-family: Fredoka, system-ui, sans-serif;
-  font-size: 17px;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  text-shadow: none;
-  animation: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.4),
-    0 8px 18px rgba(42,48,18,0.24);
-}
-
-@media (max-width: 520px) {
-  .beta-actions {
-    width: min(260px, 76vw);
-    grid-template-columns: 1fr;
-  }
-  .beta-actions .start-btn {
-    height: 48px;
-    min-height: 48px;
-    font-size: 15px;
-  }
-}
 </style>
 </head>
 <body>
@@ -5991,9 +5944,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         <div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div><div class="dot-cell"></div>
       </div>
     </div>
-    <div class="beta-actions">
-      <button class="start-btn" id="startBtn">PLAY</button>
-    </div>
+    <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
   <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
 </div>

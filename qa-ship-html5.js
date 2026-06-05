@@ -10,6 +10,7 @@ const chromePath = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome
 const appPort = 5310 + Math.floor(Math.random() * 600);
 const debugPort = 12600 + Math.floor(Math.random() * 700);
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'trash-dice-ship-html5-'));
+const EXPECTED_START_CTA = 'TAP TO START';
 const forbiddenRequests = [
   'manifest.webmanifest',
   'sw.js',
@@ -208,7 +209,7 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
       assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
-      assert(initial.startText.trim() === 'PLAY', `${viewport.name}: start CTA should be PLAY`);
+      assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
 
@@ -316,7 +317,7 @@ async function main() {
     assert(roomState.roomPanel === false, 'room probe: room panel present');
     assert(roomState.twoPlayerButton === false, 'room probe: 2-player button present');
     assert(roomState.multiplayerActiveClass === false, 'room probe: multiplayer class should stay inactive');
-    assert(roomState.startText.trim() === 'PLAY', 'room probe: start CTA changed');
+    assert(roomState.startText.trim() === EXPECTED_START_CTA, 'room probe: start CTA changed');
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));
     assert(forbiddenHits.length === 0, `forbidden network requests: ${forbiddenHits.join(', ')}`);
