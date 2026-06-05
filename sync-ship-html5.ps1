@@ -9,6 +9,9 @@ $repoRoot = $PSScriptRoot
 $studioRoot = "C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site"
 
 $source = Join-Path $repoRoot "ship-html5\index.html"
+$sourceAssets = Join-Path $repoRoot "ship-html5\assets"
+$studioAssets = Join-Path $studioRoot "play\trash-dice\play\assets"
+$webAssetExtensions = @(".avif", ".gif", ".ico", ".jpg", ".jpeg", ".png", ".svg", ".webp")
 $targets = @(
     (Join-Path $repoRoot "ship-html5\trash-dice.html"),
     (Join-Path $studioRoot "play\trash-dice\play\index.html"),
@@ -58,6 +61,66 @@ console.log(`script parse ok (${files.length} files)`);
     }
 }
 
+function Get-RelativePathFromBase([string]$Base, [string]$Path) {
+    $baseFull = (Resolve-Path -LiteralPath $Base).Path.TrimEnd([char[]]"\/")
+    $pathFull = (Resolve-Path -LiteralPath $Path).Path
+    return $pathFull.Substring($baseFull.Length).TrimStart([char[]]"\/")
+}
+
+function Get-ShipWebAssets {
+    if (-not (Test-Path -LiteralPath $sourceAssets)) {
+        return @()
+    }
+
+    return @(Get-ChildItem -LiteralPath $sourceAssets -Recurse -File | Where-Object {
+        $webAssetExtensions -contains $_.Extension.ToLowerInvariant()
+    })
+}
+
+function Sync-ShipAssets {
+    if (-not (Test-Path -LiteralPath $sourceAssets)) {
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $studioAssets)) {
+        New-Item -ItemType Directory -Force -Path $studioAssets | Out-Null
+    }
+
+    foreach ($asset in Get-ShipWebAssets) {
+        $relativePath = Get-RelativePathFromBase $sourceAssets $asset.FullName
+        $targetAsset = Join-Path $studioAssets $relativePath
+        $targetDir = Split-Path -Parent $targetAsset
+        if (-not (Test-Path -LiteralPath $targetDir)) {
+            New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+        }
+        Copy-Item -LiteralPath $asset.FullName -Destination $targetAsset -Force
+    }
+}
+
+function Assert-AssetMirror {
+    if (-not (Test-Path -LiteralPath $sourceAssets)) {
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $studioAssets)) {
+        throw "Missing studio asset mirror: $studioAssets"
+    }
+
+    foreach ($asset in Get-ShipWebAssets) {
+        $relativePath = Get-RelativePathFromBase $sourceAssets $asset.FullName
+        $targetAsset = Join-Path $studioAssets $relativePath
+        if (-not (Test-Path -LiteralPath $targetAsset)) {
+            throw "Missing mirrored asset: $targetAsset"
+        }
+
+        $sourceHash = Get-Sha256 $asset.FullName
+        $targetHash = Get-Sha256 $targetAsset
+        if ($sourceHash -ne $targetHash) {
+            throw "Asset mirror mismatch: $relativePath"
+        }
+    }
+}
+
 if (-not (Test-Path -LiteralPath $source)) {
     throw "Missing ship source: $source"
 }
@@ -72,6 +135,8 @@ if (-not $CheckOnly) {
         }
         Copy-Item -LiteralPath $source -Destination $target -Force
     }
+
+    Sync-ShipAssets
 }
 
 foreach ($file in $allFiles) {
@@ -92,6 +157,7 @@ if ($uniqueHashes.Count -ne 1) {
 }
 
 Assert-ScriptParse $allFiles
+Assert-AssetMirror
 Assert-AlphaClean "after sync"
 
 $report = [PSCustomObject][ordered]@{
@@ -99,6 +165,7 @@ $report = [PSCustomObject][ordered]@{
     mode = if ($CheckOnly) { "check-only" } else { "synced" }
     hash = $uniqueHashes[0]
     files = $allFiles
+    assetRoot = if (Test-Path -LiteralPath $sourceAssets) { $sourceAssets } else { $null }
 }
 
 if ($Json) {

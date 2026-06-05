@@ -152,12 +152,67 @@ body {
   width: clamp(208px, 45vw, 318px);
   height: auto;
   display: block;
+  object-fit: contain;
   overflow: visible;
   filter: drop-shadow(4px 6px 0 rgba(15,95,50,0.78)) drop-shadow(0 4px 5px rgba(60,48,30,0.24));
 }
 .title-wrap.big .title-logo {
-  width: clamp(330px, 90vw, 536px);
+  width: clamp(318px, 88vw, 536px);
   filter: drop-shadow(6px 8px 0 rgba(15,95,50,0.82)) drop-shadow(0 8px 12px rgba(60,48,30,0.25));
+}
+.title-presenter,
+.title-legal {
+  position: absolute;
+  left: 50%;
+  z-index: 9;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.title-presenter {
+  top: calc(env(safe-area-inset-top, 0px) + clamp(0.55rem, 2vh, 0.95rem));
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.02rem;
+  color: #0f5f32;
+  font-family: 'Bangers', 'Arial Black', sans-serif;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.42);
+  white-space: nowrap;
+}
+.title-presenter-brand {
+  font-size: clamp(0.92rem, 2.45vw, 1.28rem);
+  letter-spacing: 0.08em;
+}
+.title-presenter-sub {
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.48rem, 1.3vw, 0.64rem);
+  letter-spacing: 0.16em;
+  opacity: 0.78;
+}
+.title-legal {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.42rem, 1.6vh, 0.72rem));
+  color: rgba(15,95,50,0.74);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.5rem, 1.55vw, 0.64rem);
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.36);
+}
+@media (max-width: 720px) {
+  .start-overlay {
+    gap: clamp(0.62rem, 1.9vh, 0.86rem);
+  }
+  .start-overlay .title-wrap.big,
+  .start-overlay .start-blob-wrap,
+  .start-overlay .start-tagline {
+    transform: translateY(-4rem);
+  }
+  .title-legal {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 2.15rem);
+    max-width: min(84vw, 320px);
+  }
 }
 .title-hero-glint {
   pointer-events: none;
@@ -263,16 +318,15 @@ body.fast-preview .start-overlay .title-hero-glint {
 .sp-g { background: #5ee85e; }
 
 .tagline {
-  font-size: clamp(0.55rem, 1.8vw, 0.75rem);
-  color: #0f5f32;
-  letter-spacing: 0.22em;
-  line-height: 1.16;
-  margin-top: 0.24rem;
-  position: relative;
-  z-index: 12;
-  text-align: center;
-  text-transform: uppercase;
-  opacity: 0.86;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── CONTEXTUAL TURN BADGES ── */
@@ -2164,7 +2218,7 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
   z-index: -1;
   pointer-events: none;
 }
-.trash-can > svg:not(.can-logo-overlay) {
+.trash-can > svg {
   width: 100%;
   height: 100%;
   overflow: visible;
@@ -2178,7 +2232,7 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
   body:not(.mobile-roll-smoothing) .trash-can {
     filter: none;
   }
-  body:not(.mobile-roll-smoothing) .trash-can > svg:not(.can-logo-overlay) {
+  body:not(.mobile-roll-smoothing) .trash-can > svg {
     animation: none;
     transform: none;
     will-change: auto;
@@ -2187,50 +2241,13 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
 .trash-can text {
   text-rendering: geometricPrecision;
 }
-.can-label-logo,
-.can-logo-overlay {
-  display: none;
-}
-.can-label-wordmark {
+.can-label-art {
   pointer-events: none;
-  text-rendering: geometricPrecision;
-  shape-rendering: geometricPrecision;
-}
-.can-label-wordmark text {
-  font-family: 'Chewy', 'Cooper Black', 'Fredoka One', 'Arial Black', sans-serif;
-  font-weight: 900;
-  text-anchor: middle;
-  stroke-linejoin: round;
-  paint-order: stroke fill;
-}
-.can-label-wordmark .can-wordmark-shadow {
-  fill: #ef7040;
-  stroke: #07572a;
-  stroke-width: 5.2;
-}
-.can-label-wordmark .can-wordmark-face {
-  fill: #ffb53c;
-  stroke: #07572a;
-  stroke-width: 1.9;
-}
-.trash-can .can-logo-overlay {
-  position: absolute;
-  left: 50%;
-  top: 55%;
-  width: 78%;
-  height: auto;
-  z-index: 3;
-  pointer-events: none;
-  overflow: visible;
-  transform: translate(-50%, -50%) rotate(-5deg);
-  transform-origin: 50% 50%;
-  text-rendering: geometricPrecision;
-  shape-rendering: geometricPrecision;
 }
 body.fast-preview .trash-can {
   filter: none;
 }
-body.fast-preview .trash-can > svg:not(.can-logo-overlay) {
+body.fast-preview .trash-can > svg {
   animation: none;
   transform: none;
   will-change: auto;
@@ -3048,33 +3065,11 @@ body.mobile-roll-smoothing .victory-can-hero {
   backface-visibility: hidden;
   contain: layout style paint;
 }
-.victory-can-hero > svg:not(.can-logo-overlay) {
+.victory-can-hero > svg {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
-}
-.victory-can-hero .can-logo-overlay {
-  position: absolute;
-  left: 50%;
-  top: 55%;
-  width: 78%;
-  height: auto;
-  z-index: 4;
-  pointer-events: none;
-  overflow: visible;
-  transform: translate(-50%, -50%) rotate(-5deg);
-  transform-origin: 50% 50%;
-  text-rendering: geometricPrecision;
-  shape-rendering: geometricPrecision;
-  filter:
-    drop-shadow(0 2px 0 rgba(255,255,255,0.24))
-    drop-shadow(0 4px 4px rgba(0,0,0,0.32));
-}
-body.mobile-roll-smoothing .victory-can-hero .can-logo-overlay {
-  width: 82%;
-  top: 55%;
-  filter: none;
 }
 .overlay.player-win-mega .victory-can-hero {
   filter:
@@ -5592,35 +5587,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 </div>
 
 <div class="title-wrap hero-title" id="heroTitle" aria-label="Trash Dice">
-  <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
-    <defs>
-      <linearGradient id="topTitleGlintG" gradientUnits="userSpaceOnUse" x1="-190" y1="0" x2="-75" y2="0">
-        <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
-        <stop offset="34%" stop-color="#ffffff" stop-opacity="0.05"/>
-        <stop offset="48%" stop-color="#fff7ae" stop-opacity="0.98"/>
-        <stop offset="55%" stop-color="#ffffff" stop-opacity="0.88"/>
-        <stop offset="68%" stop-color="#ffffff" stop-opacity="0.10"/>
-        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-        <animate attributeName="x1" values="-190;-190;330;330" keyTimes="0;0.31;0.56;1" dur="4.2s" repeatCount="indefinite"/>
-        <animate attributeName="x2" values="-75;-75;445;445" keyTimes="0;0.31;0.56;1" dur="4.2s" repeatCount="indefinite"/>
-      </linearGradient>
-    </defs>
-    <g transform="rotate(-5 160 76)">
-      <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
-      <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
-      <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-      <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-      <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-      <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-      <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-      <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-      <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
-      <g class="title-hero-glint" aria-hidden="true">
-        <text class="title-glint-word" x="17" y="69" font-size="79" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-        <text class="title-glint-word" x="45" y="135" font-size="85" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-      </g>
-    </g>
-  </svg>
+  <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" decoding="async" fetchpriority="high">
 </div>
 <div class="tagline">ROLL, WIN, AVOID THE BIN!</div>
 
@@ -5759,29 +5726,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           </g>
           <path d="M21 65 C35 69 85 69 99 65" fill="none" stroke="#195322" stroke-width="2.5" opacity="0.72"/>
           <path d="M17 95 C34 100 86 100 103 95" fill="none" stroke="rgba(255,246,160,0.2)" stroke-width="1" opacity="0.46"/>
-          <g class="can-label-wordmark" filter="url(#labelShadow)" transform="rotate(-5 60 96)">
-            <text class="can-wordmark-shadow" x="60" y="91" font-size="31">Trash</text>
-            <text class="can-wordmark-face" x="60" y="91" font-size="31">Trash</text>
-            <text class="can-wordmark-shadow" x="60" y="116" font-size="35">Dice</text>
-            <text class="can-wordmark-face" x="60" y="116" font-size="35">Dice</text>
-          </g>
+          <image class="can-label-art" href="assets/brand/trash-dice-logo.png" x="13" y="68" width="94" height="53" preserveAspectRatio="xMidYMid meet" clip-path="url(#labelClip)"/>
           </g>
           <path class="can-hero-glint" d="M-28 28 L6 24 L58 156 L25 158 Z" fill="url(#canHeroGlintG)" filter="url(#canHeroGlintGlow)"/>
-          <g class="can-label-logo" clip-path="url(#labelClip)">
-            <g transform="translate(7.8 66) scale(0.34)">
-              <g transform="rotate(-5 160 76)">
-                <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
-                <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
-                <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-                <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-                <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-                <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-                <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-                <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-                <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
-              </g>
-            </g>
-          </g>
 
           <path d="M14 128 C29 134 91 134 106 128" fill="none" stroke="#586568" stroke-width="3.1"/>
           <path d="M14 135 C29 141 91 141 106 135" fill="none" stroke="#aeb8b8" stroke-width="1.3" opacity="0.65"/>
@@ -5802,19 +5749,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         <path d="M15 24 C28 11 92 11 105 24" fill="none" stroke="#eff5f4" stroke-width="2.2" opacity="0.88"/>
         <path d="M17 30 C31 39 89 39 103 30" fill="none" stroke="#c9d2d2" stroke-width="1.5" opacity="0.62"/>
         <path class="can-rim-glint" d="M17 25 C31 11 89 11 103 25" stroke="url(#canHeroGlintG)" stroke-width="3.4" filter="url(#canHeroGlintGlow)"/>
-      </svg>
-      <svg class="can-logo-overlay" viewBox="0 0 320 154" aria-hidden="true" focusable="false">
-        <g>
-          <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
-          <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
-          <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-          <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-          <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-          <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-          <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-          <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-          <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
-        </g>
       </svg>
       <div class="can-load-pile" id="canLoadPile"></div>
     </div>
@@ -5849,41 +5783,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 <!-- Start overlay -->
 <div class="start-overlay" id="startOverlay">
+  <div class="title-presenter" aria-label="Big Discoveries presents">
+    <span class="title-presenter-brand">BIG DISCOVERIES</span>
+    <span class="title-presenter-sub">Presents</span>
+  </div>
   <div class="title-wrap big">
     <div class="splatter sp-y" style="width:70px;height:44px;top:-8px;left:2%;transform:rotate(18deg)"></div>
     <div class="splatter sp-g" style="width:50px;height:32px;bottom:0;right:4%;transform:rotate(-14deg)"></div>
     <div class="splatter sp-g" style="width:36px;height:23px;top:18%;right:-2%;transform:rotate(16deg);opacity:0.58"></div>
     <div class="splatter sp-g" style="width:30px;height:19px;bottom:24%;left:1%;transform:rotate(-21deg);opacity:0.46"></div>
     <div class="splatter sp-y" style="width:34px;height:21px;bottom:18%;right:18%;transform:rotate(24deg);opacity:0.38"></div>
-    <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
-      <defs>
-        <linearGradient id="startTitleGlintG" gradientUnits="userSpaceOnUse" x1="-190" y1="0" x2="-75" y2="0">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
-          <stop offset="34%" stop-color="#ffffff" stop-opacity="0.04"/>
-          <stop offset="48%" stop-color="#fff7ae" stop-opacity="0.94"/>
-          <stop offset="56%" stop-color="#ffffff" stop-opacity="0.78"/>
-          <stop offset="68%" stop-color="#ffffff" stop-opacity="0.09"/>
-          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-          <animate attributeName="x1" values="-190;-190;330;330" keyTimes="0;0.28;0.54;1" dur="3.8s" repeatCount="indefinite"/>
-          <animate attributeName="x2" values="-75;-75;445;445" keyTimes="0;0.28;0.54;1" dur="3.8s" repeatCount="indefinite"/>
-        </linearGradient>
-      </defs>
-      <g transform="rotate(-5 160 76)">
-        <path d="M34 38 C68 12 132 22 160 34 C194 16 255 24 284 52 C251 49 227 57 207 69 C173 53 127 53 96 73 C74 58 53 49 34 38 Z" fill="#0f6f34" opacity="0.96"/>
-        <path d="M41 99 C73 82 111 83 142 99 C174 82 239 85 281 107 C231 105 196 114 170 134 C133 113 92 112 49 125 C55 116 52 107 41 99 Z" fill="#0f6f34" opacity="0.96"/>
-        <text class="logo-outer" x="17" y="70" font-size="79" stroke-width="15" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-        <text class="logo-warm-shadow" x="22" y="74" font-size="79" stroke-width="6.5" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-        <text class="logo-face" x="17" y="69" font-size="79" stroke-width="5.2" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-        <text class="logo-outer" x="45" y="136" font-size="85" stroke-width="15" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-        <text class="logo-warm-shadow" x="50" y="140" font-size="85" stroke-width="6.5" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-        <text class="logo-face" x="45" y="135" font-size="85" stroke-width="5.2" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-        <text class="logo-kicker" x="260" y="119" font-size="10">TM</text>
-        <g class="title-hero-glint" aria-hidden="true">
-          <text class="title-glint-word" style="fill:url(#startTitleGlintG)" x="17" y="69" font-size="79" textLength="238" lengthAdjust="spacingAndGlyphs">Trash</text>
-          <text class="title-glint-word" style="fill:url(#startTitleGlintG)" x="45" y="135" font-size="85" textLength="205" lengthAdjust="spacingAndGlyphs">Dice</text>
-        </g>
-      </g>
-    </svg>
+    <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" decoding="async" fetchpriority="high">
   </div>
   <div class="start-blob-wrap">
     <div class="start-blob"></div>
@@ -5947,6 +5857,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
   <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
+  <div class="title-legal">&copy; 2026 Big Discoveries. Trash Dice&trade; digital companion.</div>
 </div>
 
 <!-- Flash + overlay -->
@@ -9289,10 +9200,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (playerWon) {
       const canHero = document.createElement('div');
       canHero.className = 'victory-can-hero';
-      const canSvg = trashCan.querySelector('svg:not(.can-logo-overlay)');
-      const canLogo = trashCan.querySelector('.can-logo-overlay');
+      const canSvg = trashCan.querySelector('svg');
       if (canSvg) canHero.appendChild(canSvg.cloneNode(true));
-      if (canLogo) canHero.appendChild(canLogo.cloneNode(true));
       overlay.appendChild(canHero);
     }
 
