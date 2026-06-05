@@ -34,6 +34,7 @@ function contentType(filePath) {
   if (filePath.endsWith('.js')) return 'text/javascript; charset=utf-8';
   if (filePath.endsWith('.css')) return 'text/css; charset=utf-8';
   if (filePath.endsWith('.png')) return 'image/png';
+  if (filePath.endsWith('.webp')) return 'image/webp';
   if (filePath.endsWith('.svg')) return 'image/svg+xml; charset=utf-8';
   return 'application/octet-stream';
 }
@@ -489,6 +490,10 @@ async function main() {
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));
     assert(forbiddenHits.length === 0, `forbidden network requests: ${forbiddenHits.join(', ')}`);
+    const fullLogoRequests = requests.filter(url => url.includes('assets/brand/trash-dice-logo.png'));
+    assert(fullLogoRequests.length === 0, `full title logo PNG should not be requested in WebP-capable browsers: ${fullLogoRequests.join(', ')}`);
+    const titleLogoRequests = requests.filter(url => url.includes('assets/brand/trash-dice-logo-title.webp'));
+    assert(titleLogoRequests.length > 0, 'fast title logo WebP was not requested');
 
     console.log(JSON.stringify({
       status: 'SHIP_HTML5_QA_OK',
