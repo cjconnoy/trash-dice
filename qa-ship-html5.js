@@ -194,6 +194,8 @@ async function main() {
         twoPlayer: !!document.getElementById('betaTwoPlayerBtn'),
         roomPanel: !!document.getElementById('betaRoomPanel'),
         devControls: !!document.querySelector('#devCheatBar,#p0ReviewToggle,#debugBadge'),
+        quitButton: !!document.getElementById('quitGameBtn'),
+        quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
         version: document.body.dataset.trashDiceVersion || ''
@@ -204,6 +206,8 @@ async function main() {
       assert(initial.twoPlayer === false, `${viewport.name}: 2-player button present`);
       assert(initial.roomPanel === false, `${viewport.name}: room panel present`);
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
+      assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
+      assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
       assert(initial.startText.trim() === 'PLAY', `${viewport.name}: start CTA should be PLAY`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
@@ -261,7 +265,28 @@ async function main() {
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
-      reports.push({ viewport: viewport.name, status: 'ok', events: terminal.events });
+
+      await evalValue(page, `window.__tdForceQuitFallback = true; document.getElementById('quitGameBtn').click(); true`);
+      await waitEval(page, `(() => {
+        const sheet = document.getElementById('quitReturnSheet');
+        return !!(sheet && !sheet.hidden && document.body.classList.contains('quit-return-open'));
+      })()`, `${viewport.name} quit fallback visible`);
+      const quitFallback = await evalValue(page, `(() => ({
+        sheetVisible: !document.getElementById('quitReturnSheet').hidden,
+        copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
+        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
+      }))()`);
+      assert(quitFallback.sheetVisible === true, `${viewport.name}: quit fallback did not show`);
+      assert(quitFallback.copy.length > 20, `${viewport.name}: quit fallback copy missing`);
+      assert(quitFallback.events.includes('td_quit_click'), `${viewport.name}: missing quit click analytics`);
+      assert(quitFallback.events.includes('td_quit_fallback'), `${viewport.name}: missing quit fallback analytics`);
+
+      await evalValue(page, `document.getElementById('quitKeepPlayingBtn').click(); true`);
+      await waitEval(page, `document.getElementById('quitReturnSheet').hidden === true`, `${viewport.name} quit fallback dismissed`);
+      const quitDismissed = await evalValue(page, `window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)`);
+      assert(quitDismissed.includes('td_quit_keep_playing'), `${viewport.name}: missing quit keep-playing analytics`);
+
+      reports.push({ viewport: viewport.name, status: 'ok', events: quitDismissed });
     }
 
     const roomProbe = await openPage(`${baseUrl}?source=qa&qa=1&room=1234`, viewports[0]);

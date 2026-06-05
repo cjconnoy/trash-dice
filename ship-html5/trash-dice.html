@@ -349,6 +349,116 @@ body.fast-preview .start-overlay .title-hero-glint {
   text-transform: uppercase;
 }
 
+.quit-game-btn {
+  position: fixed;
+  z-index: 145;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  right: calc(env(safe-area-inset-right, 0px) + 8px);
+  min-width: 60px;
+  min-height: 34px;
+  padding: 0.34rem 0.62rem 0.28rem;
+  border: 1px solid rgba(15,95,50,0.28);
+  border-radius: 999px;
+  background: rgba(255,252,223,0.9);
+  color: #124928;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: clamp(0.7rem, 2.6vw, 0.86rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 7px 18px rgba(45,55,40,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.72);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.quit-game-btn:active {
+  transform: translateY(1px);
+}
+
+body.quit-return-open .quit-game-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quit-return-sheet[hidden] {
+  display: none;
+}
+
+.quit-return-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  background: rgba(10,14,12,0.5);
+}
+
+.quit-return-card {
+  width: min(430px, 100%);
+  padding: 1.05rem;
+  border: 2px solid rgba(245,200,0,0.86);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255,255,255,0.45), transparent 34%),
+    linear-gradient(180deg, rgba(28,92,56,0.98), rgba(16,70,43,0.98));
+  color: #fff8c6;
+  box-shadow:
+    0 20px 44px rgba(0,0,0,0.36),
+    inset 0 1px 0 rgba(255,255,255,0.24);
+}
+
+.quit-return-eyebrow {
+  margin-bottom: 0.2rem;
+  color: #f5c800;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.quit-return-title {
+  color: #fffad1;
+  font-size: clamp(1.25rem, 7vw, 1.8rem);
+  line-height: 0.94;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.18);
+}
+
+.quit-return-copy {
+  margin-top: 0.66rem;
+  color: rgba(255,250,214,0.94);
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: clamp(0.98rem, 4.6vw, 1.14rem);
+  line-height: 1.25;
+}
+
+.quit-return-actions {
+  display: grid;
+  gap: 0.62rem;
+  margin-top: 0.9rem;
+}
+
+.quit-return-primary {
+  min-height: 46px;
+  border-radius: 10px;
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.quit-return-primary {
+  border: 2px solid rgba(255,255,255,0.48);
+  background: linear-gradient(180deg, #f5c800, #d4a900);
+  color: #173a21;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    0 8px 18px rgba(0,0,0,0.18);
+}
+
 /* ── GAME AREA ── */
 .game-area {
   display: flex;
@@ -5516,6 +5626,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 </head>
 <body>
 <div class="milestone-badge">BETA WIP - NOT LIVE</div>
+<button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
+<div class="quit-return-sheet" id="quitReturnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="quitReturnTitle">
+  <div class="quit-return-card">
+    <div class="quit-return-eyebrow">Done playing?</div>
+    <div class="quit-return-title" id="quitReturnTitle">Close this tab.</div>
+    <p class="quit-return-copy" id="quitReturnCopy">Your previous page is still open where you left it.</p>
+    <div class="quit-return-actions">
+      <button class="quit-return-primary" id="quitKeepPlayingBtn" type="button">KEEP PLAYING</button>
+    </div>
+  </div>
+</div>
 
 <div class="title-wrap hero-title" id="heroTitle" aria-label="Trash Dice">
   <svg class="title-logo" viewBox="0 0 320 154" role="img" aria-label="Trash Dice">
@@ -6206,6 +6327,90 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     tdTrack('td_play_again', tdGamePayload({ method }));
   }
 
+  let quitReturnPreviousFocus = null;
+
+  function quitReturnCopyText() {
+    const fromKnownLaunchSurface = !!document.referrer || TD_SOURCE === 'bigdiscoveries' || TD_SOURCE === 'qr';
+    if (fromKnownLaunchSurface) {
+      return 'Close this tab to return. Your previous page is still open where you left it.';
+    }
+    return 'Close this tab when you are done. Your TD launcher can reopen the latest game anytime.';
+  }
+
+  function hideQuitReturnSheet(action = 'dismiss') {
+    const sheet = document.getElementById('quitReturnSheet');
+    if (!sheet || sheet.hidden) return;
+    sheet.hidden = true;
+    document.body.classList.remove('quit-return-open');
+    tdTrack('td_quit_keep_playing', tdGamePayload({ action }));
+    if (quitReturnPreviousFocus && typeof quitReturnPreviousFocus.focus === 'function') {
+      quitReturnPreviousFocus.focus({ preventScroll: true });
+    }
+    quitReturnPreviousFocus = null;
+  }
+
+  function showQuitReturnSheet(reason = 'blocked') {
+    const sheet = document.getElementById('quitReturnSheet');
+    const copy = document.getElementById('quitReturnCopy');
+    const keepPlayingBtn = document.getElementById('quitKeepPlayingBtn');
+    if (!sheet) return;
+    quitReturnPreviousFocus = document.activeElement;
+    if (copy) copy.textContent = quitReturnCopyText();
+    sheet.hidden = false;
+    document.body.classList.add('quit-return-open');
+    tdTrack('td_quit_fallback', tdGamePayload({
+      reason,
+      referrer_present: !!document.referrer,
+      close_supported: false
+    }));
+    if (keepPlayingBtn && typeof keepPlayingBtn.focus === 'function') {
+      keepPlayingBtn.focus({ preventScroll: true });
+    }
+  }
+
+  function handleQuitGameClick() {
+    tdTrack('td_quit_click', tdGamePayload({
+      checkpoint: tdLastCheckpoint,
+      referrer_present: !!document.referrer,
+      close_attempted: true
+    }));
+    flushAnalyticsQueue();
+
+    if (window.__tdForceQuitFallback) {
+      showQuitReturnSheet('qa_forced');
+      return;
+    }
+
+    let closeErrored = false;
+    try {
+      window.close();
+    } catch (_) {
+      closeErrored = true;
+    }
+
+    window.setTimeout(() => {
+      if (document.visibilityState === 'visible' && !window.closed) {
+        showQuitReturnSheet(closeErrored ? 'close_error' : 'close_blocked');
+      }
+    }, 180);
+  }
+
+  function installQuitReturnControls() {
+    const quitGameBtn = document.getElementById('quitGameBtn');
+    const keepPlayingBtn = document.getElementById('quitKeepPlayingBtn');
+    const sheet = document.getElementById('quitReturnSheet');
+    if (quitGameBtn) quitGameBtn.addEventListener('click', handleQuitGameClick);
+    if (keepPlayingBtn) keepPlayingBtn.addEventListener('click', () => hideQuitReturnSheet('keep_playing'));
+    if (sheet) {
+      sheet.addEventListener('click', event => {
+        if (event.target === sheet) hideQuitReturnSheet('backdrop');
+      });
+    }
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hideQuitReturnSheet('escape');
+    });
+  }
+
   window.TrashDiceAnalyticsDebug = {
     version: TD_SHIP_VERSION,
     source: TD_SOURCE,
@@ -6213,6 +6418,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     log: tdAnalyticsLog,
     flush: flushAnalyticsQueue
   };
+
+  installQuitReturnControls();
 
   tdTrack('td_session_start', {
     standalone: false,
