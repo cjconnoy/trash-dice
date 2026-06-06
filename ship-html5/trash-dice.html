@@ -1793,12 +1793,14 @@ body.inline-game-over .inline-result-banner {
 }
 body.inline-game-win .inline-result-banner {
   top: 38.5%;
-  width: min(92vw, 780px);
+  width: min(98vw, 900px);
   min-width: 0;
   padding: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
+  contain: none;
+  overflow: visible;
   color: #f5c800;
   text-shadow:
     0 2px 0 #fff27a,
@@ -1808,8 +1810,12 @@ body.inline-game-win .inline-result-banner {
     0 0 48px rgba(255,143,82,0.3);
 }
 body.inline-game-win .inline-result-title {
+  display: block;
+  padding: 0.12em 0.34em 0.18em;
+  margin: -0.12em -0.34em -0.18em;
   font-size: clamp(3.2rem, 7vw, 5.9rem);
   line-height: 0.8;
+  overflow: visible;
   transform: rotate(-2deg) skewX(-4deg);
 }
 body.inline-game-win .inline-result-sub {
