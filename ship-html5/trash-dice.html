@@ -1794,12 +1794,19 @@ body.inline-game-over .inline-result-banner {
 body.inline-game-win .inline-result-banner {
   background:
     radial-gradient(ellipse at 22% 12%, rgba(255,255,255,0.82), rgba(255,255,255,0.2) 33%, transparent 58%),
-    linear-gradient(180deg, #fff59a 0%, #f5c800 55%, #c89200 100%);
-  border: 4px solid rgba(15,95,50,0.88);
-  color: #0f5f32;
+    linear-gradient(180deg, #fff59a 0%, #f5c800 50%, #ff8f52 100%);
+  border: 4px solid rgba(227,39,31,0.92);
+  color: #e3271f;
   text-shadow:
-    1px 1px 0 rgba(255,255,255,0.54),
-    2px 3px 0 rgba(93,63,0,0.22);
+    -0.8px -0.8px 0 rgba(255,244,168,0.58),
+    1.4px 1.8px 0 #711006,
+    3px 3.5px 0 rgba(75,35,0,0.32);
+}
+body.inline-game-win .inline-result-sub {
+  color: #6f2807;
+  text-shadow:
+    1px 1px 0 rgba(255,255,255,0.42),
+    2px 2px 0 rgba(75,35,0,0.18);
 }
 body.inline-game-loss .inline-result-banner {
   background:
@@ -6305,7 +6312,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let inlineGameOverRunId = 0;
   let inlineGameOverState = null;
   let inlineGameOverTimer = null;
-  let inlineWinWhistleTimer = null;
+  let inlineWinAccentTimer = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -6621,7 +6628,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     progressionWatchdogTimer = null;
     progressionWatchdogRun++;
     inlineGameOverTimer = null;
-    inlineWinWhistleTimer = null;
+    inlineWinAccentTimer = null;
     inlineGameOverState = null;
     inlineGameOverRunId++;
     roundResolutionRunId++;
@@ -8912,53 +8919,18 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         });
         [1.28, 1.55, 1.82].forEach(t => noiseBurst(0.16, t, 0.11, 2.6, 4200, 'highpass'));
       },
-      gameWinWhistle() {
-        const c = sfxCtx('gameWinWhistle');
+      gameWinSparkle() {
+        const c = sfxCtx('gameWinSparkle');
         if (!c) return;
-        const now = c.currentTime;
-        function whistle(freq, start, dur, gain = 0.07, glideTo = freq) {
-          const osc = c.createOscillator();
-          const g = c.createGain();
-          const filter = c.createBiquadFilter();
-          const vibrato = c.createOscillator();
-          const vibratoDepth = c.createGain();
-          const t0 = now + start;
-          const t1 = t0 + dur;
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, t0);
-          osc.frequency.linearRampToValueAtTime(glideTo, t0 + dur * 0.74);
-          vibrato.type = 'sine';
-          vibrato.frequency.value = 5.8;
-          vibratoDepth.gain.value = 6.5;
-          vibrato.connect(vibratoDepth).connect(osc.detune);
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(freq * 1.08, t0);
-          filter.frequency.linearRampToValueAtTime(glideTo * 1.08, t0 + dur * 0.74);
-          filter.Q.value = 9;
-          g.gain.setValueAtTime(0.001, t0);
-          g.gain.linearRampToValueAtTime(gain, t0 + 0.045);
-          g.gain.setValueAtTime(gain * 0.92, Math.max(t0 + 0.05, t1 - 0.12));
-          g.gain.exponentialRampToValueAtTime(0.001, t1);
-          osc.connect(filter).connect(g).connect(master || c.destination);
-          osc.start(t0);
-          vibrato.start(t0);
-          osc.stop(t1 + 0.04);
-          vibrato.stop(t1 + 0.04);
-        }
-        [[523,0.00,0.54,0.09],[659,0.12,0.5,0.065],[784,0.24,0.48,0.045]].forEach(([fr,t,dur,gain]) => {
+        [[392,0.00,0.20,0.068],[523,0.08,0.20,0.058],[659,0.17,0.18,0.046],[784,0.30,0.22,0.036]].forEach(([fr,t,dur,gain]) => {
           tone(fr, 'triangle', gain, t, dur, c.destination);
+          tone(fr * 1.5, 'sine', gain * 0.32, t + 0.018, dur * 0.72, c.destination);
         });
-        [
-          [988,0.08,0.34,0.062,1175],
-          [1319,0.42,0.28,0.054,1175],
-          [1175,0.76,0.38,0.06,1568],
-          [1568,1.12,0.5,0.052,1760],
-          [1319,1.76,0.36,0.05,1568],
-          [1760,2.12,0.66,0.044,1976],
-          [1568,2.9,0.7,0.04,1319]
-        ].forEach(([freq, start, dur, gain, glide]) => whistle(freq, start, dur, gain, glide));
-        noiseBurst(0.12, 0.02, 0.035, 2.8, 5200, 'highpass');
-        noiseBurst(0.1, 1.08, 0.026, 2.8, 6200, 'highpass');
+        [0.02,0.12,0.22,0.36,0.54].forEach((t, i) => {
+          noiseBurst(i < 3 ? 0.075 : 0.095, t, 0.026 - i * 0.002, 2.2, 2400 + i * 420, 'bandpass');
+        });
+        tone(196, 'sine', 0.08, 0.00, 0.36, c.destination);
+        tone(262, 'sine', 0.06, 0.24, 0.28, c.destination);
       },
       // Trash fanfare — big dramatic womp + crash
       trashSting() {
@@ -9269,9 +9241,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       cancelRuntimeTimer(inlineGameOverTimer);
       inlineGameOverTimer = null;
     }
-    if (inlineWinWhistleTimer) {
-      cancelRuntimeTimer(inlineWinWhistleTimer);
-      inlineWinWhistleTimer = null;
+    if (inlineWinAccentTimer) {
+      cancelRuntimeTimer(inlineWinAccentTimer);
+      inlineWinAccentTimer = null;
     }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
     hidePwaInstallHint();
@@ -9280,16 +9252,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     setRollButtonPlayAgainMode(false);
   }
 
-  function scheduleInlineWinWhistleLoop(runId, delay = 3800) {
-    if (inlineWinWhistleTimer) {
-      cancelRuntimeTimer(inlineWinWhistleTimer);
-      inlineWinWhistleTimer = null;
+  function scheduleInlineWinAccent(runId, delay = 5200) {
+    if (inlineWinAccentTimer) {
+      cancelRuntimeTimer(inlineWinAccentTimer);
+      inlineWinAccentTimer = null;
     }
-    inlineWinWhistleTimer = runLater(() => {
-      inlineWinWhistleTimer = null;
+    inlineWinAccentTimer = runLater(() => {
+      inlineWinAccentTimer = null;
       if (!isCurrentInlineGameOverRun(runId)) return;
-      Audio.gameWinWhistle();
-      scheduleInlineWinWhistleLoop(runId, 4300);
+      Audio.gameWinSparkle();
     }, delay);
   }
 
@@ -9341,11 +9312,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       autoRestartPausedForPwa: false
     };
     tdLastCheckpoint = 'game_complete';
-    tdTrack('td_game_complete', tdGamePayload({
+    const gameCompletePayload = tdGamePayload({
       winner: finalWinner,
       player_won: playerWon,
       reason: 'dice_exhausted'
-    }));
+    });
+    tdTrack('td_game_complete', gameCompletePayload);
+    tdTrack(playerWon ? 'td_game_win' : 'td_game_loss', gameCompletePayload);
 
     gameStarted = true;
     busy = true;
@@ -9388,8 +9361,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       startTerminalDiceCelebration('p1', runId);
       triggerLidWinPulse();
       Audio.megaWinFanfare();
-      Audio.gameWinWhistle();
-      scheduleInlineWinWhistleLoop(runId);
+      Audio.gameWinSparkle();
+      scheduleInlineWinAccent(runId);
     } else {
       Audio.trashCrash(Math.max(6, totalTrashedDice()));
     }
@@ -10362,11 +10335,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const spillLoad = payoutDice.length;
     const spillDuration = roundSpillDurationForWinner(winner, spillLoad);
     tdLastCheckpoint = 'round_complete';
-    tdTrack('td_round_complete', tdGamePayload({
+    const roundCompletePayload = tdGamePayload({
       winner,
       payout_dice: spillLoad,
       lost_trash_dice: lostTrashCount
-    }));
+    });
+    tdTrack('td_round_complete', roundCompletePayload);
+    tdTrack('td_round_win', roundCompletePayload);
     scheduleProgressionWatchdog('round-payout', spillDuration + 3800);
 
     setMsg(`${PLAYER_NAME[winner].toUpperCase()} WINS THE ROUND!`, 'win');

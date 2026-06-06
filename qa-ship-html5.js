@@ -425,7 +425,7 @@ async function main() {
       assert(terminalCleared.winnerPraise === false, `${viewport.name}: winner praise leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerCount === false, `${viewport.name}: winner count fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.celebratingDice === 0, `${viewport.name}: dice celebration leaked after Play Again ${JSON.stringify(terminalCleared)}`);
-      ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete'].forEach(eventName => {
+      ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete', 'td_game_win'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
 
