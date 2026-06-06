@@ -307,6 +307,7 @@ async function main() {
       }))()`);
       assert(titleQuit.sheetVisible === true, `${viewport.name}: title quit fallback did not show`);
       assert(titleQuit.copy.length > 20, `${viewport.name}: title quit fallback copy missing`);
+      assert(!titleQuit.copy.includes('TD launcher'), `${viewport.name}: title quit fallback leaked internal TD launcher wording ${JSON.stringify(titleQuit)}`);
       assert(titleQuit.events.includes('td_quit_click'), `${viewport.name}: missing title quit click analytics`);
       assert(titleQuit.events.includes('td_quit_fallback'), `${viewport.name}: missing title quit fallback analytics`);
       await evalValue(page, `document.getElementById('quitKeepPlayingBtn').click(); window.__tdForceQuitFallback = false; true`);
