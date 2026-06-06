@@ -385,6 +385,13 @@ async function main() {
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
+        winTitleCursor: (() => {
+          const title = document.getElementById('inlineResultTitle');
+          if (!title) return 'missing-title';
+          const rect = title.getBoundingClientRect();
+          const el = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          return el ? getComputedStyle(el).cursor : 'missing-probe';
+        })(),
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
@@ -396,6 +403,7 @@ async function main() {
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
