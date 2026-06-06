@@ -289,8 +289,8 @@ async function main() {
       assert(quitInputProbe.manualClick === true, `${viewport.name}: quit input did not hit button ${JSON.stringify(quitInputProbe)}`);
       assert(quitInputProbe.buttonRect.width >= 88 && quitInputProbe.buttonRect.height >= 42, `${viewport.name}: quit button touch target too small ${JSON.stringify(quitInputProbe)}`);
       if (viewport.width <= 720) {
-        assert(quitInputProbe.buttonRect.top >= viewport.height * 0.45, `${viewport.name}: mobile quit button should sit in lower thumb zone ${JSON.stringify(quitInputProbe)}`);
-        assert(quitInputProbe.buttonRect.right <= viewport.width - 6, `${viewport.name}: mobile quit button should stay inside right edge ${JSON.stringify(quitInputProbe)}`);
+        assert(quitInputProbe.buttonRect.top <= 32 && quitInputProbe.buttonRect.left <= 24, `${viewport.name}: mobile quit button should stay in top-left escape position ${JSON.stringify(quitInputProbe)}`);
+        assert(quitInputProbe.buttonRect.right <= viewport.width - 6, `${viewport.name}: mobile quit button should stay inside viewport ${JSON.stringify(quitInputProbe)}`);
       }
       await waitEval(gamePage, `(() => {
         const sheet = document.getElementById('quitReturnSheet');

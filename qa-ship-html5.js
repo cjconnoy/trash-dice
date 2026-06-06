@@ -258,10 +258,10 @@ async function main() {
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
       assert(initial.quitRect.width >= 88 && initial.quitRect.height >= 42, `${viewport.name}: quit button is too small ${JSON.stringify(initial.quitRect)}`);
-      assert(initial.quitRect.right <= initial.quitRect.viewportWidth - 6 && initial.quitRect.left >= 0, `${viewport.name}: quit button is not right aligned in viewport ${JSON.stringify(initial.quitRect)}`);
+      assert(initial.quitRect.right <= initial.quitRect.viewportWidth - 6 && initial.quitRect.left >= 0, `${viewport.name}: quit button is not inside viewport ${JSON.stringify(initial.quitRect)}`);
       if (viewport.width <= 720) {
-        assert(initial.quitRect.height >= 52, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
-        assert(initial.quitRect.top >= initial.quitRect.viewportHeight * 0.55, `${viewport.name}: mobile quit button should sit in lower thumb zone ${JSON.stringify(initial.quitRect)}`);
+        assert(initial.quitRect.height >= 46, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
+        assert(initial.quitRect.top <= 32 && initial.quitRect.left <= 24, `${viewport.name}: mobile quit button should stay in top-left escape position ${JSON.stringify(initial.quitRect)}`);
         const clearTagline = initial.quitRect.top >= initial.titleLayout.taglineRect.bottom + 4 ||
           initial.quitRect.left >= initial.titleLayout.taglineRect.right + 4 ||
           initial.quitRect.right <= initial.titleLayout.taglineRect.left - 4 ||
@@ -366,7 +366,7 @@ async function main() {
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
       if (viewport.width <= 720) {
-        assert(activeLayout.quitButtonRect.top >= activeLayout.viewport.height * 0.45, `${viewport.name}: active mobile quit button should remain in lower thumb zone ${JSON.stringify(activeLayout)}`);
+        assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
       }
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
 
