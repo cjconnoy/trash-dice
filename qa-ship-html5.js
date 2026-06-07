@@ -477,6 +477,7 @@ async function main() {
             animationName: getComputedStyle(frame, '::after').animationName,
             duplicateImageCount: document.querySelectorAll('#heroTitle .retail-logo-glint-img').length,
             frameWidth: fr.width,
+            logoFilter: getComputedStyle(logo).filter,
             logoWidth: lr.width
           };
         })(),
@@ -498,6 +499,7 @@ async function main() {
       assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
+      assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
