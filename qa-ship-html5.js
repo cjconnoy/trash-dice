@@ -214,7 +214,16 @@ async function main() {
         version: document.body.dataset.trashDiceVersion || '',
         titleLogoGlint: (() => {
           const frame = document.querySelector('.start-overlay .retail-logo-frame');
-          return frame ? getComputedStyle(frame, '::after').animationName : '';
+          const glint = document.querySelector('.start-overlay .retail-logo-glint-img');
+          const logo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
+          if (!frame || !glint || !logo) return null;
+          const fr = frame.getBoundingClientRect();
+          const lr = logo.getBoundingClientRect();
+          return {
+            animationName: getComputedStyle(glint).animationName,
+            frameWidth: fr.width,
+            logoWidth: lr.width
+          };
         })(),
         titleLayout: (() => {
           const presenterLogo = document.querySelector('.title-presenter-logo');
@@ -283,7 +292,8 @@ async function main() {
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
-      assert(initial.titleLogoGlint === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
+      assert(initial.titleLogoGlint && initial.titleLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
+      assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
@@ -369,7 +379,16 @@ async function main() {
           viewport: { width: window.innerWidth, height: window.innerHeight },
           heroLogoGlint: (() => {
             const frame = document.querySelector('#heroTitle .retail-logo-frame');
-            return frame ? getComputedStyle(frame, '::after').animationName : '';
+            const glint = document.querySelector('#heroTitle .retail-logo-glint-img');
+            const logo = document.querySelector('#heroTitle .title-logo');
+            if (!frame || !glint || !logo) return null;
+            const fr = frame.getBoundingClientRect();
+            const lr = logo.getBoundingClientRect();
+            return {
+              animationName: getComputedStyle(glint).animationName,
+              frameWidth: fr.width,
+              logoWidth: lr.width
+            };
           })()
         };
       })()`);
@@ -379,7 +398,8 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.heroLogoGlint === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.heroLogoGlint.frameWidth <= activeLayout.heroLogoGlint.logoWidth + 2, `${viewport.name}: active game logo glint frame should not span the page ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       if (viewport.width <= 720) {
         assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
       }
@@ -409,7 +429,16 @@ async function main() {
         })(),
         winLogoGlint: (() => {
           const frame = document.querySelector('#heroTitle .retail-logo-frame');
-          return frame ? getComputedStyle(frame, '::after').animationName : '';
+          const glint = document.querySelector('#heroTitle .retail-logo-glint-img');
+          const logo = document.querySelector('#heroTitle .title-logo');
+          if (!frame || !glint || !logo) return null;
+          const fr = frame.getBoundingClientRect();
+          const lr = logo.getBoundingClientRect();
+          return {
+            animationName: getComputedStyle(glint).animationName,
+            frameWidth: fr.width,
+            logoWidth: lr.width
+          };
         })(),
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
@@ -423,7 +452,8 @@ async function main() {
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
-      assert(terminal.winLogoGlint === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
