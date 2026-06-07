@@ -161,6 +161,61 @@ body {
   width: clamp(318px, 88vw, 536px);
   filter: drop-shadow(6px 8px 0 rgba(15,95,50,0.82)) drop-shadow(0 8px 12px rgba(60,48,30,0.25));
 }
+.retail-logo-frame {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  max-width: 100%;
+  isolation: isolate;
+}
+.retail-logo-frame::after {
+  content: '';
+  position: absolute;
+  inset: -2% -18%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(106deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0) 36%,
+      rgba(255,248,166,0.36) 44%,
+      rgba(255,255,255,0.82) 49%,
+      rgba(255,248,166,0.42) 54%,
+      rgba(255,255,255,0) 64%,
+      rgba(255,255,255,0) 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translateX(-118%) skewX(-14deg);
+  animation: retailLogoGlint 4.8s cubic-bezier(.16,.82,.18,1) 0.55s infinite;
+  -webkit-mask-image: url("assets/brand/trash-dice-logo-title.webp");
+  mask-image: url("assets/brand/trash-dice-logo-title.webp");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 73.5% 96%;
+  mask-size: 73.5% 96%;
+}
+body.fast-preview .retail-logo-frame::after {
+  animation-duration: 3.2s;
+}
+@keyframes retailLogoGlint {
+  0%, 18% {
+    opacity: 0;
+    transform: translateX(-118%) skewX(-14deg);
+  }
+  24% {
+    opacity: 0.86;
+  }
+  42% {
+    opacity: 0.78;
+    transform: translateX(118%) skewX(-14deg);
+  }
+  49%, 100% {
+    opacity: 0;
+    transform: translateX(118%) skewX(-14deg);
+  }
+}
 .title-presenter,
 .title-legal {
   position: absolute;
@@ -5936,7 +5991,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 </div>
 
 <div class="title-wrap hero-title" id="heroTitle" aria-label="Trash Dice">
-  <picture>
+  <picture class="retail-logo-frame">
     <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
     <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" width="1500" height="822" loading="eager" decoding="async" fetchpriority="low">
   </picture>
@@ -6145,7 +6200,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <div class="splatter sp-g" style="width:36px;height:23px;top:18%;right:-2%;transform:rotate(16deg);opacity:0.58"></div>
     <div class="splatter sp-g" style="width:30px;height:19px;bottom:24%;left:1%;transform:rotate(-21deg);opacity:0.46"></div>
     <div class="splatter sp-y" style="width:34px;height:21px;bottom:18%;right:18%;transform:rotate(24deg);opacity:0.38"></div>
-    <picture>
+    <picture class="retail-logo-frame">
       <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
       <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" width="1500" height="822" loading="eager" decoding="sync" fetchpriority="high">
     </picture>

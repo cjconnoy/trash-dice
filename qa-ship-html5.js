@@ -212,6 +212,10 @@ async function main() {
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
         version: document.body.dataset.trashDiceVersion || '',
+        titleLogoGlint: (() => {
+          const frame = document.querySelector('.start-overlay .retail-logo-frame');
+          return frame ? getComputedStyle(frame, '::after').animationName : '';
+        })(),
         titleLayout: (() => {
           const presenterLogo = document.querySelector('.title-presenter-logo');
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
@@ -279,6 +283,7 @@ async function main() {
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
+      assert(initial.titleLogoGlint === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
@@ -361,7 +366,11 @@ async function main() {
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
-          viewport: { width: window.innerWidth, height: window.innerHeight }
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          heroLogoGlint: (() => {
+            const frame = document.querySelector('#heroTitle .retail-logo-frame');
+            return frame ? getComputedStyle(frame, '::after').animationName : '';
+          })()
         };
       })()`);
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
@@ -370,6 +379,7 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.heroLogoGlint === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
       if (viewport.width <= 720) {
         assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
       }
@@ -397,6 +407,10 @@ async function main() {
           const el = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
           return el ? getComputedStyle(el).cursor : 'missing-probe';
         })(),
+        winLogoGlint: (() => {
+          const frame = document.querySelector('#heroTitle .retail-logo-frame');
+          return frame ? getComputedStyle(frame, '::after').animationName : '';
+        })(),
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
@@ -409,6 +423,7 @@ async function main() {
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
+      assert(terminal.winLogoGlint === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
