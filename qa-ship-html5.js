@@ -220,11 +220,17 @@ async function main() {
           if (!frame || !logo) return null;
           const fr = frame.getBoundingClientRect();
           const lr = logo.getBoundingClientRect();
+          const glintStyle = getComputedStyle(frame, '::after');
           return {
-            animationName: getComputedStyle(frame, '::after').animationName,
+            animationName: glintStyle.animationName,
+            backgroundPosition: glintStyle.backgroundPosition,
+            backgroundSize: glintStyle.backgroundSize,
+            clipPath: glintStyle.clipPath,
             duplicateImageCount: document.querySelectorAll('.start-overlay .retail-logo-glint-img').length,
             frameWidth: fr.width,
-            logoWidth: lr.width
+            logoWidth: lr.width,
+            maskImage: glintStyle.maskImage || '',
+            transform: glintStyle.transform
           };
         })(),
         titleLayout: (() => {
@@ -297,6 +303,7 @@ async function main() {
       assert(initial.titleLogoGlint && initial.titleLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
       assert(initial.titleLogoGlint.duplicateImageCount === 0, `${viewport.name}: title logo glint should not use duplicate logo bitmap ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
+      assert(initial.titleLogoGlint.clipPath === 'none' && initial.titleLogoGlint.maskImage !== 'none' && initial.titleLogoGlint.backgroundSize !== 'auto', `${viewport.name}: title logo glint should use a masked horizontal background sweep ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
