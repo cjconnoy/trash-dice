@@ -21,8 +21,10 @@ const forbiddenRequests = [
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900 },
+  { name: 'iphone-se-visible', width: 375, height: 548, deviceScaleFactor: 2, mobile: true, screenWidth: 375, screenHeight: 667 },
   { name: 'iphone-13-safari', width: 390, height: 664, deviceScaleFactor: 3, mobile: true, screenWidth: 390, screenHeight: 844 },
-  { name: 'ipad-portrait', width: 768, height: 920, deviceScaleFactor: 2, mobile: true, screenWidth: 768, screenHeight: 1024 }
+  { name: 'ipad-portrait', width: 768, height: 920, deviceScaleFactor: 2, mobile: true, screenWidth: 768, screenHeight: 1024 },
+  { name: 'ipad-landscape-visible', width: 1024, height: 690, deviceScaleFactor: 2, mobile: true, screenWidth: 1024, screenHeight: 768 }
 ];
 
 function sleep(ms) {
@@ -302,12 +304,17 @@ async function main() {
         if (viewport.width <= 720) {
           assert(initial.titleLayout.presenterLogoWidth <= 125, `${viewport.name}: mobile presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
         } else {
-          assert(initial.titleLayout.presenterLogoWidth <= 132, `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.presenterToTitle >= 28, `${viewport.name}: tablet presenter needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.titleToStartCard >= 28 && initial.titleLayout.titleToStartCard <= 115, `${viewport.name}: tablet title-to-start-card spacing is off ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.startCanRect.left >= 0, `${viewport.name}: tablet title can should not be cut off ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.startCanRect.width >= 120, `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.startCanToCard >= -24 && initial.titleLayout.startCanToCard <= 36, `${viewport.name}: tablet title can should sit near the start card ${JSON.stringify(initial.titleLayout)}`);
+          const compactTabletLandscape = viewport.height <= 760;
+          assert(initial.titleLayout.presenterLogoWidth <= (compactTabletLandscape ? 112 : 132), `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.presenterToTitle >= (compactTabletLandscape ? 8 : 28), `${viewport.name}: tablet presenter needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.titleToStartCard >= (compactTabletLandscape ? 16 : 28) && initial.titleLayout.titleToStartCard <= (compactTabletLandscape ? 96 : 115), `${viewport.name}: tablet title-to-start-card spacing is off ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.startCanRect.width >= (compactTabletLandscape ? 96 : 120), `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
+          if (compactTabletLandscape) {
+            assert(initial.titleLayout.startCanRect.right >= 48 && initial.titleLayout.startCanRect.left <= viewport.width - 48, `${viewport.name}: landscape title can should stay visibly in the scene ${JSON.stringify(initial.titleLayout)}`);
+          } else {
+            assert(initial.titleLayout.startCanRect.left >= 0, `${viewport.name}: tablet title can should not be cut off ${JSON.stringify(initial.titleLayout)}`);
+            assert(initial.titleLayout.startCanToCard >= -24 && initial.titleLayout.startCanToCard <= 36, `${viewport.name}: tablet title can should sit near the start card ${JSON.stringify(initial.titleLayout)}`);
+          }
         }
       } else {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: desktop presenter mark needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
@@ -359,11 +366,13 @@ async function main() {
         const p0Button = document.getElementById('devP0Btn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
+        const badge = document.querySelector('.milestone-badge');
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
         const br = p0Button.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
+        const gr = badge.getBoundingClientRect();
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
@@ -371,12 +380,15 @@ async function main() {
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
+          badgeClearsQuit: gr.bottom <= qr.top - 4 || gr.left >= qr.right + 4 || gr.right <= qr.left - 4 || gr.top >= qr.bottom + 4,
+          bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
+          badgeRect: { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height },
           viewport: { width: window.innerWidth, height: window.innerHeight },
           heroLogoGlint: (() => {
             const frame = document.querySelector('#heroTitle .retail-logo-frame');
@@ -399,6 +411,8 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.badgeClearsQuit, `${viewport.name}: beta badge overlaps quit button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.bodyFits, `${viewport.name}: active game creates horizontal overflow ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.heroLogoGlint.duplicateImageCount === 0, `${viewport.name}: active game logo glint should not use duplicate logo bitmap ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       assert(activeLayout.heroLogoGlint.frameWidth <= activeLayout.heroLogoGlint.logoWidth + 2, `${viewport.name}: active game logo glint frame should not span the page ${JSON.stringify(activeLayout.heroLogoGlint)}`);
@@ -422,6 +436,23 @@ async function main() {
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
+        bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
+        playAgain: (() => {
+          const btn = document.getElementById('rollBtn');
+          const r = btn.getBoundingClientRect();
+          return {
+            text: btn.textContent || '',
+            top: r.top,
+            right: r.right,
+            bottom: r.bottom,
+            left: r.left,
+            width: r.width,
+            height: r.height,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            visible: r.width >= 88 && r.height >= 44 && r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1
+          };
+        })(),
         winTitleCursor: (() => {
           const title = document.getElementById('inlineResultTitle');
           if (!title) return 'missing-title';
@@ -453,6 +484,9 @@ async function main() {
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
+      assert(terminal.bodyFits, `${viewport.name}: win screen creates horizontal overflow ${JSON.stringify(terminal)}`);
+      assert(terminal.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: Play Again CTA missing ${JSON.stringify(terminal)}`);
+      assert(terminal.playAgain.visible, `${viewport.name}: Play Again is not fully visible or tappable ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
       assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
