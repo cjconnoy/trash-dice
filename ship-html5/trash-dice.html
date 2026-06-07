@@ -177,21 +177,27 @@ body {
 .retail-logo-frame > picture > img {
   display: block;
 }
-.retail-logo-glint-img {
+.retail-logo-frame::after {
+  content: '';
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   z-index: 2;
   pointer-events: none;
+  background:
+    linear-gradient(106deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0) 35%,
+      rgba(255,248,166,0.18) 43%,
+      rgba(255,255,255,0.62) 49%,
+      rgba(255,248,166,0.24) 55%,
+      rgba(255,255,255,0) 64%,
+      rgba(255,255,255,0) 100%);
   mix-blend-mode: screen;
   opacity: 0;
-  filter: brightness(2.35) saturate(0.5) contrast(1.08);
   animation: retailLogoGlint 4.8s cubic-bezier(.16,.82,.18,1) 0.55s infinite;
   clip-path: polygon(-36% -8%, -10% -8%, 19% 108%, -8% 108%);
 }
-body.fast-preview .retail-logo-glint-img {
+body.fast-preview .retail-logo-frame::after {
   animation-duration: 3.2s;
 }
 @keyframes retailLogoGlint {
@@ -200,10 +206,10 @@ body.fast-preview .retail-logo-glint-img {
     clip-path: polygon(-36% -8%, -10% -8%, 19% 108%, -8% 108%);
   }
   24% {
-    opacity: 0.72;
+    opacity: 0.7;
   }
   42% {
-    opacity: 0.68;
+    opacity: 0.66;
     clip-path: polygon(82% -8%, 111% -8%, 141% 108%, 109% 108%);
   }
   49%, 100% {
@@ -5991,7 +5997,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
       <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" width="1500" height="822" loading="eager" decoding="async" fetchpriority="low">
     </picture>
-    <img class="retail-logo-glint-img" src="assets/brand/trash-dice-logo-title.webp" alt="" aria-hidden="true" width="1500" height="822" loading="eager" decoding="async">
   </span>
 </div>
 <div class="tagline">ROLL, WIN, AVOID THE BIN!</div>
@@ -6203,7 +6208,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
         <img class="title-logo retail-title-logo" src="assets/brand/trash-dice-logo.png" alt="Trash Dice" width="1500" height="822" loading="eager" decoding="sync" fetchpriority="high">
       </picture>
-      <img class="retail-logo-glint-img" src="assets/brand/trash-dice-logo-title.webp" alt="" aria-hidden="true" width="1500" height="822" loading="eager" decoding="async">
     </span>
   </div>
   <div class="start-blob-wrap">

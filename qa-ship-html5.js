@@ -214,13 +214,13 @@ async function main() {
         version: document.body.dataset.trashDiceVersion || '',
         titleLogoGlint: (() => {
           const frame = document.querySelector('.start-overlay .retail-logo-frame');
-          const glint = document.querySelector('.start-overlay .retail-logo-glint-img');
           const logo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
-          if (!frame || !glint || !logo) return null;
+          if (!frame || !logo) return null;
           const fr = frame.getBoundingClientRect();
           const lr = logo.getBoundingClientRect();
           return {
-            animationName: getComputedStyle(glint).animationName,
+            animationName: getComputedStyle(frame, '::after').animationName,
+            duplicateImageCount: document.querySelectorAll('.start-overlay .retail-logo-glint-img').length,
             frameWidth: fr.width,
             logoWidth: lr.width
           };
@@ -293,6 +293,7 @@ async function main() {
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
       assert(initial.titleLogoGlint && initial.titleLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
+      assert(initial.titleLogoGlint.duplicateImageCount === 0, `${viewport.name}: title logo glint should not use duplicate logo bitmap ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
@@ -379,13 +380,13 @@ async function main() {
           viewport: { width: window.innerWidth, height: window.innerHeight },
           heroLogoGlint: (() => {
             const frame = document.querySelector('#heroTitle .retail-logo-frame');
-            const glint = document.querySelector('#heroTitle .retail-logo-glint-img');
             const logo = document.querySelector('#heroTitle .title-logo');
-            if (!frame || !glint || !logo) return null;
+            if (!frame || !logo) return null;
             const fr = frame.getBoundingClientRect();
             const lr = logo.getBoundingClientRect();
             return {
-              animationName: getComputedStyle(glint).animationName,
+              animationName: getComputedStyle(frame, '::after').animationName,
+              duplicateImageCount: document.querySelectorAll('#heroTitle .retail-logo-glint-img').length,
               frameWidth: fr.width,
               logoWidth: lr.width
             };
@@ -399,6 +400,7 @@ async function main() {
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.heroLogoGlint.duplicateImageCount === 0, `${viewport.name}: active game logo glint should not use duplicate logo bitmap ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       assert(activeLayout.heroLogoGlint.frameWidth <= activeLayout.heroLogoGlint.logoWidth + 2, `${viewport.name}: active game logo glint frame should not span the page ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       if (viewport.width <= 720) {
         assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
@@ -429,13 +431,13 @@ async function main() {
         })(),
         winLogoGlint: (() => {
           const frame = document.querySelector('#heroTitle .retail-logo-frame');
-          const glint = document.querySelector('#heroTitle .retail-logo-glint-img');
           const logo = document.querySelector('#heroTitle .title-logo');
-          if (!frame || !glint || !logo) return null;
+          if (!frame || !logo) return null;
           const fr = frame.getBoundingClientRect();
           const lr = logo.getBoundingClientRect();
           return {
-            animationName: getComputedStyle(glint).animationName,
+            animationName: getComputedStyle(frame, '::after').animationName,
+            duplicateImageCount: document.querySelectorAll('#heroTitle .retail-logo-glint-img').length,
             frameWidth: fr.width,
             logoWidth: lr.width
           };
@@ -453,6 +455,7 @@ async function main() {
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
       assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
