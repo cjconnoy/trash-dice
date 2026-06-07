@@ -213,7 +213,19 @@ async function main() {
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
+        tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
         version: document.body.dataset.trashDiceVersion || '',
+        hiddenGameSceneAnimationsPaused: (() => {
+          const heroFrame = document.querySelector('#heroTitle .retail-logo-frame');
+          const heroGlint = heroFrame ? getComputedStyle(heroFrame, '::after').animationName : 'missing';
+          const canGlint = document.querySelector('.can-hero-glint');
+          const lidGlint = document.querySelector('.lid-edge-glint');
+          const canSvg = document.querySelector('#trashCan > svg');
+          return heroGlint === 'none' &&
+            (!canGlint || getComputedStyle(canGlint).animationName === 'none') &&
+            (!lidGlint || getComputedStyle(lidGlint).animationName === 'none') &&
+            (!canSvg || getComputedStyle(canSvg).animationName === 'none');
+        })(),
         titleLogoGlint: (() => {
           const frame = document.querySelector('.start-overlay .retail-logo-frame');
           const logo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
@@ -300,6 +312,12 @@ async function main() {
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
+      assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(initial.tabletEffectsLite === true, `${viewport.name}: tablet effects lite class missing ${JSON.stringify(initial)}`);
+      } else {
+        assert(initial.tabletEffectsLite === false, `${viewport.name}: tablet effects lite class applied outside tablet viewport ${JSON.stringify(initial)}`);
+      }
       assert(initial.titleLogoGlint && initial.titleLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
       assert(initial.titleLogoGlint.duplicateImageCount === 0, `${viewport.name}: title logo glint should not use duplicate logo bitmap ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);

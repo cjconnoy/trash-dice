@@ -184,6 +184,22 @@ body {
 body.fast-preview .retail-logo-frame::after {
   animation-duration: 3.2s;
 }
+body:not([data-game-started="true"]) #heroTitle .retail-logo-frame::after,
+body:not([data-game-started="true"]) .title-wrap:not(.big) .title-hero-glint,
+body:not([data-game-started="true"]) .can-hero-glint,
+body:not([data-game-started="true"]) .can-rim-glint,
+body:not([data-game-started="true"]) .lid-edge-glint,
+body:not([data-game-started="true"]) .lid-inner-glint {
+  animation: none !important;
+  opacity: 0 !important;
+  will-change: auto;
+}
+body:not([data-game-started="true"]) #boardWrap,
+body:not([data-game-started="true"]) #trashCan,
+body:not([data-game-started="true"]) #trashCan > svg {
+  animation: none !important;
+  will-change: auto;
+}
 @keyframes retailLogoGlint {
   0%, 18% {
     opacity: 0;
@@ -1182,6 +1198,14 @@ body.inline-game-over .roll-panel {
   68% {
     transform: translateY(1px) scale(0.996);
     filter: brightness(1.08) saturate(1.1);
+  }
+}
+@keyframes playerPayoutPanelFanfareLite {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  48% {
+    transform: translateY(-1px) scale(1.012);
   }
 }
 @keyframes playerPayoutRailChase {
@@ -2563,6 +2587,62 @@ body.fast-preview .can-rim-glint,
 body.fast-preview .lid-edge-glint,
 body.fast-preview .lid-inner-glint {
   will-change: opacity, transform;
+}
+body.tablet-effects-lite .title-wrap:not(.big) .title-hero-glint,
+body.tablet-effects-lite .can-hero-glint,
+body.tablet-effects-lite .can-rim-glint,
+body.tablet-effects-lite .lid-edge-glint,
+body.tablet-effects-lite .lid-inner-glint {
+  animation: none !important;
+  opacity: 0 !important;
+  filter: none !important;
+  will-change: auto;
+}
+body.tablet-effects-lite #heroTitle .retail-logo-frame::after {
+  animation-duration: 7.2s;
+}
+body.tablet-effects-lite .trash-can > svg {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
+}
+body.tablet-effects-lite .board-wrap.player-payout-lid-dance,
+body.tablet-effects-lite .board-wrap.inline-ending-lid-dance {
+  animation-duration: 1.72s;
+  will-change: transform;
+}
+body.tablet-effects-lite .trash-can.pour.player-payout-can-dance,
+body.tablet-effects-lite .trash-can.inline-ending-can-dance {
+  animation-duration: 1.64s;
+  will-change: transform;
+}
+body.tablet-effects-lite .player-panel.player-payout-fanfare {
+  animation: playerPayoutPanelFanfareLite 1.28s cubic-bezier(.14,.82,.16,1) infinite;
+  will-change: transform;
+}
+body.tablet-effects-lite .player-panel.player-payout-fanfare::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.82),
+    inset 0 -2px 5px rgba(35,45,41,0.08),
+    0 0 16px var(--panel-glow);
+}
+body.tablet-effects-lite .player-panel.player-payout-fanfare::after {
+  animation: none;
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,0.48),
+    0 0 12px var(--panel-glow);
+}
+body.tablet-effects-lite .inventory-cluster.player-payout-fanfare,
+body.tablet-effects-lite .status-bar.payout-praise,
+body.tablet-effects-lite .pool-count.payout-jackpot,
+body.tablet-effects-lite.inline-game-over .roll-panel,
+body.tablet-effects-lite.inline-game-over .roll-btn {
+  animation: none !important;
+  filter: none !important;
+  will-change: auto;
+}
+body.tablet-effects-lite.inline-game-over .inline-result-banner {
+  animation: inlineResultPop 0.5s cubic-bezier(.13,.86,.16,1) both;
 }
 .can-hero-glint,
 .can-rim-glint {
@@ -6514,6 +6594,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
+  const TABLET_REVIEW_SIZE = window.matchMedia('(min-width: 721px) and (max-width: 1180px) and (max-height: 1180px)').matches;
+  const TABLET_EFFECTS_LITE = !FULL_FX_ENABLED && TABLET_REVIEW_SIZE && (MOBILE_REVIEW_DEVICE || navigator.maxTouchPoints > 0 || QA_ENABLED);
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
@@ -6532,6 +6614,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const MATHEMATICAL_CERTAINTY_DICE_MARGIN = 2;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
+  document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
   const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
   const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
