@@ -643,21 +643,23 @@ body.quit-return-open .quit-game-btn {
 }
 
 .audio-mute-btn::before {
-  content: "";
-  width: 18px;
-  height: 18px;
-  background: currentColor;
-  clip-path: polygon(0 34%, 34% 34%, 70% 8%, 70% 92%, 34% 66%, 0 66%);
+  content: none;
 }
 
 .audio-mute-btn::after {
-  content: "";
-  width: 16px;
-  height: 22px;
-  margin-left: -1px;
-  border-right: 3px solid currentColor;
-  border-radius: 50%;
-  opacity: 0.88;
+  content: none;
+}
+
+.audio-mute-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.audio-mute-icon-muted {
+  display: none;
 }
 
 .audio-mute-btn[aria-pressed="true"] {
@@ -665,14 +667,12 @@ body.quit-return-open .quit-game-btn {
   color: #f5c800;
 }
 
-.audio-mute-btn[aria-pressed="true"]::after {
-  width: 22px;
-  height: 3px;
-  margin-left: -2px;
-  border-right: 0;
-  border-radius: 999px;
-  background: currentColor;
-  transform: rotate(-42deg);
+.audio-mute-btn[aria-pressed="true"] .audio-mute-icon-on {
+  display: none;
+}
+
+.audio-mute-btn[aria-pressed="true"] .audio-mute-icon-muted {
+  display: block;
 }
 
 .audio-mute-btn:hover {
@@ -6289,7 +6289,18 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <body>
 <div class="milestone-badge">BETA WIP - NOT LIVE</div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
-<button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Mute sound"></button>
+<button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Sound on">
+  <svg class="audio-mute-icon audio-mute-icon-on" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M3.5 9.25v5.5h4.05L13.25 19V5l-5.7 4.25H3.5Z" fill="currentColor"/>
+    <path d="M16 8.2c1.05 1 1.58 2.26 1.58 3.8S17.05 14.8 16 15.8" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round"/>
+    <path d="M18.8 5.65c1.92 1.72 2.95 3.86 2.95 6.35s-1.03 4.63-2.95 6.35" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round"/>
+  </svg>
+  <svg class="audio-mute-icon audio-mute-icon-muted" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M3.5 9.25v5.5h4.05L13.25 19V5l-5.7 4.25H3.5Z" fill="currentColor"/>
+    <path d="M17 8l5 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
+    <path d="M22 8l-5 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
+  </svg>
+</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
@@ -9473,8 +9484,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.toggle('audio-muted', muted);
     if (!audioMuteBtn) return;
     audioMuteBtn.setAttribute('aria-pressed', String(muted));
-    audioMuteBtn.setAttribute('aria-label', muted ? 'Turn sound on' : 'Mute sound');
-    audioMuteBtn.title = muted ? 'Turn sound on' : 'Mute sound';
+    audioMuteBtn.setAttribute('aria-label', 'Mute sound');
+    audioMuteBtn.title = muted ? 'Sound muted' : 'Sound on';
   }
 
   function setAudioMuted(muted, source = 'system') {

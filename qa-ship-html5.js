@@ -221,6 +221,8 @@ async function main() {
             pressed: btn.getAttribute('aria-pressed'),
             label: btn.getAttribute('aria-label'),
             title: btn.title,
+            iconOnVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-on')).display !== 'none',
+            iconMutedVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-muted')).display !== 'none',
             top: r.top,
             right: r.right,
             bottom: r.bottom,
@@ -316,7 +318,7 @@ async function main() {
       assert(initial.quitRect.right <= initial.quitRect.viewportWidth - 6 && initial.quitRect.left >= 0, `${viewport.name}: quit button is not inside viewport ${JSON.stringify(initial.quitRect)}`);
       assert(initial.audioMute && initial.audioMute.visible === true, `${viewport.name}: mute button is not visible/tappable ${JSON.stringify(initial.audioMute)}`);
       assert(initial.audioMute.clearsQuit === true, `${viewport.name}: mute button overlaps Done ${JSON.stringify(initial.audioMute)}`);
-      assert(initial.audioMute.pressed === 'false' && initial.audioMute.label === 'Mute sound', `${viewport.name}: mute button initial state is wrong ${JSON.stringify(initial.audioMute)}`);
+      assert(initial.audioMute.pressed === 'false' && initial.audioMute.label === 'Mute sound' && initial.audioMute.iconOnVisible === true && initial.audioMute.iconMutedVisible === false, `${viewport.name}: mute button initial state is wrong ${JSON.stringify(initial.audioMute)}`);
       if (viewport.width <= 720) {
         assert(initial.quitRect.height >= 46, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
         assert(initial.quitRect.top <= 32 && initial.quitRect.left <= 24, `${viewport.name}: mobile quit button should stay in top-left escape position ${JSON.stringify(initial.quitRect)}`);
@@ -353,6 +355,8 @@ async function main() {
         const muted = {
           pressed: btn.getAttribute('aria-pressed'),
           label: btn.getAttribute('aria-label'),
+          iconOnVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-on')).display !== 'none',
+          iconMutedVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-muted')).display !== 'none',
           bodyMuted: document.body.classList.contains('audio-muted'),
           audioMuted: window.__odgAudioStatus ? window.__odgAudioStatus().muted : null,
           stored: window.localStorage.getItem('trash-dice-audio-muted')
@@ -361,14 +365,16 @@ async function main() {
         const unmuted = {
           pressed: btn.getAttribute('aria-pressed'),
           label: btn.getAttribute('aria-label'),
+          iconOnVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-on')).display !== 'none',
+          iconMutedVisible: getComputedStyle(btn.querySelector('.audio-mute-icon-muted')).display !== 'none',
           bodyMuted: document.body.classList.contains('audio-muted'),
           audioMuted: window.__odgAudioStatus ? window.__odgAudioStatus().muted : null,
           stored: window.localStorage.getItem('trash-dice-audio-muted')
         };
         return { muted, unmuted };
       })()`);
-      assert(muteToggle.muted.pressed === 'true' && muteToggle.muted.label === 'Turn sound on' && muteToggle.muted.bodyMuted === true && muteToggle.muted.audioMuted === true && muteToggle.muted.stored === '1', `${viewport.name}: mute did not engage ${JSON.stringify(muteToggle)}`);
-      assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
+      assert(muteToggle.muted.pressed === 'true' && muteToggle.muted.label === 'Mute sound' && muteToggle.muted.iconOnVisible === false && muteToggle.muted.iconMutedVisible === true && muteToggle.muted.bodyMuted === true && muteToggle.muted.audioMuted === true && muteToggle.muted.stored === '1', `${viewport.name}: mute did not engage ${JSON.stringify(muteToggle)}`);
+      assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.iconOnVisible === true && muteToggle.unmuted.iconMutedVisible === false && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
