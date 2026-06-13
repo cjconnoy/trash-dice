@@ -255,12 +255,15 @@ async function main() {
           if (!frame || !logo) return null;
           const fr = frame.getBoundingClientRect();
           const lr = logo.getBoundingClientRect();
+          const frameStyle = getComputedStyle(frame);
           const glintStyle = getComputedStyle(frame, '::after');
           return {
             animationName: glintStyle.animationName,
             backgroundPosition: glintStyle.backgroundPosition,
             backgroundSize: glintStyle.backgroundSize,
             clipPath: glintStyle.clipPath,
+            frameContain: frameStyle.contain,
+            frameOverflow: frameStyle.overflow,
             duplicateImageCount: document.querySelectorAll('.start-overlay .retail-logo-glint-img').length,
             frameWidth: fr.width,
             logoWidth: lr.width,
@@ -355,6 +358,7 @@ async function main() {
       assert(initial.titleLogoGlint && initial.titleLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: title logo glint animation missing ${JSON.stringify(initial)}`);
       assert(initial.titleLogoGlint.duplicateImageCount === 0, `${viewport.name}: title logo glint should not use duplicate logo bitmap ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
+      assert(initial.titleLogoGlint.frameOverflow === 'visible' && initial.titleLogoGlint.frameContain === 'none', `${viewport.name}: title logo frame should not clip drop-shadow/backing paint ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.clipPath === 'none' && initial.titleLogoGlint.maskImage !== 'none' && initial.titleLogoGlint.backgroundSize !== 'auto', `${viewport.name}: title logo glint should use a masked horizontal background sweep ${JSON.stringify(initial.titleLogoGlint)}`);
       const muteToggle = await evalValue(page, `(() => {
         const btn = document.getElementById('audioMuteBtn');
