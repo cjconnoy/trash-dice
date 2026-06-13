@@ -204,11 +204,32 @@ async function main() {
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
         quitButton: !!document.getElementById('quitGameBtn'),
+        audioMuteButton: !!document.getElementById('audioMuteBtn'),
         quitRect: (() => {
           const btn = document.getElementById('quitGameBtn');
           if (!btn) return null;
           const r = btn.getBoundingClientRect();
           return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight };
+        })(),
+        audioMute: (() => {
+          const btn = document.getElementById('audioMuteBtn');
+          const quit = document.getElementById('quitGameBtn');
+          if (!btn || !quit) return null;
+          const r = btn.getBoundingClientRect();
+          const q = quit.getBoundingClientRect();
+          return {
+            pressed: btn.getAttribute('aria-pressed'),
+            label: btn.getAttribute('aria-label'),
+            title: btn.title,
+            top: r.top,
+            right: r.right,
+            bottom: r.bottom,
+            left: r.left,
+            width: r.width,
+            height: r.height,
+            visible: getComputedStyle(btn).display !== 'none' && r.width >= 44 && r.height >= 44 && r.left >= 0 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1,
+            clearsQuit: r.bottom <= q.top - 4 || r.left >= q.right + 4 || r.right <= q.left - 4 || r.top >= q.bottom + 4
+          };
         })(),
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
@@ -290,8 +311,12 @@ async function main() {
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
+      assert(initial.audioMuteButton === true, `${viewport.name}: mute button missing`);
       assert(initial.quitRect.width >= 88 && initial.quitRect.height >= 42, `${viewport.name}: quit button is too small ${JSON.stringify(initial.quitRect)}`);
       assert(initial.quitRect.right <= initial.quitRect.viewportWidth - 6 && initial.quitRect.left >= 0, `${viewport.name}: quit button is not inside viewport ${JSON.stringify(initial.quitRect)}`);
+      assert(initial.audioMute && initial.audioMute.visible === true, `${viewport.name}: mute button is not visible/tappable ${JSON.stringify(initial.audioMute)}`);
+      assert(initial.audioMute.clearsQuit === true, `${viewport.name}: mute button overlaps Done ${JSON.stringify(initial.audioMute)}`);
+      assert(initial.audioMute.pressed === 'false' && initial.audioMute.label === 'Mute sound', `${viewport.name}: mute button initial state is wrong ${JSON.stringify(initial.audioMute)}`);
       if (viewport.width <= 720) {
         assert(initial.quitRect.height >= 46, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
         assert(initial.quitRect.top <= 32 && initial.quitRect.left <= 24, `${viewport.name}: mobile quit button should stay in top-left escape position ${JSON.stringify(initial.quitRect)}`);
@@ -322,6 +347,28 @@ async function main() {
       assert(initial.titleLogoGlint.duplicateImageCount === 0, `${viewport.name}: title logo glint should not use duplicate logo bitmap ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.clipPath === 'none' && initial.titleLogoGlint.maskImage !== 'none' && initial.titleLogoGlint.backgroundSize !== 'auto', `${viewport.name}: title logo glint should use a masked horizontal background sweep ${JSON.stringify(initial.titleLogoGlint)}`);
+      const muteToggle = await evalValue(page, `(() => {
+        const btn = document.getElementById('audioMuteBtn');
+        btn.click();
+        const muted = {
+          pressed: btn.getAttribute('aria-pressed'),
+          label: btn.getAttribute('aria-label'),
+          bodyMuted: document.body.classList.contains('audio-muted'),
+          audioMuted: window.__odgAudioStatus ? window.__odgAudioStatus().muted : null,
+          stored: window.localStorage.getItem('trash-dice-audio-muted')
+        };
+        btn.click();
+        const unmuted = {
+          pressed: btn.getAttribute('aria-pressed'),
+          label: btn.getAttribute('aria-label'),
+          bodyMuted: document.body.classList.contains('audio-muted'),
+          audioMuted: window.__odgAudioStatus ? window.__odgAudioStatus().muted : null,
+          stored: window.localStorage.getItem('trash-dice-audio-muted')
+        };
+        return { muted, unmuted };
+      })()`);
+      assert(muteToggle.muted.pressed === 'true' && muteToggle.muted.label === 'Turn sound on' && muteToggle.muted.bodyMuted === true && muteToggle.muted.audioMuted === true && muteToggle.muted.stored === '1', `${viewport.name}: mute did not engage ${JSON.stringify(muteToggle)}`);
+      assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
@@ -405,6 +452,9 @@ async function main() {
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
+          debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
+            (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.48 && or.top >= window.innerHeight * 0.48,
           badgeClearsQuit: gr.bottom <= qr.top - 4 || gr.left >= qr.right + 4 || gr.right <= qr.left - 4 || gr.top >= qr.bottom + 4,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -436,6 +486,8 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.debugClearsQuit, `${viewport.name}: debug controls overlap Done ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.debugLowerRight, `${viewport.name}: debug controls are not in the lower-right tool corner ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.badgeClearsQuit, `${viewport.name}: beta badge overlaps quit button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.bodyFits, `${viewport.name}: active game creates horizontal overflow ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);

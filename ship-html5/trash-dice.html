@@ -618,14 +618,86 @@ body.quit-return-open .quit-game-btn {
   pointer-events: none;
 }
 
+.audio-mute-btn {
+  position: fixed;
+  z-index: 145;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  right: calc(env(safe-area-inset-right, 0px) + 118px);
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255,255,255,0.76);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(19,24,22,0.78);
+  color: #fff8d6;
+  box-shadow:
+    0 9px 22px rgba(0,0,0,0.24),
+    0 0 0 2px rgba(15,95,50,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.14);
+  cursor: pointer;
+  touch-action: manipulation;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.audio-mute-btn::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  clip-path: polygon(0 34%, 34% 34%, 70% 8%, 70% 92%, 34% 66%, 0 66%);
+}
+
+.audio-mute-btn::after {
+  content: "";
+  width: 16px;
+  height: 22px;
+  margin-left: -1px;
+  border-right: 3px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.88;
+}
+
+.audio-mute-btn[aria-pressed="true"] {
+  background: rgba(19,24,22,0.9);
+  color: #f5c800;
+}
+
+.audio-mute-btn[aria-pressed="true"]::after {
+  width: 22px;
+  height: 3px;
+  margin-left: -2px;
+  border-right: 0;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(-42deg);
+}
+
+.audio-mute-btn:hover {
+  filter: brightness(1.1);
+  border-color: rgba(255,248,214,0.9);
+}
+
+.audio-mute-btn:active {
+  transform: translateY(1px);
+}
+
+body.quit-return-open .audio-mute-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .debug-p0-btn {
   position: fixed;
   z-index: 144;
   display: none;
   align-items: center;
   justify-content: center;
-  top: calc(env(safe-area-inset-top, 0px) + 48px);
+  top: auto;
   right: calc(env(safe-area-inset-right, 0px) + 12px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
   min-width: 48px;
   min-height: 32px;
   padding: 0.25rem 0.44rem 0.2rem;
@@ -671,8 +743,9 @@ body.quit-return-open .debug-p0-btn {
   display: none;
   flex-direction: row;
   gap: 4px;
-  top: calc(env(safe-area-inset-top, 0px) + 84px);
+  top: auto;
   right: calc(env(safe-area-inset-right, 0px) + 12px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
 body[data-game-started="true"] .debug-outcome-controls {
@@ -4132,6 +4205,17 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     flex-basis: 16px;
   }
 
+  .audio-mute-btn {
+    top: calc(env(safe-area-inset-top, 0px) + 0.58rem);
+    right: calc(env(safe-area-inset-right, 0px) + 0.58rem);
+    width: 48px;
+    height: 48px;
+    box-shadow:
+      0 9px 22px rgba(0,0,0,0.28),
+      0 0 0 2px rgba(245,200,0,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+
   .title-wrap:not(.big) {
     padding: 0.02rem 0 0;
     flex-shrink: 0;
@@ -4817,8 +4901,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .debug-p0-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 44px);
     right: calc(env(safe-area-inset-right, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     min-width: 44px;
     min-height: 30px;
     padding-left: 0.38rem;
@@ -4827,8 +4911,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .debug-outcome-controls {
     flex-direction: row;
-    top: calc(env(safe-area-inset-top, 0px) + 78px);
     right: calc(env(safe-area-inset-right, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
     gap: 3px;
   }
 
@@ -5232,13 +5316,13 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .debug-p0-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 40px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 94px);
     min-width: 40px;
     min-height: 28px;
   }
 
   .debug-outcome-controls {
-    top: calc(env(safe-area-inset-top, 0px) + 70px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
   }
 
   .debug-outcome-btn {
@@ -6205,6 +6289,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <body>
 <div class="milestone-badge">BETA WIP - NOT LIVE</div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
+<button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Mute sound"></button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
@@ -8684,6 +8769,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     let audioGraphBuilt = false;
     let musicStarted = false;
     let unlockPromise = null;
+    let muted = false;
     const readyCallbacks = [];
     const debug = {
       supported: !!AudioContextCtor,
@@ -8704,6 +8790,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       musicGainValue: 0,
       musicTimerActive: false,
       musicStartDeadline: 0,
+      muted: false,
       musicStep: 0,
       callbacksQueued: 0,
       callbacksFlushed: 0,
@@ -8737,7 +8824,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (!c) return;
       master = c.createGain();
       musicGain = c.createGain();
-      master.gain.value = 1;
+      master.gain.value = muted ? 0 : 1;
       musicGain.gain.value = 0.001;
       musicGain.connect(master);
       master.connect(c.destination);
@@ -8755,7 +8842,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         musicStarted,
         musicGainValue: musicGain ? Number(musicGain.gain.value.toFixed(3)) : 0,
         musicTimerActive: !!musicTimer,
-        musicStartDeadline
+        musicStartDeadline,
+        muted
       });
     }
 
@@ -8764,8 +8852,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     function sfxCtx(name) {
-      const c = readyCtx();
       debug.lastSfx = name;
+      if (muted) {
+        debug.blockedSfx += 1;
+        noteAudioDebug();
+        return null;
+      }
+      const c = readyCtx();
       debug.sfxCalls += 1;
       if (!c) {
         debug.blockedSfx += 1;
@@ -8792,11 +8885,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const MUSIC_MELODY = [0, 4, 7, 9, 7, 4, 2, 0, 5, 9, 12, 9, 7, 4, 2, 4];
 
     function canStartMusicNow() {
-      return musicActive && (musicStep > 0 || Date.now() <= musicStartDeadline);
+      return !muted && musicActive && (musicStep > 0 || Date.now() <= musicStartDeadline);
     }
 
     function musicTone(freq, type, gain, at, dur) {
-      if (!ctx || !musicGain) return;
+      if (muted || !ctx || !musicGain) return;
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       const t0 = at;
@@ -8814,7 +8907,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     function musicTick(at, gain = 0.012) {
-      if (!ctx || !musicGain) return;
+      if (muted || !ctx || !musicGain) return;
       const frames = Math.max(1, Math.floor(ctx.sampleRate * 0.035));
       const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
       const data = buf.getChannelData(0);
@@ -8835,7 +8928,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     function scheduleMusicBar() {
       musicTimer = null;
-      if (!musicActive || !ctx || ctx.state !== 'running' || !musicGain || !canStartMusicNow()) {
+      if (muted || !musicActive || !ctx || ctx.state !== 'running' || !musicGain || !canStartMusicNow()) {
         if (musicActive && musicStep === 0 && Date.now() > musicStartDeadline) musicActive = false;
         noteAudioDebug({ musicStep });
         return;
@@ -8883,8 +8976,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       } catch (_) {
         musicGain.gain.value = musicActive ? MUSIC_TARGET_GAIN : 0.001;
       }
-      if (musicActive && ctx.state === 'running' && !musicTimer && canStartMusicNow()) scheduleMusicBar();
-      if (!musicActive && musicTimer) {
+      if (!muted && musicActive && ctx.state === 'running' && !musicTimer && canStartMusicNow()) scheduleMusicBar();
+      if ((!musicActive || muted) && musicTimer) {
         clearTimeout(musicTimer);
         musicTimer = null;
       }
@@ -8898,7 +8991,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         musicStarted = true;
       }
       audioReady = true;
-      if (musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
+      if (!muted && musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
       noteAudioDebug({ resumeResult: ctx.state });
       flushReadyCallbacks();
     }
@@ -8933,7 +9026,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         return Promise.resolve('unsupported');
       }
       if (audioReady && ctx.state === 'running') {
-        if (musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
+        if (!muted && musicActive && !musicTimer && canStartMusicNow()) scheduleMusicBar();
         noteAudioDebug({ lastEvent: source, resumeResult: ctx.state });
         flushReadyCallbacks();
         return Promise.resolve(ctx.state);
@@ -8961,6 +9054,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     function tone(freq, type, gain, start, dur, dest) {
+      if (muted) return;
       const c = readyCtx();
       if (!c) return;
       const osc = c.createOscillator();
@@ -8969,11 +9063,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       g.gain.setValueAtTime(0.001, c.currentTime + start);
       g.gain.linearRampToValueAtTime(gain, c.currentTime + start + 0.03);
       g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
-      osc.connect(g).connect(dest || master || c.destination);
+      osc.connect(g).connect(master || dest || c.destination);
       osc.start(c.currentTime + start);
       osc.stop(c.currentTime + start + dur + 0.05);
     }
     function noiseBurst(duration, start, gain, decay = 1.6, filterFreq = 1200, filterType = 'bandpass') {
+      if (muted) return;
       const c = readyCtx();
       if (!c) return;
       const frames = Math.max(1, Math.floor(c.sampleRate * duration));
@@ -8994,6 +9089,27 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       src.start(c.currentTime + start);
       src.stop(c.currentTime + start + duration + 0.03);
     }
+    function applyMutedState(nextMuted) {
+      muted = !!nextMuted;
+      if (master) {
+        try {
+          const c = ctx;
+          const now = c ? c.currentTime : 0;
+          master.gain.cancelScheduledValues(now);
+          master.gain.setValueAtTime(muted ? 0 : 1, now);
+        } catch (_) {
+          master.gain.value = muted ? 0 : 1;
+        }
+      }
+      if (muted && musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+      if (!muted && musicActive && ctx && ctx.state === 'running' && !musicTimer && canStartMusicNow()) {
+        scheduleMusicBar();
+      }
+      noteAudioDebug();
+    }
     return {
       unlock(sourceOrReady, maybeOnReady) {
         return unlockCtx(sourceOrReady, maybeOnReady);
@@ -9006,6 +9122,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       },
       setMusicActive(active) {
         setAmbientMusicActive(active);
+      },
+      setMuted(nextMuted) {
+        applyMutedState(nextMuted);
+      },
+      muted() {
+        return muted;
       },
       debugState() {
         return Object.assign({}, debug, {
@@ -9315,7 +9437,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         for (let i = 0; i < bd.length; i++) bd[i] = (Math.random()*2-1) * Math.pow(1 - i/bd.length, 0.6);
         const nb = c.createBufferSource(); nb.buffer = buf;
         const ng = c.createGain(); ng.gain.value = 0.28;
-        nb.connect(ng).connect(c.destination); nb.start(now);
+        nb.connect(ng).connect(master || c.destination); nb.start(now);
         // Descending womp womp
         [[220,0.0,0.22],[185,0.14,0.22],[155,0.28,0.22],[130,0.42,0.30],[98,0.58,0.40]].forEach(([fr,t,dur]) => {
           tone(fr, 'sawtooth', 0.20, t, dur, c.destination);
@@ -9329,6 +9451,54 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   })();
 
   // ── DIE RENDERING ────────────────────────────────────────────
+  const AUDIO_MUTE_STORAGE_KEY = 'trash-dice-audio-muted';
+  const audioMuteBtn = document.getElementById('audioMuteBtn');
+  let audioMuted = false;
+
+  function readAudioMutedPreference() {
+    try {
+      return window.localStorage.getItem(AUDIO_MUTE_STORAGE_KEY) === '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function writeAudioMutedPreference(muted) {
+    try {
+      window.localStorage.setItem(AUDIO_MUTE_STORAGE_KEY, muted ? '1' : '0');
+    } catch (_) {}
+  }
+
+  function updateAudioMuteUi(muted) {
+    document.body.classList.toggle('audio-muted', muted);
+    if (!audioMuteBtn) return;
+    audioMuteBtn.setAttribute('aria-pressed', String(muted));
+    audioMuteBtn.setAttribute('aria-label', muted ? 'Turn sound on' : 'Mute sound');
+    audioMuteBtn.title = muted ? 'Turn sound on' : 'Mute sound';
+  }
+
+  function setAudioMuted(muted, source = 'system') {
+    audioMuted = !!muted;
+    Audio.setMuted(audioMuted);
+    updateAudioMuteUi(audioMuted);
+    if (source === 'button') {
+      writeAudioMutedPreference(audioMuted);
+      tdTrack('td_audio_mute_toggle', tdGamePayload({
+        muted: audioMuted,
+        checkpoint: tdLastCheckpoint
+      }));
+    }
+  }
+
+  setAudioMuted(readAudioMutedPreference(), 'boot');
+  if (audioMuteBtn) {
+    audioMuteBtn.addEventListener('click', () => {
+      const nextMuted = !audioMuted;
+      setAudioMuted(nextMuted, 'button');
+      if (!nextMuted) Audio.unlock('audio-mute-toggle').catch(() => {});
+    });
+  }
+
   function renderDie(value, player, color) {
     const el = getDie(player);
     el.className = 'die ' + colorClass(color || (player === 'p1' ? 'yellow' : 'green'));
