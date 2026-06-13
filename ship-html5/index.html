@@ -259,6 +259,24 @@ body:not([data-game-started="true"]) #trashCan > svg {
   letter-spacing: 0.04em;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,0.36);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.04rem;
+}
+.title-studio-label {
+  color: rgba(15,95,50,0.56);
+  font-size: 0.68em;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.title-odg-wordmark {
+  display: block;
+  width: clamp(96px, 7.4vw, 128px);
+  height: auto;
+  opacity: 0.64;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.3));
 }
 @media (min-width: 721px) {
   .start-overlay {
@@ -364,10 +382,13 @@ body:not([data-game-started="true"]) #trashCan > svg {
   }
   .title-legal {
     left: calc(50% - 1.4rem);
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.45rem);
     max-width: min(53vw, 214px);
     font-size: clamp(0.42rem, 2.35vw, 0.52rem);
     line-height: 1.08;
+  }
+  .title-odg-wordmark {
+    width: clamp(88px, 26vw, 112px);
   }
 }
 .title-hero-glint {
@@ -5184,6 +5205,10 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     line-height: 1;
   }
 
+  .title-odg-wordmark {
+    width: clamp(76px, 24vw, 96px);
+  }
+
   .game-area {
     gap: 0.08rem;
   }
@@ -6601,7 +6626,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
   <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
-  <div class="title-legal">&copy; 2026 Big Discoveries. Trash Dice&trade; digital companion.</div>
+  <div class="title-legal">
+    <span>&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
+    <span class="title-studio-label">Digital companion by</span>
+    <img class="title-odg-wordmark" src="assets/brand/odg-logo-charcoal.png" alt="OneDayGames" width="951" height="425" decoding="async" loading="eager">
+  </div>
 </div>
 
 <!-- Flash + overlay -->

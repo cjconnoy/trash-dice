@@ -273,6 +273,8 @@ async function main() {
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
           const tagline = document.querySelector('.start-tagline');
           const legal = document.querySelector('.title-legal');
+          const studioLabel = document.querySelector('.title-studio-label');
+          const odgLogo = document.querySelector('.title-odg-wordmark');
           const startCan = document.querySelector('.start-lurker-can');
           const rect = el => {
             const r = el.getBoundingClientRect();
@@ -285,6 +287,7 @@ async function main() {
           const startCanRect = rect(startCan);
           const taglineRect = rect(tagline);
           const legalRect = rect(legal);
+          const odgRect = rect(odgLogo);
           return {
             presenterLogoWidth: presenterRect.width,
             presenterToTitle: titleRect.top - presenterRect.bottom,
@@ -292,12 +295,16 @@ async function main() {
             startCanToCard: startCardRect.left - startCanRect.right,
             startCardToTagline: taglineRect.top - startCardRect.bottom,
             taglineToLegal: legalRect.top - taglineRect.bottom,
+            studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
+            odgLogoSrc: odgLogo ? odgLogo.getAttribute('src') : '',
+            odgLogoAlt: odgLogo ? odgLogo.getAttribute('alt') : '',
             presenterRect,
             titleRect,
             startCardRect,
             startCanRect,
             taglineRect,
-            legalRect
+            legalRect,
+            odgRect
           };
         })()
       }))()`);
@@ -376,6 +383,9 @@ async function main() {
       assert(muteToggle.muted.pressed === 'true' && muteToggle.muted.label === 'Mute sound' && muteToggle.muted.iconOnVisible === false && muteToggle.muted.iconMutedVisible === true && muteToggle.muted.bodyMuted === true && muteToggle.muted.audioMuted === true && muteToggle.muted.stored === '1', `${viewport.name}: mute did not engage ${JSON.stringify(muteToggle)}`);
       assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.iconOnVisible === true && muteToggle.unmuted.iconMutedVisible === false && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
       assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.studioLabelText === 'Digital companion by', `${viewport.name}: title studio credit label missing ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.odgLogoSrc.includes('assets/brand/odg-logo-charcoal.png') && initial.titleLayout.odgLogoAlt === 'OneDayGames', `${viewport.name}: title ODG wordmark missing ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 70 : 72) && initial.titleLayout.odgRect.height >= 26, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
