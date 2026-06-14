@@ -236,6 +236,12 @@ async function main() {
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
+        badgeRect: (() => {
+          const badge = document.querySelector('.milestone-badge');
+          if (!badge) return null;
+          const r = badge.getBoundingClientRect();
+          return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
+        })(),
         tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
         version: document.body.dataset.trashDiceVersion || '',
         hiddenGameSceneAnimationsPaused: (() => {
@@ -301,6 +307,7 @@ async function main() {
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
             odgLogoSrc: odgLogo ? odgLogo.getAttribute('src') : '',
             odgLogoAlt: odgLogo ? odgLogo.getAttribute('alt') : '',
+            odgCenterOffset: odgRect.left + odgRect.width / 2 - window.innerWidth / 2,
             presenterRect,
             titleRect,
             startCardRect,
@@ -390,6 +397,13 @@ async function main() {
       assert(initial.titleLayout.studioLabelText === 'Digital companion by', `${viewport.name}: title studio credit label missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgLogoSrc.includes('assets/brand/odg-logo-charcoal.png') && initial.titleLayout.odgLogoAlt === 'OneDayGames', `${viewport.name}: title ODG wordmark missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 70 : 72) && initial.titleLayout.odgRect.height >= 26, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
+      assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
+      if (initial.badgeRect) {
+        const odg = initial.titleLayout.odgRect;
+        const badge = initial.badgeRect;
+        const clearsBadge = odg.bottom <= badge.top - 4 || odg.left >= badge.right + 4 || odg.right <= badge.left - 4 || odg.top >= badge.bottom + 4;
+        assert(clearsBadge, `${viewport.name}: title ODG wordmark overlaps beta badge ${JSON.stringify({ odg, badge })}`);
+      }
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
