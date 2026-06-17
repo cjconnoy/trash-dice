@@ -2694,6 +2694,11 @@ body.tablet-effects-lite .lid-inner-glint {
 body.tablet-effects-lite #heroTitle .retail-logo-frame::after {
   animation-duration: 7.2s;
 }
+body.tablet-effects-lite[data-game-started="true"] #heroTitle .retail-logo-frame::after {
+  animation: none !important;
+  opacity: 0 !important;
+  will-change: auto;
+}
 body.tablet-effects-lite .trash-can > svg {
   animation: none !important;
   transform: none !important;
@@ -2737,11 +2742,6 @@ body.tablet-effects-lite.inline-game-over .roll-btn {
 body.tablet-effects-lite.inline-game-over .inline-result-banner {
   animation: inlineResultPop 0.5s cubic-bezier(.13,.86,.16,1) both;
 }
-body.tablet-effects-lite .start-can-mouth,
-body.tablet-effects-lite .start-can-lid-chomp,
-body.tablet-effects-lite .start-die,
-body.tablet-effects-lite .start-die::after,
-body.tablet-effects-lite .start-btn,
 body.tablet-effects-lite .roll-panel,
 body.tablet-effects-lite .roll-btn-label,
 body.tablet-effects-lite .panel-pile .mini-die.bench-cheer-die {
@@ -2758,6 +2758,33 @@ body.tablet-effects-lite .trash-can.inline-ending-can-dance,
 body.tablet-effects-lite .hero-title.round-win-title-sustain {
   animation: none !important;
   will-change: auto;
+}
+body.tablet-effects-lite .trash-can,
+body.tablet-effects-lite .board-wrap::after,
+body.tablet-effects-lite .trash-can::after,
+body.tablet-effects-lite .roll-die-stage::before,
+body.tablet-effects-lite .roll-die-stage .die.roll-resolved::after,
+body.tablet-effects-lite .payout-comet-trail,
+body.tablet-effects-lite .can-pour-die.player-payout-comet,
+body.tablet-effects-lite .lid-payout-die.player-payout-comet {
+  filter: none !important;
+}
+body.tablet-effects-lite .roll-die-stage.active {
+  animation-name: rollStagePopMobile;
+  animation-duration: 0.18s;
+  animation-timing-function: cubic-bezier(.16,.82,.18,1);
+}
+body.tablet-effects-lite .roll-die-stage .die.rolling {
+  animation-name: dieRollMobile;
+  animation-duration: 0.64s;
+  animation-timing-function: cubic-bezier(.18,.84,.16,1);
+}
+body.tablet-effects-lite .roll-die-stage .die.roll-resolved {
+  animation: none !important;
+}
+body.tablet-effects-lite .roll-die-stage .die.roll-resolved::after {
+  animation: none !important;
+  opacity: 0;
 }
 .can-hero-glint,
 .can-rim-glint {
@@ -6737,11 +6764,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_REQUESTED = URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite');
   const DEV_CHEATS_ENABLED = false;
-  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
-  const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720;
-  const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const TABLET_REVIEW_SIZE = window.matchMedia('(min-width: 721px) and (max-width: 1180px) and (max-height: 1180px)').matches;
   const TABLET_EFFECTS_LITE = !FULL_FX_ENABLED && TABLET_REVIEW_SIZE && (MOBILE_REVIEW_DEVICE || navigator.maxTouchPoints > 0 || QA_ENABLED);
+  const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
+  const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720 || TABLET_EFFECTS_LITE;
+  const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;

@@ -244,6 +244,7 @@ async function main() {
         })(),
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
         tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
+        mobileRollSmoothing: document.body.classList.contains('mobile-roll-smoothing'),
         version: document.body.dataset.trashDiceVersion || '',
         hiddenGameSceneAnimationsPaused: (() => {
           const heroFrame = document.querySelector('#heroTitle .retail-logo-frame');
@@ -360,7 +361,8 @@ async function main() {
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(initial.tabletEffectsLite === true, `${viewport.name}: tablet effects lite class missing ${JSON.stringify(initial)}`);
-        assert(initial.activeAnimationCount <= 3, `${viewport.name}: tablet title has too many running animations ${JSON.stringify(initial)}`);
+        assert(initial.mobileRollSmoothing === true, `${viewport.name}: tablet should use mobile roll smoothing ${JSON.stringify(initial)}`);
+        assert(initial.activeAnimationCount <= 9, `${viewport.name}: tablet title has too many running animations ${JSON.stringify(initial)}`);
       } else {
         assert(initial.tabletEffectsLite === false, `${viewport.name}: tablet effects lite class applied outside tablet viewport ${JSON.stringify(initial)}`);
       }
@@ -527,7 +529,11 @@ async function main() {
       assert(activeLayout.debugLowerRight, `${viewport.name}: debug controls are not in the lower-right tool corner ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.badgeClearsQuit, `${viewport.name}: beta badge overlaps quit button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.bodyFits, `${viewport.name}: active game creates horizontal overflow ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'none', `${viewport.name}: tablet active game logo glint should be paused for performance ${JSON.stringify(activeLayout)}`);
+      } else {
+        assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: active game logo glint animation missing ${JSON.stringify(activeLayout)}`);
+      }
       assert(activeLayout.heroLogoGlint.duplicateImageCount === 0, `${viewport.name}: active game logo glint should not use duplicate logo bitmap ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       assert(activeLayout.heroLogoGlint.frameWidth <= activeLayout.heroLogoGlint.logoWidth + 2, `${viewport.name}: active game logo glint frame should not span the page ${JSON.stringify(activeLayout.heroLogoGlint)}`);
       if (viewport.width <= 720) {
@@ -607,7 +613,11 @@ async function main() {
       assert(terminal.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: Play Again CTA missing ${JSON.stringify(terminal)}`);
       assert(terminal.playAgain.visible, `${viewport.name}: Play Again is not fully visible or tappable ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
-      assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'none', `${viewport.name}: tablet win screen logo glint should be paused for performance ${JSON.stringify(terminal)}`);
+      } else {
+        assert(terminal.winLogoGlint && terminal.winLogoGlint.animationName === 'retailLogoGlint', `${viewport.name}: win screen logo glint animation missing ${JSON.stringify(terminal)}`);
+      }
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
