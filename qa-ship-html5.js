@@ -242,6 +242,7 @@ async function main() {
           const r = badge.getBoundingClientRect();
           return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
         })(),
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
         tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
         version: document.body.dataset.trashDiceVersion || '',
         hiddenGameSceneAnimationsPaused: (() => {
@@ -359,6 +360,7 @@ async function main() {
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(initial.tabletEffectsLite === true, `${viewport.name}: tablet effects lite class missing ${JSON.stringify(initial)}`);
+        assert(initial.activeAnimationCount <= 3, `${viewport.name}: tablet title has too many running animations ${JSON.stringify(initial)}`);
       } else {
         assert(initial.tabletEffectsLite === false, `${viewport.name}: tablet effects lite class applied outside tablet viewport ${JSON.stringify(initial)}`);
       }
@@ -499,6 +501,7 @@ async function main() {
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
           badgeRect: { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height },
           viewport: { width: window.innerWidth, height: window.innerHeight },
+          activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
           heroLogoGlint: (() => {
             const frame = document.querySelector('#heroTitle .retail-logo-frame');
             const logo = document.querySelector('#heroTitle .title-logo');
@@ -531,6 +534,9 @@ async function main() {
         assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
       }
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
+      }
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
@@ -585,6 +591,7 @@ async function main() {
             logoWidth: lr.width
           };
         })(),
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
@@ -604,19 +611,26 @@ async function main() {
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(terminal.activeAnimationCount <= 6, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
+      }
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
         titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
-        celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length
+        celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
       }))()`);
       assert(terminalLoop.stillComplete, `${viewport.name}: game over cleared before Play Again ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerPanel === true, `${viewport.name}: winner panel fanfare did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerLabel === 'WINNER', `${viewport.name}: winner label did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(terminalLoop.activeAnimationCount <= 5, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
+      }
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} play again restart`);
       const terminalCleared = await evalValue(page, `(() => ({

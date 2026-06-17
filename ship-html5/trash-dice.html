@@ -2737,6 +2737,28 @@ body.tablet-effects-lite.inline-game-over .roll-btn {
 body.tablet-effects-lite.inline-game-over .inline-result-banner {
   animation: inlineResultPop 0.5s cubic-bezier(.13,.86,.16,1) both;
 }
+body.tablet-effects-lite .start-can-mouth,
+body.tablet-effects-lite .start-can-lid-chomp,
+body.tablet-effects-lite .start-die,
+body.tablet-effects-lite .start-die::after,
+body.tablet-effects-lite .start-btn,
+body.tablet-effects-lite .roll-panel,
+body.tablet-effects-lite .roll-btn-label,
+body.tablet-effects-lite .panel-pile .mini-die.bench-cheer-die {
+  animation: none !important;
+  filter: none !important;
+  will-change: auto;
+}
+body.tablet-effects-lite.player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin),
+body.tablet-effects-lite.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt),
+body.tablet-effects-lite .board-wrap.player-payout-lid-dance,
+body.tablet-effects-lite .board-wrap.inline-ending-lid-dance,
+body.tablet-effects-lite .trash-can.pour.player-payout-can-dance,
+body.tablet-effects-lite .trash-can.inline-ending-can-dance,
+body.tablet-effects-lite .hero-title.round-win-title-sustain {
+  animation: none !important;
+  will-change: auto;
+}
 .can-hero-glint,
 .can-rim-glint {
   pointer-events: none;
