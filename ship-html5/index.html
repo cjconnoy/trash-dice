@@ -1782,19 +1782,19 @@ body.inline-game-over .roll-panel {
 }
 @keyframes dieRollIpadLite {
   0% {
-    transform: translate3d(0,0,0) rotate(0deg) scale(0.98);
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
   }
-  22% {
-    transform: translate3d(0,-3px,0) rotate(138deg) scale(1.04);
+  28% {
+    transform: translate3d(0,-3px,0) rotate(7deg) scale(1.035);
   }
-  48% {
-    transform: translate3d(0,1px,0) rotate(318deg) scale(0.985);
+  54% {
+    transform: translate3d(0,1px,0) rotate(-6deg) scale(0.995);
   }
-  74% {
-    transform: translate3d(0,-2px,0) rotate(498deg) scale(1.025);
+  78% {
+    transform: translate3d(0,-2px,0) rotate(4deg) scale(1.018);
   }
   100% {
-    transform: translate3d(0,0,0) rotate(720deg) scale(1);
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
   }
 }
 @keyframes dieIdleHeroGlint {
@@ -2810,19 +2810,33 @@ body.tablet-effects-lite .start-lurker-can {
   will-change: transform;
 }
 body.ipad-gameplay-performance:not([data-game-started="true"]) .start-lurker-can {
-  animation: none !important;
+  left: 50%;
+  animation: startCanLurkIpadSmooth 18s linear -2.16s infinite !important;
   will-change: transform;
 }
-body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after,
-body.ipad-gameplay-performance[data-game-started="true"] .title-hero-glint,
+body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after {
+  animation: retailLogoGlint 7.2s cubic-bezier(.16,.82,.18,1) 0.55s infinite !important;
+  will-change: background-position, opacity;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .title-wrap:not(.big) .title-hero-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .can-hero-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .can-rim-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .lid-edge-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .lid-inner-glint {
-  animation: none !important;
-  opacity: 0 !important;
   filter: none !important;
-  will-change: auto;
+  will-change: opacity, transform;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .can-hero-glint {
+  animation: canHeroGlintSweep 8.4s cubic-bezier(.16,.82,.18,1) 1.2s infinite !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .can-rim-glint {
+  animation: canRimGlintSweep 8.4s cubic-bezier(.16,.82,.18,1) 1.28s infinite !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .lid-edge-glint {
+  animation: lidHeroGlint 8.2s cubic-bezier(.16,.82,.18,1) 0.7s infinite !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .lid-inner-glint {
+  animation: lidInnerGlint 8.2s cubic-bezier(.16,.82,.18,1) 0.78s infinite !important;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .start-lurker-can,
 body.ipad-gameplay-performance[data-game-started="true"] .start-can-mouth,
@@ -2858,14 +2872,20 @@ body.ipad-gameplay-performance[data-game-started="true"] .payout-comet-trail {
 }
 body.ipad-gameplay-performance[data-game-started="true"] .board-scene.lid-weight-hit,
 body.ipad-gameplay-performance[data-game-started="true"] .board-scene.can-weight-hit,
-body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin),
-body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt),
 body.ipad-gameplay-performance[data-game-started="true"] .board-wrap.player-payout-lid-dance,
 body.ipad-gameplay-performance[data-game-started="true"] .board-wrap.inline-ending-lid-dance,
 body.ipad-gameplay-performance[data-game-started="true"] .trash-can.pour.player-payout-can-dance,
 body.ipad-gameplay-performance[data-game-started="true"] .trash-can.inline-ending-can-dance {
   animation: none !important;
   will-change: auto;
+}
+body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin) {
+  animation: lidIdleWobble 7.4s cubic-bezier(.16,.82,.18,1) infinite !important;
+  will-change: transform;
+}
+body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
+  animation: canIdleWobble 7.8s cubic-bezier(.16,.82,.18,1) 0.8s infinite !important;
+  will-change: transform;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage.active {
   animation: none !important;
@@ -2874,9 +2894,11 @@ body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ro
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ipad-rolling {
   animation: dieRollIpadLite 0.52s cubic-bezier(.18,.84,.16,1) both;
   box-shadow:
-    4px 5px 0 0 rgba(0,0,0,0.32),
-    0 7px 12px rgba(0,0,0,0.28),
+    3px 4px 0 0 rgba(0,0,0,0.28),
+    0 5px 8px rgba(0,0,0,0.22),
     inset 0 0 0 1px rgba(255,255,255,0.14);
+  backface-visibility: hidden;
+  contain: paint style;
   will-change: transform;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
@@ -5886,6 +5908,23 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     transform: translateX(-50%) translateY(4%) translateZ(0) rotate(-7deg) scale(0.92);
   }
 }
+@keyframes startCanLurkIpadSmooth {
+  0% {
+    transform: translate3d(calc(-50vw - 130px), 4%, 0) rotate(-8deg) scale(0.92);
+  }
+  24% {
+    transform: translate3d(calc(-50vw + 92px), -2%, 0) rotate(4deg) scale(1);
+  }
+  52% {
+    transform: translate3d(0, -6%, 0) rotate(-3deg) scale(1.04);
+  }
+  76% {
+    transform: translate3d(calc(50vw - 92px), -2%, 0) rotate(5deg) scale(1);
+  }
+  100% {
+    transform: translate3d(calc(50vw + 130px), 4%, 0) rotate(-7deg) scale(0.92);
+  }
+}
 @keyframes startCanChomp {
   0%, 22%, 100% {
     transform: translateY(0) rotate(0deg);
@@ -7738,40 +7777,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let slotDiceEls = [];
   let slotInfo = [];
   let titleCanMotionTimer = null;
-  let titleCanMotionStartedAt = 0;
-  const TITLE_CAN_LOOP_MS = 18000;
-  const TITLE_CAN_START_PHASE = 0.12;
-  const TITLE_CAN_TICK_MS = 90;
 
   function cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
   }
 
-  function updateTitleCanMotion() {
-    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || !startLurkerCan || !startOverlayEl || gameStarted || startOverlayEl.style.display === 'none') {
-      stopTitleCanMotion(false);
-      return;
-    }
-    const elapsed = performance.now() - titleCanMotionStartedAt;
-    const loopPosition = ((elapsed % TITLE_CAN_LOOP_MS) + TITLE_CAN_LOOP_MS) % TITLE_CAN_LOOP_MS;
-    const phase = loopPosition / TITLE_CAN_LOOP_MS;
-    const width = Math.max(360, window.innerWidth || document.documentElement.clientWidth || 768);
-    const travel = width + 260;
-    const forward = phase < 0.5;
-    const local = forward ? phase * 2 : (1 - phase) * 2;
-    const x = -travel / 2 + travel * local;
-    const bob = Math.sin(local * Math.PI) * -7;
-    const wobble = Math.sin(phase * Math.PI * 4) * 2.2;
-    const scale = 0.94 + Math.sin(local * Math.PI) * 0.06;
-    startLurkerCan.style.left = '50%';
-    startLurkerCan.style.transform = `translate3d(${x.toFixed(1)}px, ${bob.toFixed(1)}px, 0) rotate(${wobble.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
-  }
-
   function startTitleCanMotion() {
-    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || !startLurkerCan || titleCanMotionTimer !== null) return;
-    titleCanMotionStartedAt = performance.now() - TITLE_CAN_LOOP_MS * TITLE_CAN_START_PHASE;
-    updateTitleCanMotion();
-    titleCanMotionTimer = window.setInterval(updateTitleCanMotion, TITLE_CAN_TICK_MS);
+    // iPad title motion is CSS-owned so WebKit can keep it on the compositor.
+    if (IPAD_GAMEPLAY_PERFORMANCE_MODE) stopTitleCanMotion(true);
   }
 
   function stopTitleCanMotion(reset = true) {

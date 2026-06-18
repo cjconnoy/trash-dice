@@ -721,7 +721,7 @@ async function main() {
     assert(productionIpadInitial.state.fastPreview === false, `production-like iPad should not use fast-preview ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.tabletEffectsLite === true, `production-like iPad should use tablet effects lite ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.iPadGameplayPerformanceMode === true, `production-like iPad performance mode missing ${JSON.stringify(productionIpadInitial)}`);
-    assert(productionIpadInitial.canAnimationName === 'none', `production-like iPad title can should use JS body motion, not CSS keyframes ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.canAnimationName === 'startCanLurkIpadSmooth', `production-like iPad title can should use compositor CSS body motion ${JSON.stringify(productionIpadInitial)}`);
     const productionIpadTitleCanTravel = Math.abs(productionIpadInitial.canSecondLeft - productionIpadInitial.canFirstLeft);
     assert(productionIpadTitleCanTravel >= 16, `production-like iPad title can body motion appears stopped ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadTitleCanTravel <= 130, `production-like iPad title can body motion is too fast ${JSON.stringify(productionIpadInitial)}`);
@@ -744,6 +744,12 @@ async function main() {
               : ''
           })),
         heroLogoGlint: getComputedStyle(document.querySelector('#heroTitle .retail-logo-frame'), '::after').animationName,
+        canHeroGlint: getComputedStyle(document.querySelector('.can-hero-glint')).animationName,
+        canRimGlint: getComputedStyle(document.querySelector('.can-rim-glint')).animationName,
+        lidEdgeGlint: getComputedStyle(document.querySelector('.lid-edge-glint')).animationName,
+        lidInnerGlint: getComputedStyle(document.querySelector('.lid-inner-glint')).animationName,
+        lidIdle: getComputedStyle(document.getElementById('boardWrap')).animationName,
+        canIdle: getComputedStyle(document.getElementById('trashCan')).animationName,
         canFilter: getComputedStyle(document.getElementById('trashCan')).filter,
         rollStageGlowFilter: getComputedStyle(document.querySelector('.roll-die-stage'), '::before').filter
       };
@@ -753,9 +759,12 @@ async function main() {
     assert(productionIpadActive.state.timings.rollAnimationMs >= 480 && productionIpadActive.state.timings.rollAnimationMs <= 560, `production-like iPad roll should be visible without returning to the full path ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.state.timings.rollRevealHoldMs >= 100 && productionIpadActive.state.timings.rollRevealHoldMs <= 180, `production-like iPad reveal hold should be readable but short ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.state.timings.rollTravelToSlotMs === 0 && productionIpadActive.state.timings.rollTravelToTrashMs === 0, `production-like iPad should bypass roll travel ${JSON.stringify(productionIpadActive)}`);
-    assert(productionIpadActive.heroLogoGlint === 'none', `production-like iPad active glint should be paused ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.heroLogoGlint === 'retailLogoGlint', `production-like iPad active logo glint should stay alive ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.canHeroGlint === 'canHeroGlintSweep' && productionIpadActive.canRimGlint === 'canRimGlintSweep', `production-like iPad active can glints should stay alive ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.lidEdgeGlint === 'lidHeroGlint' && productionIpadActive.lidInnerGlint === 'lidInnerGlint', `production-like iPad active lid glints should stay alive ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.lidIdle === 'lidIdleWobble' && productionIpadActive.canIdle === 'canIdleWobble', `production-like iPad active can/lid idle motion should stay alive ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.canFilter === 'none', `production-like iPad can filter should be removed during gameplay ${JSON.stringify(productionIpadActive)}`);
-    assert(productionIpadActive.activeAnimationCount <= 3, `production-like iPad active game has too many running animations ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.activeAnimationCount <= 9, `production-like iPad active game has too many running animations ${JSON.stringify(productionIpadActive)}`);
 
     const productionIpadRollVisual = await evalValue(productionIpad, `new Promise(resolve => {
       window.TrashDiceQA.queueRolls([3]);
