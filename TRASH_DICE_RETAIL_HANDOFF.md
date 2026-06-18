@@ -39,7 +39,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desk
 
 Trash Dice HTML5 is now **BETA COMPLETE**.
 
-Current game repo HEAD:
+Current Retail candidate game-code commit:
 
 - `e4591e1 Prepare Trash Dice Retail candidate`
 
@@ -388,9 +388,9 @@ Hard rules:
 - After accepted edits run .\qa-ship-iteration.ps1.
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
-Current expected commits:
-- game repo: e4591e1 Prepare Trash Dice Retail candidate
-- studio-site: 10ef2f0 Mirror Trash Dice Retail candidate
+Current expected candidate commits:
+- game code: e4591e1 Prepare Trash Dice Retail candidate
+- studio-site mirror: 10ef2f0 Mirror Trash Dice Retail candidate
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented.
