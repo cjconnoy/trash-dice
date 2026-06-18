@@ -1784,11 +1784,17 @@ body.inline-game-over .roll-panel {
   0% {
     transform: translate3d(0,0,0) rotate(0deg) scale(0.98);
   }
-  55% {
-    transform: translate3d(0,-1px,0) rotate(176deg) scale(1.025);
+  22% {
+    transform: translate3d(0,-3px,0) rotate(138deg) scale(1.04);
+  }
+  48% {
+    transform: translate3d(0,1px,0) rotate(318deg) scale(0.985);
+  }
+  74% {
+    transform: translate3d(0,-2px,0) rotate(498deg) scale(1.025);
   }
   100% {
-    transform: translate3d(0,0,0) rotate(360deg) scale(1);
+    transform: translate3d(0,0,0) rotate(720deg) scale(1);
   }
 }
 @keyframes dieIdleHeroGlint {
@@ -2801,11 +2807,11 @@ body.tablet-effects-lite .start-lurker-can {
   animation-name: startCanLurkTabletPosition;
   filter: none;
   backface-visibility: hidden;
-  will-change: left, transform;
+  will-change: transform;
 }
 body.ipad-gameplay-performance:not([data-game-started="true"]) .start-lurker-can {
   animation: none !important;
-  will-change: left, transform;
+  will-change: transform;
 }
 body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after,
 body.ipad-gameplay-performance[data-game-started="true"] .title-hero-glint,
@@ -2862,14 +2868,16 @@ body.ipad-gameplay-performance[data-game-started="true"] .trash-can.inline-endin
   will-change: auto;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage.active {
-  animation-duration: 0.1s;
+  animation: none !important;
 }
-body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.rolling {
-  animation: dieRollIpadLite 0.18s cubic-bezier(.18,.84,.16,1) both;
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.rolling,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ipad-rolling {
+  animation: dieRollIpadLite 0.52s cubic-bezier(.18,.84,.16,1) both;
   box-shadow:
     4px 5px 0 0 rgba(0,0,0,0.32),
     0 7px 12px rgba(0,0,0,0.28),
     inset 0 0 0 1px rgba(255,255,255,0.14);
+  will-change: transform;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
   animation: none !important;
@@ -6944,21 +6952,21 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
-  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 80 : (FAST_PREVIEW_ENABLED ? 420 : 850);
-  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 10 : (FAST_PREVIEW_ENABLED ? 280 : 650);
+  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850);
+  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 280 : 650);
   const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
   const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 740;
-  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 340 : 950);
-  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
-  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 120 : (FAST_PREVIEW_ENABLED ? 180 : 650);
-  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 45 : (FAST_PREVIEW_ENABLED ? 90 : 140);
-  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 80 : (FAST_PREVIEW_ENABLED ? 160 : 250);
+  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 340 : 950);
+  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
+  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 180 : 650);
+  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140);
+  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 150 : (FAST_PREVIEW_ENABLED ? 160 : 250);
   const BETA_FIRST_ROLL_START_DELAY_MS = FAST_PREVIEW_ENABLED ? 150 : 360;
   const BETA_FIRST_ROLL_HOST_DELAY_MS = FAST_PREVIEW_ENABLED ? 160 : 280;
   const BETA_FIRST_ROLL_GUEST_DELAY_MS = FAST_PREVIEW_ENABLED ? 220 : 430;
   const BETA_FIRST_ROLL_TIE_RETRY_MS = FAST_PREVIEW_ENABLED ? 420 : 650;
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
-  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 130 : 500;
+  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500;
   const P0_AUTOPLAY_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720);
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   let forcedRolls = [];
@@ -7731,6 +7739,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let slotInfo = [];
   let titleCanMotionTimer = null;
   let titleCanMotionStartedAt = 0;
+  const TITLE_CAN_LOOP_MS = 18000;
+  const TITLE_CAN_START_PHASE = 0.12;
+  const TITLE_CAN_TICK_MS = 90;
 
   function cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
@@ -7741,25 +7752,26 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       stopTitleCanMotion(false);
       return;
     }
-    const elapsed = Date.now() - titleCanMotionStartedAt;
-    const duration = 3600;
-    const phase = (elapsed % duration) / duration;
+    const elapsed = performance.now() - titleCanMotionStartedAt;
+    const loopPosition = ((elapsed % TITLE_CAN_LOOP_MS) + TITLE_CAN_LOOP_MS) % TITLE_CAN_LOOP_MS;
+    const phase = loopPosition / TITLE_CAN_LOOP_MS;
     const width = Math.max(360, window.innerWidth || document.documentElement.clientWidth || 768);
+    const travel = width + 260;
     const forward = phase < 0.5;
     const local = forward ? phase * 2 : (1 - phase) * 2;
-    const x = -96 + (width + 192) * local;
+    const x = -travel / 2 + travel * local;
     const bob = Math.sin(local * Math.PI) * -7;
-    const wobble = Math.sin(phase * Math.PI * 4) * 2.4;
-    const scale = 0.92 + Math.sin(local * Math.PI) * 0.1;
-    startLurkerCan.style.left = `${Math.round(x)}px`;
-    startLurkerCan.style.transform = `translateX(-50%) translateY(${bob.toFixed(1)}%) translateZ(0) rotate(${wobble.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+    const wobble = Math.sin(phase * Math.PI * 4) * 2.2;
+    const scale = 0.94 + Math.sin(local * Math.PI) * 0.06;
+    startLurkerCan.style.left = '50%';
+    startLurkerCan.style.transform = `translate3d(${x.toFixed(1)}px, ${bob.toFixed(1)}px, 0) rotate(${wobble.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
   }
 
   function startTitleCanMotion() {
     if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || !startLurkerCan || titleCanMotionTimer !== null) return;
-    titleCanMotionStartedAt = Date.now();
+    titleCanMotionStartedAt = performance.now() - TITLE_CAN_LOOP_MS * TITLE_CAN_START_PHASE;
     updateTitleCanMotion();
-    titleCanMotionTimer = window.setInterval(updateTitleCanMotion, 50);
+    titleCanMotionTimer = window.setInterval(updateTitleCanMotion, TITLE_CAN_TICK_MS);
   }
 
   function stopTitleCanMotion(reset = true) {
@@ -10880,24 +10892,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     const value = chooseRollValue(current);
-    if (IPAD_GAMEPLAY_PERFORMANCE_MODE) {
-      const activeDie = getDie(current);
-      const activeStage = getDieStage(current);
-      if (activeStage) activeStage.classList.remove('active');
-      activeDie.className = 'die ' + colorClass(rollColor);
-      renderDie(value, current, rollColor);
-      Audio.rollResolve(value);
-      const idx = value - 1;
-      const taken = board[idx] !== null;
-      setMsg(`ROLLED ${value}`);
-      runLater(() => {
-        clearDie(current);
-        taken
-          ? handleTrash(value, idx, rollColor)
-          : handlePlace(value, idx, rollColor);
-      }, ROLL_REVEAL_HOLD_MS);
-      return;
-    }
 
     // Start tumble + spinning pip values
     const activeDie = getDie(current);
@@ -10907,7 +10901,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       void activeStage.offsetWidth;
       activeStage.classList.add('active');
     }
-    activeDie.className = 'die ' + colorClass(rollColor) + ' rolling';
+    activeDie.className = 'die ' + colorClass(rollColor) + (IPAD_GAMEPLAY_PERFORMANCE_MODE ? ' rolling ipad-rolling' : ' rolling');
     setPips(Math.floor(Math.random() * 6) + 1, current);
     const playRollAudio = () => Audio.rollLoop(ROLL_ANIMATION_MS);
     if (Audio.ready()) playRollAudio();
@@ -10934,6 +10928,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const taken = board[idx] !== null;
       setMsg(`ROLLED ${value}`);
       runLater(() => {
+        if (IPAD_GAMEPLAY_PERFORMANCE_MODE) {
+          clearDie(current);
+          taken
+            ? handleTrash(value, idx, rollColor)
+            : handlePlace(value, idx, rollColor);
+          return;
+        }
         taken
           ? travelRolledDieToTrash(current, rollColor, () => handleTrash(value, idx, rollColor))
           : travelRolledDieToSlot(current, rollColor, idx, () => handlePlace(value, idx, rollColor));
