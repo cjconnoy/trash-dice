@@ -9,7 +9,7 @@ Source lane for the Phase 1 instant-play digital companion.
 - No PWA: no manifest, install prompt, service worker, or home-screen flow.
 - No two-player: no room UI, room code flow, QR flow, or WebSocket connection.
 - Analytics: anonymous Umami play telemetry only. No login, email, account, cart, coupon, or purchase tracking.
-- Development badge: `BETA WIP - NOT LIVE` stays visible until final live release pass.
+- Public cleanup: Retail hides debug controls outside QA/review mode and no longer shows the `BETA WIP - NOT LIVE` badge.
 
 Required local gate:
 

@@ -737,7 +737,7 @@ body.quit-return-open .audio-mute-btn {
   touch-action: manipulation;
 }
 
-body[data-game-started="true"] .debug-p0-btn {
+body.debug-controls-enabled[data-game-started="true"] .debug-p0-btn {
   display: inline-flex;
 }
 
@@ -768,7 +768,7 @@ body.quit-return-open .debug-p0-btn {
   bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
-body[data-game-started="true"] .debug-outcome-controls {
+body.debug-controls-enabled[data-game-started="true"] .debug-outcome-controls {
   display: flex;
 }
 
@@ -5883,6 +5883,30 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   color: var(--text);
   opacity: 0.85;
 }
+.legacy-ipad-guidance {
+  display: none;
+  position: relative;
+  z-index: 9;
+  max-width: min(84vw, 390px);
+  margin: clamp(-0.3rem, -0.7vh, -0.08rem) auto 0;
+  padding: 0.42rem 0.62rem 0.38rem;
+  border: 1px solid rgba(15,95,50,0.26);
+  border-radius: 6px;
+  background: rgba(255,248,214,0.82);
+  color: rgba(15,62,37,0.86);
+  font-family: Fredoka, system-ui, sans-serif;
+  font-size: clamp(0.74rem, 2.1vw, 0.92rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: 0;
+  text-align: center;
+  box-shadow:
+    0 7px 18px rgba(55,64,20,0.13),
+    inset 0 1px 0 rgba(255,255,255,0.34);
+}
+body.legacy-ipad-performance:not([data-game-started="true"]) .legacy-ipad-guidance {
+  display: block;
+}
 .start-btn {
   position: absolute;
   inset: 0;
@@ -6623,7 +6647,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 </style>
 </head>
 <body>
-<div class="milestone-badge">BETA WIP - NOT LIVE</div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
 <button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Sound on">
   <svg class="audio-mute-icon audio-mute-icon-on" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -6937,6 +6960,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
   <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
+  <div class="legacy-ipad-guidance" id="legacyIpadGuidance">For the smoothest experience, play on iPhone, desktop, or a newer iPad.</div>
   <div class="title-legal">
     <span>&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
     <span class="title-studio-label">Digital companion by</span>
@@ -7074,6 +7098,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FAST_PREVIEW_REQUESTED = URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite');
   const DEV_CHEATS_ENABLED = false;
   const QA_HOOKS_ENABLED = QA_ENABLED || URL_OPTIONS.has('qa-hooks') || URL_HASH.includes('qa-hooks');
+  const DEBUG_CONTROLS_ENABLED = REVIEW_BUILD || QA_ENABLED || QA_HOOKS_ENABLED;
   const TABLET_REVIEW_SIZE = window.matchMedia('(min-width: 721px) and (max-width: 1180px) and (max-height: 1180px)').matches;
   const TABLET_EFFECTS_LITE = !FULL_FX_ENABLED && TABLET_REVIEW_SIZE && (MOBILE_REVIEW_DEVICE || navigator.maxTouchPoints > 0 || QA_ENABLED);
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
@@ -7102,6 +7127,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.classList.toggle('legacy-ipad-performance', LEGACY_IPAD_PERFORMANCE_MODE);
+  document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
   document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
   const ROLL_ANIMATION_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 260 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850));
@@ -10605,6 +10631,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function updateP0ReviewControl() {
     document.body.classList.toggle('review-build', REVIEW_BUILD);
+    document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
     document.body.classList.toggle('p0-mode', p0ReviewMode);
     if (devCheatBar) devCheatBar.hidden = !DEV_CHEATS_ENABLED;
     if (devP0Btn) {
@@ -11863,6 +11890,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           p0Autoplay,
           qaHooks: QA_HOOKS_ENABLED,
           reviewBuild: REVIEW_BUILD,
+          debugControlsEnabled: DEBUG_CONTROLS_ENABLED,
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
           deviceProfile: { ...DEVICE_PROFILE },
           fastPreview: FAST_PREVIEW_ENABLED,

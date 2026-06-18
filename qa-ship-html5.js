@@ -245,6 +245,17 @@ async function main() {
         quitSheetHidden: !!(document.getElementById('quitReturnSheet') && document.getElementById('quitReturnSheet').hidden),
         startText: (document.getElementById('startBtn') || {}).textContent || '',
         badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
+        betaWipCopyPresent: document.body.textContent.includes('BETA WIP') || document.body.textContent.includes('NOT LIVE'),
+        legacyIpadGuidance: (() => {
+          const note = document.getElementById('legacyIpadGuidance');
+          if (!note) return null;
+          const r = note.getBoundingClientRect();
+          return {
+            text: note.textContent.trim(),
+            visible: getComputedStyle(note).display !== 'none' && r.width > 0 && r.height > 0,
+            rect: { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height }
+          };
+        })(),
         badgeRect: (() => {
           const badge = document.querySelector('.milestone-badge');
           if (!badge) return null;
@@ -365,7 +376,8 @@ async function main() {
       }
       assert(initial.quitSheetHidden === true, `${viewport.name}: quit fallback sheet should start hidden`);
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
-      assert(initial.badgeText.trim() === 'BETA WIP - NOT LIVE', `${viewport.name}: dev badge missing`);
+      assert(initial.badgeText.trim() === '' && initial.betaWipCopyPresent === false, `${viewport.name}: beta WIP badge/copy should not be visible in retail ${JSON.stringify(initial)}`);
+      assert(initial.legacyIpadGuidance && initial.legacyIpadGuidance.visible === false, `${viewport.name}: legacy iPad guidance should stay hidden outside legacy profile ${JSON.stringify(initial.legacyIpadGuidance)}`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -411,12 +423,7 @@ async function main() {
       assert(initial.titleLayout.odgLogoSrc.includes('assets/brand/odg-logo-charcoal.png') && initial.titleLayout.odgLogoAlt === 'OneDayGames', `${viewport.name}: title ODG wordmark missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 70 : 72) && initial.titleLayout.odgRect.height >= 26, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
       assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
-      if (initial.badgeRect) {
-        const odg = initial.titleLayout.odgRect;
-        const badge = initial.badgeRect;
-        const clearsBadge = odg.bottom <= badge.top - 4 || odg.left >= badge.right + 4 || odg.right <= badge.left - 4 || odg.top >= badge.bottom + 4;
-        assert(clearsBadge, `${viewport.name}: title ODG wordmark overlaps beta badge ${JSON.stringify({ odg, badge })}`);
-      }
+      assert(initial.badgeRect === null, `${viewport.name}: beta badge should be removed from retail title ${JSON.stringify(initial.badgeRect)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
@@ -491,7 +498,7 @@ async function main() {
         const br = p0Button.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
-        const gr = badge.getBoundingClientRect();
+        const gr = badge ? badge.getBoundingClientRect() : null;
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
@@ -502,7 +509,7 @@ async function main() {
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
           debugLowerRight: br.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.48 && or.top >= window.innerHeight * 0.48,
-          badgeClearsQuit: gr.bottom <= qr.top - 4 || gr.left >= qr.right + 4 || gr.right <= qr.left - 4 || gr.top >= qr.bottom + 4,
+          badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
@@ -510,7 +517,7 @@ async function main() {
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
-          badgeRect: { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height },
+          badgeRect: gr ? { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height } : null,
           viewport: { width: window.innerWidth, height: window.innerHeight },
           activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
           heroLogoGlint: (() => {
@@ -536,7 +543,7 @@ async function main() {
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.debugClearsQuit, `${viewport.name}: debug controls overlap Done ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.debugLowerRight, `${viewport.name}: debug controls are not in the lower-right tool corner ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.badgeClearsQuit, `${viewport.name}: beta badge overlaps quit button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.badgePresent === false, `${viewport.name}: beta badge should stay absent in active retail game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.bodyFits, `${viewport.name}: active game creates horizontal overflow ${JSON.stringify(activeLayout)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'none', `${viewport.name}: tablet active game logo glint should be paused for performance ${JSON.stringify(activeLayout)}`);
@@ -820,14 +827,21 @@ async function main() {
     await waitEval(legacyIpad, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'legacy iPad QA hooks');
     const legacyIpadInitialStart = await evalValue(legacyIpad, `(() => {
       const can = document.querySelector('.start-lurker-can');
+      const note = document.getElementById('legacyIpadGuidance');
       const rect = can ? can.getBoundingClientRect() : null;
+      const noteRect = note ? note.getBoundingClientRect() : null;
       return {
         state: window.TrashDiceQA.state(),
         bodyClasses: document.body.className,
         deviceProfile: document.body.dataset.deviceProfile || '',
         canAnimationName: can ? getComputedStyle(can).animationName : '',
         canAnimationDuration: can ? getComputedStyle(can).animationDuration : '',
-        canLeft: rect ? rect.left : null
+        canLeft: rect ? rect.left : null,
+        guidance: note ? {
+          text: note.textContent.trim(),
+          visible: getComputedStyle(note).display !== 'none' && noteRect.width > 0 && noteRect.height > 0,
+          rect: { top: noteRect.top, right: noteRect.right, bottom: noteRect.bottom, left: noteRect.left, width: noteRect.width, height: noteRect.height }
+        } : null
       };
     })()`);
     await sleep(650);
@@ -842,6 +856,8 @@ async function main() {
     assert(legacyIpadInitialStart.state.deviceProfile.isNineSevenIpadSize === true, `legacy iPad detector should identify 9.7-inch size class ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.state.legacyIpadPerformanceMode === true, `legacy iPad performance mode missing ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.deviceProfile === 'legacy-ipad' && legacyIpadInitialStart.bodyClasses.includes('legacy-ipad-performance'), `legacy iPad body profile missing ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.guidance && legacyIpadInitialStart.guidance.visible === true, `legacy iPad guidance should be visible ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.guidance.text === 'For the smoothest experience, play on iPhone, desktop, or a newer iPad.', `legacy iPad guidance copy changed ${JSON.stringify(legacyIpadInitialStart.guidance)}`);
     assert(legacyIpadInitialStart.canAnimationName === 'startCanLurkIpadSmooth' && legacyIpadInitialStart.canAnimationDuration === '20s', `legacy iPad title can should use slower compositor motion ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadTitleCanTravel >= 14 && legacyIpadTitleCanTravel <= 120, `legacy iPad title can motion should be smooth and not frantic ${JSON.stringify({ legacyIpadInitialStart, legacyIpadInitialEnd, legacyIpadTitleCanTravel })}`);
 
@@ -921,6 +937,37 @@ async function main() {
     assert(roomState.twoPlayerButton === false, 'room probe: 2-player button present');
     assert(roomState.multiplayerActiveClass === false, 'room probe: multiplayer class should stay inactive');
     assert(roomState.startText.trim() === EXPECTED_START_CTA, 'room probe: start CTA changed');
+
+    const publicProbe = await openPage(`${productionLikeBaseUrl}?source=bigdiscoveries`, viewports[0]);
+    await evalValue(publicProbe, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
+    const publicInitial = await evalValue(publicProbe, `(() => ({
+      badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
+      betaWipCopyPresent: document.body.textContent.includes('BETA WIP') || document.body.textContent.includes('NOT LIVE'),
+      debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
+      qaHooksPresent: !!window.TrashDiceQA,
+      guidanceVisible: (() => {
+        const note = document.getElementById('legacyIpadGuidance');
+        if (!note) return false;
+        const r = note.getBoundingClientRect();
+        return getComputedStyle(note).display !== 'none' && r.width > 0 && r.height > 0;
+      })()
+    }))()`);
+    assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.p0ButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
+    await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(publicProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'public probe game start');
+    const publicActive = await evalValue(publicProbe, `(() => ({
+      debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
+      gameStarted: document.body.dataset.gameStarted === 'true'
+    }))()`);
+    assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.p0ButtonHidden === true && publicActive.outcomeButtonsHidden === true, `public probe: debug controls should stay hidden during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
