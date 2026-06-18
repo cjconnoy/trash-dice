@@ -1797,6 +1797,17 @@ body.inline-game-over .roll-panel {
     transform: translate3d(0,0,0) rotate(0deg) scale(1);
   }
 }
+@keyframes dieRollLegacyIpad {
+  0% {
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+  52% {
+    transform: translate3d(0,-2px,0) rotate(3deg) scale(1.025);
+  }
+  100% {
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+}
 @keyframes dieIdleHeroGlint {
   0%, 68% {
     opacity: 0;
@@ -2625,6 +2636,17 @@ body.mobile-roll-smoothing .board-wrap.inline-ending-lid-dance {
     transform: translateX(var(--lid-offset)) rotate(-0.5deg) translateY(0) scale(1.004);
   }
 }
+@keyframes lidIdleWobbleLegacy {
+  0%, 58%, 100% {
+    transform: translateX(var(--lid-offset)) rotate(0deg) translateY(0) scale(1);
+  }
+  66% {
+    transform: translateX(var(--lid-offset)) rotate(-0.8deg) translateY(-1px) scale(1.004);
+  }
+  76% {
+    transform: translateX(var(--lid-offset)) rotate(0.6deg) translateY(0) scale(1);
+  }
+}
 .trash-can {
   position: absolute;
   left: calc(50% + var(--can-offset));
@@ -2814,9 +2836,16 @@ body.ipad-gameplay-performance:not([data-game-started="true"]) .start-lurker-can
   animation: startCanLurkIpadSmooth 18s linear -2.16s infinite !important;
   will-change: transform;
 }
+body.legacy-ipad-performance:not([data-game-started="true"]) .start-lurker-can {
+  animation-duration: 20s !important;
+  animation-delay: -2.4s !important;
+}
 body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after {
   animation: retailLogoGlint 7.2s cubic-bezier(.16,.82,.18,1) 0.55s infinite !important;
   will-change: background-position, opacity;
+}
+body.legacy-ipad-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after {
+  animation-duration: 10.8s !important;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .title-wrap:not(.big) .title-hero-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .can-hero-glint,
@@ -2837,6 +2866,14 @@ body.ipad-gameplay-performance[data-game-started="true"] .lid-edge-glint {
 }
 body.ipad-gameplay-performance[data-game-started="true"] .lid-inner-glint {
   animation: lidInnerGlint 8.2s cubic-bezier(.16,.82,.18,1) 0.78s infinite !important;
+}
+body.legacy-ipad-performance[data-game-started="true"] .can-hero-glint,
+body.legacy-ipad-performance[data-game-started="true"] .can-rim-glint {
+  animation-duration: 11.2s !important;
+}
+body.legacy-ipad-performance[data-game-started="true"] .lid-edge-glint,
+body.legacy-ipad-performance[data-game-started="true"] .lid-inner-glint {
+  animation-duration: 11s !important;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .start-lurker-can,
 body.ipad-gameplay-performance[data-game-started="true"] .start-can-mouth,
@@ -2887,6 +2924,14 @@ body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .tras
   animation: canIdleWobble 7.8s cubic-bezier(.16,.82,.18,1) 0.8s infinite !important;
   will-change: transform;
 }
+body.legacy-ipad-performance[data-game-started="true"].player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin) {
+  animation-name: lidIdleWobbleLegacy !important;
+  animation-duration: 9.6s !important;
+}
+body.legacy-ipad-performance[data-game-started="true"].player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
+  animation-name: canIdleWobbleLegacy !important;
+  animation-duration: 10.2s !important;
+}
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage.active {
   animation: none !important;
 }
@@ -2900,6 +2945,14 @@ body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ip
   backface-visibility: hidden;
   contain: paint style;
   will-change: transform;
+}
+body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.rolling,
+body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.ipad-rolling {
+  animation: dieRollLegacyIpad 0.26s cubic-bezier(.12,.82,.18,1) both;
+  box-shadow:
+    2px 3px 0 0 rgba(0,0,0,0.24),
+    0 4px 6px rgba(0,0,0,0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.12);
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
   animation: none !important;
@@ -3109,6 +3162,17 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
   }
   79% {
     transform: translate(-50%, -51%) rotate(1.2deg) scale(1.006);
+  }
+}
+@keyframes canIdleWobbleLegacy {
+  0%, 58%, 100% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+  66% {
+    transform: translate(-50%, -50.7%) rotate(0.9deg) scale(1.004,0.998);
+  }
+  76% {
+    transform: translate(-50%, -49.7%) rotate(-0.6deg) scale(1);
   }
 }
 @keyframes canVictoryErupt {
@@ -6943,7 +7007,53 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const PWA_ENABLED = false;
   const PUBLIC_BETA_WS_URL = '';
   const LOCAL_PREVIEW = ['127.0.0.1', 'localhost', '::1'].includes(window.location.hostname);
-  const MOBILE_REVIEW_DEVICE = /Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent)
+  function parseAppleOsMajor(userAgent) {
+    const match = String(userAgent || '').match(/\b(?:CPU(?: iPhone)? OS|OS)\s+(\d+)[._]/i);
+    if (match) return Number(match[1]) || 0;
+    const versionMatch = String(userAgent || '').match(/\bVersion\/(\d+)(?:[._]\d+)?/i);
+    return versionMatch ? Number(versionMatch[1]) || 0 : 0;
+  }
+  function detectDeviceProfile() {
+    const userAgent = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const maxTouchPoints = Number(navigator.maxTouchPoints || 0);
+    const dpr = Number(window.devicePixelRatio || 1);
+    const screenShort = Math.min(screen.width || window.innerWidth, screen.height || window.innerHeight);
+    const screenLong = Math.max(screen.width || window.innerWidth, screen.height || window.innerHeight);
+    const viewportShort = Math.min(window.innerWidth || screenShort, window.innerHeight || screenLong);
+    const viewportLong = Math.max(window.innerWidth || screenShort, window.innerHeight || screenLong);
+    const appleOsMajor = parseAppleOsMajor(userAgent);
+    const forceLegacyIpad = URL_OPTIONS.has('legacy-ipad') || URL_OPTIONS.get('device') === 'legacy-ipad';
+    const isAppleWebKit = /AppleWebKit/i.test(userAgent);
+    const isIosChromeOrFirefox = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+    const isIpadUa = /\biPad\b/i.test(userAgent);
+    const isMacTouchIpad = platform === 'MacIntel' && maxTouchPoints > 1 && isAppleWebKit && !isIosChromeOrFirefox;
+    const isIpad = forceLegacyIpad || isIpadUa || isMacTouchIpad;
+    const isIphone = /\biPhone|\biPod/i.test(userAgent) && !isIpad;
+    const isNineSevenIpadSize =
+      (screenShort >= 760 && screenShort <= 790 && screenLong >= 1000 && screenLong <= 1040 && dpr >= 1.9 && dpr <= 2.1) ||
+      (viewportShort >= 720 && viewportShort <= 790 && viewportLong >= 880 && viewportLong <= 1040 && dpr >= 1.9 && dpr <= 2.1);
+    const legacyOsClass = appleOsMajor > 0 && appleOsMajor <= 16;
+    const legacyIpadPerformance = forceLegacyIpad || (isIpad && isNineSevenIpadSize && (legacyOsClass || dpr <= 2));
+    return {
+      userAgent,
+      platform,
+      maxTouchPoints,
+      dpr,
+      screenShort,
+      screenLong,
+      viewportShort,
+      viewportLong,
+      appleOsMajor,
+      isIpad,
+      isIphone,
+      isNineSevenIpadSize,
+      legacyIpadPerformance,
+      bucket: legacyIpadPerformance ? 'legacy-ipad' : (isIpad ? 'ipad' : (isIphone ? 'iphone' : 'desktop'))
+    };
+  }
+  const DEVICE_PROFILE = detectDeviceProfile();
+  const MOBILE_REVIEW_DEVICE = DEVICE_PROFILE.isIpad || DEVICE_PROFILE.isIphone || /Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent)
     || ('ontouchstart' in window && window.innerWidth < 900);
   const LAN_PREVIEW = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(window.location.hostname);
   const REVIEW_BUILD = !MOBILE_REVIEW_DEVICE && (
@@ -6969,6 +7079,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720 || TABLET_EFFECTS_LITE;
   const IPAD_GAMEPLAY_PERFORMANCE_MODE = !FULL_FX_ENABLED && TABLET_EFFECTS_LITE && !FAST_PREVIEW_ENABLED;
+  const LEGACY_IPAD_PERFORMANCE_MODE = IPAD_GAMEPLAY_PERFORMANCE_MODE && DEVICE_PROFILE.legacyIpadPerformance;
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
@@ -6990,23 +7101,25 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
+  document.body.classList.toggle('legacy-ipad-performance', LEGACY_IPAD_PERFORMANCE_MODE);
+  document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
-  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850);
-  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 280 : 650);
+  const ROLL_ANIMATION_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 260 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850));
+  const ROLL_REVEAL_HOLD_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 80 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 280 : 650));
   const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
   const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 740;
-  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 340 : 950);
-  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
-  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 180 : 650);
-  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140);
-  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 150 : (FAST_PREVIEW_ENABLED ? 160 : 250);
+  const TURN_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 340 : 950));
+  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 280 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620));
+  const CPU_START_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 180 : 650));
+  const PLAYER_TO_CPU_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 70 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140));
+  const CPU_TO_PLAYER_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 120 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 150 : (FAST_PREVIEW_ENABLED ? 160 : 250));
   const BETA_FIRST_ROLL_START_DELAY_MS = FAST_PREVIEW_ENABLED ? 150 : 360;
   const BETA_FIRST_ROLL_HOST_DELAY_MS = FAST_PREVIEW_ENABLED ? 160 : 280;
   const BETA_FIRST_ROLL_GUEST_DELAY_MS = FAST_PREVIEW_ENABLED ? 220 : 430;
   const BETA_FIRST_ROLL_TIE_RETRY_MS = FAST_PREVIEW_ENABLED ? 420 : 650;
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
-  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500;
-  const P0_AUTOPLAY_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720);
+  const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
+  const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   let forcedRolls = [];
   let betaSocket = null;
@@ -11751,9 +11864,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           qaHooks: QA_HOOKS_ENABLED,
           reviewBuild: REVIEW_BUILD,
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
+          deviceProfile: { ...DEVICE_PROFILE },
           fastPreview: FAST_PREVIEW_ENABLED,
           tabletEffectsLite: TABLET_EFFECTS_LITE,
           iPadGameplayPerformanceMode: IPAD_GAMEPLAY_PERFORMANCE_MODE,
+          legacyIpadPerformanceMode: LEGACY_IPAD_PERFORMANCE_MODE,
           timings: {
             rollAnimationMs: ROLL_ANIMATION_MS,
             rollRevealHoldMs: ROLL_REVEAL_HOLD_MS,

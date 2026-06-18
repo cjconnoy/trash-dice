@@ -11,6 +11,7 @@ const appPort = 5310 + Math.floor(Math.random() * 600);
 const debugPort = 12600 + Math.floor(Math.random() * 700);
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'trash-dice-ship-html5-'));
 const EXPECTED_START_CTA = 'TAP TO START';
+const IPAD_OS16_USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 16_7_16 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1';
 const forbiddenRequests = [
   'manifest.webmanifest',
   'sw.js',
@@ -159,6 +160,12 @@ async function main() {
       await cdp('Page.enable');
       await cdp('Runtime.enable');
       await cdp('Network.enable');
+      if (viewport.userAgent) {
+        await cdp('Network.setUserAgentOverride', {
+          userAgent: viewport.userAgent,
+          platform: viewport.platform || ''
+        });
+      }
       await cdp('Emulation.setDeviceMetricsOverride', viewport);
       if (viewport.mobile) await cdp('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
       await cdp('Page.navigate', { url });
@@ -721,6 +728,7 @@ async function main() {
     assert(productionIpadInitial.state.fastPreview === false, `production-like iPad should not use fast-preview ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.tabletEffectsLite === true, `production-like iPad should use tablet effects lite ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.iPadGameplayPerformanceMode === true, `production-like iPad performance mode missing ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.state.legacyIpadPerformanceMode === false, `default production-like iPad probe should not force legacy mode ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.canAnimationName === 'startCanLurkIpadSmooth', `production-like iPad title can should use compositor CSS body motion ${JSON.stringify(productionIpadInitial)}`);
     const productionIpadTitleCanTravel = Math.abs(productionIpadInitial.canSecondLeft - productionIpadInitial.canFirstLeft);
     assert(productionIpadTitleCanTravel >= 16, `production-like iPad title can body motion appears stopped ${JSON.stringify(productionIpadInitial)}`);
@@ -799,6 +807,106 @@ async function main() {
         totalMs: productionIpadHandoff.totalMs,
         handoffMs: productionIpadHandoff.handoffMs,
         expectedHandoffMs: productionIpadHandoff.expectedHandoffMs
+      }
+    });
+
+    const legacyIpadViewport = {
+      ...productionIpadViewport,
+      name: 'ipad-pro-9-7-ios16',
+      userAgent: IPAD_OS16_USER_AGENT,
+      platform: 'iPad'
+    };
+    const legacyIpad = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1`, legacyIpadViewport);
+    await waitEval(legacyIpad, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'legacy iPad QA hooks');
+    const legacyIpadInitialStart = await evalValue(legacyIpad, `(() => {
+      const can = document.querySelector('.start-lurker-can');
+      const rect = can ? can.getBoundingClientRect() : null;
+      return {
+        state: window.TrashDiceQA.state(),
+        bodyClasses: document.body.className,
+        deviceProfile: document.body.dataset.deviceProfile || '',
+        canAnimationName: can ? getComputedStyle(can).animationName : '',
+        canAnimationDuration: can ? getComputedStyle(can).animationDuration : '',
+        canLeft: rect ? rect.left : null
+      };
+    })()`);
+    await sleep(650);
+    const legacyIpadInitialEnd = await evalValue(legacyIpad, `(() => {
+      const can = document.querySelector('.start-lurker-can');
+      const rect = can ? can.getBoundingClientRect() : null;
+      return { canLeft: rect ? rect.left : null };
+    })()`);
+    const legacyIpadTitleCanTravel = Math.abs(legacyIpadInitialEnd.canLeft - legacyIpadInitialStart.canLeft);
+    assert(legacyIpadInitialStart.state.deviceProfile.isIpad === true, `legacy iPad detector should identify iPad ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.state.deviceProfile.appleOsMajor === 16, `legacy iPad detector should read iPadOS 16 ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.state.deviceProfile.isNineSevenIpadSize === true, `legacy iPad detector should identify 9.7-inch size class ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.state.legacyIpadPerformanceMode === true, `legacy iPad performance mode missing ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.deviceProfile === 'legacy-ipad' && legacyIpadInitialStart.bodyClasses.includes('legacy-ipad-performance'), `legacy iPad body profile missing ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.canAnimationName === 'startCanLurkIpadSmooth' && legacyIpadInitialStart.canAnimationDuration === '20s', `legacy iPad title can should use slower compositor motion ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadTitleCanTravel >= 14 && legacyIpadTitleCanTravel <= 120, `legacy iPad title can motion should be smooth and not frantic ${JSON.stringify({ legacyIpadInitialStart, legacyIpadInitialEnd, legacyIpadTitleCanTravel })}`);
+
+    await evalValue(legacyIpad, `document.getElementById('startBtn').click(); true`);
+    await waitEval(legacyIpad, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'legacy iPad game start');
+    await sleep(400);
+    const legacyIpadActive = await evalValue(legacyIpad, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        state,
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
+        heroLogoGlint: getComputedStyle(document.querySelector('#heroTitle .retail-logo-frame'), '::after').animationName,
+        heroLogoGlintDuration: getComputedStyle(document.querySelector('#heroTitle .retail-logo-frame'), '::after').animationDuration,
+        canHeroGlint: getComputedStyle(document.querySelector('.can-hero-glint')).animationName,
+        canHeroGlintDuration: getComputedStyle(document.querySelector('.can-hero-glint')).animationDuration,
+        lidEdgeGlint: getComputedStyle(document.querySelector('.lid-edge-glint')).animationName,
+        lidEdgeGlintDuration: getComputedStyle(document.querySelector('.lid-edge-glint')).animationDuration,
+        lidIdle: getComputedStyle(document.getElementById('boardWrap')).animationName,
+        canIdle: getComputedStyle(document.getElementById('trashCan')).animationName,
+        canFilter: getComputedStyle(document.getElementById('trashCan')).filter
+      };
+    })()`);
+    assert(legacyIpadActive.state.timings.rollAnimationMs === 260 && legacyIpadActive.state.timings.rollRevealHoldMs === 80, `legacy iPad should use the stricter roll timings ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.heroLogoGlint === 'retailLogoGlint' && legacyIpadActive.heroLogoGlintDuration === '10.8s', `legacy iPad logo glint should stay alive but slow ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.canHeroGlint === 'canHeroGlintSweep' && legacyIpadActive.canHeroGlintDuration === '11.2s', `legacy iPad can glint should stay alive but slow ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.lidEdgeGlint === 'lidHeroGlint' && legacyIpadActive.lidEdgeGlintDuration === '11s', `legacy iPad lid glint should stay alive but slow ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.lidIdle === 'lidIdleWobbleLegacy' && legacyIpadActive.canIdle === 'canIdleWobbleLegacy', `legacy iPad should use tiny can/lid idle motion ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.canFilter === 'none', `legacy iPad can filter should stay removed ${JSON.stringify(legacyIpadActive)}`);
+    assert(legacyIpadActive.activeAnimationCount <= 9, `legacy iPad active game has too many running animations ${JSON.stringify(legacyIpadActive)}`);
+
+    const legacyIpadRollVisual = await evalValue(legacyIpad, `new Promise(resolve => {
+      window.TrashDiceQA.queueRolls([4]);
+      document.getElementById('rollBtn').click();
+      window.setTimeout(() => {
+        const die = document.getElementById('p1Die');
+        const stage = document.getElementById('p1DieStage');
+        const rect = die.getBoundingClientRect();
+        const style = getComputedStyle(die);
+        resolve({
+          className: die.className,
+          stageClass: stage.className,
+          visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
+          animations: die.getAnimations().map(animation => ({
+            name: animation.animationName || '',
+            duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
+          }))
+        });
+      }, 120);
+    })`);
+    assert(legacyIpadRollVisual.visible === true, `legacy iPad hero die should remain visible during snap-roll ${JSON.stringify(legacyIpadRollVisual)}`);
+    assert(legacyIpadRollVisual.className.includes('ipad-rolling') && legacyIpadRollVisual.animations.some(animation => animation.name === 'dieRollLegacyIpad'), `legacy iPad roll animation should use snap-roll profile ${JSON.stringify(legacyIpadRollVisual)}`);
+
+    const legacyIpadHandoff = await evalValue(legacyIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
+    assert(legacyIpadHandoff.expectedHandoffMs <= 130, `legacy iPad CPU handoff constant is too slow ${JSON.stringify(legacyIpadHandoff)}`);
+    assert(legacyIpadHandoff.totalMs <= 900, `legacy iPad roll-to-ready path is too slow ${JSON.stringify(legacyIpadHandoff)}`);
+    reports.push({
+      viewport: 'ipad-pro-9-7-ios16-production-like',
+      status: 'ok',
+      deviceProfile: legacyIpadActive.state.deviceProfile,
+      timings: legacyIpadActive.state.timings,
+      rollVisual: legacyIpadRollVisual,
+      cpuHandoff: {
+        totalMs: legacyIpadHandoff.totalMs,
+        handoffMs: legacyIpadHandoff.handoffMs,
+        expectedHandoffMs: legacyIpadHandoff.expectedHandoffMs
       }
     });
 
