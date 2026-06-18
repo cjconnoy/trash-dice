@@ -17,6 +17,7 @@ cd C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice
 Read these first:
 
 - `TRASH_DICE_RETAIL_HANDOFF.md`
+- `TRASH_DICE_RETAIL_APPROVAL_PACKET.md`
 - `PROJECT_NOTES.md`
 - `CJ_REVIEW_WORKFLOW.md`
 - `ship-html5/README.md`
@@ -40,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current game repo HEAD:
 
-- `7b86b39 Add legacy iPad performance profile`
+- `e4591e1 Prepare Trash Dice Retail candidate`
 
 Current studio-site HEAD:
 
-- `d4b634b Mirror legacy iPad performance profile`
+- `10ef2f0 Mirror Trash Dice Retail candidate`
 
 Current canonical route:
 
@@ -59,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-18T16:17:36.8961242-07:00`
+- Timestamp: `2026-06-18T16:50:41.4717100-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -82,6 +83,8 @@ The accepted ship lane is:
 iPhone and desktop are accepted as good to go.
 
 Legacy iPad is accepted as a hardware-limit risk, not an open Beta blocker. The specific reported device was an iPad Pro 9.7-inch on iPadOS 16.7.16. The game detects that class as `legacy-ipad` and uses the latest legacy performance profile, but real-device Safari still looked janky to CJ. Do not spend the Retail session chasing tiny animation patches unless CJ explicitly reopens the issue. The retail fix is honest hardware guidance plus a final live-readiness pass.
+
+Retail approval is currently pending. The protected-review candidate is prepared and pushed, but the live flip must not happen until CJ confirms retail approval is locked. Use `TRASH_DICE_RETAIL_APPROVAL_PACKET.md` for the current review evidence packet.
 
 ## Non-Negotiable Alpha Rule
 
@@ -354,16 +357,13 @@ The Retail session is for final live-readiness and launch execution.
 
 ## Recommended First Moves For Retail
 
-1. Implement the `legacy-ipad` title-screen guidance note.
-2. Hide or remove public debug controls while preserving automated QA hooks.
-3. Remove or suppress the `BETA WIP - NOT LIVE` badge.
-4. Run `.\qa-ship-iteration.ps1`.
-5. Verify Alpha diffs are empty in both repos.
-6. Commit and push scoped game repo changes.
-7. Mirror/push studio-site if route files changed.
-8. Run the route-contract guard and capture the exact timestamp.
-9. Flip `/trash-dice/play/` from protected review to public live only after the final public-byte checks pass.
-10. Post release comms only after route and byte truth are verified.
+1. Keep `/trash-dice/play/` protected-review while retail approval is pending.
+2. Use `TRASH_DICE_RETAIL_APPROVAL_PACKET.md` as the current approval packet.
+3. Refresh `.\qa-ship-iteration.ps1` before any new approval review if code or mirrored route files change.
+4. Verify Alpha diffs are empty in both repos before any new handoff or launch action.
+5. Run the route-contract guard before any review handoff and capture the exact timestamp.
+6. After CJ confirms approval is locked, flip `/trash-dice/play/` from protected review to public live only after final public-byte checks pass.
+7. Post release comms only after public route and byte truth are verified.
 
 ## Paste This Into The New Session
 
@@ -372,6 +372,7 @@ This is Trash Dice Retail. Beta is complete.
 
 Start by reading:
 C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice\TRASH_DICE_RETAIL_HANDOFF.md
+C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice\TRASH_DICE_RETAIL_APPROVAL_PACKET.md
 
 Then read PROJECT_NOTES.md, CJ_REVIEW_WORKFLOW.md, ship-html5/README.md, ALPHA_COMPLETE_LINKS.md, and BETA_ENTERPRISE_QUALITY_PROTOCOL.md.
 
@@ -388,13 +389,13 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected commits:
-- game repo: 7b86b39 Add legacy iPad performance profile
-- studio-site: d4b634b Mirror legacy iPad performance profile
+- game repo: e4591e1 Prepare Trash Dice Retail candidate
+- studio-site: 10ef2f0 Mirror Trash Dice Retail candidate
 
-First Retail moves:
-1. Add legacy-iPad-only smooth-experience copy.
-2. Remove/suppress BETA WIP public badge.
-3. Hide/remove public debug controls while preserving QA hooks.
-4. Run QA, Alpha diffs, and route contracts.
-5. Flip /trash-dice/play/ from protected review to public live only after exact public bytes verify.
+Current Retail state:
+1. Legacy-iPad-only smooth-experience copy is implemented.
+2. BETA WIP public badge is removed.
+3. Public debug controls are hidden while QA hooks remain available.
+4. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+5. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```
