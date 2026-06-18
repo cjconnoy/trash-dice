@@ -1780,6 +1780,17 @@ body.inline-game-over .roll-panel {
     transform: translate3d(0,0,0) rotate(1200deg) scale(1);
   }
 }
+@keyframes dieRollIpadLite {
+  0% {
+    transform: translate3d(0,0,0) rotate(0deg) scale(0.98);
+  }
+  55% {
+    transform: translate3d(0,-1px,0) rotate(176deg) scale(1.025);
+  }
+  100% {
+    transform: translate3d(0,0,0) rotate(360deg) scale(1);
+  }
+}
 @keyframes dieIdleHeroGlint {
   0%, 68% {
     opacity: 0;
@@ -2786,6 +2797,85 @@ body.tablet-effects-lite .roll-die-stage .die.roll-resolved::after {
   animation: none !important;
   opacity: 0;
 }
+body.tablet-effects-lite .start-lurker-can {
+  animation-name: startCanLurkTabletPosition;
+  filter: none;
+  backface-visibility: hidden;
+  will-change: left, transform;
+}
+body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after,
+body.ipad-gameplay-performance[data-game-started="true"] .title-hero-glint,
+body.ipad-gameplay-performance[data-game-started="true"] .can-hero-glint,
+body.ipad-gameplay-performance[data-game-started="true"] .can-rim-glint,
+body.ipad-gameplay-performance[data-game-started="true"] .lid-edge-glint,
+body.ipad-gameplay-performance[data-game-started="true"] .lid-inner-glint {
+  animation: none !important;
+  opacity: 0 !important;
+  filter: none !important;
+  will-change: auto;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .start-lurker-can,
+body.ipad-gameplay-performance[data-game-started="true"] .start-can-mouth,
+body.ipad-gameplay-performance[data-game-started="true"] .start-can-lid-chomp,
+body.ipad-gameplay-performance[data-game-started="true"] .start-die,
+body.ipad-gameplay-performance[data-game-started="true"] .start-die::after,
+body.ipad-gameplay-performance[data-game-started="true"] .start-btn {
+  animation: none !important;
+  filter: none !important;
+  will-change: auto;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .board-scene,
+body.ipad-gameplay-performance[data-game-started="true"] .board-wrap,
+body.ipad-gameplay-performance[data-game-started="true"] .trash-can,
+body.ipad-gameplay-performance[data-game-started="true"] .trash-can > svg,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die,
+body.ipad-gameplay-performance[data-game-started="true"] .travelling-die,
+body.ipad-gameplay-performance[data-game-started="true"] .can-pour-die,
+body.ipad-gameplay-performance[data-game-started="true"] .lid-payout-die,
+body.ipad-gameplay-performance[data-game-started="true"] .payout-comet-trail,
+body.ipad-gameplay-performance[data-game-started="true"] #trashCan [filter],
+body.ipad-gameplay-performance[data-game-started="true"] #boardWrap [filter] {
+  filter: none !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .board-wrap::after,
+body.ipad-gameplay-performance[data-game-started="true"] .trash-can::after,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage::before,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved::after,
+body.ipad-gameplay-performance[data-game-started="true"] .payout-comet-trail {
+  filter: none !important;
+  box-shadow: none !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .board-scene.lid-weight-hit,
+body.ipad-gameplay-performance[data-game-started="true"] .board-scene.can-weight-hit,
+body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .board-wrap:not(.lid-place-pulse):not(.lid-win-pulse):not(.game-win-spin),
+body.ipad-gameplay-performance[data-game-started="true"].player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt),
+body.ipad-gameplay-performance[data-game-started="true"] .board-wrap.player-payout-lid-dance,
+body.ipad-gameplay-performance[data-game-started="true"] .board-wrap.inline-ending-lid-dance,
+body.ipad-gameplay-performance[data-game-started="true"] .trash-can.pour.player-payout-can-dance,
+body.ipad-gameplay-performance[data-game-started="true"] .trash-can.inline-ending-can-dance {
+  animation: none !important;
+  will-change: auto;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage.active {
+  animation-duration: 0.1s;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.rolling {
+  animation: dieRollIpadLite 0.18s cubic-bezier(.18,.84,.16,1) both;
+  box-shadow:
+    4px 5px 0 0 rgba(0,0,0,0.32),
+    0 7px 12px rgba(0,0,0,0.28),
+    inset 0 0 0 1px rgba(255,255,255,0.14);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
+  animation: none !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .travelling-die.to-slot-physical {
+  animation: dieArcToLidIpadLite 0.2s cubic-bezier(.16,.82,.18,1) forwards;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .travelling-die.to-trash-physical {
+  animation: dieArcToCanIpadLite 0.21s cubic-bezier(.16,.82,.18,1) forwards;
+}
 .can-hero-glint,
 .can-rim-glint {
   pointer-events: none;
@@ -3224,6 +3314,34 @@ body.mobile-roll-smoothing .payout-comet-trail {
   100% {
     opacity: 0;
     transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 10px)), 0) rotate(var(--r3)) scale(0.02);
+  }
+}
+@keyframes dieArcToLidIpadLite {
+  0% {
+    opacity: 1;
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r2)) scale(var(--final-scale));
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r2)) scale(var(--final-scale));
+  }
+}
+@keyframes dieArcToCanIpadLite {
+  0% {
+    opacity: 1;
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translate3d(var(--tx), var(--ty), 0) rotate(var(--r2)) scale(var(--final-scale));
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--tx), calc(var(--ty) + var(--sink, 10px) * 0.35), 0) rotate(var(--r2)) scale(0.08);
   }
 }
 @keyframes payoutDieArcMobile {
@@ -5726,6 +5844,28 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     transform: translate(calc(50vw + 130px), 4%) rotate(-7deg) scale(0.92);
   }
 }
+@keyframes startCanLurkTabletPosition {
+  0% {
+    left: calc(0% - 130px);
+    transform: translateX(-50%) translateY(4%) translateZ(0) rotate(-8deg) scale(0.92);
+  }
+  24% {
+    left: 92px;
+    transform: translateX(-50%) translateY(-2%) translateZ(0) rotate(4deg) scale(1);
+  }
+  52% {
+    left: 50%;
+    transform: translateX(-50%) translateY(-6%) translateZ(0) rotate(-3deg) scale(1.04);
+  }
+  76% {
+    left: calc(100% - 92px);
+    transform: translateX(-50%) translateY(-2%) translateZ(0) rotate(5deg) scale(1);
+  }
+  100% {
+    left: calc(100% + 130px);
+    transform: translateX(-50%) translateY(4%) translateZ(0) rotate(-7deg) scale(0.92);
+  }
+}
 @keyframes startCanChomp {
   0%, 22%, 100% {
     transform: translateY(0) rotate(0deg);
@@ -6764,10 +6904,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_REQUESTED = URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite');
   const DEV_CHEATS_ENABLED = false;
+  const QA_HOOKS_ENABLED = QA_ENABLED || URL_OPTIONS.has('qa-hooks') || URL_HASH.includes('qa-hooks');
   const TABLET_REVIEW_SIZE = window.matchMedia('(min-width: 721px) and (max-width: 1180px) and (max-height: 1180px)').matches;
   const TABLET_EFFECTS_LITE = !FULL_FX_ENABLED && TABLET_REVIEW_SIZE && (MOBILE_REVIEW_DEVICE || navigator.maxTouchPoints > 0 || QA_ENABLED);
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
   const MOBILE_ROLL_SMOOTHING = MOBILE_REVIEW_DEVICE || window.innerWidth <= 720 || TABLET_EFFECTS_LITE;
+  const IPAD_GAMEPLAY_PERFORMANCE_MODE = !FULL_FX_ENABLED && TABLET_EFFECTS_LITE && !FAST_PREVIEW_ENABLED;
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
@@ -6788,21 +6930,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
+  document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
-  const ROLL_ANIMATION_MS = FAST_PREVIEW_ENABLED ? 420 : 850;
-  const ROLL_REVEAL_HOLD_MS = FAST_PREVIEW_ENABLED ? 280 : 650;
-  const TURN_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 340 : 950;
-  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 1420 : 1620;
-  const CPU_START_MS = FAST_PREVIEW_ENABLED ? 180 : 650;
-  const PLAYER_TO_CPU_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 90 : 140;
-  const CPU_TO_PLAYER_HANDOFF_MS = FAST_PREVIEW_ENABLED ? 160 : 250;
+  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 420 : 850);
+  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 280 : 650);
+  const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 210 : 720;
+  const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 740;
+  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 360 : (FAST_PREVIEW_ENABLED ? 340 : 950);
+  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 780 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
+  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 180 : 650);
+  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140);
+  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 160 : (FAST_PREVIEW_ENABLED ? 160 : 250);
   const BETA_FIRST_ROLL_START_DELAY_MS = FAST_PREVIEW_ENABLED ? 150 : 360;
   const BETA_FIRST_ROLL_HOST_DELAY_MS = FAST_PREVIEW_ENABLED ? 160 : 280;
   const BETA_FIRST_ROLL_GUEST_DELAY_MS = FAST_PREVIEW_ENABLED ? 220 : 430;
   const BETA_FIRST_ROLL_TIE_RETRY_MS = FAST_PREVIEW_ENABLED ? 420 : 650;
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
-  const CPU_RESPONSE_MS = 500;
-  const P0_AUTOPLAY_MS = FAST_PREVIEW_ENABLED ? 170 : 720;
+  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 320 : 500;
+  const P0_AUTOPLAY_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720);
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   let forcedRolls = [];
   let betaSocket = null;
@@ -9681,7 +9826,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       source.style.opacity = '';
       clearDie(player);
       done();
-    }, 720);
+    }, ROLL_TRAVEL_TO_SLOT_MS);
   }
 
   function travelRolledDieToTrash(player, color, done) {
@@ -9713,7 +9858,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       source.style.opacity = '';
       clearDie(player);
       done();
-    }, 740);
+    }, ROLL_TRAVEL_TO_TRASH_MS);
   }
 
   function pulseBoardScene(className, duration = 620) {
@@ -11139,20 +11284,22 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function installQaHooks() {
-    if (!QA_ENABLED) return;
+    if (!QA_HOOKS_ENABLED) return;
     function ensureQaGame() {
       if (!gameStarted) init();
     }
     function qaDiceTotals() {
       const lid = Array.isArray(board) ? board.filter(Boolean).length : 0;
       const trash = Array.isArray(trashDice) ? trashDice.length : 0;
+      const p1 = pools ? totalDice('p1') : 0;
+      const p2 = pools ? totalDice('p2') : 0;
       return {
-        p1: totalDice('p1'),
-        p2: totalDice('p2'),
-        pools: totalDice('p1') + totalDice('p2'),
+        p1,
+        p2,
+        pools: p1 + p2,
         lid,
         trash,
-        inGame: totalDice('p1') + totalDice('p2') + lid + trash
+        inGame: p1 + p2 + lid + trash
       };
     }
     window.TrashDiceQA = {
@@ -11510,24 +11657,36 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           roundWins: { ...roundWins },
           p0ReviewMode,
           p0Autoplay,
+          qaHooks: QA_HOOKS_ENABLED,
           reviewBuild: REVIEW_BUILD,
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
+          fastPreview: FAST_PREVIEW_ENABLED,
+          tabletEffectsLite: TABLET_EFFECTS_LITE,
+          iPadGameplayPerformanceMode: IPAD_GAMEPLAY_PERFORMANCE_MODE,
+          timings: {
+            rollAnimationMs: ROLL_ANIMATION_MS,
+            rollRevealHoldMs: ROLL_REVEAL_HOLD_MS,
+            rollTravelToSlotMs: ROLL_TRAVEL_TO_SLOT_MS,
+            rollTravelToTrashMs: ROLL_TRAVEL_TO_TRASH_MS,
+            turnHandoffMs: TURN_HANDOFF_MS,
+            cpuResponseMs: CPU_RESPONSE_MS,
+            cpuToPlayerHandoffMs: CPU_TO_PLAYER_HANDOFF_MS,
+            playerToCpuHandoffMs: PLAYER_TO_CPU_HANDOFF_MS
+          },
           p0ButtonVisible: !!devP0Btn && getComputedStyle(devP0Btn).display !== 'none',
-          pools: JSON.parse(JSON.stringify(pools)),
+          pools: pools ? JSON.parse(JSON.stringify(pools)) : null,
           diceTotals: qaDiceTotals(),
           trashed: { ...trashed },
           trashDice: trashDice ? trashDice.slice() : [],
-          board: board.map(Boolean),
+          board: Array.isArray(board) ? board.map(Boolean) : [],
           forcedRolls: forcedRolls.slice(),
           inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
-          enduranceAssist: createEnduranceAssistContext(
-            Array.isArray(board)
-              ? board.reduce((slots, slot, i) => {
-                  if (slot === null) slots.push(i + 1);
-                  return slots;
-                }, [])
-              : []
-          ),
+          enduranceAssist: pools && Array.isArray(board) ? createEnduranceAssistContext(
+            board.reduce((slots, slot, i) => {
+              if (slot === null) slots.push(i + 1);
+              return slots;
+            }, [])
+          ) : null,
           lastEnduranceAssist: lastEnduranceAssist ? { ...lastEnduranceAssist } : null,
           roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
           lastProgressionRecovery: lastProgressionRecovery ? { ...lastProgressionRecovery } : null

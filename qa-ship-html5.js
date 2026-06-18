@@ -153,13 +153,14 @@ async function main() {
 
     async function openPage(url, viewport) {
       const { targetId } = await send('Target.createTarget', { url: 'about:blank' });
+      await send('Target.activateTarget', { targetId });
       const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
       const cdp = (method, params = {}) => send(method, params, sessionId);
       await cdp('Page.enable');
       await cdp('Runtime.enable');
       await cdp('Network.enable');
       await cdp('Emulation.setDeviceMetricsOverride', viewport);
-      if (viewport.mobile) await cdp('Emulation.setTouchEmulationEnabled', { enabled: true });
+      if (viewport.mobile) await cdp('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
       await cdp('Page.navigate', { url });
       await sleep(1000);
       return { cdp, targetId, viewport };
@@ -186,6 +187,7 @@ async function main() {
     }
 
     const baseUrl = `http://127.0.0.1:${appPort}/`;
+    const productionLikeBaseUrl = `http://lvh.me:${appPort}/`;
     const reports = [];
 
     for (const viewport of viewports) {
@@ -683,6 +685,87 @@ async function main() {
 
       reports.push({ viewport: viewport.name, status: 'ok', events: quitDismissed });
     }
+
+    const productionIpadViewport = viewports.find(viewport => viewport.name === 'ipad-portrait');
+    const productionIpad = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1`, productionIpadViewport);
+    await waitEval(productionIpad, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'production-like iPad QA hooks');
+    const productionIpadInitialStart = await evalValue(productionIpad, `(() => {
+      const can = document.querySelector('.start-lurker-can');
+      const rect = can ? can.getBoundingClientRect() : null;
+      return {
+        state: window.TrashDiceQA.state(),
+        bodyClasses: document.body.className,
+        canAnimationName: can ? getComputedStyle(can).animationName : '',
+        canTransform: can ? getComputedStyle(can).transform : '',
+        canLeft: rect ? rect.left : null,
+        mouthAnimationName: getComputedStyle(document.querySelector('.start-can-mouth')).animationName,
+        chompAnimationName: getComputedStyle(document.querySelector('.start-can-lid-chomp')).animationName,
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
+      };
+    })()`);
+    await sleep(650);
+    const productionIpadInitialEnd = await evalValue(productionIpad, `(() => {
+      const can = document.querySelector('.start-lurker-can');
+      const rect = can ? can.getBoundingClientRect() : null;
+      return {
+        canTransform: can ? getComputedStyle(can).transform : '',
+        canLeft: rect ? rect.left : null
+      };
+    })()`);
+    const productionIpadInitial = Object.assign({}, productionIpadInitialStart, {
+      canFirstTransform: productionIpadInitialStart.canTransform,
+      canSecondTransform: productionIpadInitialEnd.canTransform,
+      canFirstLeft: productionIpadInitialStart.canLeft,
+      canSecondLeft: productionIpadInitialEnd.canLeft
+    });
+    assert(productionIpadInitial.state.fastPreview === false, `production-like iPad should not use fast-preview ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.state.tabletEffectsLite === true, `production-like iPad should use tablet effects lite ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.state.iPadGameplayPerformanceMode === true, `production-like iPad performance mode missing ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.canAnimationName === 'startCanLurkTabletPosition', `production-like iPad title can should use tablet body motion ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.mouthAnimationName !== 'none' && productionIpadInitial.chompAnimationName !== 'none', `production-like iPad title can chomp should stay alive ${JSON.stringify(productionIpadInitial)}`);
+
+    await evalValue(productionIpad, `document.getElementById('startBtn').click(); true`);
+    await waitEval(productionIpad, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'production-like iPad game start');
+    await sleep(400);
+    const productionIpadActive = await evalValue(productionIpad, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        state,
+        activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
+        activeAnimations: document.getAnimations()
+          .filter(animation => animation.playState === 'running')
+          .map(animation => ({
+            name: animation.animationName || '',
+            target: animation.effect && animation.effect.target
+              ? animation.effect.target.className || animation.effect.target.id || animation.effect.target.tagName
+              : ''
+          })),
+        heroLogoGlint: getComputedStyle(document.querySelector('#heroTitle .retail-logo-frame'), '::after').animationName,
+        canFilter: getComputedStyle(document.getElementById('trashCan')).filter,
+        rollStageGlowFilter: getComputedStyle(document.querySelector('.roll-die-stage'), '::before').filter
+      };
+    })()`);
+    assert(productionIpadActive.state.fastPreview === false, `production-like iPad active game should remain non-fast ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.state.iPadGameplayPerformanceMode === true, `production-like iPad active performance mode dropped ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.state.timings.rollAnimationMs <= 280 && productionIpadActive.state.timings.rollRevealHoldMs <= 100, `production-like iPad roll timings are too slow ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.state.timings.rollTravelToSlotMs <= 230 && productionIpadActive.state.timings.rollTravelToTrashMs <= 240, `production-like iPad travel timings are too slow ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.heroLogoGlint === 'none', `production-like iPad active glint should be paused ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.canFilter === 'none', `production-like iPad can filter should be removed during gameplay ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.activeAnimationCount <= 3, `production-like iPad active game has too many running animations ${JSON.stringify(productionIpadActive)}`);
+
+    const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
+    assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    assert(productionIpadHandoff.totalMs <= 2200, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    reports.push({
+      viewport: 'ipad-portrait-production-like',
+      status: 'ok',
+      timings: productionIpadActive.state.timings,
+      cpuHandoff: {
+        totalMs: productionIpadHandoff.totalMs,
+        handoffMs: productionIpadHandoff.handoffMs,
+        expectedHandoffMs: productionIpadHandoff.expectedHandoffMs
+      }
+    });
 
     const roomProbe = await openPage(`${baseUrl}?source=qa&qa=1&room=1234`, viewports[0]);
     const roomState = await evalValue(roomProbe, `(() => ({
