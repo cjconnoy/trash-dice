@@ -1,5 +1,11 @@
 # Trash Dice Project Notes
 
+## Current Retail Handoff
+
+Trash Dice HTML5 Beta is complete as of 2026-06-18. The current standing handoff for live shipping is `TRASH_DICE_RETAIL_HANDOFF.md`.
+
+Retail work should focus on final live-readiness for the one-player HTML5 instant-play lane at `https://playonedaygames.com/trash-dice/play/`: legacy-iPad-only hardware guidance, public badge/debug-control cleanup, final QA, Alpha lock verification, route-contract verification, and launch flip execution. Do not restart from older Beta/PWA/two-player direction unless CJ explicitly changes the product call.
+
 ## Standing Handoff And Development Rule
 
 ALPHA COMPLETE is frozen forever at approved build `dc5a995`.
@@ -20,6 +26,7 @@ Do not try to reuse or revive that quick-tunnel hostname as the source of truth.
 
 Future handoffs must explicitly include this rule and point to:
 
+- `TRASH_DICE_RETAIL_HANDOFF.md`
 - `TRASH_DICE_BETA_V5_HANDOFF.md`
 - `TRASH_DICE_BETA_V4_HANDOFF.md`
 - `TRASH_DICE_BETA_V3_HANDOFF.md`
@@ -34,7 +41,7 @@ Future handoffs must explicitly include this rule and point to:
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
 
-Current standing handoff for the HTML5 instant-play shipping lane is `TRASH_DICE_BETA_V5_HANDOFF.md`. It supersedes older Beta/PWA/two-player direction for the current ship thread: V5 is one-player, no PWA, no iOS, no account/login, and focused on the canonical `/trash-dice/play/` review route, CJ's TD launcher workflow, retail ship polish, anonymous analytics, device-specific visual QA, and faster/more accurate Codex-owned iteration.
+Current standing handoff for the HTML5 instant-play live-shipping lane is `TRASH_DICE_RETAIL_HANDOFF.md`. It supersedes older Beta/PWA/two-player direction for the current ship thread: Retail is one-player, no PWA, no iOS, no account/login, and focused on the canonical `/trash-dice/play/` route, final public cleanup, anonymous analytics, device-specific launch QA, Alpha lock safety, and route-contract truth.
 
 ## AI Worker Routing
 
