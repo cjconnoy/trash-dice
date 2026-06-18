@@ -2803,6 +2803,10 @@ body.tablet-effects-lite .start-lurker-can {
   backface-visibility: hidden;
   will-change: left, transform;
 }
+body.ipad-gameplay-performance:not([data-game-started="true"]) .start-lurker-can {
+  animation: none !important;
+  will-change: left, transform;
+}
 body.ipad-gameplay-performance[data-game-started="true"] #heroTitle .retail-logo-frame::after,
 body.ipad-gameplay-performance[data-game-started="true"] .title-hero-glint,
 body.ipad-gameplay-performance[data-game-started="true"] .can-hero-glint,
@@ -2875,6 +2879,14 @@ body.ipad-gameplay-performance[data-game-started="true"] .travelling-die.to-slot
 }
 body.ipad-gameplay-performance[data-game-started="true"] .travelling-die.to-trash-physical {
   animation: dieArcToCanIpadLite 0.21s cubic-bezier(.16,.82,.18,1) forwards;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .slot.anim-place,
+body.ipad-gameplay-performance[data-game-started="true"] .slot.anim-trash,
+body.ipad-gameplay-performance[data-game-started="true"] .board-scene,
+body.ipad-gameplay-performance[data-game-started="true"] .status-bar,
+body.ipad-gameplay-performance[data-game-started="true"] .turn-dot {
+  animation: none !important;
+  transition: none !important;
 }
 .can-hero-glint,
 .can-rim-glint {
@@ -6932,21 +6944,21 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
-  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 420 : 850);
-  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 280 : 650);
-  const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 210 : 720;
-  const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 740;
-  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 360 : (FAST_PREVIEW_ENABLED ? 340 : 950);
-  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 780 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
-  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 180 : 650);
-  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140);
-  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 160 : (FAST_PREVIEW_ENABLED ? 160 : 250);
+  const ROLL_ANIMATION_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 80 : (FAST_PREVIEW_ENABLED ? 420 : 850);
+  const ROLL_REVEAL_HOLD_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 10 : (FAST_PREVIEW_ENABLED ? 280 : 650);
+  const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
+  const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 740;
+  const TURN_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 340 : 950);
+  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 1420 : 1620);
+  const CPU_START_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 120 : (FAST_PREVIEW_ENABLED ? 180 : 650);
+  const PLAYER_TO_CPU_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 45 : (FAST_PREVIEW_ENABLED ? 90 : 140);
+  const CPU_TO_PLAYER_HANDOFF_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 80 : (FAST_PREVIEW_ENABLED ? 160 : 250);
   const BETA_FIRST_ROLL_START_DELAY_MS = FAST_PREVIEW_ENABLED ? 150 : 360;
   const BETA_FIRST_ROLL_HOST_DELAY_MS = FAST_PREVIEW_ENABLED ? 160 : 280;
   const BETA_FIRST_ROLL_GUEST_DELAY_MS = FAST_PREVIEW_ENABLED ? 220 : 430;
   const BETA_FIRST_ROLL_TIE_RETRY_MS = FAST_PREVIEW_ENABLED ? 420 : 650;
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
-  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 320 : 500;
+  const CPU_RESPONSE_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 130 : 500;
   const P0_AUTOPLAY_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720);
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   let forcedRolls = [];
@@ -7704,6 +7716,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const betaShareLink = document.getElementById('betaShareLink');
   const betaRoomStatus = document.getElementById('betaRoomStatus');
   const startOverlayEl = document.getElementById('startOverlay');
+  const startLurkerCan = document.querySelector('.start-lurker-can');
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -7716,9 +7729,48 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let labelEls = [];  // SVG number labels
   let slotDiceEls = [];
   let slotInfo = [];
+  let titleCanMotionTimer = null;
+  let titleCanMotionStartedAt = 0;
 
   function cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
+  }
+
+  function updateTitleCanMotion() {
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || !startLurkerCan || !startOverlayEl || gameStarted || startOverlayEl.style.display === 'none') {
+      stopTitleCanMotion(false);
+      return;
+    }
+    const elapsed = Date.now() - titleCanMotionStartedAt;
+    const duration = 3600;
+    const phase = (elapsed % duration) / duration;
+    const width = Math.max(360, window.innerWidth || document.documentElement.clientWidth || 768);
+    const forward = phase < 0.5;
+    const local = forward ? phase * 2 : (1 - phase) * 2;
+    const x = -96 + (width + 192) * local;
+    const bob = Math.sin(local * Math.PI) * -7;
+    const wobble = Math.sin(phase * Math.PI * 4) * 2.4;
+    const scale = 0.92 + Math.sin(local * Math.PI) * 0.1;
+    startLurkerCan.style.left = `${Math.round(x)}px`;
+    startLurkerCan.style.transform = `translateX(-50%) translateY(${bob.toFixed(1)}%) translateZ(0) rotate(${wobble.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+  }
+
+  function startTitleCanMotion() {
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || !startLurkerCan || titleCanMotionTimer !== null) return;
+    titleCanMotionStartedAt = Date.now();
+    updateTitleCanMotion();
+    titleCanMotionTimer = window.setInterval(updateTitleCanMotion, 50);
+  }
+
+  function stopTitleCanMotion(reset = true) {
+    if (titleCanMotionTimer !== null) {
+      window.clearInterval(titleCanMotionTimer);
+      titleCanMotionTimer = null;
+    }
+    if (reset && startLurkerCan) {
+      startLurkerCan.style.removeProperty('left');
+      startLurkerCan.style.removeProperty('transform');
+    }
   }
 
   function isPwaStandalone() {
@@ -10660,6 +10712,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p0ReviewMode = false;
     p0Autoplay = true;
     document.body.classList.add('debug-p0');
+    stopTitleCanMotion(false);
     const so = document.getElementById('startOverlay');
     const startBtn = document.getElementById('startBtn');
     if (so && so.style.display !== 'none') {
@@ -10691,6 +10744,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (gameStarted) return;
     betaRoomRecoveryStatusText = '';
     document.body.classList.remove('beta-room-recovery');
+    stopTitleCanMotion(false);
     if (playAudio) {
       Audio.unlock('start-overlay', () => {
         Audio.startFanfare();
@@ -10708,6 +10762,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
     clearRuntimeTimers();
+    stopTitleCanMotion(false);
     cancelProgressionWatchdog();
     clearBenchCelebration(false);
     clearVictoryEffects();
@@ -10825,6 +10880,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
 
     const value = chooseRollValue(current);
+    if (IPAD_GAMEPLAY_PERFORMANCE_MODE) {
+      const activeDie = getDie(current);
+      const activeStage = getDieStage(current);
+      if (activeStage) activeStage.classList.remove('active');
+      activeDie.className = 'die ' + colorClass(rollColor);
+      renderDie(value, current, rollColor);
+      Audio.rollResolve(value);
+      const idx = value - 1;
+      const taken = board[idx] !== null;
+      setMsg(`ROLLED ${value}`);
+      runLater(() => {
+        clearDie(current);
+        taken
+          ? handleTrash(value, idx, rollColor)
+          : handlePlace(value, idx, rollColor);
+      }, ROLL_REVEAL_HOLD_MS);
+      return;
+    }
 
     // Start tumble + spinning pip values
     const activeDie = getDie(current);
@@ -10873,19 +10946,21 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     const slot  = slotEls[idx];
     paintSlot(idx, board[idx]);
-    slot.classList.add('anim-place');
-    slot.addEventListener('animationend', () => slot.classList.remove('anim-place'), { once: true });
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE) {
+      slot.classList.add('anim-place');
+      slot.addEventListener('animationend', () => slot.classList.remove('anim-place'), { once: true });
+    }
 
     setMsg(`LID ${value}!`, 'ok');
     Audio.placeClink();
     const scoreColor = playerScoreColor(current);
     Audio.placeFanfare(scoreColor);
-    triggerLidPlacePulse(scoreColor, idx);
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE) triggerLidPlacePulse(scoreColor, idx);
     syncUI();
 
     const filled = board.filter(s => s !== null).length;
     const isRoundWinPlacement = filled === 6;
-    triggerBenchCelebration(current, isRoundWinPlacement);
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE || isRoundWinPlacement) triggerBenchCelebration(current, isRoundWinPlacement);
     if (isRoundWinPlacement) {
       triggerLidWinPulse();
       const resolution = beginRoundResolution(current);
@@ -10908,12 +10983,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     trashDice.push({ player: current, color, value });
 
     const slot = slotEls[idx];
-    slot.classList.add('anim-trash');
-    slot.addEventListener('animationend', () => slot.classList.remove('anim-trash'), { once:true });
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE) {
+      slot.classList.add('anim-trash');
+      slot.addEventListener('animationend', () => slot.classList.remove('anim-trash'), { once:true });
+    }
 
     setMsg(`TRASH ${value}!`, 'trash');
     const canLoad = totalTrashedDice();
-    triggerTrashCanImpact(canLoad);
+    if (!IPAD_GAMEPLAY_PERFORMANCE_MODE) triggerTrashCanImpact(canLoad);
     Audio.trashEntryThunk(canLoad);
     syncUI();
 
@@ -12049,6 +12126,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     updateP0ReviewControl();
     requestAnimationFrame(buildSlots);
     installQaHooks();
+    startTitleCanMotion();
     if (QA_ENABLED && (URL_OPTIONS.has('finalwin') || URL_OPTIONS.has('finalroundwin') || URL_OPTIONS.has('gameflow'))) {
       clearOneShotQaPreviewUrl();
       if (FORCE_QA_ENABLED) {

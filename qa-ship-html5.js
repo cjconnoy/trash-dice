@@ -721,7 +721,8 @@ async function main() {
     assert(productionIpadInitial.state.fastPreview === false, `production-like iPad should not use fast-preview ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.tabletEffectsLite === true, `production-like iPad should use tablet effects lite ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.iPadGameplayPerformanceMode === true, `production-like iPad performance mode missing ${JSON.stringify(productionIpadInitial)}`);
-    assert(productionIpadInitial.canAnimationName === 'startCanLurkTabletPosition', `production-like iPad title can should use tablet body motion ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.canAnimationName === 'none', `production-like iPad title can should use JS body motion, not CSS keyframes ${JSON.stringify(productionIpadInitial)}`);
+    assert(Math.abs(productionIpadInitial.canSecondLeft - productionIpadInitial.canFirstLeft) >= 8, `production-like iPad title can body motion appears stopped ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.mouthAnimationName !== 'none' && productionIpadInitial.chompAnimationName !== 'none', `production-like iPad title can chomp should stay alive ${JSON.stringify(productionIpadInitial)}`);
 
     await evalValue(productionIpad, `document.getElementById('startBtn').click(); true`);
@@ -747,15 +748,15 @@ async function main() {
     })()`);
     assert(productionIpadActive.state.fastPreview === false, `production-like iPad active game should remain non-fast ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.state.iPadGameplayPerformanceMode === true, `production-like iPad active performance mode dropped ${JSON.stringify(productionIpadActive)}`);
-    assert(productionIpadActive.state.timings.rollAnimationMs <= 280 && productionIpadActive.state.timings.rollRevealHoldMs <= 100, `production-like iPad roll timings are too slow ${JSON.stringify(productionIpadActive)}`);
-    assert(productionIpadActive.state.timings.rollTravelToSlotMs <= 230 && productionIpadActive.state.timings.rollTravelToTrashMs <= 240, `production-like iPad travel timings are too slow ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.state.timings.rollAnimationMs <= 100 && productionIpadActive.state.timings.rollRevealHoldMs <= 15, `production-like iPad direct roll timings are too slow ${JSON.stringify(productionIpadActive)}`);
+    assert(productionIpadActive.state.timings.rollTravelToSlotMs === 0 && productionIpadActive.state.timings.rollTravelToTrashMs === 0, `production-like iPad should bypass roll travel ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.heroLogoGlint === 'none', `production-like iPad active glint should be paused ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.canFilter === 'none', `production-like iPad can filter should be removed during gameplay ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.activeAnimationCount <= 3, `production-like iPad active game has too many running animations ${JSON.stringify(productionIpadActive)}`);
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
-    assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
-    assert(productionIpadHandoff.totalMs <= 2200, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    assert(productionIpadHandoff.expectedHandoffMs <= 90, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    assert(productionIpadHandoff.totalMs <= 900, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
     reports.push({
       viewport: 'ipad-portrait-production-like',
       status: 'ok',
