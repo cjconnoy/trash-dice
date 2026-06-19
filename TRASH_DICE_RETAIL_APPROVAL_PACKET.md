@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-18T16:50:54-07:00
+Prepared: 2026-06-18T17:25:10-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,9 +8,9 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo commit: `e4591e198ae9500e9c8f6d6960fe5962fc09efaf`
-- Studio-site commit: `10ef2f034406095b905ab984cbf4e578faa5b235`
-- Ship lane hash from latest sync: `D7579DAD50EFBA4225EF76EEEAE071168055CA2E04D50D4DF4922BE668A09437`
+- Game repo code commit: `e5c70a68ec87d52bf27ea0d0f7b93d19df55d7b3`
+- Studio-site commit: `27ac1d6d4538f7a7e8c6cc048586eb0cda203273`
+- Ship lane hash from latest sync: `F9A721CA4AF4A522088B66D62C2F3158B63C3B1F5811B9F018CB2F102E705511`
 
 ## Retail Scope Locked
 
@@ -29,6 +29,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Added legacy-iPad-only title-screen hardware guidance:
   `For the smoothest experience, play on iPhone, desktop, or a newer iPad.`
+- Tightened the legacy-iPad gate so the note appears for the forced legacy QA override or old 9.7-inch iPad/iPadOS 16-and-below profile, while newer iPadOS profiles stay on the standard iPad path.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -36,6 +37,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   - debug chrome hidden in production-like public mode
   - QA hooks absent unless explicitly requested
   - legacy iPad guidance visible only for the legacy profile
+  - iPadOS 18 / 9.7-inch-class QA profile remains standard iPad with no legacy guidance
 - Synced source build to:
   - `ship-html5/trash-dice.html`
   - `studio-site/play/trash-dice/play/index.html`
@@ -62,7 +64,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-18T16:50:41.4717100-07:00`
+Result timestamp: `2026-06-18T17:23:42.0614042-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`

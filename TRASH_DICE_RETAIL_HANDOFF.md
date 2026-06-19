@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `e4591e1 Prepare Trash Dice Retail candidate`
+- `e5c70a6 Gate legacy iPad guidance by old iPadOS`
 
 Current studio-site HEAD:
 
-- `10ef2f0 Mirror Trash Dice Retail candidate`
+- `27ac1d6 Tighten Trash Dice legacy iPad gate`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-18T16:50:41.4717100-07:00`
+- Timestamp: `2026-06-18T17:23:42.0614042-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -157,13 +157,14 @@ The `sync-ship-html5.ps1` helper copies the source lane into the studio play rou
 
 ## Legacy iPad State
 
-Latest legacy iPad work added an explicit profile for old 9.7-inch iPads:
+Latest legacy iPad work keeps an explicit profile for old 9.7-inch iPads while protecting newer iPads from the legacy note:
 
 - body class: `legacy-ipad-performance`
 - body dataset: `data-device-profile="legacy-ipad"`
 - QA state: `deviceProfile`
 - QA state: `legacyIpadPerformanceMode`
 - QA lane: `ipad-pro-9-7-ios16-production-like` in `qa-ship-html5.js`
+- QA lane: `ipad-9-7-ios18` confirms newer iPadOS stays standard iPad with no guidance note
 - forced test URL option: `?device=legacy-ipad`
 - production-like iPad path avoids `fast-preview`
 
@@ -391,11 +392,11 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: e4591e1 Prepare Trash Dice Retail candidate
-- studio-site mirror: 10ef2f0 Mirror Trash Dice Retail candidate
+- game code: e5c70a6 Gate legacy iPad guidance by old iPadOS
+- studio-site mirror: 27ac1d6 Tighten Trash Dice legacy iPad gate
 
 Current Retail state:
-1. Legacy-iPad-only smooth-experience copy is implemented.
+1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
 2. BETA WIP public badge is removed.
 3. Public debug controls are hidden while QA hooks remain available.
 4. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
