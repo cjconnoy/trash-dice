@@ -7058,7 +7058,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       (screenShort >= 760 && screenShort <= 790 && screenLong >= 1000 && screenLong <= 1040 && dpr >= 1.9 && dpr <= 2.1) ||
       (viewportShort >= 720 && viewportShort <= 790 && viewportLong >= 880 && viewportLong <= 1040 && dpr >= 1.9 && dpr <= 2.1);
     const legacyOsClass = appleOsMajor > 0 && appleOsMajor <= 16;
-    const legacyIpadPerformance = forceLegacyIpad || (isIpad && isNineSevenIpadSize && (legacyOsClass || dpr <= 2));
+    const legacyIpadPerformance = forceLegacyIpad || (isIpad && isNineSevenIpadSize && legacyOsClass);
     return {
       userAgent,
       platform,

@@ -12,6 +12,7 @@ const debugPort = 12600 + Math.floor(Math.random() * 700);
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'trash-dice-ship-html5-'));
 const EXPECTED_START_CTA = 'TAP TO START';
 const IPAD_OS16_USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 16_7_16 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1';
+const IPAD_OS18_USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 const forbiddenRequests = [
   'manifest.webmanifest',
   'sw.js',
@@ -816,6 +817,35 @@ async function main() {
         expectedHandoffMs: productionIpadHandoff.expectedHandoffMs
       }
     });
+
+    const modernIpadViewport = {
+      ...productionIpadViewport,
+      name: 'ipad-9-7-ios18',
+      userAgent: IPAD_OS18_USER_AGENT,
+      platform: 'iPad'
+    };
+    const modernIpad = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1`, modernIpadViewport);
+    await waitEval(modernIpad, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'modern iPad QA hooks');
+    const modernIpadInitial = await evalValue(modernIpad, `(() => {
+      const note = document.getElementById('legacyIpadGuidance');
+      const rect = note ? note.getBoundingClientRect() : null;
+      return {
+        state: window.TrashDiceQA.state(),
+        bodyClasses: document.body.className,
+        deviceProfile: document.body.dataset.deviceProfile || '',
+        guidance: note ? {
+          visible: getComputedStyle(note).display !== 'none' && rect.width > 0 && rect.height > 0,
+          rect: { top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left, width: rect.width, height: rect.height }
+        } : null
+      };
+    })()`);
+    assert(modernIpadInitial.state.deviceProfile.isIpad === true, `modern iPad detector should identify iPad ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.state.deviceProfile.appleOsMajor === 18, `modern iPad detector should read iPadOS 18 ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.state.deviceProfile.isNineSevenIpadSize === true, `modern iPad detector should keep 9.7-inch size signal ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.state.iPadGameplayPerformanceMode === true, `modern iPad should keep iPad gameplay performance mode ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.state.legacyIpadPerformanceMode === false, `modern iPad should not enter legacy mode ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.deviceProfile === 'ipad' && !modernIpadInitial.bodyClasses.includes('legacy-ipad-performance'), `modern iPad should stay in standard iPad profile ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.guidance && modernIpadInitial.guidance.visible === false, `modern iPad should not show legacy guidance ${JSON.stringify(modernIpadInitial)}`);
 
     const legacyIpadViewport = {
       ...productionIpadViewport,
