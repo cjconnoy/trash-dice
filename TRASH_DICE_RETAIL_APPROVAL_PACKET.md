@@ -89,6 +89,31 @@ Retail surface scan:
 - The legacy iPad path remains playable and now gives honest non-blocking hardware guidance.
 - Do not reopen legacy iPad animation tuning unless CJ explicitly reopens it.
 
+## Legacy Hardware Research Refresh
+
+Refreshed: 2026-06-18
+
+Exa query:
+
+```text
+family browser game device compatibility older iPad performance wording older hardware recommended newer device
+```
+
+Useful findings:
+
+- GameMaker's iOS HTML5 guidance says desktop browser performance does not guarantee iOS performance, because iOS applies resource limits that should be considered when designing browser games for that OS: https://gamemaker.io/en/help/articles/html5-resource-limits-for-browser-games-on-ios
+- Outsmarted, a family board-game companion product, publishes friendly device compatibility and minimum requirement language instead of treating all devices as equally smooth: https://www.outsmarted.co.uk/pages/device-compatibility
+- The Outsmarted App Store listing requires iOS/iPadOS 16 or later, showing that companion apps commonly set explicit Apple-device compatibility baselines: https://apps.apple.com/us/app/outsmarted-companion-app/id1541321303
+- Deadbolt Games frames browser/device guidance around "best experience," current browsers, older browser limitations, and a device checker rather than blaming the player or blocking by default: https://www.deadboltgames.com/support/technical-requirements
+- Merge EDU publishes a device-age and minimum-spec compatibility baseline, including "devices that are 4 years old or newer," current Apple software, and minimum RAM: https://support.mergeedu.com/hc/en-us/articles/115002899692-Is-my-device-compatible
+
+Conclusion:
+
+- The current Trash Dice copy matches the researched pattern: friendly, non-blocking, and framed as best-experience guidance.
+- Keep the current copy unless CJ/legal wants a stronger warning:
+  `For the smoothest experience, play on iPhone, desktop, or a newer iPad.`
+- Do not use "unsupported" language for the legacy iPad unless the product decision changes.
+
 ## Still Pending Before Public Live
 
 - CJ/retail approval must be locked.
