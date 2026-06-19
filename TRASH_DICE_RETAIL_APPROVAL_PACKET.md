@@ -15,9 +15,11 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 ## Retail Scope Locked
 
 - One-player HTML5 instant-play digital companion.
+- Phase 1 ships as HTML/browser only.
+- Supported Phase 1 browser targets: desktop, iPhone, and iPad.
 - No two-player retail release.
 - No PWA/install ceremony.
-- No iOS app work.
+- No iOS app or App Store shipping work.
 - No login, account, email capture, cart, coupon, purchase tracking, or PII.
 - Anonymous Umami play telemetry only.
 - Big Discoveries / Trash Dice retail presentation.
@@ -85,6 +87,7 @@ Retail surface scan:
 ## Approval Review Notes
 
 - iPhone and desktop paths are accepted from Beta.
+- iPad browser support is in scope for Phase 1; only the old 9.7-inch iPad class is treated as below the smooth hardware target.
 - Legacy iPad Pro 9.7 on iPadOS 16.7.16 is treated as below the smooth hardware target.
 - The legacy iPad path remains playable and now gives honest non-blocking hardware guidance.
 - Do not reopen legacy iPad animation tuning unless CJ explicitly reopens it.

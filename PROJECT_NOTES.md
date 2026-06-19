@@ -43,7 +43,7 @@ Future handoffs must explicitly include this rule and point to:
 
 For Trash Dice Beta and all later work, never reuse the Alpha Complete link. Create a new named release path or public URL for every new build.
 
-Current standing handoff for the HTML5 instant-play live-shipping lane is `TRASH_DICE_RETAIL_HANDOFF.md`. It supersedes older Beta/PWA/two-player direction for the current ship thread: Retail is one-player, no PWA, no iOS, no account/login, and focused on the canonical `/trash-dice/play/` route, final public cleanup, anonymous analytics, device-specific launch QA, Alpha lock safety, and route-contract truth.
+Current standing handoff for the HTML5 instant-play live-shipping lane is `TRASH_DICE_RETAIL_HANDOFF.md`. It supersedes older Beta/PWA/two-player direction for the current ship thread: Retail is one-player, no PWA, no iOS app or App Store shipping work, no account/login, and focused on the canonical `/trash-dice/play/` route, desktop/iPhone/iPad browser support, final public cleanup, anonymous analytics, device-specific launch QA, Alpha lock safety, and route-contract truth.
 
 ## AI Worker Routing
 

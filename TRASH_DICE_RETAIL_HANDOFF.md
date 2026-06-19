@@ -72,15 +72,17 @@ Latest route-contract guard:
 The accepted ship lane is:
 
 - one-player HTML5 instant-play digital companion
+- Phase 1 is HTML/browser only
+- supported Phase 1 browser targets: desktop, iPhone, and iPad
 - no two-player in this retail release
 - no PWA/install ceremony in this retail release
-- no iOS app work in this retail release
+- no iOS app or App Store shipping work in this retail release
 - no login, account, email capture, cart, coupon, or PII
 - anonymous play telemetry only
 - Big Discoveries / Trash Dice retail presentation
 - canonical live route remains `/trash-dice/play/`
 
-iPhone and desktop are accepted as good to go.
+iPhone and desktop are accepted as good to go. iPad browser support is in scope, with the old 9.7-inch iPad class handled through honest hardware guidance rather than more animation tuning.
 
 Legacy iPad is accepted as a hardware-limit risk, not an open Beta blocker. The specific reported device was an iPad Pro 9.7-inch on iPadOS 16.7.16. The game detects that class as `legacy-ipad` and uses the latest legacy performance profile, but real-device Safari still looked janky to CJ. Do not spend the Retail session chasing tiny animation patches unless CJ explicitly reopens the issue. The retail fix is honest hardware guidance plus a final live-readiness pass.
 
@@ -383,7 +385,7 @@ Hard rules:
 - Canonical route: https://playonedaygames.com/trash-dice/play/
 - One-player HTML5 instant-play lane only.
 - No "TD" in user-facing copy.
-- iPhone and desktop are accepted; do not disturb those paths.
+- Desktop, iPhone, and iPad browser support are in scope; do not disturb accepted desktop/iPhone paths.
 - Legacy iPad Pro 9.7 / iPadOS 16 is below the smooth target; use a small legacy-iPad-only hardware guidance note instead of reopening endless animation tuning.
 - After accepted edits run .\qa-ship-iteration.ps1.
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
