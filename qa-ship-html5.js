@@ -639,7 +639,7 @@ async function main() {
       assert(terminal.winnerPanel === true, `${viewport.name}: winner panel fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerPile === true, `${viewport.name}: winner dice pile fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerPraise === true, `${viewport.name}: winner praise state missing ${JSON.stringify(terminal)}`);
-      assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 30, `${viewport.name}: game-win winner status should use the large winner treatment ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 36, `${viewport.name}: game-win winner status should use the extra-large winner treatment ${JSON.stringify(terminal)}`);
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
@@ -1075,7 +1075,7 @@ async function main() {
       assert(roundWinEarly.winner === winner, `${winner} round-win probe: wrong winner ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.payoutStatusActive === true && roundWinEarly.roundWinnerStatusActive === true, `${winner} round-win probe: winner status inactive ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.roundWinnerStatusPlayer === winner && roundWinEarly.roundWinnerStatusText === 'WINNER' && roundWinEarly.payoutStatusText === 'WINNER', `${winner} round-win probe: winner status text missing ${JSON.stringify(roundWinEarly)}`);
-      assert(roundWinEarly.roundWinnerStatusLarge === true && fontSize >= 30, `${winner} round-win probe: winner status is not large enough ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.roundWinnerStatusLarge === true && fontSize >= 36, `${winner} round-win probe: winner status is not large enough ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.winnerStatusDuration === roundWinEarly.spillDuration + 260, `${winner} round-win probe: winner status duration should track round resolution without extending it ${JSON.stringify(roundWinEarly)}`);
       if (winner === 'p2') {
         assert(roundWinEarly.fullEvent === false && roundWinEarly.spillDuration === roundWinEarly.expectedCpuDuration, `green round-win probe: CPU round timing changed ${JSON.stringify(roundWinEarly)}`);
