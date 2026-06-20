@@ -11,7 +11,7 @@ CJ is Creative/Product. Codex is Dev Lead, Studio Ops technical owner, QA owner,
 Production workflow state:
 
 - Retail approval is still pending; do not flip live until CJ confirms approval is locked.
-- No known under-the-hood Retail ship blockers remain after the assist-doctrine pass.
+- No known under-the-hood Retail ship blockers remain after the terminal loser-copy and deploy-plumbing audit pass.
 - Current work is approval hold, final real-device smoke, and launch-flip execution.
 - The canonical route stays `https://playonedaygames.com/trash-dice/play/`; it is protected review now and should become the public Phase 1 route later.
 - Phase 1 is HTML/browser only for desktop, iPhone, and iPad. Do not create or revive an iOS/App Store lane.
@@ -19,19 +19,29 @@ Production workflow state:
 
 Current pushed refs:
 
-- Latest Retail evidence commit before this handoff refresh: `97ecdb4 Refresh Retail assist doctrine evidence`
-- Current game-code commit: `bc9e9b1 Scope later assist to contextual pressure`
-- Studio-site HEAD: `5620a66 Mirror Trash Dice later assist update`
-- Ship SHA-256: `1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992`
+- Latest Retail evidence commit before this handoff refresh: `7b62e72 Clarify Retail handoff evidence commit`
+- Current game-code commit: `6eb6a9a Explain mathematical loser endings`
+- Studio-site HEAD: `08ad9fe Mirror Trash Dice mathematical loser copy`
+- ODG pipeline HEAD: `966c0bc Ignore normalized line endings in route drift guard`
+- Ship SHA-256: `3ED8B4CC2074DF852658163AB046FB4D3C18A04B7637323AE4ABF3A5BAB01F9D`
+- Protected route live SHA-256: `429660CF3571BD727C0EE5A2459A91F4F62C72567AEEA63DAB99E8AB07F4386A`
 
 Latest verified route guard:
 
-- Timestamp: `2026-06-19T20:51:50.5069900-07:00`
+- Timestamp: `2026-06-19T22:00:43.7622522-07:00`
 - Status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
+- `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
 - `/trash-dice/ios-preview/`: unauthenticated `401`, state `protected-preview`
 - retired Trash Dice routes: `404`
+
+Latest live protected-byte probe:
+
+- `/trash-dice/play/`: unauthenticated `401`, authenticated `200`
+- Authenticated route hash: `429660CF3571BD727C0EE5A2459A91F4F62C72567AEEA63DAB99E8AB07F4386A`
+- Authenticated route bytes contain `NOT ENOUGH DICE TO COME BACK`, `mathematical_elimination`, and `mathematicalEndProof`
+- Headers remain `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow, noarchive`
 
 Known unrelated dirty files to leave alone:
 
@@ -73,15 +83,19 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `bc9e9b1 Scope later assist to contextual pressure`
+- `6eb6a9a Explain mathematical loser endings`
 
 Current game repo HEAD:
 
-- See `git log --oneline -5`; the current head may be this handoff refresh commit, while the latest Retail evidence commit is `97ecdb4 Refresh Retail assist doctrine evidence`.
+- See `git log --oneline -5`; the current head may be this handoff refresh commit, while the latest gameplay code commit is `6eb6a9a Explain mathematical loser endings`.
 
 Current studio-site HEAD:
 
-- `5620a66 Mirror Trash Dice later assist update`
+- `08ad9fe Mirror Trash Dice mathematical loser copy`
+
+Current ODG pipeline HEAD:
+
+- `966c0bc Ignore normalized line endings in route drift guard`
 
 Current canonical route:
 
@@ -96,9 +110,10 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T20:51:50.5069900-07:00`
+- Timestamp: `2026-06-19T22:00:43.7622522-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
+- `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
 - `/trash-dice/ios-preview/`: unauthenticated `401`, state `protected-preview`
 - retired Trash Dice routes: still `404`
@@ -233,6 +248,7 @@ Latest QA-covered behavior:
 - player game-win panel status uses the same roughly 2.5x `WINNER` treatment and persists through the terminal win loop until Play Again
 - opening comeback guard is now deterministic after two green opening round wins: yellow is forced toward open slots and green is forced away from open slots when possible, preventing a third straight opening round loss
 - later-session endurance assist is explicitly soft/contextual: neutral late play does not activate help, deficit and late low-dice pressure can activate capped probabilistic help, and CPU soft-brakes are not a global no-streak cap
+- mathematical-lock endings explain themselves only on the losing player's panel with `NOT ENOUGH DICE TO COME BACK`; the `CONGRATULATIONS!` banner and winning panel stay clean
 
 CJ's real-device verdict:
 
@@ -419,7 +435,7 @@ CJ is Creative/Product. Codex is Dev Lead and Studio Ops technical owner. Do not
 
 Production workflow state:
 - Retail approval is still pending; do not flip live until CJ confirms approval is locked.
-- No known under-the-hood Retail ship blockers remain.
+- No known under-the-hood Retail ship blockers remain after the terminal loser-copy and deploy-plumbing audit pass.
 - Current work is approval hold, final real-device smoke, then launch flip.
 - Route must stay protected-review until approval.
 
@@ -434,11 +450,14 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- latest Retail evidence commit before this handoff refresh: 97ecdb4 Refresh Retail assist doctrine evidence
-- game code: bc9e9b1 Scope later assist to contextual pressure
-- studio-site HEAD: 5620a66 Mirror Trash Dice later assist update
-- ship SHA-256: 1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992
-- latest route-contract guard: green at 2026-06-19T20:51:50.5069900-07:00
+- latest Retail evidence commit before this handoff refresh: 7b62e72 Clarify Retail handoff evidence commit
+- game code: 6eb6a9a Explain mathematical loser endings
+- studio-site HEAD: 08ad9fe Mirror Trash Dice mathematical loser copy
+- odg-pipeline HEAD: 966c0bc Ignore normalized line endings in route drift guard
+- ship SHA-256: 3ED8B4CC2074DF852658163AB046FB4D3C18A04B7637323AE4ABF3A5BAB01F9D
+- protected route live SHA-256: 429660CF3571BD727C0EE5A2459A91F4F62C72567AEEA63DAB99E8AB07F4386A
+- latest route-contract guard: green at 2026-06-19T22:00:43.7622522-07:00
+- direct protected-byte probe: authenticated /trash-dice/play/ is 200 and contains NOT ENOUGH DICE TO COME BACK plus mathematical_elimination
 
 Known unrelated dirty files:
 - Game repo: .gitignore, qa-public-build.ps1, untracked docs/, mobile/, old qa-public-build_*.log, recaps/
@@ -452,8 +471,10 @@ Current Retail state:
 4. Player game-win panel `WINNER` status uses the same roughly 2.5x treatment and persists through the terminal win loop until Play Again.
 5. Opening comeback guard prevents a fresh game from allowing green/CPU to win the first three rounds straight.
 6. Later-session assist is soft, contextual, and capped: deficit or low-dice pressure can help, neutral late play does not, and there is no global CPU three-round-streak ban.
-7. BETA WIP public badge is removed.
-8. Public debug controls are hidden while QA hooks remain available.
-9. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-10. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+7. Mathematical-lock endings show `NOT ENOUGH DICE TO COME BACK` only on the losing player's panel, never under `CONGRATULATIONS!` or on the winning panel.
+8. BETA WIP public badge is removed.
+9. Public debug controls are hidden while QA hooks remain available.
+10. Route-guard plumbing now checks for local route-source drift before trusting live-vs-HEAD hash matches, without false reds from normalized line endings.
+11. QA, Alpha diffs, route contracts, and live protected bytes are green for the protected-review candidate.
+12. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```
