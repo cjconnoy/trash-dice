@@ -19,7 +19,7 @@ Production workflow state:
 
 Current pushed refs:
 
-- Latest Retail evidence commit before this handoff refresh: `aa90d6b Allow desktop scroll for short win screens`
+- Latest gameplay/QA commit before this handoff refresh: `aa90d6b Allow desktop scroll for short win screens`
 - Current game-code commit: `aa90d6b Allow desktop scroll for short win screens`
 - Studio-site HEAD: `96a8303 Mirror Trash Dice desktop scroll fallback`
 - ODG pipeline HEAD: `966c0bc Ignore normalized line endings in route drift guard`
@@ -452,7 +452,7 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- latest Retail evidence commit before this handoff refresh: aa90d6b Allow desktop scroll for short win screens
+- latest gameplay/QA commit before this handoff refresh: aa90d6b Allow desktop scroll for short win screens
 - game code: aa90d6b Allow desktop scroll for short win screens
 - studio-site HEAD: 96a8303 Mirror Trash Dice desktop scroll fallback
 - odg-pipeline HEAD: 966c0bc Ignore normalized line endings in route drift guard
