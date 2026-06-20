@@ -11,6 +11,7 @@ const appPort = 5310 + Math.floor(Math.random() * 600);
 const debugPort = 12600 + Math.floor(Math.random() * 700);
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'trash-dice-ship-html5-'));
 const EXPECTED_START_CTA = 'TAP TO START';
+const IPHONE_OS18_USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 const IPAD_OS16_USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 16_7_16 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1';
 const IPAD_OS18_USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1';
 const forbiddenRequests = [
@@ -26,8 +27,12 @@ const viewports = [
   { name: 'desktop', width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900 },
   { name: 'iphone-se-visible', width: 375, height: 548, deviceScaleFactor: 2, mobile: true, screenWidth: 375, screenHeight: 667 },
   { name: 'iphone-13-safari', width: 390, height: 664, deviceScaleFactor: 3, mobile: true, screenWidth: 390, screenHeight: 844 },
-  { name: 'ipad-portrait', width: 768, height: 920, deviceScaleFactor: 2, mobile: true, screenWidth: 768, screenHeight: 1024 },
-  { name: 'ipad-landscape-visible', width: 1024, height: 690, deviceScaleFactor: 2, mobile: true, screenWidth: 1024, screenHeight: 768 }
+  { name: 'ipad-portrait', width: 768, height: 920, deviceScaleFactor: 2, mobile: true, screenWidth: 768, screenHeight: 1024 }
+];
+
+const orientationLockedViewports = [
+  { name: 'iphone-landscape-locked', width: 844, height: 390, deviceScaleFactor: 3, mobile: true, screenWidth: 390, screenHeight: 844, userAgent: IPHONE_OS18_USER_AGENT, platform: 'iPhone' },
+  { name: 'ipad-landscape-locked', width: 1024, height: 690, deviceScaleFactor: 2, mobile: true, screenWidth: 1024, screenHeight: 768, userAgent: IPAD_OS18_USER_AGENT, platform: 'iPad' }
 ];
 
 function sleep(ms) {
@@ -199,6 +204,51 @@ async function main() {
     const productionLikeBaseUrl = `http://lvh.me:${appPort}/`;
     const reports = [];
 
+    for (const viewport of orientationLockedViewports) {
+      const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
+      await evalValue(page, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
+      await waitEval(page, `document.body.dataset.orientationBlocked === 'true'`, `${viewport.name} portrait gate`);
+      const orientationGate = await evalValue(page, `(() => {
+        const gate = document.getElementById('orientationLockScreen');
+        const card = gate ? gate.querySelector('.orientation-lock-card') : null;
+        const centerEl = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+        const gateRect = gate ? gate.getBoundingClientRect() : null;
+        const cardRect = card ? card.getBoundingClientRect() : null;
+        return {
+          state: window.TrashDiceQA ? window.TrashDiceQA.state() : null,
+          bodyBlocked: document.body.classList.contains('orientation-blocked'),
+          datasetBlocked: document.body.dataset.orientationBlocked,
+          hidden: gate ? gate.hidden : true,
+          ariaHidden: gate ? gate.getAttribute('aria-hidden') : '',
+          text: gate ? gate.textContent.replace(/\\s+/g, ' ').trim() : '',
+          centerCovered: !!(centerEl && centerEl.closest && centerEl.closest('#orientationLockScreen')),
+          bodyFits: document.documentElement.scrollWidth <= window.innerWidth + 1 && document.body.scrollWidth <= window.innerWidth + 1,
+          gameStarted: document.body.dataset.gameStarted === 'true',
+          gateRect: gateRect ? { top: gateRect.top, right: gateRect.right, bottom: gateRect.bottom, left: gateRect.left, width: gateRect.width, height: gateRect.height } : null,
+          cardRect: cardRect ? { top: cardRect.top, right: cardRect.right, bottom: cardRect.bottom, left: cardRect.left, width: cardRect.width, height: cardRect.height } : null
+        };
+      })()`);
+      assert(orientationGate.state && orientationGate.state.orientationBlocked === true, `${viewport.name}: QA state did not report orientation block ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.bodyBlocked === true && orientationGate.datasetBlocked === 'true', `${viewport.name}: body orientation blocked state missing ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.hidden === false && orientationGate.ariaHidden === 'false', `${viewport.name}: rotate overlay should be visible ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.text.includes('ROTATE TO PORTRAIT') && orientationGate.text.includes('vertical play'), `${viewport.name}: rotate overlay copy changed ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.centerCovered === true, `${viewport.name}: rotate overlay does not cover central touch target ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.bodyFits === true, `${viewport.name}: rotate overlay creates horizontal overflow ${JSON.stringify(orientationGate)}`);
+      assert(orientationGate.cardRect && orientationGate.cardRect.width <= viewport.width - 16 && orientationGate.cardRect.height <= viewport.height - 16, `${viewport.name}: rotate overlay card does not fit landscape viewport ${JSON.stringify(orientationGate)}`);
+      await evalValue(page, `(() => {
+        const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+        if (target && typeof target.click === 'function') target.click();
+        return true;
+      })()`);
+      const blockedAfterTap = await evalValue(page, `(() => ({
+        blocked: document.body.dataset.orientationBlocked,
+        gameStarted: document.body.dataset.gameStarted === 'true',
+        centerCovered: !!document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2).closest('#orientationLockScreen')
+      }))()`);
+      assert(blockedAfterTap.blocked === 'true' && blockedAfterTap.gameStarted === false && blockedAfterTap.centerCovered === true, `${viewport.name}: rotated tap should stay blocked ${JSON.stringify(blockedAfterTap)}`);
+      reports.push({ viewport: viewport.name, status: 'orientation-locked', state: orientationGate.state.orientationViewport });
+    }
+
     for (const viewport of viewports) {
       const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
       await evalValue(page, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
@@ -268,6 +318,15 @@ async function main() {
         tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
         mobileRollSmoothing: document.body.classList.contains('mobile-roll-smoothing'),
         version: document.body.dataset.trashDiceVersion || '',
+        orientationLock: (() => {
+          const gate = document.getElementById('orientationLockScreen');
+          return {
+            bodyBlocked: document.body.classList.contains('orientation-blocked'),
+            datasetBlocked: document.body.dataset.orientationBlocked || '',
+            hidden: gate ? gate.hidden : true,
+            ariaHidden: gate ? gate.getAttribute('aria-hidden') : ''
+          };
+        })(),
         hiddenGameSceneAnimationsPaused: (() => {
           const heroFrame = document.querySelector('#heroTitle .retail-logo-frame');
           const heroGlint = heroFrame ? getComputedStyle(heroFrame, '::after').animationName : 'missing';
@@ -381,6 +440,7 @@ async function main() {
       assert(initial.badgeText.trim() === '' && initial.betaWipCopyPresent === false, `${viewport.name}: beta WIP badge/copy should not be visible in retail ${JSON.stringify(initial)}`);
       assert(initial.legacyIpadGuidance && initial.legacyIpadGuidance.visible === false, `${viewport.name}: legacy iPad guidance should stay hidden outside legacy profile ${JSON.stringify(initial.legacyIpadGuidance)}`);
       assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
+      assert(initial.orientationLock.bodyBlocked === false && initial.orientationLock.datasetBlocked === 'false' && initial.orientationLock.hidden === true && initial.orientationLock.ariaHidden === 'true', `${viewport.name}: portrait/desktop gameplay viewport should not show rotate blocker ${JSON.stringify(initial.orientationLock)}`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(initial.tabletEffectsLite === true, `${viewport.name}: tablet effects lite class missing ${JSON.stringify(initial)}`);

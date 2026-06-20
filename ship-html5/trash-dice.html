@@ -889,6 +889,117 @@ body.quit-return-open .debug-outcome-controls {
 }
 
 /* ── GAME AREA ── */
+.orientation-lock-screen[hidden] {
+  display: none;
+}
+
+.orientation-lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,250,210,0.98), rgba(239,233,218,0.94) 38%, rgba(206,195,176,0.96) 100%),
+    linear-gradient(180deg, #f9f5e6, #d8ceba);
+  color: var(--green);
+  text-align: center;
+  pointer-events: auto;
+  touch-action: none;
+  isolation: isolate;
+}
+
+.orientation-lock-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(245,200,0,0.28), transparent 18%),
+    radial-gradient(circle at 82% 72%, rgba(15,95,50,0.20), transparent 22%);
+  opacity: 0.78;
+  z-index: -1;
+}
+
+.orientation-lock-card {
+  width: min(520px, 92vw);
+  padding: clamp(1rem, 4vw, 1.6rem);
+  border: clamp(4px, 0.8vw, 7px) solid #ff8a3d;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255,255,255,0.68), transparent 32%),
+    linear-gradient(180deg, rgba(255,252,221,0.98), rgba(238,229,200,0.98));
+  box-shadow:
+    0 18px 0 rgba(15,95,50,0.18),
+    0 24px 42px rgba(24,37,25,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.orientation-lock-icon {
+  position: relative;
+  width: 58px;
+  height: 90px;
+  margin: 0 auto 0.82rem;
+  border: 7px solid var(--green);
+  border-radius: 17px;
+  background: linear-gradient(180deg, #f5c800, #e3b400);
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,0.45),
+    0 8px 0 rgba(15,95,50,0.22);
+}
+
+.orientation-lock-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  transform: translateX(-50%);
+}
+
+.orientation-lock-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  width: 58px;
+  height: 38px;
+  border-top: 6px solid #d93030;
+  border-right: 6px solid #d93030;
+  border-radius: 0 24px 0 0;
+  transform: translateX(-50%) rotate(-32deg);
+}
+
+.orientation-lock-title {
+  font-family: Bangers, 'Arial Black', sans-serif;
+  font-size: clamp(2.15rem, 9vw, 4rem);
+  line-height: 0.88;
+  color: #d93030;
+  text-shadow:
+    0 4px 0 #fff58b,
+    0 8px 0 rgba(15,95,50,0.34);
+}
+
+.orientation-lock-copy {
+  margin-top: 0.7rem;
+  color: var(--green);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(1rem, 3.6vw, 1.25rem);
+  line-height: 1.18;
+}
+
+body.orientation-blocked {
+  overflow: hidden;
+}
+
+body.orientation-blocked > *:not(.orientation-lock-screen) {
+  pointer-events: none;
+}
+
 .game-area {
   display: flex;
   flex-direction: column;
@@ -6769,6 +6880,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     </div>
   </div>
 </div>
+<div class="orientation-lock-screen" id="orientationLockScreen" hidden aria-hidden="true">
+  <div class="orientation-lock-card" role="status" aria-live="polite">
+    <div class="orientation-lock-icon" aria-hidden="true"></div>
+    <div class="orientation-lock-title">ROTATE TO PORTRAIT</div>
+    <div class="orientation-lock-copy">Trash Dice is built for vertical play.</div>
+  </div>
+</div>
 
 <div class="title-wrap hero-title" id="heroTitle" aria-label="Trash Dice">
   <span class="retail-logo-frame">
@@ -7226,6 +7344,28 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
   document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
+  const orientationLockScreen = document.getElementById('orientationLockScreen');
+  function getOrientationViewportSize() {
+    const vv = window.visualViewport;
+    const width = Math.round((vv && vv.width) || window.innerWidth || document.documentElement.clientWidth || 0);
+    const height = Math.round((vv && vv.height) || window.innerHeight || document.documentElement.clientHeight || 0);
+    return { width, height };
+  }
+  function shouldBlockForPortraitPlay() {
+    const viewport = getOrientationViewportSize();
+    return !!(DEVICE_PROFILE.isIphone || DEVICE_PROFILE.isIpad) && viewport.width > viewport.height;
+  }
+  function syncPortraitOrientationGate() {
+    const blocked = shouldBlockForPortraitPlay();
+    document.body.classList.toggle('orientation-blocked', blocked);
+    document.body.dataset.orientationBlocked = blocked ? 'true' : 'false';
+    if (orientationLockScreen) {
+      orientationLockScreen.hidden = !blocked;
+      orientationLockScreen.setAttribute('aria-hidden', blocked ? 'false' : 'true');
+    }
+    return blocked;
+  }
+  syncPortraitOrientationGate();
   const ROLL_ANIMATION_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 260 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850));
   const ROLL_REVEAL_HOLD_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 80 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 280 : 650));
   const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
@@ -12110,6 +12250,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           debugControlsEnabled: DEBUG_CONTROLS_ENABLED,
           mobileReviewDevice: MOBILE_REVIEW_DEVICE,
           deviceProfile: { ...DEVICE_PROFILE },
+          orientationBlocked: shouldBlockForPortraitPlay(),
+          orientationViewport: getOrientationViewportSize(),
           fastPreview: FAST_PREVIEW_ENABLED,
           tabletEffectsLite: TABLET_EFFECTS_LITE,
           iPadGameplayPerformanceMode: IPAD_GAMEPLAY_PERFORMANCE_MODE,
@@ -12553,10 +12695,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   });
   let resizeFrame = null;
   window.addEventListener('resize', () => {
+    syncPortraitOrientationGate();
     if (!slotEls.length) return;
     if (resizeFrame !== null) return;
     resizeFrame = requestAnimationFrame(() => {
       resizeFrame = null;
+      syncPortraitOrientationGate();
       buildSlots();
       if (!Array.isArray(board)) return;
       board.forEach((die, i) => {
@@ -12564,6 +12708,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       });
     });
   });
+  window.addEventListener('orientationchange', () => {
+    requestAnimationFrame(syncPortraitOrientationGate);
+  });
+  if (window.screen && window.screen.orientation && typeof window.screen.orientation.addEventListener === 'function') {
+    window.screen.orientation.addEventListener('change', syncPortraitOrientationGate);
+  }
+  if (window.visualViewport && typeof window.visualViewport.addEventListener === 'function') {
+    window.visualViewport.addEventListener('resize', syncPortraitOrientationGate);
+  }
 
 })();
 </script>
