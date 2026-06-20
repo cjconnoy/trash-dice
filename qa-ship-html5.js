@@ -1066,6 +1066,25 @@ async function main() {
     assert(p0Off.p0Active === false, `P-0 probe: autoplay did not stop ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0ButtonVisible === true, `P-0 probe: button hidden after stop ${JSON.stringify(p0Off)}`);
 
+    const openingGuardProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
+    await evalValue(openingGuardProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(openingGuardProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'opening sweep guard probe game start');
+    const openingGuard = await evalValue(openingGuardProbe, `(() => {
+      const config = { round: 3, totalRolls: 0, p1Wins: 0, p2Wins: 2, p1Dice: 12, p2Dice: 12, openSlots: [2, 5], samples: 80 };
+      const player = window.TrashDiceQA.enduranceAssistProbe({ ...config, player: 'p1' });
+      const cpu = window.TrashDiceQA.enduranceAssistProbe({ ...config, player: 'p2' });
+      return {
+        player,
+        cpu,
+        playerFaces: Object.keys(player.counts).map(Number).sort((a, b) => a - b),
+        cpuFaces: Object.keys(cpu.counts).map(Number).sort((a, b) => a - b)
+      };
+    })()`);
+    const openingOpenSlots = openingGuard.player.openSlots.map(Number);
+    assert(openingGuard.player.openingComebackAssistActive === true && openingGuard.cpu.openingComebackAssistActive === true, `opening sweep guard probe: danger window inactive ${JSON.stringify(openingGuard)}`);
+    assert(openingGuard.playerFaces.length > 0 && openingGuard.playerFaces.every(face => openingOpenSlots.includes(face)), `opening sweep guard probe: player can miss open slots after two opening losses ${JSON.stringify(openingGuard)}`);
+    assert(openingGuard.cpuFaces.length > 0 && openingGuard.cpuFaces.every(face => !openingOpenSlots.includes(face)), `opening sweep guard probe: CPU can still take open slots after two opening wins ${JSON.stringify(openingGuard)}`);
+
     for (const winner of ['p1', 'p2']) {
       const roundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
       await evalValue(roundWinProbe, `document.getElementById('startBtn').click(); true`);

@@ -7125,9 +7125,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
-  const PLAYER_OPENING_COMEBACK_HIT_CHANCE = 0.36;
-  const PLAYER_OPENING_COMEBACK_CLUTCH_CHANCE = 0.58;
-  const CPU_OPENING_SWEEP_BRAKE_CHANCE = 0.48;
   const ENDURANCE_ASSIST_START_ROUND = 5;
   const ENDURANCE_ASSIST_START_ROLLS = 36;
   const ENDURANCE_ASSIST_MAX_USES = 4;
@@ -10865,6 +10862,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       : [];
     const comebackAssistActive = isOpeningComebackAssistActive();
     const enduranceContext = createEnduranceAssistContext(openSlots);
+    if (comebackAssistActive && player === 'p1' && openSlots.length > 0) {
+      openingComebackAssistRolls++;
+      return randomFrom(openSlots);
+    }
+    if (comebackAssistActive && player === 'p2' && openSlots.length > 0) {
+      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+      if (takenFaces.length) {
+        openingComebackAssistRolls++;
+        return randomFrom(takenFaces);
+      }
+    }
     if (
       player === 'p1' &&
       !p0Autoplay &&
@@ -10877,17 +10885,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         : ENDURANCE_ASSIST_PLAYER_CLUTCH_CHANCE;
       const face = choosePlayerClutchFace(
         openSlots[0],
-        comebackAssistActive
-          ? PLAYER_OPENING_COMEBACK_CLUTCH_CHANCE
-          : (enduranceContext.active ? enduranceClutchChance : PLAYER_CLUTCH_MAGNET_CHANCE)
+        enduranceContext.active ? enduranceClutchChance : PLAYER_CLUTCH_MAGNET_CHANCE
       );
-      if (comebackAssistActive && face === openSlots[0]) openingComebackAssistRolls++;
       if (enduranceContext.active && face === openSlots[0]) markEnduranceAssist('player-clutch', face, enduranceContext);
       return face;
-    }
-    if (comebackAssistActive && player === 'p1' && openSlots.length > 1 && Math.random() < PLAYER_OPENING_COMEBACK_HIT_CHANCE) {
-      openingComebackAssistRolls++;
-      return randomFrom(openSlots);
     }
     if (enduranceContext.active && player === 'p1' && openSlots.length > 1) {
       const hitChance = ENDURANCE_ASSIST_PLAYER_HIT_CHANCE + (enduranceContext.behind ? ENDURANCE_ASSIST_PLAYER_BEHIND_BONUS : 0);
@@ -10895,13 +10896,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         const face = randomFrom(openSlots);
         markEnduranceAssist('player-open-slot', face, enduranceContext);
         return face;
-      }
-    }
-    if (comebackAssistActive && player === 'p2' && openSlots.length <= 2) {
-      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
-      if (takenFaces.length && Math.random() < CPU_OPENING_SWEEP_BRAKE_CHANCE) {
-        openingComebackAssistRolls++;
-        return randomFrom(takenFaces);
       }
     }
     if (enduranceContext.active && player === 'p2' && openSlots.length <= 2) {
@@ -11774,6 +11768,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           round,
           totalRolls,
           roundWins: { ...roundWins },
+          openingComebackAssistRolls,
           current,
           p0Autoplay,
           p0ReviewMode,
@@ -11809,6 +11804,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         lastEnduranceAssist = null;
 
         const context = createEnduranceAssistContext(openSlots);
+        const openingComebackAssistActive = isOpeningComebackAssistActive();
         const samples = Math.max(1, Math.min(300, Math.floor(config.samples || 120)));
         const counts = {};
         for (let i = 0; i < samples; i++) {
@@ -11826,6 +11822,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         round = previous.round;
         totalRolls = previous.totalRolls;
         roundWins = previous.roundWins;
+        openingComebackAssistRolls = previous.openingComebackAssistRolls;
         current = previous.current;
         p0Autoplay = previous.p0Autoplay;
         p0ReviewMode = previous.p0ReviewMode;
@@ -11835,7 +11832,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         lastEnduranceAssist = previous.lastEnduranceAssist;
         syncUI();
 
-        return { context, counts, samples, openSlots };
+        return { context, openingComebackAssistActive, counts, samples, openSlots };
       },
       cpuHandoffProbe(value = 1, mode = 'place') {
         ensureQaGame();
@@ -11974,6 +11971,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           roundWins: { ...roundWins },
           p0ReviewMode,
           p0Autoplay,
+          openingComebackAssistActive: isOpeningComebackAssistActive(),
+          openingComebackAssistRolls,
           qaHooks: QA_HOOKS_ENABLED,
           reviewBuild: REVIEW_BUILD,
           debugControlsEnabled: DEBUG_CONTROLS_ENABLED,
