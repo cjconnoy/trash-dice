@@ -11,7 +11,7 @@ CJ is Creative/Product. Codex is Dev Lead, Studio Ops technical owner, QA owner,
 Production workflow state:
 
 - Retail approval is still pending; do not flip live until CJ confirms approval is locked.
-- No known under-the-hood Retail ship blockers remain after the terminal loser-copy, `TRASHED!` player-win stamp, portrait-play gate, and deploy-plumbing audit pass.
+- No known under-the-hood Retail ship blockers remain after the terminal loser-copy, `TRASHED!` player-win stamp, portrait-play gate, desktop short-window scroll fallback, and deploy-plumbing audit pass.
 - Current work is approval hold, final real-device smoke, and launch-flip execution.
 - The canonical route stays `https://playonedaygames.com/trash-dice/play/`; it is protected review now and should become the public Phase 1 route later.
 - Phase 1 is HTML/browser only for desktop, iPhone, and iPad. Do not create or revive an iOS/App Store lane.
@@ -19,16 +19,16 @@ Production workflow state:
 
 Current pushed refs:
 
-- Latest Retail evidence commit before this handoff refresh: `9ff0f50 Record final Retail route guard evidence`
-- Current game-code commit: `151473c Lock Trash Dice mobile play to portrait`
-- Studio-site HEAD: `c8582c6 Mirror Trash Dice portrait lock`
+- Latest Retail evidence commit before this handoff refresh: `aa90d6b Allow desktop scroll for short win screens`
+- Current game-code commit: `aa90d6b Allow desktop scroll for short win screens`
+- Studio-site HEAD: `96a8303 Mirror Trash Dice desktop scroll fallback`
 - ODG pipeline HEAD: `966c0bc Ignore normalized line endings in route drift guard`
-- Ship SHA-256: `ECD5AB6FBE4B7AE8E616CD6213E3F590C3D51B8F5ABE72898B2A6B8653322078`
-- Protected route live SHA-256: `229761BFBF7E44CA2B7242C4F4E2E662F1D4E95D40DF2CACE38568DADA9B10B0`
+- Ship SHA-256: `9713CE3B3FDB45C4C3F5837D512CE0B6FE24A94A396C8DDFF53AE79795B964BE`
+- Protected route live SHA-256: `82A5F1AFEC6220D7438FCFEA104F10887C2081BBB26310DCACE010D332AD0D0E`
 
 Latest verified route guard:
 
-- Timestamp: `2026-06-20T15:08:37.7162032-07:00`
+- Timestamp: `2026-06-20T15:57:20.0284719-07:00`
 - Status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
@@ -39,8 +39,8 @@ Latest verified route guard:
 Latest live protected-byte probe:
 
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`
-- Authenticated route hash: `229761BFBF7E44CA2B7242C4F4E2E662F1D4E95D40DF2CACE38568DADA9B10B0`
-- Authenticated route bytes contain `TRASHED!`, `trashed-stamp`, `NOT ENOUGH DICE TO COME BACK`, `mathematical_elimination`, `mathematicalEndProof`, `ROTATE TO PORTRAIT`, `Trash Dice is built for vertical play.`, and `orientation-lock-screen`
+- Authenticated route hash: `82A5F1AFEC6220D7438FCFEA104F10887C2081BBB26310DCACE010D332AD0D0E`
+- Authenticated route bytes contain `TRASHED!`, `trashed-stamp`, `NOT ENOUGH DICE TO COME BACK`, `mathematical_elimination`, `mathematicalEndProof`, `ROTATE TO PORTRAIT`, `Trash Dice is built for vertical play.`, `orientation-lock-screen`, `@media (hover: hover) and (pointer: fine)`, `overflow-y: auto`, and `resetDesktopScrollPosition`
 - Headers remain `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow, noarchive`
 
 Known unrelated dirty files to leave alone:
@@ -83,15 +83,15 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `151473c Lock Trash Dice mobile play to portrait`
+- `aa90d6b Allow desktop scroll for short win screens`
 
 Current game repo HEAD:
 
-- See `git log --oneline -5`; the current head may be this handoff refresh commit, while the latest gameplay code commit is `151473c Lock Trash Dice mobile play to portrait`.
+- See `git log --oneline -5`; the current head may be this handoff refresh commit, while the latest gameplay code commit is `aa90d6b Allow desktop scroll for short win screens`.
 
 Current studio-site HEAD:
 
-- `c8582c6 Mirror Trash Dice portrait lock`
+- `96a8303 Mirror Trash Dice desktop scroll fallback`
 
 Current ODG pipeline HEAD:
 
@@ -110,7 +110,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-20T15:08:37.7162032-07:00`
+- Timestamp: `2026-06-20T15:57:20.0284719-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
@@ -167,7 +167,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current code commit `151473c`
+- expected current code commit `aa90d6b`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -185,7 +185,7 @@ Studio mirror repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site`
 - branch `main`
-- expected current commit `c8582c6`
+- expected current commit `96a8303`
 
 Known unrelated untracked studio files that must not be cleaned or reverted:
 
@@ -250,6 +250,7 @@ Latest QA-covered behavior:
 - later-session endurance assist is explicitly soft/contextual: neutral late play does not activate help, deficit and late low-dice pressure can activate capped probabilistic help, and CPU soft-brakes are not a global no-streak cap
 - mathematical-lock endings explain themselves only on the losing player's panel with `NOT ENOUGH DICE TO COME BACK`; the `CONGRATULATIONS!` banner and winning panel stay clean
 - player game wins stamp the Green/CPU losing panel with `TRASHED!`; the stamp stays out of the `CONGRATULATIONS!` banner, fits in the losing panel across desktop/iPhone/iPad QA viewports, persists through the win loop, clears after Play Again, and does not appear on CPU wins
+- desktop short-window terminal screens allow vertical-only page scroll on pointer/desktop browsers when Play Again falls below the visible window; QA covers `1366x768` and `1280x720`, no horizontal overflow, reachable Play Again after scroll, and scroll reset after Play Again
 
 CJ's real-device verdict:
 
@@ -436,7 +437,7 @@ CJ is Creative/Product. Codex is Dev Lead and Studio Ops technical owner. Do not
 
 Production workflow state:
 - Retail approval is still pending; do not flip live until CJ confirms approval is locked.
-- No known under-the-hood Retail ship blockers remain after the terminal loser-copy, TRASHED player-win stamp, and deploy-plumbing audit pass.
+- No known under-the-hood Retail ship blockers remain after the terminal loser-copy, TRASHED player-win stamp, portrait-play gate, desktop short-window scroll fallback, and deploy-plumbing audit pass.
 - Current work is approval hold, final real-device smoke, then launch flip.
 - Route must stay protected-review until approval.
 
@@ -451,14 +452,14 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- latest Retail evidence commit before this handoff refresh: 9ff0f50 Record final Retail route guard evidence
-- game code: 151473c Lock Trash Dice mobile play to portrait
-- studio-site HEAD: c8582c6 Mirror Trash Dice portrait lock
+- latest Retail evidence commit before this handoff refresh: aa90d6b Allow desktop scroll for short win screens
+- game code: aa90d6b Allow desktop scroll for short win screens
+- studio-site HEAD: 96a8303 Mirror Trash Dice desktop scroll fallback
 - odg-pipeline HEAD: 966c0bc Ignore normalized line endings in route drift guard
-- ship SHA-256: ECD5AB6FBE4B7AE8E616CD6213E3F590C3D51B8F5ABE72898B2A6B8653322078
-- protected route live SHA-256: 229761BFBF7E44CA2B7242C4F4E2E662F1D4E95D40DF2CACE38568DADA9B10B0
-- latest route-contract guard: green at 2026-06-20T15:08:37.7162032-07:00
-- direct protected-byte probe: authenticated /trash-dice/play/ is 200 and contains TRASHED!, trashed-stamp, NOT ENOUGH DICE TO COME BACK, mathematical_elimination, ROTATE TO PORTRAIT, and orientation-lock-screen
+- ship SHA-256: 9713CE3B3FDB45C4C3F5837D512CE0B6FE24A94A396C8DDFF53AE79795B964BE
+- protected route live SHA-256: 82A5F1AFEC6220D7438FCFEA104F10887C2081BBB26310DCACE010D332AD0D0E
+- latest route-contract guard: green at 2026-06-20T15:57:20.0284719-07:00
+- direct protected-byte probe: authenticated /trash-dice/play/ is 200 and contains TRASHED!, trashed-stamp, NOT ENOUGH DICE TO COME BACK, mathematical_elimination, ROTATE TO PORTRAIT, orientation-lock-screen, @media (hover: hover) and (pointer: fine), overflow-y: auto, and resetDesktopScrollPosition
 
 Known unrelated dirty files:
 - Game repo: .gitignore, qa-public-build.ps1, untracked docs/, mobile/, old qa-public-build_*.log, recaps/
@@ -475,9 +476,10 @@ Current Retail state:
 7. Mathematical-lock endings show `NOT ENOUGH DICE TO COME BACK` only on the losing player's panel, never under `CONGRATULATIONS!` or on the winning panel.
 8. Player game wins stamp the Green/CPU losing panel with `TRASHED!`; it fits in the losing panel across desktop/iPhone/iPad QA viewports, clears after Play Again, and does not appear when CPU wins.
 9. iPhone/iPad browser gameplay is portrait-only; landscape iPhone/iPad viewports show ROTATE TO PORTRAIT and real center taps do not start the game while blocked.
-10. BETA WIP public badge is removed.
-11. Public debug controls are hidden while QA hooks remain available.
-12. Route-guard plumbing now checks for local route-source drift before trusting live-vs-HEAD hash matches, without false reds from normalized line endings.
-13. QA, Alpha diffs, route contracts, and live protected bytes are green for the protected-review candidate.
-14. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+10. Desktop short-window terminal screens allow vertical-only scroll when needed; Play Again is reachable at `1366x768` and `1280x720`, horizontal overflow stays hidden, and Play Again resets scroll to top.
+11. BETA WIP public badge is removed.
+12. Public debug controls are hidden while QA hooks remain available.
+13. Route-guard plumbing now checks for local route-source drift before trusting live-vs-HEAD hash matches, without false reds from normalized line endings.
+14. QA, Alpha diffs, route contracts, and live protected bytes are green for the protected-review candidate.
+15. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```
