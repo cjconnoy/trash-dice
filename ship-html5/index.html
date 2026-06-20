@@ -8927,7 +8927,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
     ui.inventory.classList.add('player-payout-fanfare');
     if (ui.statusText) ui.statusText.textContent = playerPayoutFanfareText;
-    if (ui.statusBar) ui.statusBar.classList.add('payout-praise');
+    if (ui.statusBar) {
+      ui.statusBar.classList.add('payout-praise');
+      ui.statusBar.classList.toggle('round-winner-praise', String(playerPayoutFanfareText).toUpperCase() === 'WINNER');
+    }
     if (ui.poolEl) ui.poolEl.classList.add('payout-jackpot');
     if (duration > 0) {
       playerPayoutFanfareTimer = runLater(() => {
@@ -10663,7 +10666,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (playerPayoutFanfareActive) {
       const payoutUi = getPlayerUi(playerPayoutFanfarePlayer);
       if (payoutUi.inventory) payoutUi.inventory.classList.add('has-status');
-      if (payoutUi.statusBar) payoutUi.statusBar.classList.add('active', 'payout-praise');
+      if (payoutUi.statusBar) {
+        payoutUi.statusBar.classList.add('active', 'payout-praise');
+        payoutUi.statusBar.classList.toggle('round-winner-praise', String(playerPayoutFanfareText).toUpperCase() === 'WINNER');
+      }
       if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
     applyRoundWinnerStatus();

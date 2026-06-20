@@ -587,6 +587,8 @@ async function main() {
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
         winnerPile: document.getElementById('p1Inventory').classList.contains('player-payout-fanfare'),
         winnerPraise: document.getElementById('p1StatusBar').classList.contains('payout-praise'),
+        winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
+        winnerStatusFontSize: getComputedStyle(document.getElementById('p1StatusBar')).fontSize,
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
@@ -637,6 +639,7 @@ async function main() {
       assert(terminal.winnerPanel === true, `${viewport.name}: winner panel fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerPile === true, `${viewport.name}: winner dice pile fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerPraise === true, `${viewport.name}: winner praise state missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 30, `${viewport.name}: game-win winner status should use the large winner treatment ${JSON.stringify(terminal)}`);
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
@@ -660,6 +663,7 @@ async function main() {
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
         titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
+        winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
@@ -667,6 +671,7 @@ async function main() {
       assert(terminalLoop.stillComplete, `${viewport.name}: game over cleared before Play Again ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerPanel === true, `${viewport.name}: winner panel fanfare did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.winnerStatusLarge === true, `${viewport.name}: large winner status did not persist through game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerLabel === 'WINNER', `${viewport.name}: winner label did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -679,6 +684,7 @@ async function main() {
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
         winnerPile: document.getElementById('p1Inventory').classList.contains('player-payout-fanfare'),
         winnerPraise: document.getElementById('p1StatusBar').classList.contains('payout-praise'),
+        winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
         celebratingDice: document.querySelectorAll('.bench-cheer-die').length
       }))()`);
@@ -686,6 +692,7 @@ async function main() {
       assert(terminalCleared.winnerPanel === false, `${viewport.name}: winner panel fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerPile === false, `${viewport.name}: winner dice pile fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerPraise === false, `${viewport.name}: winner praise leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.winnerStatusLarge === false, `${viewport.name}: large winner status leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerCount === false, `${viewport.name}: winner count fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.celebratingDice === 0, `${viewport.name}: dice celebration leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete', 'td_game_win'].forEach(eventName => {
