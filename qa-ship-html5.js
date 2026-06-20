@@ -592,6 +592,23 @@ async function main() {
         winnerStatusFontSize: getComputedStyle(document.getElementById('p1StatusBar')).fontSize,
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
+        trashedStamp: (() => {
+          const stamp = document.getElementById('p2TrashedStamp');
+          if (!stamp) return { present: false };
+          const r = stamp.getBoundingClientRect();
+          const panel = stamp.closest('.player-panel');
+          const pr = panel ? panel.getBoundingClientRect() : null;
+          const style = getComputedStyle(stamp);
+          return {
+            present: true,
+            text: stamp.textContent || '',
+            visible: style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.9 && r.width > 0 && r.height > 0,
+            fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1,
+            fitsPanel: !!pr && r.left >= pr.left -1 && r.right <= pr.right + 1 && r.top >= pr.top -1 && r.bottom <= pr.bottom + 1,
+            rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },
+            panelRect: pr ? { left: Math.round(pr.left), right: Math.round(pr.right), top: Math.round(pr.top), bottom: Math.round(pr.bottom), width: Math.round(pr.width), height: Math.round(pr.height) } : null
+          };
+        })(),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
         bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
         playAgain: (() => {
@@ -643,6 +660,8 @@ async function main() {
       assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 36, `${viewport.name}: game-win winner status should use the extra-large winner treatment ${JSON.stringify(terminal)}`);
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
+      assert(terminal.trashedStamp.present === true && terminal.trashedStamp.text === 'TRASHED!' && terminal.trashedStamp.visible === true, `${viewport.name}: TRASHED stamp should appear on player game win ${JSON.stringify(terminal.trashedStamp)}`);
+      assert(terminal.trashedStamp.fitsViewport === true && terminal.trashedStamp.fitsPanel === true, `${viewport.name}: TRASHED stamp should fit inside the green loser panel ${JSON.stringify(terminal.trashedStamp)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
       assert(terminal.bodyFits, `${viewport.name}: win screen creates horizontal overflow ${JSON.stringify(terminal)}`);
       assert(terminal.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: Play Again CTA missing ${JSON.stringify(terminal)}`);
@@ -666,6 +685,13 @@ async function main() {
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
         winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
+        trashedVisible: (() => {
+          const stamp = document.getElementById('p2TrashedStamp');
+          if (!stamp) return false;
+          const r = stamp.getBoundingClientRect();
+          const style = getComputedStyle(stamp);
+          return style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.9 && r.width > 0 && r.height > 0;
+        })(),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
       }))()`);
@@ -674,6 +700,7 @@ async function main() {
       assert(terminalLoop.winnerPanel === true, `${viewport.name}: winner panel fanfare did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerStatusLarge === true, `${viewport.name}: large winner status did not persist through game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerLabel === 'WINNER', `${viewport.name}: winner label did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.trashedVisible === true, `${viewport.name}: TRASHED stamp did not persist through game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminalLoop.activeAnimationCount <= 5, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
@@ -687,6 +714,13 @@ async function main() {
         winnerPraise: document.getElementById('p1StatusBar').classList.contains('payout-praise'),
         winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
+        trashedVisible: (() => {
+          const stamp = document.getElementById('p2TrashedStamp');
+          if (!stamp) return false;
+          const r = stamp.getBoundingClientRect();
+          const style = getComputedStyle(stamp);
+          return style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.01 && r.width > 0 && r.height > 0;
+        })(),
         celebratingDice: document.querySelectorAll('.bench-cheer-die').length
       }))()`);
       assert(terminalCleared.titleFanfare === false, `${viewport.name}: title fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
@@ -695,6 +729,7 @@ async function main() {
       assert(terminalCleared.winnerPraise === false, `${viewport.name}: winner praise leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerStatusLarge === false, `${viewport.name}: large winner status leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.winnerCount === false, `${viewport.name}: winner count fanfare leaked after Play Again ${JSON.stringify(terminalCleared)}`);
+      assert(terminalCleared.trashedVisible === false, `${viewport.name}: TRASHED stamp leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       assert(terminalCleared.celebratingDice === 0, `${viewport.name}: dice celebration leaked after Play Again ${JSON.stringify(terminalCleared)}`);
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete', 'td_game_win'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
@@ -702,7 +737,7 @@ async function main() {
 
       const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player win complete`);
-      await sleep(260);
+      await sleep(760);
       const mathPlayerWinUi = await evalValue(page, `(() => {
         const title = (document.getElementById('inlineResultTitle') || {}).textContent || '';
         const sub = (document.getElementById('inlineResultSub') || {}).textContent || '';
@@ -710,6 +745,11 @@ async function main() {
         const p2Status = document.getElementById('p2StatusBar');
         const p1Rect = p1Status ? p1Status.getBoundingClientRect() : null;
         const p2Rect = p2Status ? p2Status.getBoundingClientRect() : null;
+        const stamp = document.getElementById('p2TrashedStamp');
+        const stampRect = stamp ? stamp.getBoundingClientRect() : null;
+        const stampPanel = stamp ? stamp.closest('.player-panel') : null;
+        const stampPanelRect = stampPanel ? stampPanel.getBoundingClientRect() : null;
+        const stampStyle = stamp ? getComputedStyle(stamp) : null;
         return {
           state: window.TrashDiceQA.state().inlineGameOver,
           title,
@@ -720,6 +760,13 @@ async function main() {
           p2LoserReason: !!(p2Status && p2Status.classList.contains('loser-reason')),
           p1StatusFits: !!p1Rect && p1Rect.left >= -1 && p1Rect.right <= window.innerWidth + 1,
           p2StatusFits: !!p2Rect && p2Rect.left >= -1 && p2Rect.right <= window.innerWidth + 1,
+          trashedStamp: {
+            present: !!stamp,
+            text: stamp ? stamp.textContent || '' : '',
+            visible: !!stampRect && !!stampStyle && stampStyle.visibility !== 'hidden' && parseFloat(stampStyle.opacity || '0') > 0.9 && stampRect.width > 0 && stampRect.height > 0,
+            fitsViewport: !!stampRect && stampRect.left >= -1 && stampRect.right <= window.innerWidth + 1 && stampRect.top >= -1 && stampRect.bottom <= window.innerHeight + 1,
+            fitsPanel: !!stampRect && !!stampPanelRect && stampRect.left >= stampPanelRect.left - 1 && stampRect.right <= stampPanelRect.right + 1 && stampRect.top >= stampPanelRect.top - 1 && stampRect.bottom <= stampPanelRect.bottom + 1
+          },
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           scrollWidth: document.body.scrollWidth,
           viewportWidth: window.innerWidth,
@@ -746,13 +793,15 @@ async function main() {
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2StatusFits, `${viewport.name}: green loser status should fit in the viewport ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.trashedStamp.present === true && mathPlayerWinUi.trashedStamp.text === 'TRASHED!' && mathPlayerWinUi.trashedStamp.visible === true, `${viewport.name}: mathematical player win should stamp green as TRASHED ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.trashedStamp.fitsViewport === true && mathPlayerWinUi.trashedStamp.fitsPanel === true, `${viewport.name}: mathematical TRASHED stamp should fit in green loser panel ${JSON.stringify(mathPlayerWinUi)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player win`);
 
       const mathPlayerLoss = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p2', 16, 1, 0, 'p1')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player loss complete`);
-      await sleep(260);
+      await sleep(760);
       const mathPlayerLossUi = await evalValue(page, `(() => {
         const title = (document.getElementById('inlineResultTitle') || {}).textContent || '';
         const sub = (document.getElementById('inlineResultSub') || {}).textContent || '';
@@ -760,6 +809,9 @@ async function main() {
         const p2Status = document.getElementById('p2StatusBar');
         const p1Rect = p1Status ? p1Status.getBoundingClientRect() : null;
         const p2Rect = p2Status ? p2Status.getBoundingClientRect() : null;
+        const stamp = document.getElementById('p2TrashedStamp');
+        const stampRect = stamp ? stamp.getBoundingClientRect() : null;
+        const stampStyle = stamp ? getComputedStyle(stamp) : null;
         return {
           state: window.TrashDiceQA.state().inlineGameOver,
           title,
@@ -770,6 +822,7 @@ async function main() {
           p2LoserReason: !!(p2Status && p2Status.classList.contains('loser-reason')),
           p1StatusFits: !!p1Rect && p1Rect.left >= -1 && p1Rect.right <= window.innerWidth + 1,
           p2StatusFits: !!p2Rect && p2Rect.left >= -1 && p2Rect.right <= window.innerWidth + 1,
+          trashedVisible: !!stampRect && !!stampStyle && stampStyle.visibility !== 'hidden' && parseFloat(stampStyle.opacity || '0') > 0.01 && stampRect.width > 0 && stampRect.height > 0,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           scrollWidth: document.body.scrollWidth,
           viewportWidth: window.innerWidth,
@@ -795,6 +848,7 @@ async function main() {
       assert(mathPlayerLossUi.p1Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerLossUi.p1LoserReason === true, `${viewport.name}: yellow loser status should explain mathematical elimination ${JSON.stringify(mathPlayerLossUi)}`);
       assert(!mathPlayerLossUi.p2Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerLossUi.p2LoserReason === false, `${viewport.name}: winning green panel should not carry mathematical loser copy ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1StatusFits, `${viewport.name}: yellow loser status should fit in the viewport ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.trashedVisible === false, `${viewport.name}: TRASHED stamp should not appear when CPU wins ${JSON.stringify(mathPlayerLossUi)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player loss`);

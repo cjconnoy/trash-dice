@@ -1337,6 +1337,27 @@ body.inline-game-over .roll-panel {
   }
 }
 /* dice-pool-visual no longer used in panels — piles live on the mat */
+@keyframes trashedStampPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-13deg) skewX(-9deg) scale(0.42, 0.34);
+    filter: brightness(1.42) drop-shadow(0 2px 0 rgba(6,44,22,0.18));
+  }
+  54% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-4deg) skewX(-8deg) scale(1.05, 0.82);
+    filter: brightness(1.2) drop-shadow(0 7px 0 rgba(6,44,22,0.34));
+  }
+  76% {
+    transform: translate(-50%, -50%) rotate(-6deg) skewX(-8deg) scale(0.94, 0.76);
+    filter: brightness(1.06) drop-shadow(0 5px 0 rgba(6,44,22,0.36));
+  }
+  100% {
+    opacity: 0.98;
+    transform: translate(-50%, -50%) rotate(-5deg) skewX(-8deg) scale(1, 0.76);
+    filter: brightness(1) drop-shadow(0 5px 0 rgba(6,44,22,0.36));
+  }
+}
 .mini-die {
   width: 13px; height: 13px;
   border-radius: 3px;
@@ -1994,6 +2015,49 @@ body.inline-game-over .status-bar.loser-reason .status-text {
   min-width: 0;
   text-align: center;
   overflow-wrap: break-word;
+}
+.trashed-stamp {
+  position: absolute;
+  left: 53%;
+  top: 51%;
+  z-index: 8;
+  display: inline-block;
+  width: auto;
+  max-width: calc(100% - clamp(1.2rem, 5vw, 2.2rem));
+  text-align: center;
+  font-family: 'Bangers', 'Arial Black', sans-serif;
+  font-size: clamp(2.55rem, 10.5vw, 4.55rem);
+  line-height: 0.72;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  color: #e3271f;
+  -webkit-text-stroke: clamp(1px, 0.28vw, 2.4px) #fff27a;
+  text-shadow:
+    0 2px 0 #ff9b42,
+    0 5px 0 #711006,
+    5px 8px 0 rgba(26,22,14,0.34),
+    0 0 20px rgba(255,217,62,0.34);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-5deg) skewX(-8deg) scale(0.9, 0.76);
+  transform-origin: 50% 56%;
+  filter: drop-shadow(0 5px 0 rgba(6,44,22,0.36));
+}
+body.inline-game-over.inline-game-win .green-panel .trashed-stamp {
+  visibility: visible;
+  opacity: 0.98;
+  animation: trashedStampPop 0.62s cubic-bezier(.12,.9,.15,1.2) both;
+}
+body.inline-game-over.inline-game-win .green-panel .status-bar {
+  z-index: 14;
+}
+@media (min-width: 721px) and (max-height: 800px) {
+  .trashed-stamp {
+    top: 53%;
+    font-size: clamp(2.2rem, 6vw, 3.75rem);
+    line-height: 0.7;
+  }
 }
 body.inline-game-win .yellow-panel {
   --panel-glow: rgba(245,200,0,0.34);
@@ -6728,6 +6792,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       <div class="dice-pile panel-pile" id="p2Pile"></div>
       <div class="pool-count p2" id="p2Pool">20</div>
       <div class="roll-die-stage" id="p2DieStage" aria-hidden="true"><div class="die idle" id="p2Die"></div></div>
+      <div class="trashed-stamp" id="p2TrashedStamp" aria-hidden="true">TRASHED!</div>
     </div>
     <span class="turn-tag p2" id="p2TurnTag">TURN</span>
   </div>
