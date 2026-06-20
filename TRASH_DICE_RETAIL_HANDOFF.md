@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `7129641 Harden opening round loss guard`
+- `bc9e9b1 Scope later assist to contextual pressure`
 
 Current studio-site HEAD:
 
-- `c5b864b Mirror Trash Dice opening guard update`
+- `5620a66 Mirror Trash Dice later assist update`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T20:30:57.2197670-07:00`
+- Timestamp: `2026-06-19T20:47:36.4274231-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -196,6 +196,7 @@ Latest QA-covered behavior:
 - yellow/player and green/CPU round-win panel status shows roughly 2.5x `WINNER` through the fanfare window; green/CPU round event timing remains capped
 - player game-win panel status uses the same roughly 2.5x `WINNER` treatment and persists through the terminal win loop until Play Again
 - opening comeback guard is now deterministic after two green opening round wins: yellow is forced toward open slots and green is forced away from open slots when possible, preventing a third straight opening round loss
+- later-session endurance assist is explicitly soft/contextual: neutral late play does not activate help, deficit and late low-dice pressure can activate capped probabilistic help, and CPU soft-brakes are not a global no-streak cap
 
 CJ's real-device verdict:
 
@@ -248,13 +249,9 @@ Never print, commit, paste, or Slack the Exa key. The helper reads `EXA_API_KEY`
 
 Before calling the game live:
 
-- Add the legacy-iPad-only hardware guidance note, unless CJ explicitly decides to skip it.
-- Remove or suppress the visible `BETA WIP - NOT LIVE` badge.
-- Decide the public treatment for debug controls:
-  - `P-0`
-  - `WIN`
-  - `LOSE`
-- Best public treatment: hide debug controls outside QA/review mode while preserving QA hooks for automation.
+- Confirm the legacy-iPad-only hardware guidance note still appears only on the intended legacy profile.
+- Confirm the visible `BETA WIP - NOT LIVE` badge stays absent.
+- Confirm `P-0`, `WIN`, and `LOSE` debug controls stay hidden outside QA/review mode while preserving QA hooks for automation.
 - Verify no user-facing copy uses "TD".
 - Verify the title, start card, game screen, win/loss screens, Play Again, and DONE loop are retail-appropriate.
 - Verify the Big Discoveries and Trash Dice marks render from mirrored assets.
@@ -395,8 +392,8 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: 7129641 Harden opening round loss guard
-- studio-site mirror: c5b864b Mirror Trash Dice opening guard update
+- game code: bc9e9b1 Scope later assist to contextual pressure
+- studio-site mirror: 5620a66 Mirror Trash Dice later assist update
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
@@ -404,8 +401,9 @@ Current Retail state:
 3. Round-win panel `WINNER` status is roughly 2.5x larger than the base status label and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
 4. Player game-win panel `WINNER` status uses the same roughly 2.5x treatment and persists through the terminal win loop until Play Again.
 5. Opening comeback guard prevents a fresh game from allowing green/CPU to win the first three rounds straight.
-6. BETA WIP public badge is removed.
-7. Public debug controls are hidden while QA hooks remain available.
-8. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-9. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+6. Later-session assist is soft, contextual, and capped: deficit or low-dice pressure can help, neutral late play does not, and there is no global CPU three-round-streak ban.
+7. BETA WIP public badge is removed.
+8. Public debug controls are hidden while QA hooks remain available.
+9. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+10. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```

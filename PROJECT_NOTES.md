@@ -6,7 +6,7 @@ Trash Dice HTML5 Beta is complete as of 2026-06-18. The current standing handoff
 
 Retail work should focus on final live-readiness for the one-player HTML5 instant-play lane at `https://playonedaygames.com/trash-dice/play/`: legacy-iPad-only hardware guidance, public badge/debug-control cleanup, final QA, Alpha lock verification, route-contract verification, and launch flip execution. Do not restart from older Beta/PWA/two-player direction unless CJ explicitly changes the product call.
 
-The protected-review Retail candidate is prepared and pushed, but public live launch is pending retail approval. Use `TRASH_DICE_RETAIL_APPROVAL_PACKET.md` for the current candidate evidence and do not flip `/trash-dice/play/` public until approval is locked.
+The protected-review Retail candidate is prepared and pushed, but public live launch is pending retail approval. Use `TRASH_DICE_RETAIL_APPROVAL_PACKET.md` for the current candidate evidence and do not flip `/trash-dice/play/` public until approval is locked. Current gameplay-assist doctrine: hard anti-sweep only in the fresh-game/onboarding danger window; no global CPU three-round-streak ban; later-session help stays soft, capped, invisible, and contextual to player deficit or pressure signals.
 
 ## Standing Handoff And Development Rule
 

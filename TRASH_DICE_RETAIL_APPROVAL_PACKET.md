@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-19T20:31:10-07:00
+Prepared: 2026-06-19T20:47:36-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,9 +8,9 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo code commit: `71296413dba16323879b2bc3132ac677d94ec1fe`
-- Studio-site commit: `c5b864b08fba2cc2abb6fde6f54e6afabf6f9f9b`
-- Ship lane hash from latest sync: `E5712366D57D409861C363F0F8D5C4521CD988506273652036549FCFAA763C41`
+- Game repo code commit: `bc9e9b1312b49eb48c7620c078ec85fe8175eb1a`
+- Studio-site commit: `5620a66838dcb415fd467f799c55dd265880edfc`
+- Ship lane hash from latest sync: `1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992`
 
 ## Retail Scope Locked
 
@@ -34,6 +34,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 - Kept the in-panel `WINNER` round-win status visible through the fanfare/resolution window for both yellow/player and green/CPU wins, made it roughly 2.5x larger than the base status label, and left green/CPU round event timing unchanged.
 - Applied that same roughly 2.5x larger `WINNER` status treatment to the player's game-win panel state and verified it persists through the terminal win loop until Play Again.
 - Hardened the opening comeback guard so a fresh game can no longer allow green/CPU to take a third straight opening round after yellow/player has lost the first two rounds.
+- Scoped later-session endurance assist to contextual player-help signals only: active only after the game is late enough and yellow is in a dice/round deficit or late low-dice pressure state; neutral late play stays unassisted, and CPU soft-brakes remain probabilistic rather than a global no-streak cap.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -46,6 +47,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   - yellow/player and green/CPU round-win probes keep enlarged `WINNER` status visible through the fanfare window, while the green/CPU timing cap remains unchanged
   - player game-win probe keeps enlarged `WINNER` status visible through the terminal win loop and clears it after Play Again
   - opening sweep guard probe verifies that, after two green opening round wins, yellow rolls only open slots and green avoids open slots when possible
+  - later-assist probes verify neutral late play does not activate help, deficit play activates soft contextual help, late low-dice pressure activates soft contextual help, and CPU soft-brakes are not hard no-streak caps
 - Synced source build to:
   - `ship-html5/trash-dice.html`
   - `studio-site/play/trash-dice/play/index.html`
@@ -72,7 +74,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-19T20:30:57.2197670-07:00`
+Result timestamp: `2026-06-19T20:47:36.4274231-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
@@ -101,6 +103,24 @@ Retail surface scan:
 - Legacy iPad Pro 9.7 on iPadOS 16.7.16 is treated as below the smooth hardware target.
 - The legacy iPad path remains playable and now gives honest non-blocking hardware guidance.
 - Do not reopen legacy iPad animation tuning unless CJ explicitly reopens it.
+- Gameplay assist doctrine is now explicit: hard opening anti-sweep only for the fresh-game danger window; normal CPU streaks are allowed after that; later-session help is soft, capped, invisible, and based on player deficit or pressure signals.
+
+## Gameplay Assist Research Refresh
+
+Refreshed: 2026-06-19
+
+Useful findings:
+
+- GameAnalytics FTUE guidance emphasizes quick first-session success, reduced friction, and positive reinforcement during onboarding: https://www.gameanalytics.com/blog/tips-for-a-great-first-time-user-experience-ftue-in-f2p-games
+- Game Developer / deltaDNA first-session analysis ties longer first sessions to stronger Day 1 retention and treats early churn as a critical product risk: https://www.gamedeveloper.com/business/how-first-session-length-impacts-game-performance
+- Dynamic-difficulty research supports adapting difficulty to player state and performance rather than using blunt static difficulty rules: https://www.intechopen.com/chapters/1228576 and https://www.mdpi.com/2076-3417/15/10/5610
+- Game Developer DDA design guidance warns that successful DDA should feel invisible, which argues against obvious global rubber-banding caps: https://www.gamedeveloper.com/design/more-than-meets-the-eye-the-secrets-of-dynamic-difficulty-adjustment
+
+Conclusion:
+
+- Keep the hard guard only for the fresh-game/onboarding danger window.
+- Do not add a global "CPU cannot win three rounds in a row" rule.
+- Keep later-session assist softer, capped, and contextual.
 
 ## Legacy Hardware Research Refresh
 
