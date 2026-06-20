@@ -19,7 +19,7 @@ Production workflow state:
 
 Current pushed refs:
 
-- Game repo HEAD: `97ecdb4 Refresh Retail assist doctrine evidence`
+- Latest Retail evidence commit before this handoff refresh: `97ecdb4 Refresh Retail assist doctrine evidence`
 - Current game-code commit: `bc9e9b1 Scope later assist to contextual pressure`
 - Studio-site HEAD: `5620a66 Mirror Trash Dice later assist update`
 - Ship SHA-256: `1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992`
@@ -77,7 +77,7 @@ Current Retail candidate game-code commit:
 
 Current game repo HEAD:
 
-- `97ecdb4 Refresh Retail assist doctrine evidence`
+- See `git log --oneline -5`; the current head may be this handoff refresh commit, while the latest Retail evidence commit is `97ecdb4 Refresh Retail assist doctrine evidence`.
 
 Current studio-site HEAD:
 
@@ -434,7 +434,7 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game repo HEAD: 97ecdb4 Refresh Retail assist doctrine evidence
+- latest Retail evidence commit before this handoff refresh: 97ecdb4 Refresh Retail assist doctrine evidence
 - game code: bc9e9b1 Scope later assist to contextual pressure
 - studio-site HEAD: 5620a66 Mirror Trash Dice later assist update
 - ship SHA-256: 1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992
