@@ -1,6 +1,6 @@
 # Trash Dice Retail Handoff
 
-Prepared: 2026-06-18
+Prepared: 2026-06-19
 
 This handoff starts the next session: `Trash Dice Retail`.
 
@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `e5c70a6 Gate legacy iPad guidance by old iPadOS`
+- `bdbe790 Improve pool count numeral readability`
 
 Current studio-site HEAD:
 
-- `27ac1d6 Tighten Trash Dice legacy iPad gate`
+- `5d21b86 Improve Trash Dice pool count numerals`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-18T17:23:42.0614042-07:00`
+- Timestamp: `2026-06-19T18:46:41.4081068-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -116,7 +116,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current commit `7b86b39`
+- expected current code commit `bdbe790`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -392,13 +392,14 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: e5c70a6 Gate legacy iPad guidance by old iPadOS
-- studio-site mirror: 27ac1d6 Tighten Trash Dice legacy iPad gate
+- game code: bdbe790 Improve pool count numeral readability
+- studio-site mirror: 5d21b86 Improve Trash Dice pool count numerals
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
-2. BETA WIP public badge is removed.
-3. Public debug controls are hidden while QA hooks remain available.
-4. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-5. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+2. Player-panel pool-count numerals use `Fredoka One`/tabular numeric styling so `7` reads clearly on iPhone.
+3. BETA WIP public badge is removed.
+4. Public debug controls are hidden while QA hooks remain available.
+5. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+6. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```
