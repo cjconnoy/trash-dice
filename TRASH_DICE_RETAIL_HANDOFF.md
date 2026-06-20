@@ -6,6 +6,38 @@ This handoff starts the next session: `Trash Dice Retail`.
 
 CJ is Creative/Product. Codex is Dev Lead, Studio Ops technical owner, QA owner, release owner, Slack comms owner, and continuity owner. Beta is complete. The next session should not reopen Beta polish unless CJ explicitly changes the call. The mission is to turn the accepted Beta build into the final retail/live web release.
 
+## Fresh Session Snapshot
+
+Production workflow state:
+
+- Retail approval is still pending; do not flip live until CJ confirms approval is locked.
+- No known under-the-hood Retail ship blockers remain after the assist-doctrine pass.
+- Current work is approval hold, final real-device smoke, and launch-flip execution.
+- The canonical route stays `https://playonedaygames.com/trash-dice/play/`; it is protected review now and should become the public Phase 1 route later.
+- Phase 1 is HTML/browser only for desktop, iPhone, and iPad. Do not create or revive an iOS/App Store lane.
+- Alpha Complete is frozen forever and must remain untouched.
+
+Current pushed refs:
+
+- Game repo HEAD: `97ecdb4 Refresh Retail assist doctrine evidence`
+- Current game-code commit: `bc9e9b1 Scope later assist to contextual pressure`
+- Studio-site HEAD: `5620a66 Mirror Trash Dice later assist update`
+- Ship SHA-256: `1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992`
+
+Latest verified route guard:
+
+- Timestamp: `2026-06-19T20:51:50.5069900-07:00`
+- Status: green
+- `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
+- `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
+- `/trash-dice/ios-preview/`: unauthenticated `401`, state `protected-preview`
+- retired Trash Dice routes: `404`
+
+Known unrelated dirty files to leave alone:
+
+- Game repo: `.gitignore`, `qa-public-build.ps1`, untracked `docs/`, `mobile/`, old `qa-public-build_*.log`, `recaps/`
+- Studio-site: untracked `play/assets/games/tic-tac-toe/CAPTURE_NOTES.md`, `play/live/tic-tac-toe/assets/ttt-night-gameplay-thumbnail.png`
+
 ## Start Here
 
 Open the game repo:
@@ -43,6 +75,10 @@ Current Retail candidate game-code commit:
 
 - `bc9e9b1 Scope later assist to contextual pressure`
 
+Current game repo HEAD:
+
+- `97ecdb4 Refresh Retail assist doctrine evidence`
+
 Current studio-site HEAD:
 
 - `5620a66 Mirror Trash Dice later assist update`
@@ -60,7 +96,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T20:47:36.4274231-07:00`
+- Timestamp: `2026-06-19T20:51:50.5069900-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -381,6 +417,12 @@ Then read PROJECT_NOTES.md, CJ_REVIEW_WORKFLOW.md, ship-html5/README.md, ALPHA_C
 
 CJ is Creative/Product. Codex is Dev Lead and Studio Ops technical owner. Do not make CJ re-explain Beta. The job is to ship the accepted one-player HTML5 instant-play Trash Dice build to live.
 
+Production workflow state:
+- Retail approval is still pending; do not flip live until CJ confirms approval is locked.
+- No known under-the-hood Retail ship blockers remain.
+- Current work is approval hold, final real-device smoke, then launch flip.
+- Route must stay protected-review until approval.
+
 Hard rules:
 - Do not touch Alpha Complete or releases/alpha-complete.
 - Canonical route: https://playonedaygames.com/trash-dice/play/
@@ -392,8 +434,16 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
+- game repo HEAD: 97ecdb4 Refresh Retail assist doctrine evidence
 - game code: bc9e9b1 Scope later assist to contextual pressure
-- studio-site mirror: 5620a66 Mirror Trash Dice later assist update
+- studio-site HEAD: 5620a66 Mirror Trash Dice later assist update
+- ship SHA-256: 1EA0B9C4DF4F33C06171B393651C056980852811CD27451268BEA0F7C74BF992
+- latest route-contract guard: green at 2026-06-19T20:51:50.5069900-07:00
+
+Known unrelated dirty files:
+- Game repo: .gitignore, qa-public-build.ps1, untracked docs/, mobile/, old qa-public-build_*.log, recaps/
+- Studio-site: untracked play/assets/games/tic-tac-toe/CAPTURE_NOTES.md and play/live/tic-tac-toe/assets/ttt-night-gameplay-thumbnail.png
+- Leave those alone unless CJ explicitly asks.
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
