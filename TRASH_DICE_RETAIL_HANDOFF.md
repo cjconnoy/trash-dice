@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `bdbe790 Improve pool count numeral readability`
+- `f933a94 Keep round winner status visible through fanfare`
 
 Current studio-site HEAD:
 
-- `5d21b86 Improve Trash Dice pool count numerals`
+- `c1b68ce Mirror Trash Dice round winner status update`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T18:46:41.4081068-07:00`
+- Timestamp: `2026-06-19T18:59:28.3109963-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -116,7 +116,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current code commit `bdbe790`
+- expected current code commit `f933a94`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -134,7 +134,7 @@ Studio mirror repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site`
 - branch `main`
-- expected current commit `d4b634b`
+- expected current commit `c1b68ce`
 
 Known unrelated untracked studio files that must not be cleaned or reverted:
 
@@ -193,6 +193,7 @@ Latest QA-covered behavior:
 - legacy iPad keeps slow glints and tiny can/lid idle motion alive in gameplay
 - legacy iPad removes expensive can filters
 - legacy iPad CPU roll-to-ready target is under `900ms`
+- yellow/player and green/CPU round-win panel status shows enlarged `WINNER` through the fanfare window; green/CPU round event timing remains capped
 
 CJ's real-device verdict:
 
@@ -392,14 +393,15 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: bdbe790 Improve pool count numeral readability
-- studio-site mirror: 5d21b86 Improve Trash Dice pool count numerals
+- game code: f933a94 Keep round winner status visible through fanfare
+- studio-site mirror: c1b68ce Mirror Trash Dice round winner status update
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
 2. Player-panel pool-count numerals use `Fredoka One`/tabular numeric styling so `7` reads clearly on iPhone.
-3. BETA WIP public badge is removed.
-4. Public debug controls are hidden while QA hooks remain available.
-5. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-6. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+3. Round-win panel `WINNER` status is roughly 2x larger and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
+4. BETA WIP public badge is removed.
+5. Public debug controls are hidden while QA hooks remain available.
+6. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+7. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```

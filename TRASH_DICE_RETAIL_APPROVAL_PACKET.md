@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-19T18:47:43-07:00
+Prepared: 2026-06-19T19:02:35-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,9 +8,9 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo code commit: `bdbe790ff4e80b7c6db4e416c7ff26d14e0cf6c1`
-- Studio-site commit: `5d21b86253a7f2b250aede2b0719ae3e4aeb84ab`
-- Ship lane hash from latest sync: `D04FF45E81BCB26934D630024D6C1278952A34EBC2D3D80CB65AFA3DE75615E9`
+- Game repo code commit: `f933a94d59f9af5a66b6a8f6d66bd96417fd1088`
+- Studio-site commit: `c1b68cecbaf0dfb12fea96ccc2a659684954837c`
+- Ship lane hash from latest sync: `234620569DCCA62B73CBC2E57B46BD50C4E306789BD3359706CF4672200360A8`
 
 ## Retail Scope Locked
 
@@ -31,6 +31,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   `For the smoothest experience, play on iPhone, desktop, or a newer iPad.`
 - Tightened the legacy-iPad gate so the note appears for the forced legacy QA override or old 9.7-inch iPad/iPadOS 16-and-below profile, while newer iPadOS profiles stay on the standard iPad path.
 - Improved in-game player-panel pool-count numeral readability by moving those count badges off the stylized `Bangers` face and onto `Fredoka One` with tabular numeric styling.
+- Kept the in-panel `WINNER` round-win status visible through the fanfare/resolution window for both yellow/player and green/CPU wins, made it roughly 2x larger, and left green/CPU round event timing unchanged.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -40,6 +41,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   - legacy iPad guidance visible only for the legacy profile
   - iPadOS 18 / 9.7-inch-class QA profile remains standard iPad with no legacy guidance
   - player-panel pool-count numerals use the legible count-badge font in active gameplay
+  - yellow/player and green/CPU round-win probes keep enlarged `WINNER` status visible through the fanfare window, while the green/CPU timing cap remains unchanged
 - Synced source build to:
   - `ship-html5/trash-dice.html`
   - `studio-site/play/trash-dice/play/index.html`
@@ -66,7 +68,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-19T18:46:41.4081068-07:00`
+Result timestamp: `2026-06-19T18:59:28.3109963-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
