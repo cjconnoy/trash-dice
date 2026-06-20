@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `7f49de8 Enlarge player game-win winner status`
+- `4be7831 Increase winner status scale`
 
 Current studio-site HEAD:
 
-- `789f229 Mirror Trash Dice game-win winner status update`
+- `678c04f Mirror Trash Dice winner status scale update`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T19:28:12.4059132-07:00`
+- Timestamp: `2026-06-19T19:54:57.9289977-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -116,7 +116,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current code commit `7f49de8`
+- expected current code commit `4be7831`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -134,7 +134,7 @@ Studio mirror repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site`
 - branch `main`
-- expected current commit `789f229`
+- expected current commit `678c04f`
 
 Known unrelated untracked studio files that must not be cleaned or reverted:
 
@@ -193,8 +193,8 @@ Latest QA-covered behavior:
 - legacy iPad keeps slow glints and tiny can/lid idle motion alive in gameplay
 - legacy iPad removes expensive can filters
 - legacy iPad CPU roll-to-ready target is under `900ms`
-- yellow/player and green/CPU round-win panel status shows enlarged `WINNER` through the fanfare window; green/CPU round event timing remains capped
-- player game-win panel status uses the same enlarged `WINNER` treatment and persists through the terminal win loop until Play Again
+- yellow/player and green/CPU round-win panel status shows roughly 2.5x `WINNER` through the fanfare window; green/CPU round event timing remains capped
+- player game-win panel status uses the same roughly 2.5x `WINNER` treatment and persists through the terminal win loop until Play Again
 
 CJ's real-device verdict:
 
@@ -394,14 +394,14 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: 7f49de8 Enlarge player game-win winner status
-- studio-site mirror: 789f229 Mirror Trash Dice game-win winner status update
+- game code: 4be7831 Increase winner status scale
+- studio-site mirror: 678c04f Mirror Trash Dice winner status scale update
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
 2. Player-panel pool-count numerals use `Fredoka One`/tabular numeric styling so `7` reads clearly on iPhone.
-3. Round-win panel `WINNER` status is roughly 2x larger and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
-4. Player game-win panel `WINNER` status uses the same enlarged treatment and persists through the terminal win loop until Play Again.
+3. Round-win panel `WINNER` status is roughly 2.5x larger than the base status label and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
+4. Player game-win panel `WINNER` status uses the same roughly 2.5x treatment and persists through the terminal win loop until Play Again.
 5. BETA WIP public badge is removed.
 6. Public debug controls are hidden while QA hooks remain available.
 7. QA, Alpha diffs, and route contracts are green for the protected-review candidate.

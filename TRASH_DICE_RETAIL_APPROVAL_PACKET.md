@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-19T19:28:27-07:00
+Prepared: 2026-06-19T19:55:09-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,9 +8,9 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo code commit: `7f49de8535ebaa377498f661fa7f495e14712be9`
-- Studio-site commit: `789f229ff34d8e86607777d136c5dddea83e851c`
-- Ship lane hash from latest sync: `C532F2D81C0188C60E033856183D875B88F1CAF3171E55C4521A7A4DCF49FAF4`
+- Game repo code commit: `4be7831247bce79b209633025a19682ebcd5452f`
+- Studio-site commit: `678c04fe5dfde58e0e6b9a904ac42014fee38bcc`
+- Ship lane hash from latest sync: `060845C69CA930A56818D177B3D2382F8A76612AAEB2ACF405F928957E54AEA0`
 
 ## Retail Scope Locked
 
@@ -31,8 +31,8 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   `For the smoothest experience, play on iPhone, desktop, or a newer iPad.`
 - Tightened the legacy-iPad gate so the note appears for the forced legacy QA override or old 9.7-inch iPad/iPadOS 16-and-below profile, while newer iPadOS profiles stay on the standard iPad path.
 - Improved in-game player-panel pool-count numeral readability by moving those count badges off the stylized `Bangers` face and onto `Fredoka One` with tabular numeric styling.
-- Kept the in-panel `WINNER` round-win status visible through the fanfare/resolution window for both yellow/player and green/CPU wins, made it roughly 2x larger, and left green/CPU round event timing unchanged.
-- Applied that same roughly 2x larger `WINNER` status treatment to the player's game-win panel state and verified it persists through the terminal win loop until Play Again.
+- Kept the in-panel `WINNER` round-win status visible through the fanfare/resolution window for both yellow/player and green/CPU wins, made it roughly 2.5x larger than the base status label, and left green/CPU round event timing unchanged.
+- Applied that same roughly 2.5x larger `WINNER` status treatment to the player's game-win panel state and verified it persists through the terminal win loop until Play Again.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -70,7 +70,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-19T19:28:12.4059132-07:00`
+Result timestamp: `2026-06-19T19:54:57.9289977-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
