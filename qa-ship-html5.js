@@ -35,6 +35,11 @@ const orientationLockedViewports = [
   { name: 'ipad-landscape-locked', width: 1024, height: 690, deviceScaleFactor: 2, mobile: true, screenWidth: 1024, screenHeight: 768, userAgent: IPAD_OS18_USER_AGENT, platform: 'iPad' }
 ];
 
+const desktopScrollViewports = [
+  { name: 'desktop-short-1366x768-scroll', width: 1366, height: 768, deviceScaleFactor: 1, mobile: false, screenWidth: 1366, screenHeight: 768 },
+  { name: 'desktop-short-1280x720-scroll', width: 1280, height: 720, deviceScaleFactor: 1, mobile: false, screenWidth: 1280, screenHeight: 720 }
+];
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -247,6 +252,57 @@ async function main() {
       }))()`);
       assert(blockedAfterTap.blocked === 'true' && blockedAfterTap.gameStarted === false && blockedAfterTap.centerCovered === true, `${viewport.name}: rotated tap should stay blocked ${JSON.stringify(blockedAfterTap)}`);
       reports.push({ viewport: viewport.name, status: 'orientation-locked', state: orientationGate.state.orientationViewport });
+    }
+
+    for (const viewport of desktopScrollViewports) {
+      const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
+      await evalValue(page, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
+      await evalValue(page, `document.getElementById('startBtn').click(); true`);
+      await waitEval(page, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${viewport.name} game start`);
+      await evalValue(page, `window.TrashDiceQA.gameWin('p2'); true`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game loss complete`);
+      await sleep(760);
+      const shortBeforeScroll = await evalValue(page, `(() => {
+        const btn = document.getElementById('rollBtn');
+        const r = btn.getBoundingClientRect();
+        return {
+          bodyOverflowX: getComputedStyle(document.body).overflowX,
+          bodyOverflowY: getComputedStyle(document.body).overflowY,
+          htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+          scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
+          bodyScrollHeight: document.body.scrollHeight,
+          docScrollHeight: document.documentElement.scrollHeight,
+          viewportHeight: window.innerHeight,
+          horizontalFits: document.body.scrollWidth <= window.innerWidth + 1 && document.documentElement.scrollWidth <= window.innerWidth + 1,
+          playAgain: { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height), visible: r.top >= -1 && r.bottom <= window.innerHeight + 1, text: btn.textContent || '' }
+        };
+      })()`);
+      assert(shortBeforeScroll.bodyOverflowX === 'hidden' && shortBeforeScroll.bodyOverflowY === 'auto', `${viewport.name}: desktop short viewport should allow vertical-only overflow ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.htmlOverflowY === 'hidden', `${viewport.name}: document root should not create a second vertical scroll surface ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.bodyScrollHeight > shortBeforeScroll.viewportHeight, `${viewport.name}: short viewport should expose scrollable height when content exceeds the window ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.horizontalFits === true, `${viewport.name}: desktop short viewport should not create horizontal overflow ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: short viewport Play Again CTA missing ${JSON.stringify(shortBeforeScroll)}`);
+      await evalValue(page, `document.body.scrollTo(0, document.body.scrollHeight); true`);
+      await sleep(160);
+      const shortAfterScroll = await evalValue(page, `(() => {
+        const btn = document.getElementById('rollBtn');
+        const r = btn.getBoundingClientRect();
+        return {
+          scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
+          playAgain: { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height), visible: r.top >= -1 && r.bottom <= window.innerHeight + 1, text: btn.textContent || '' }
+        };
+      })()`);
+      assert(shortAfterScroll.scrollTop > 0, `${viewport.name}: short desktop viewport did not scroll vertically ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
+      assert(shortAfterScroll.playAgain.visible === true, `${viewport.name}: Play Again should be reachable after desktop short-viewport scroll ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after short-scroll Play Again`);
+      const shortRestart = await evalValue(page, `(() => ({
+        scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
+        rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+        inlineGameOver: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active)
+      }))()`);
+      assert(shortRestart.scrollTop <= 1 && shortRestart.inlineGameOver === false && shortRestart.rollText.includes('ROLL'), `${viewport.name}: restart should reset desktop scroll and leave game playable ${JSON.stringify(shortRestart)}`);
+      reports.push({ viewport: viewport.name, status: 'desktop-scroll-ok', before: shortBeforeScroll.playAgain, after: shortAfterScroll.playAgain });
     }
 
     for (const viewport of viewports) {

@@ -55,6 +55,17 @@ body {
     linear-gradient(180deg, #faf8f2 0%, #ddd5c8 100%);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  html {
+    overflow: hidden;
+  }
+
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
 /* ── GRAFFITI TITLE ── */
 .title-wrap {
   display: flex;
@@ -7366,6 +7377,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return blocked;
   }
   syncPortraitOrientationGate();
+  function resetDesktopScrollPosition() {
+    const desktopPointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!desktopPointer || MOBILE_REVIEW_DEVICE) return;
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+    document.documentElement.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
+    if (typeof document.body.scrollTo === 'function') document.body.scrollTo(0, 0);
+    if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+  }
   const ROLL_ANIMATION_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 260 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 520 : (FAST_PREVIEW_ENABLED ? 420 : 850));
   const ROLL_REVEAL_HOLD_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 80 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 140 : (FAST_PREVIEW_ENABLED ? 280 : 650));
   const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
@@ -11275,6 +11296,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   // ── INIT ─────────────────────────────────────────────────────
   function init() {
+    resetDesktopScrollPosition();
     clearRuntimeTimers();
     stopTitleCanMotion(false);
     cancelProgressionWatchdog();
