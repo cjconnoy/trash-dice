@@ -20,6 +20,7 @@ const forbiddenRequests = [
   'trash-dice-beta-room',
   'quickchart.io'
 ];
+const MATHEMATICAL_ELIMINATION_STATUS = 'NOT ENOUGH DICE TO COME BACK';
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 900, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 900 },
@@ -698,6 +699,105 @@ async function main() {
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete', 'td_game_win'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
+
+      const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player win complete`);
+      await sleep(260);
+      const mathPlayerWinUi = await evalValue(page, `(() => {
+        const title = (document.getElementById('inlineResultTitle') || {}).textContent || '';
+        const sub = (document.getElementById('inlineResultSub') || {}).textContent || '';
+        const p1Status = document.getElementById('p1StatusBar');
+        const p2Status = document.getElementById('p2StatusBar');
+        const p1Rect = p1Status ? p1Status.getBoundingClientRect() : null;
+        const p2Rect = p2Status ? p2Status.getBoundingClientRect() : null;
+        return {
+          state: window.TrashDiceQA.state().inlineGameOver,
+          title,
+          sub,
+          p1Text: (document.getElementById('p1StatusText') || {}).textContent || '',
+          p2Text: (document.getElementById('p2StatusText') || {}).textContent || '',
+          p1LoserReason: !!(p1Status && p1Status.classList.contains('loser-reason')),
+          p2LoserReason: !!(p2Status && p2Status.classList.contains('loser-reason')),
+          p1StatusFits: !!p1Rect && p1Rect.left >= -1 && p1Rect.right <= window.innerWidth + 1,
+          p2StatusFits: !!p2Rect && p2Rect.left >= -1 && p2Rect.right <= window.innerWidth + 1,
+          bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
+          scrollWidth: document.body.scrollWidth,
+          viewportWidth: window.innerWidth,
+          offenders: Array.from(document.querySelectorAll('body *'))
+            .map(el => {
+              const r = el.getBoundingClientRect();
+              return {
+                tag: el.tagName,
+                id: el.id || '',
+                cls: typeof el.className === 'string' ? el.className : '',
+                left: Math.round(r.left),
+                right: Math.round(r.right),
+                width: Math.round(r.width)
+              };
+            })
+            .filter(item => item.right > window.innerWidth + 1 || item.left < -1)
+            .slice(0, 8)
+        };
+      })()`);
+      assert(mathPlayerWin.passed === true, `${viewport.name}: mathematical player win proof failed ${JSON.stringify(mathPlayerWin)}`);
+      assert(mathPlayerWinUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player win reason missing ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'CONGRATULATIONS!', `${viewport.name}: player-win title changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under congratulations ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.p2StatusFits, `${viewport.name}: green loser status should fit in the viewport ${JSON.stringify(mathPlayerWinUi)}`);
+
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player win`);
+
+      const mathPlayerLoss = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p2', 16, 1, 0, 'p1')`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player loss complete`);
+      await sleep(260);
+      const mathPlayerLossUi = await evalValue(page, `(() => {
+        const title = (document.getElementById('inlineResultTitle') || {}).textContent || '';
+        const sub = (document.getElementById('inlineResultSub') || {}).textContent || '';
+        const p1Status = document.getElementById('p1StatusBar');
+        const p2Status = document.getElementById('p2StatusBar');
+        const p1Rect = p1Status ? p1Status.getBoundingClientRect() : null;
+        const p2Rect = p2Status ? p2Status.getBoundingClientRect() : null;
+        return {
+          state: window.TrashDiceQA.state().inlineGameOver,
+          title,
+          sub,
+          p1Text: (document.getElementById('p1StatusText') || {}).textContent || '',
+          p2Text: (document.getElementById('p2StatusText') || {}).textContent || '',
+          p1LoserReason: !!(p1Status && p1Status.classList.contains('loser-reason')),
+          p2LoserReason: !!(p2Status && p2Status.classList.contains('loser-reason')),
+          p1StatusFits: !!p1Rect && p1Rect.left >= -1 && p1Rect.right <= window.innerWidth + 1,
+          p2StatusFits: !!p2Rect && p2Rect.left >= -1 && p2Rect.right <= window.innerWidth + 1,
+          bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
+          scrollWidth: document.body.scrollWidth,
+          viewportWidth: window.innerWidth,
+          offenders: Array.from(document.querySelectorAll('body *'))
+            .map(el => {
+              const r = el.getBoundingClientRect();
+              return {
+                tag: el.tagName,
+                id: el.id || '',
+                cls: typeof el.className === 'string' ? el.className : '',
+                left: Math.round(r.left),
+                right: Math.round(r.right),
+                width: Math.round(r.width)
+              };
+            })
+            .filter(item => item.right > window.innerWidth + 1 || item.left < -1)
+            .slice(0, 8)
+        };
+      })()`);
+      assert(mathPlayerLoss.passed === true, `${viewport.name}: mathematical player loss proof failed ${JSON.stringify(mathPlayerLoss)}`);
+      assert(mathPlayerLossUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player loss reason missing ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.title === 'GAME OVER' && mathPlayerLossUi.sub === 'GREEN WINS', `${viewport.name}: player-loss banner should stay normal ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.p1Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerLossUi.p1LoserReason === true, `${viewport.name}: yellow loser status should explain mathematical elimination ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(!mathPlayerLossUi.p2Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerLossUi.p2LoserReason === false, `${viewport.name}: winning green panel should not carry mathematical loser copy ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.p1StatusFits, `${viewport.name}: yellow loser status should fit in the viewport ${JSON.stringify(mathPlayerLossUi)}`);
+
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player loss`);
 
       await evalValue(page, `window.__tdForceQuitFallback = true; document.getElementById('quitGameBtn').click(); true`);
       await waitEval(page, `(() => {

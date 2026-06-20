@@ -1981,6 +1981,20 @@ body.inline-game-over .status-bar.active {
     0 4px 13px rgba(201,160,0,0.22),
     0 0 18px rgba(245,200,0,0.34);
 }
+body.inline-game-over .status-bar.loser-reason {
+  width: min(18rem, calc(100vw - 7rem));
+  max-width: calc(100vw - 7rem);
+  padding: 0.28rem 0.68rem 0.24rem;
+  white-space: normal;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  font-size: clamp(0.76rem, 2.2vw, 1rem);
+}
+body.inline-game-over .status-bar.loser-reason .status-text {
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: break-word;
+}
 body.inline-game-win .yellow-panel {
   --panel-glow: rgba(245,200,0,0.34);
 }
@@ -7639,11 +7653,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return search(p1Dice, p2Dice, openSlots, startTurn);
   }
 
+  const MATHEMATICAL_ELIMINATION_STATUS = 'NOT ENOUGH DICE TO COME BACK';
+
   function maybeEndMathematicalGame(reason = 'mathematical-certainty') {
     if (roundResolutionState && roundResolutionState.active) return false;
     const winner = findMathematicalGameOverWinner();
     if (!winner) return false;
-    setMsg('NOT ENOUGH DICE TO FINISH', winner === 'p1' ? 'win' : 'trash');
     lastProgressionRecovery = {
       reason,
       winner,
@@ -7653,7 +7668,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       p2Dice: totalDice('p2'),
       at: Date.now()
     };
-    gameOver(winner);
+    gameOver(winner, { reason: 'mathematical_elimination', sourceReason: reason });
     return true;
   }
 
@@ -10299,6 +10314,20 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
   }
 
+  function clearMathematicalLoserStatus() {
+    p1StatusBar.classList.remove('loser-reason');
+    p2StatusBar.classList.remove('loser-reason');
+  }
+
+  function applyMathematicalLoserStatus(playerWon) {
+    if (!inlineGameOverState || inlineGameOverState.reason !== 'mathematical_elimination') return;
+    clearMathematicalLoserStatus();
+    const loserStatusBar = playerWon ? p2StatusBar : p1StatusBar;
+    const loserStatusText = playerWon ? p2StatusText : p1StatusText;
+    if (loserStatusBar) loserStatusBar.classList.add('loser-reason');
+    if (loserStatusText) loserStatusText.textContent = MATHEMATICAL_ELIMINATION_STATUS;
+  }
+
   function clearInlineGameOverUi() {
     inlineGameOverRunId++;
     inlineGameOverState = null;
@@ -10311,6 +10340,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       inlineWinAccentTimer = null;
     }
     document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
+    clearMathematicalLoserStatus();
     hidePwaInstallHint();
     clearTerminalDiceCelebration();
     clearInlineEndingVisuals();
@@ -10337,11 +10367,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return !!inlineGameOverState && inlineGameOverState.active && inlineGameOverState.runId === runId;
   }
 
-  function enterInlineGameOver(winner) {
+  function enterInlineGameOver(winner, options = {}) {
     const finalWinner = winner === 'p2' ? 'p2' : 'p1';
     if (isInlineGameOverActive()) return inlineGameOverState;
 
     const playerWon = finalWinner === 'p1';
+    const gameOverReason = options && options.reason ? String(options.reason) : 'dice_exhausted';
+    const mathElimination = gameOverReason === 'mathematical_elimination';
+    const sourceReason = options && options.sourceReason ? String(options.sourceReason) : '';
     clearRuntimeTimers();
     cancelProgressionWatchdog();
     stopTerminalAutoplayState();
@@ -10373,6 +10406,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       runId,
       winner: finalWinner,
       playerWon,
+      reason: gameOverReason,
+      sourceReason,
       autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS || null,
       autoRestartPausedForPwa: false
     };
@@ -10380,7 +10415,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const gameCompletePayload = tdGamePayload({
       winner: finalWinner,
       player_won: playerWon,
-      reason: 'dice_exhausted'
+      reason: gameOverReason,
+      source_reason: sourceReason || undefined
     });
     tdTrack('td_game_complete', gameCompletePayload);
     tdTrack(playerWon ? 'td_game_win' : 'td_game_loss', gameCompletePayload);
@@ -10404,8 +10440,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p2Inventory.classList.add('has-status');
     p1StatusBar.classList.add('active');
     p2StatusBar.classList.add('active');
-    p1StatusBar.classList.remove('bench-praise', 'payout-praise');
-    p2StatusBar.classList.remove('bench-praise', 'payout-praise');
+    p1StatusBar.classList.remove('bench-praise', 'payout-praise', 'loser-reason');
+    p2StatusBar.classList.remove('bench-praise', 'payout-praise', 'loser-reason');
     p1StatusText.textContent = playerWon ? 'GAME WIN' : 'GAME OVER';
     p2StatusText.textContent = playerWon ? 'GREEN PLAYER' : 'GREEN WINS';
     p1TurnDot.style.background = '#f5c800';
@@ -10431,6 +10467,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     } else {
       Audio.trashCrash(Math.max(6, totalTrashedDice()));
     }
+    if (mathElimination) applyMathematicalLoserStatus(playerWon);
 
     if (inlineGameOverState.autoRestartMs && !inlineGameOverState.autoRestartPausedForPwa) {
       inlineGameOverTimer = runLater(() => {
@@ -10652,6 +10689,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   // ── UI SYNC ──────────────────────────────────────────────────
   function syncUI() {
     renderPoolCounts();
+    if (isInlineGameOverActive()) {
+      updatePoolVisual('p1');
+      updatePoolVisual('p2');
+      renderCanLoad();
+      applyMathematicalLoserStatus(inlineGameOverState.playerWon);
+      syncHeroIdleState();
+      return;
+    }
     p1TurnTag.classList.toggle('active', current === 'p1');
     p2TurnTag.classList.toggle('active', current === 'p2');
     updatePoolVisual('p1');
@@ -10662,8 +10707,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p2Inventory.classList.toggle('has-status', !isP1);
     p1StatusBar.classList.toggle('active', isP1);
     p2StatusBar.classList.toggle('active', !isP1);
-    p1StatusBar.classList.remove('bench-praise');
-    p2StatusBar.classList.remove('bench-praise');
+    p1StatusBar.classList.remove('bench-praise', 'loser-reason');
+    p2StatusBar.classList.remove('bench-praise', 'loser-reason');
     if (playerPayoutFanfareActive) {
       const payoutUi = getPlayerUi(playerPayoutFanfarePlayer);
       if (payoutUi.inventory) payoutUi.inventory.classList.add('has-status');
@@ -11525,8 +11570,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   // ── GAME OVER ────────────────────────────────────────────────
-  function gameOver(winner) {
-    return enterInlineGameOver(winner);
+  function gameOver(winner, options = {}) {
+    return enterInlineGameOver(winner, options);
   }
 
   function ensureDevCheatGame() {
