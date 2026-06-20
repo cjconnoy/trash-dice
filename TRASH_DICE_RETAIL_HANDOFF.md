@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `f933a94 Keep round winner status visible through fanfare`
+- `7f49de8 Enlarge player game-win winner status`
 
 Current studio-site HEAD:
 
-- `c1b68ce Mirror Trash Dice round winner status update`
+- `789f229 Mirror Trash Dice game-win winner status update`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T19:04:53.8597784-07:00`
+- Timestamp: `2026-06-19T19:28:12.4059132-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -116,7 +116,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current code commit `f933a94`
+- expected current code commit `7f49de8`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -134,7 +134,7 @@ Studio mirror repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site`
 - branch `main`
-- expected current commit `c1b68ce`
+- expected current commit `789f229`
 
 Known unrelated untracked studio files that must not be cleaned or reverted:
 
@@ -194,6 +194,7 @@ Latest QA-covered behavior:
 - legacy iPad removes expensive can filters
 - legacy iPad CPU roll-to-ready target is under `900ms`
 - yellow/player and green/CPU round-win panel status shows enlarged `WINNER` through the fanfare window; green/CPU round event timing remains capped
+- player game-win panel status uses the same enlarged `WINNER` treatment and persists through the terminal win loop until Play Again
 
 CJ's real-device verdict:
 
@@ -393,15 +394,16 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: f933a94 Keep round winner status visible through fanfare
-- studio-site mirror: c1b68ce Mirror Trash Dice round winner status update
+- game code: 7f49de8 Enlarge player game-win winner status
+- studio-site mirror: 789f229 Mirror Trash Dice game-win winner status update
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
 2. Player-panel pool-count numerals use `Fredoka One`/tabular numeric styling so `7` reads clearly on iPhone.
 3. Round-win panel `WINNER` status is roughly 2x larger and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
-4. BETA WIP public badge is removed.
-5. Public debug controls are hidden while QA hooks remain available.
-6. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-7. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+4. Player game-win panel `WINNER` status uses the same enlarged treatment and persists through the terminal win loop until Play Again.
+5. BETA WIP public badge is removed.
+6. Public debug controls are hidden while QA hooks remain available.
+7. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+8. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```
