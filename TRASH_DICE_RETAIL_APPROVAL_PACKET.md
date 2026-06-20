@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-20T14:51:39-07:00
+Prepared: 2026-06-20T15:09:00-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,11 +8,11 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo code commit: `c68f1036d88d63700a541ca0771bfc3bd082d49e`
-- Studio-site commit: `703a8addeadafd9719a059bb0f9dda163688156e`
+- Game repo code commit: `151473c23e9067cf604b99b487dfe2620cabb4ff`
+- Studio-site commit: `c8582c60cbabe81469c7ee000371409de64de8a2`
 - Route guard commit: `966c0bcd891d1a21a1c682893899c8ab35b1faed`
-- Ship lane hash from latest sync: `A7C80166008C7EBD7107FF029DBA44A89CE84FF56DEE494B4C619B64D832C1D6`
-- Protected route live hash: `9D8D4BB3C36A928C12D0B0D9B17DD59F572D637826F902C5601617CB6C2F028C`
+- Ship lane hash from latest sync: `ECD5AB6FBE4B7AE8E616CD6213E3F590C3D51B8F5ABE72898B2A6B8653322078`
+- Protected route live hash: `229761BFBF7E44CA2B7242C4F4E2E662F1D4E95D40DF2CACE38568DADA9B10B0`
 
 ## Retail Scope Locked
 
@@ -39,6 +39,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 - Scoped later-session endurance assist to contextual player-help signals only: active only after the game is late enough and yellow is in a dice/round deficit or late low-dice pressure state; neutral late play stays unassisted, and CPU soft-brakes remain probabilistic rather than a global no-streak cap.
 - Added mathematical-lock end-state copy only to the losing player's panel: `NOT ENOUGH DICE TO COME BACK`. It does not appear under the `CONGRATULATIONS!` banner or on the winning panel.
 - Added a large `TRASHED!` stamp inside the Green/CPU losing panel when the player wins a game. It stays out of the `CONGRATULATIONS!` banner and does not appear when the CPU wins.
+- Added an iPhone/iPad portrait-play gate: rotated iPhone/iPad browser viewports now show a full-screen `ROTATE TO PORTRAIT` blocker with `Trash Dice is built for vertical play.`, while desktop and portrait iPhone/iPad viewports remain playable.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -54,6 +55,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   - later-assist probes verify neutral late play does not activate help, deficit play activates soft contextual help, late low-dice pressure activates soft contextual help, and CPU soft-brakes are not hard no-streak caps
   - mathematical-lock probes verify both Green/CPU and Yellow/human loser states receive `NOT ENOUGH DICE TO COME BACK`, while the win/loss banners and winning panels stay clean
   - player-win probes verify the Green/CPU panel shows `TRASHED!`, the stamp fits inside the losing panel across desktop/iPhone/iPad viewports, persists through the win loop, clears after Play Again, and remains absent on CPU wins
+  - orientation probes verify iPhone and iPad landscape viewports are blocked by the portrait prompt, real center taps do not start the game while blocked, and desktop/portrait gameplay viewports do not show the blocker
 - Synced source build to:
   - `ship-html5/trash-dice.html`
   - `studio-site/play/trash-dice/play/index.html`
@@ -69,12 +71,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\qa-ship-iteration.ps1 -Seq
 
 Result:
 
-- Timestamp: `2026-06-20T14:47:39.7128194-07:00`
+- Timestamp: `2026-06-20T15:05:41.6443857-07:00`
 - `SHIP ITERATION QA: GREEN`
 - `GREEN: sync ship mirrors`
 - `GREEN: ship html5 qa`
 - `GREEN: retail loop qa`
-- Ship mirror hash: `A7C80166008C7EBD7107FF029DBA44A89CE84FF56DEE494B4C619B64D832C1D6`
+- Ship mirror hash: `ECD5AB6FBE4B7AE8E616CD6213E3F590C3D51B8F5ABE72898B2A6B8653322078`
 
 Command:
 
@@ -82,7 +84,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-20T14:51:20.1617743-07:00`
+Result timestamp: `2026-06-20T15:08:37.7162032-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
@@ -94,8 +96,8 @@ Result timestamp: `2026-06-20T14:51:20.1617743-07:00`
 Direct protected-route byte probe:
 
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`
-- Authenticated canonical hash: `9D8D4BB3C36A928C12D0B0D9B17DD59F572D637826F902C5601617CB6C2F028C`
-- Authenticated canonical bytes include `TRASHED!`, `trashed-stamp`, `NOT ENOUGH DICE TO COME BACK`, `mathematical_elimination`, and `mathematicalEndProof`
+- Authenticated canonical hash: `229761BFBF7E44CA2B7242C4F4E2E662F1D4E95D40DF2CACE38568DADA9B10B0`
+- Authenticated canonical bytes include `TRASHED!`, `trashed-stamp`, `NOT ENOUGH DICE TO COME BACK`, `mathematical_elimination`, `mathematicalEndProof`, `ROTATE TO PORTRAIT`, `Trash Dice is built for vertical play.`, and `orientation-lock-screen`
 - Authenticated canonical headers include `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow, noarchive`
 - `/trash-dice/play/index.html` redirects `308` to `/trash-dice/play/`
 - `/trash-dice/play/trash-dice.html` redirects `308` to `/trash-dice/play/trash-dice`, which serves the same authenticated hash and mathematical-lock copy
