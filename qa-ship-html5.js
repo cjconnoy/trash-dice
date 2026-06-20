@@ -1085,6 +1085,35 @@ async function main() {
     assert(openingGuard.playerFaces.length > 0 && openingGuard.playerFaces.every(face => openingOpenSlots.includes(face)), `opening sweep guard probe: player can miss open slots after two opening losses ${JSON.stringify(openingGuard)}`);
     assert(openingGuard.cpuFaces.length > 0 && openingGuard.cpuFaces.every(face => !openingOpenSlots.includes(face)), `opening sweep guard probe: CPU can still take open slots after two opening wins ${JSON.stringify(openingGuard)}`);
 
+    const laterAssist = await evalValue(openingGuardProbe, `(() => {
+      const summarize = probe => ({
+        context: probe.context,
+        openSlots: probe.openSlots.map(Number),
+        faces: Object.keys(probe.counts).map(Number).sort((a, b) => a - b),
+        counts: probe.counts
+      });
+      const lateNeutral = summarize(window.TrashDiceQA.enduranceAssistProbe({
+        round: 7, totalRolls: 56, p1Wins: 3, p2Wins: 3, p1Dice: 10, p2Dice: 10, openSlots: [2], samples: 180, player: 'p2'
+      }));
+      const deficitPlayer = summarize(window.TrashDiceQA.enduranceAssistProbe({
+        round: 6, totalRolls: 50, p1Wins: 1, p2Wins: 3, p1Dice: 7, p2Dice: 11, openSlots: [2, 5], samples: 140, player: 'p1'
+      }));
+      const deficitCpu = summarize(window.TrashDiceQA.enduranceAssistProbe({
+        round: 6, totalRolls: 50, p1Wins: 1, p2Wins: 3, p1Dice: 7, p2Dice: 11, openSlots: [2], samples: 220, player: 'p2'
+      }));
+      const pressurePlayer = summarize(window.TrashDiceQA.enduranceAssistProbe({
+        round: 8, totalRolls: 60, p1Wins: 2, p2Wins: 2, p1Dice: 5, p2Dice: 5, openSlots: [4], samples: 120, player: 'p1'
+      }));
+      return { lateNeutral, deficitPlayer, deficitCpu, pressurePlayer };
+    })()`);
+    assert(laterAssist.lateNeutral.context.active === false && laterAssist.lateNeutral.context.needsHelp === false && laterAssist.lateNeutral.context.assistanceTier === 'none', `later assist probe: neutral late play should not activate help ${JSON.stringify(laterAssist.lateNeutral)}`);
+    assert(laterAssist.lateNeutral.faces.some(face => laterAssist.lateNeutral.openSlots.includes(face)) && laterAssist.lateNeutral.faces.some(face => !laterAssist.lateNeutral.openSlots.includes(face)), `later assist probe: CPU should not be hard-braked by neutral late play ${JSON.stringify(laterAssist.lateNeutral)}`);
+    assert(laterAssist.deficitPlayer.context.active === true && laterAssist.deficitPlayer.context.needsHelp === true && laterAssist.deficitPlayer.context.behind === true && laterAssist.deficitPlayer.context.assistanceTier === 'deficit', `later assist probe: player deficit should activate contextual soft help ${JSON.stringify(laterAssist.deficitPlayer)}`);
+    assert(laterAssist.deficitPlayer.faces.some(face => laterAssist.deficitPlayer.openSlots.includes(face)), `later assist probe: deficit player should retain open-slot help chance ${JSON.stringify(laterAssist.deficitPlayer)}`);
+    assert(laterAssist.deficitCpu.context.active === true && laterAssist.deficitCpu.context.assistanceTier === 'deficit', `later assist probe: CPU deficit brake context inactive ${JSON.stringify(laterAssist.deficitCpu)}`);
+    assert(laterAssist.deficitCpu.faces.some(face => laterAssist.deficitCpu.openSlots.includes(face)) && laterAssist.deficitCpu.faces.some(face => !laterAssist.deficitCpu.openSlots.includes(face)), `later assist probe: CPU later-session brake should stay soft, not a hard no-streak cap ${JSON.stringify(laterAssist.deficitCpu)}`);
+    assert(laterAssist.pressurePlayer.context.active === true && laterAssist.pressurePlayer.context.pressure === true && laterAssist.pressurePlayer.context.behind === false && laterAssist.pressurePlayer.context.assistanceTier === 'pressure', `later assist probe: late low-dice pressure should activate contextual soft help without requiring CPU streak logic ${JSON.stringify(laterAssist.pressurePlayer)}`);
+
     for (const winner of ['p1', 'p2']) {
       const roundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
       await evalValue(roundWinProbe, `document.getElementById('startBtn').click(); true`);

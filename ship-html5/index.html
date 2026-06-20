@@ -7134,6 +7134,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const ENDURANCE_ASSIST_PLAYER_CLUTCH_BEHIND_CHANCE = 0.48;
   const ENDURANCE_ASSIST_CPU_BRAKE_CHANCE = 0.16;
   const ENDURANCE_ASSIST_CPU_BRAKE_BEHIND_CHANCE = 0.24;
+  const ENDURANCE_ASSIST_PRESSURE_ROUND = 7;
+  const ENDURANCE_ASSIST_PRESSURE_ROLLS = 54;
+  const ENDURANCE_ASSIST_PRESSURE_MAX_PLAYER_DICE = 6;
+  const ENDURANCE_ASSIST_PRESSURE_MAX_OPEN_SLOTS = 2;
   const MATHEMATICAL_CERTAINTY_DICE_MARGIN = 2;
   document.body.classList.toggle('fast-preview', FAST_PREVIEW_ENABLED);
   document.body.classList.toggle('mobile-roll-smoothing', MOBILE_ROLL_SMOOTHING);
@@ -10801,13 +10805,25 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const diceDeficit = p2Dice - p1Dice;
     const roundDeficit = (roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0);
     const longEnough = round >= ENDURANCE_ASSIST_START_ROUND || totalRolls >= ENDURANCE_ASSIST_START_ROLLS;
+    const pressureWindow = round >= ENDURANCE_ASSIST_PRESSURE_ROUND || totalRolls >= ENDURANCE_ASSIST_PRESSURE_ROLLS;
     const clearlyAhead = p1Dice >= p2Dice + 4 || roundDeficit <= -2;
     const blowout =
       (p1Dice <= 4 && diceDeficit >= 8) ||
       (p1Dice <= 6 && diceDeficit >= 12) ||
       (totalRolls >= 72 && p1Dice <= 5 && diceDeficit >= 6);
+    const behind = diceDeficit >= 2 || roundDeficit >= 1;
+    const pressure =
+      pressureWindow &&
+      p1Dice <= ENDURANCE_ASSIST_PRESSURE_MAX_PLAYER_DICE &&
+      diceDeficit >= 0 &&
+      roundDeficit >= 0 &&
+      openSlots.length > 0 &&
+      openSlots.length <= ENDURANCE_ASSIST_PRESSURE_MAX_OPEN_SLOTS;
+    const needsHelp = behind || pressure;
+    const assistanceTier = behind ? 'deficit' : (pressure ? 'pressure' : 'none');
     const active = !p0Autoplay &&
       longEnough &&
+      needsHelp &&
       !clearlyAhead &&
       !blowout &&
       !enduranceAssistUsedThisRound &&
@@ -10815,10 +10831,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       openSlots.length > 0 &&
       p1Dice > 0 &&
       p2Dice > 0;
-    const behind = diceDeficit >= 2 || roundDeficit >= 1;
     return {
       active,
       behind,
+      pressure,
+      pressureWindow,
+      needsHelp,
+      assistanceTier,
       longEnough,
       clearlyAhead,
       blowout,
@@ -10841,6 +10860,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       totalRolls,
       p1Dice: ctx ? ctx.p1Dice : totalDice('p1'),
       p2Dice: ctx ? ctx.p2Dice : totalDice('p2'),
+      diceDeficit: ctx ? ctx.diceDeficit : totalDice('p2') - totalDice('p1'),
+      roundDeficit: ctx ? ctx.roundDeficit : ((roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0)),
+      assistanceTier: ctx ? ctx.assistanceTier : 'unknown',
       uses: enduranceAssistRolls,
       at: Date.now()
     };
