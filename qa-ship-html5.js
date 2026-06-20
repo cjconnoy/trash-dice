@@ -513,6 +513,19 @@ async function main() {
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
+          poolCounts: Array.from(document.querySelectorAll('.pool-count')).map(el => {
+            const style = getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            return {
+              id: el.id,
+              text: el.textContent.trim(),
+              fontFamily: style.fontFamily,
+              fontVariantNumeric: style.fontVariantNumeric,
+              fontFeatureSettings: style.fontFeatureSettings,
+              width: r.width,
+              height: r.height
+            };
+          }),
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
@@ -546,6 +559,7 @@ async function main() {
       assert(activeLayout.debugLowerRight, `${viewport.name}: debug controls are not in the lower-right tool corner ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.badgePresent === false, `${viewport.name}: beta badge should stay absent in active retail game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.bodyFits, `${viewport.name}: active game creates horizontal overflow ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.poolCounts.length === 2 && activeLayout.poolCounts.every(count => /Fredoka One/i.test(count.fontFamily) && !/Bangers/i.test(count.fontFamily) && count.width >= 24 && count.height >= 24), `${viewport.name}: pool-count numerals should use the legible badge font ${JSON.stringify(activeLayout.poolCounts)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.heroLogoGlint && activeLayout.heroLogoGlint.animationName === 'none', `${viewport.name}: tablet active game logo glint should be paused for performance ${JSON.stringify(activeLayout)}`);
       } else {
