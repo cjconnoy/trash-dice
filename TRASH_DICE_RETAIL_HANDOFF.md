@@ -28,7 +28,7 @@ Current pushed refs:
 
 Latest verified route guard:
 
-- Timestamp: `2026-06-19T22:00:43.7622522-07:00`
+- Timestamp: `2026-06-19T22:03:51.4579023-07:00`
 - Status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
@@ -110,7 +110,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T22:00:43.7622522-07:00`
+- Timestamp: `2026-06-19T22:03:51.4579023-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/play/`: route-source drift check green, `working tree has no Git diff against HEAD:play/trash-dice/play/index.html`
@@ -456,7 +456,7 @@ Current expected candidate commits:
 - odg-pipeline HEAD: 966c0bc Ignore normalized line endings in route drift guard
 - ship SHA-256: 3ED8B4CC2074DF852658163AB046FB4D3C18A04B7637323AE4ABF3A5BAB01F9D
 - protected route live SHA-256: 429660CF3571BD727C0EE5A2459A91F4F62C72567AEEA63DAB99E8AB07F4386A
-- latest route-contract guard: green at 2026-06-19T22:00:43.7622522-07:00
+- latest route-contract guard: green at 2026-06-19T22:03:51.4579023-07:00
 - direct protected-byte probe: authenticated /trash-dice/play/ is 200 and contains NOT ENOUGH DICE TO COME BACK plus mathematical_elimination
 
 Known unrelated dirty files:
