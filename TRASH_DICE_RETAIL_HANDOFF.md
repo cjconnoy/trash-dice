@@ -41,11 +41,11 @@ Trash Dice HTML5 is now **BETA COMPLETE**.
 
 Current Retail candidate game-code commit:
 
-- `4be7831 Increase winner status scale`
+- `7129641 Harden opening round loss guard`
 
 Current studio-site HEAD:
 
-- `678c04f Mirror Trash Dice winner status scale update`
+- `c5b864b Mirror Trash Dice opening guard update`
 
 Current canonical route:
 
@@ -60,7 +60,7 @@ Current route state:
 Latest route-contract guard:
 
 - Command: `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json`
-- Timestamp: `2026-06-19T19:54:57.9289977-07:00`
+- Timestamp: `2026-06-19T20:30:57.2197670-07:00`
 - Status: `green`
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
 - `/trash-dice/alpha-complete/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-frozen-alpha`
@@ -116,7 +116,7 @@ Game repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\_vibe\trash-dice`
 - branch `master`
-- expected current code commit `4be7831`
+- expected current code commit `7129641`
 
 Known unrelated dirty/untracked game repo files that must not be cleaned or reverted:
 
@@ -134,7 +134,7 @@ Studio mirror repo:
 
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\studio-site`
 - branch `main`
-- expected current commit `678c04f`
+- expected current commit `c5b864b`
 
 Known unrelated untracked studio files that must not be cleaned or reverted:
 
@@ -195,6 +195,7 @@ Latest QA-covered behavior:
 - legacy iPad CPU roll-to-ready target is under `900ms`
 - yellow/player and green/CPU round-win panel status shows roughly 2.5x `WINNER` through the fanfare window; green/CPU round event timing remains capped
 - player game-win panel status uses the same roughly 2.5x `WINNER` treatment and persists through the terminal win loop until Play Again
+- opening comeback guard is now deterministic after two green opening round wins: yellow is forced toward open slots and green is forced away from open slots when possible, preventing a third straight opening round loss
 
 CJ's real-device verdict:
 
@@ -394,16 +395,17 @@ Hard rules:
 - If route/site files change, run C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json.
 
 Current expected candidate commits:
-- game code: 4be7831 Increase winner status scale
-- studio-site mirror: 678c04f Mirror Trash Dice winner status scale update
+- game code: 7129641 Harden opening round loss guard
+- studio-site mirror: c5b864b Mirror Trash Dice opening guard update
 
 Current Retail state:
 1. Legacy-iPad-only smooth-experience copy is implemented; newer iPadOS stays on the standard iPad path with no guidance note.
 2. Player-panel pool-count numerals use `Fredoka One`/tabular numeric styling so `7` reads clearly on iPhone.
 3. Round-win panel `WINNER` status is roughly 2.5x larger than the base status label and persists through the fanfare window for both player and green/CPU wins without extending green/CPU event timing.
 4. Player game-win panel `WINNER` status uses the same roughly 2.5x treatment and persists through the terminal win loop until Play Again.
-5. BETA WIP public badge is removed.
-6. Public debug controls are hidden while QA hooks remain available.
-7. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
-8. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
+5. Opening comeback guard prevents a fresh game from allowing green/CPU to win the first three rounds straight.
+6. BETA WIP public badge is removed.
+7. Public debug controls are hidden while QA hooks remain available.
+8. QA, Alpha diffs, and route contracts are green for the protected-review candidate.
+9. Flip /trash-dice/play/ from protected review to public live only after retail approval and exact public bytes verify.
 ```

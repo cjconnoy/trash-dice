@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-19T19:55:09-07:00
+Prepared: 2026-06-19T20:31:10-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -8,9 +8,9 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 
 - Canonical route: `https://playonedaygames.com/trash-dice/play/`
 - Current route state: protected review
-- Game repo code commit: `4be7831247bce79b209633025a19682ebcd5452f`
-- Studio-site commit: `678c04fe5dfde58e0e6b9a904ac42014fee38bcc`
-- Ship lane hash from latest sync: `060845C69CA930A56818D177B3D2382F8A76612AAEB2ACF405F928957E54AEA0`
+- Game repo code commit: `71296413dba16323879b2bc3132ac677d94ec1fe`
+- Studio-site commit: `c5b864b08fba2cc2abb6fde6f54e6afabf6f9f9b`
+- Ship lane hash from latest sync: `E5712366D57D409861C363F0F8D5C4521CD988506273652036549FCFAA763C41`
 
 ## Retail Scope Locked
 
@@ -33,6 +33,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
 - Improved in-game player-panel pool-count numeral readability by moving those count badges off the stylized `Bangers` face and onto `Fredoka One` with tabular numeric styling.
 - Kept the in-panel `WINNER` round-win status visible through the fanfare/resolution window for both yellow/player and green/CPU wins, made it roughly 2.5x larger than the base status label, and left green/CPU round event timing unchanged.
 - Applied that same roughly 2.5x larger `WINNER` status treatment to the player's game-win panel state and verified it persists through the terminal win loop until Play Again.
+- Hardened the opening comeback guard so a fresh game can no longer allow green/CPU to take a third straight opening round after yellow/player has lost the first two rounds.
 - Removed the visible `BETA WIP - NOT LIVE` badge from the ship build and studio mirror.
 - Hid `P-0`, `WIN`, and `LOSE` debug controls outside QA/review mode while preserving QA hooks.
 - Updated ship QA to enforce the Retail surface:
@@ -44,6 +45,7 @@ Status: approval pending. Do not flip live until CJ confirms retail approval is 
   - player-panel pool-count numerals use the legible count-badge font in active gameplay
   - yellow/player and green/CPU round-win probes keep enlarged `WINNER` status visible through the fanfare window, while the green/CPU timing cap remains unchanged
   - player game-win probe keeps enlarged `WINNER` status visible through the terminal win loop and clears it after Play Again
+  - opening sweep guard probe verifies that, after two green opening round wins, yellow rolls only open slots and green avoids open slots when possible
 - Synced source build to:
   - `ship-html5/trash-dice.html`
   - `studio-site/play/trash-dice/play/index.html`
@@ -70,7 +72,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-19T19:54:57.9289977-07:00`
+Result timestamp: `2026-06-19T20:30:57.2197670-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
