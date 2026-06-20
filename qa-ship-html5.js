@@ -1059,6 +1059,40 @@ async function main() {
     assert(p0Off.p0Active === false, `P-0 probe: autoplay did not stop ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0ButtonVisible === true, `P-0 probe: button hidden after stop ${JSON.stringify(p0Off)}`);
 
+    for (const winner of ['p1', 'p2']) {
+      const roundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
+      await evalValue(roundWinProbe, `document.getElementById('startBtn').click(); true`);
+      await waitEval(roundWinProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${winner} round-win probe game start`);
+      const roundWinEarly = await evalValue(roundWinProbe, `window.TrashDiceDebug.roundWinEventProbe(${JSON.stringify(winner)})`);
+      const fontSize = parseFloat(roundWinEarly.payoutStatusFontSize || '0');
+      assert(roundWinEarly.winner === winner, `${winner} round-win probe: wrong winner ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.payoutStatusActive === true && roundWinEarly.roundWinnerStatusActive === true, `${winner} round-win probe: winner status inactive ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.roundWinnerStatusPlayer === winner && roundWinEarly.roundWinnerStatusText === 'WINNER' && roundWinEarly.payoutStatusText === 'WINNER', `${winner} round-win probe: winner status text missing ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.roundWinnerStatusLarge === true && fontSize >= 30, `${winner} round-win probe: winner status is not large enough ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.winnerStatusDuration === roundWinEarly.spillDuration + 260, `${winner} round-win probe: winner status duration should track round resolution without extending it ${JSON.stringify(roundWinEarly)}`);
+      if (winner === 'p2') {
+        assert(roundWinEarly.fullEvent === false && roundWinEarly.spillDuration === roundWinEarly.expectedCpuDuration, `green round-win probe: CPU round timing changed ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.canDance === false, `green round-win probe: CPU round should not gain player-only can dance ${JSON.stringify(roundWinEarly)}`);
+      } else {
+        assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
+      }
+      await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - 180));
+      const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {
+        const id = ${JSON.stringify(winner === 'p1' ? 'p1StatusBar' : 'p2StatusBar')};
+        const textId = ${JSON.stringify(winner === 'p1' ? 'p1StatusText' : 'p2StatusText')};
+        const bar = document.getElementById(id);
+        const text = document.getElementById(textId);
+        const style = bar ? getComputedStyle(bar) : null;
+        return {
+          statusText: text ? text.textContent.trim() : '',
+          payoutStatusActive: !!(bar && bar.classList.contains('payout-praise')),
+          roundWinnerStatusLarge: !!(bar && bar.classList.contains('round-winner-praise')),
+          fontSize: style ? style.fontSize : ''
+        };
+      })()`);
+      assert(roundWinAfterFanfare.statusText === 'WINNER' && roundWinAfterFanfare.payoutStatusActive === true && roundWinAfterFanfare.roundWinnerStatusLarge === true, `${winner} round-win probe: winner status disappeared before fanfare window ended ${JSON.stringify({ roundWinEarly, roundWinAfterFanfare })}`);
+    }
+
     for (const outcome of [
       { id: 'devWinBtn', winner: 'p1', label: 'win' },
       { id: 'devLoseBtn', winner: 'p2', label: 'lose' }

@@ -1015,6 +1015,18 @@ body.inline-game-over .roll-panel {
 .status-bar.payout-praise .status-text {
   color: #0f5f32;
 }
+.status-bar.round-winner-praise {
+  min-width: clamp(10.8rem, 44vw, 14rem);
+  padding: 0.42rem 1.25rem 0.34rem;
+  font-size: clamp(1.92rem, 5.8vw, 2.36rem);
+  line-height: 0.9;
+  letter-spacing: 0.05em;
+  z-index: 18;
+}
+.status-bar.round-winner-praise .turn-dot {
+  width: clamp(14px, 3vw, 18px);
+  height: clamp(14px, 3vw, 18px);
+}
 .pool-count.payout-jackpot {
   animation: playerPayoutCountJackpot 0.52s cubic-bezier(.12,.88,.16,1) infinite;
   will-change: transform, filter;
@@ -7191,6 +7203,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let playerPayoutFanfareActive = false;
   let playerPayoutFanfarePlayer = 'p1';
   let playerPayoutFanfareText = 'PAYDAY!';
+  let roundWinnerStatusTimer = null;
+  let roundWinnerStatusActive = false;
+  let roundWinnerStatusPlayer = 'p1';
+  let roundWinnerStatusText = 'WINNER';
   let lastPlayerHitPraise = null;
   let playerClutchMagnetUsedThisRound = false;
   let enduranceAssistRolls = 0;
@@ -7515,6 +7531,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
     playerPayoutFanfareText = 'PAYDAY!';
+    roundWinnerStatusTimer = null;
+    roundWinnerStatusActive = false;
+    roundWinnerStatusPlayer = 'p1';
+    roundWinnerStatusText = 'WINNER';
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
@@ -8879,7 +8899,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       const ui = getPlayerUi(player);
       if (ui.panel) ui.panel.classList.remove('player-payout-fanfare');
       if (ui.inventory) ui.inventory.classList.remove('player-payout-fanfare');
-      if (ui.statusBar) ui.statusBar.classList.remove('payout-praise');
+      if (ui.statusBar) ui.statusBar.classList.remove('payout-praise', 'round-winner-praise');
       if (ui.poolEl) ui.poolEl.classList.remove('payout-jackpot');
       if (resetStatus) restorePayoutStatusText(player);
     });
@@ -8913,6 +8933,52 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       playerPayoutFanfareTimer = runLater(() => {
         playerPayoutFanfareTimer = null;
         clearPlayerPayoutFanfare(true);
+      }, duration);
+    }
+  }
+
+  function applyRoundWinnerStatus() {
+    if (!roundWinnerStatusActive) return;
+    const ui = getPlayerUi(roundWinnerStatusPlayer);
+    if (!ui.statusBar || !ui.statusText) return;
+    if (ui.inventory) ui.inventory.classList.add('has-status');
+    ui.statusBar.classList.add('active', 'payout-praise', 'round-winner-praise');
+    ui.statusText.textContent = roundWinnerStatusText;
+  }
+
+  function clearRoundWinnerStatus(resetStatus = false) {
+    if (roundWinnerStatusTimer) {
+      cancelRuntimeTimer(roundWinnerStatusTimer);
+      roundWinnerStatusTimer = null;
+    }
+    const activePlayer = roundWinnerStatusPlayer;
+    roundWinnerStatusActive = false;
+    roundWinnerStatusPlayer = 'p1';
+    roundWinnerStatusText = 'WINNER';
+    ['p1', 'p2'].forEach(player => {
+      const ui = getPlayerUi(player);
+      if (ui.statusBar) {
+        ui.statusBar.classList.remove('round-winner-praise');
+        if (!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== player) {
+          ui.statusBar.classList.remove('payout-praise');
+        }
+      }
+      if (resetStatus && player === activePlayer) restorePayoutStatusText(player);
+    });
+  }
+
+  function startRoundWinnerStatus(player = 'p1', duration = 1800, label = 'WINNER') {
+    const ui = getPlayerUi(player);
+    if (!ui.statusBar || !ui.statusText) return;
+    clearRoundWinnerStatus(false);
+    roundWinnerStatusActive = true;
+    roundWinnerStatusPlayer = ui.player;
+    roundWinnerStatusText = label || 'WINNER';
+    applyRoundWinnerStatus();
+    if (duration > 0) {
+      roundWinnerStatusTimer = runLater(() => {
+        roundWinnerStatusTimer = null;
+        clearRoundWinnerStatus(true);
       }, duration);
     }
   }
@@ -10600,10 +10666,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (payoutUi.statusBar) payoutUi.statusBar.classList.add('active', 'payout-praise');
       if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
-    if ((!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== 'p1') && p1StatusText) {
+    applyRoundWinnerStatus();
+    const p1StatusLocked =
+      (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p1') ||
+      (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p1');
+    const p2StatusLocked =
+      (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p2') ||
+      (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p2');
+    if (!p1StatusLocked && p1StatusText) {
       p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'YELLOW PLAYER';
     }
-    if ((!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== 'p2') && p2StatusText) {
+    if (!p2StatusLocked && p2StatusText) {
       p2StatusText.textContent = isP1 ? 'GREEN PLAYER' : 'GREEN ROLL';
     }
     p1TurnDot.style.background = '#f5c800';
@@ -11366,6 +11439,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     triggerTitleRoundWinFanfare(fanfareDuration);
     Audio.roundWonFanfare(fanfareDuration);
     if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
+    const winnerStatusDuration = spillDuration + 260;
+    startRoundWinnerStatus(winner, winnerStatusDuration);
 
     // Only dice still sitting in the lid pay out; trash dice are already lost.
     showClaimBadge(winner, payoutDice, spillDuration);
@@ -11411,6 +11486,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
       current = 'p1';
       clearDie(null);
+      clearRoundWinnerStatus(false);
       clearPlayerPayoutFanfare(false);
       syncUI();
       busy = false;
@@ -12241,6 +12317,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       return new Promise(resolve => {
         runLater(() => {
           const ui = getPlayerUi(forcedWinner);
+          const statusStyle = ui.statusBar ? getComputedStyle(ui.statusBar) : null;
+          const statusRect = ui.statusBar ? ui.statusBar.getBoundingClientRect() : null;
           resolve({
             winner: forcedWinner,
             multiplayerActive: betaMultiplayerActive,
@@ -12249,6 +12327,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             spillDuration,
             fullDuration,
             expectedCpuDuration,
+            fanfareDuration: fullEvent ? spillDuration : clamp(spillDuration * 0.42, 850, 1700),
+            winnerStatusDuration: spillDuration + 260,
             message: msgEl ? msgEl.textContent : '',
             titleFanfareActive: heroTitle.classList.contains('round-win-title-fanfare') || heroTitle.classList.contains('round-win-title-sustain'),
             lidDance: boardWrap.classList.contains('player-payout-lid-dance'),
@@ -12256,6 +12336,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             payoutPanelActive: !!(ui.panel && ui.panel.classList.contains('player-payout-fanfare')),
             payoutInventoryActive: !!(ui.inventory && ui.inventory.classList.contains('player-payout-fanfare')),
             payoutStatusActive: !!(ui.statusBar && ui.statusBar.classList.contains('payout-praise')),
+            roundWinnerStatusActive,
+            roundWinnerStatusPlayer,
+            roundWinnerStatusText,
+            roundWinnerStatusLarge: !!(ui.statusBar && ui.statusBar.classList.contains('round-winner-praise')),
+            payoutStatusFontSize: statusStyle ? statusStyle.fontSize : '',
+            payoutStatusRect: statusRect ? { width: statusRect.width, height: statusRect.height } : null,
             payoutStatusText: ui.statusText ? ui.statusText.textContent : '',
             payoutComets: document.querySelectorAll('.player-payout-comet').length
           });
