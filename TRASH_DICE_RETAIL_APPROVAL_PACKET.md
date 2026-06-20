@@ -1,6 +1,6 @@
 # Trash Dice Retail Approval Packet
 
-Prepared: 2026-06-20T15:58:00-07:00
+Prepared: 2026-06-20T16:03:00-07:00
 
 Status: approval pending. Do not flip live until CJ confirms retail approval is locked.
 
@@ -86,7 +86,7 @@ Command:
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\test-route-contracts.ps1 -Json
 ```
 
-Result timestamp: `2026-06-20T15:57:20.0284719-07:00`
+Result timestamp: `2026-06-20T16:02:55.5385767-07:00`
 
 - Overall status: green
 - `/trash-dice/play/`: unauthenticated `401`, authenticated `200`, hash match, state `protected-review`
