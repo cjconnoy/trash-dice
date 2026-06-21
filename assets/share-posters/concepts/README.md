@@ -7,12 +7,19 @@ They are not wired into the live game.
 
 - `i-got-trashed-losing-poster-prototype.png`
 - `i-avoided-the-bin-winning-poster-prototype.png`
+- `i-got-trashed-final-freeze.png`
+- `i-avoided-the-bin-final-freeze.png`
 - `i-roll-and-i-collect-treasure-room-frozen-concept.png`
 - `im-a-trash-collector-factory-frozen-concept.png`
 - `i-roll-and-i-collect-treasure-room-final-freeze.png`
 - `im-a-trash-collector-factory-final-freeze.png`
 
 ## Art Direction Notes
+
+Original poster pair:
+
+- Freeze the `I GOT TRASHED!` and `I AVOIDED THE BIN!` directions.
+- Final freeze note: outside of dice cleanup, preserve the images. Dice should not look like AI slop; any visible `3` value should use three clean round pips in a straight diagonal line, with plausible perspective and no malformed or smeared pip values.
 
 Win poster, treasure room:
 
