@@ -236,11 +236,11 @@ body:not([data-game-started="true"]) #trashCan > svg {
   pointer-events: none;
 }
 .title-presenter {
-  top: calc(env(safe-area-inset-top, 0px) + clamp(0.32rem, 1.1vh, 0.62rem));
+  top: calc(env(safe-area-inset-top, 0px) + clamp(0.58rem, 1.7vh, 0.96rem));
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 0.02rem;
+  gap: 0.08rem;
   color: #0f5f32;
   font-family: 'Bangers', 'Arial Black', sans-serif;
   line-height: 1;
@@ -256,36 +256,36 @@ body:not([data-game-started="true"]) #trashCan > svg {
 }
 .title-presenter-sub {
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.42rem, 0.75vw, 0.52rem);
-  letter-spacing: 0.14em;
-  opacity: 0.76;
+  font-size: clamp(0.56rem, 0.98vw, 0.7rem);
+  letter-spacing: 0.15em;
+  opacity: 0.88;
 }
 .title-legal {
   bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.42rem, 1.6vh, 0.72rem));
-  color: rgba(15,95,50,0.74);
+  color: rgba(15,95,50,0.86);
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.5rem, 1.55vw, 0.64rem);
-  line-height: 1.2;
+  font-size: clamp(0.62rem, 1.85vw, 0.8rem);
+  line-height: 1.16;
   letter-spacing: 0.04em;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255,255,255,0.36);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.04rem;
+  gap: 0.08rem;
 }
 .title-studio-label {
-  color: rgba(15,95,50,0.56);
-  font-size: 0.68em;
+  color: rgba(15,95,50,0.74);
+  font-size: 0.76em;
   letter-spacing: 0.1em;
   line-height: 1;
   text-transform: uppercase;
 }
 .title-odg-wordmark {
   display: block;
-  width: clamp(96px, 7.4vw, 128px);
+  width: clamp(118px, 9.4vw, 152px);
   height: auto;
-  opacity: 0.64;
+  opacity: 0.78;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,0.3));
 }
 @media (min-width: 721px) {
@@ -313,17 +313,17 @@ body:not([data-game-started="true"]) #trashCan > svg {
   }
 
   .title-presenter {
-    top: calc(env(safe-area-inset-top, 0px) + clamp(0.72rem, 1.55vh, 1rem));
-    opacity: 0.9;
+    top: calc(env(safe-area-inset-top, 0px) + clamp(0.9rem, 1.8vh, 1.15rem));
+    opacity: 0.94;
   }
 
   .title-presenter-logo {
-    width: clamp(112px, 14vw, 128px);
+    width: clamp(122px, 15vw, 142px);
   }
 
   .title-presenter-sub {
-    font-size: clamp(0.36rem, 0.72vw, 0.44rem);
-    letter-spacing: 0.12em;
+    font-size: clamp(0.52rem, 0.92vw, 0.64rem);
+    letter-spacing: 0.13em;
   }
 
   .title-wrap.big .title-logo {
@@ -338,11 +338,6 @@ body:not([data-game-started="true"]) #trashCan > svg {
     width: clamp(300px, 48vw, 386px);
     height: clamp(226px, 34vw, 276px);
     transform: translateY(0.32rem);
-  }
-
-  .start-overlay .start-tagline {
-    transform: translateY(0.18rem);
-    font-size: clamp(1.04rem, 2.75vw, 1.26rem);
   }
 
   .start-overlay .start-lurker-can {
@@ -371,34 +366,30 @@ body:not([data-game-started="true"]) #trashCan > svg {
     gap: clamp(0.62rem, 1.9vh, 0.86rem);
   }
   .title-presenter {
-    top: calc(env(safe-area-inset-top, 0px) + clamp(0.45rem, 1.8vh, 0.85rem));
+    top: calc(env(safe-area-inset-top, 0px) + clamp(0.74rem, 2.35vh, 1.12rem));
   }
   .title-presenter-logo {
-    width: clamp(94px, 28vw, 116px);
+    width: clamp(110px, 31vw, 138px);
   }
   .title-presenter-sub {
-    font-size: clamp(0.34rem, 1.05vw, 0.42rem);
-    letter-spacing: 0.12em;
+    font-size: clamp(0.52rem, 1.55vw, 0.66rem);
+    letter-spacing: 0.13em;
   }
-  .start-overlay .title-wrap.big,
+  .start-overlay .title-wrap.big {
+    transform: translateY(1.08rem);
+  }
   .start-overlay .start-blob-wrap {
-    transform: translateY(2.45rem);
-  }
-  .start-overlay .start-tagline {
-    max-width: min(90vw, 340px);
-    transform: translateY(2.05rem);
-    font-size: clamp(0.84rem, 4vw, 1.02rem);
-    line-height: 1.05;
+    transform: translateY(0.78rem);
   }
   .title-legal {
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.45rem);
-    max-width: min(53vw, 214px);
-    font-size: clamp(0.42rem, 2.35vw, 0.52rem);
-    line-height: 1.08;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.62rem);
+    max-width: min(84vw, 330px);
+    font-size: clamp(0.56rem, 2.8vw, 0.72rem);
+    line-height: 1.12;
   }
   .title-odg-wordmark {
-    width: clamp(88px, 26vw, 112px);
+    width: clamp(116px, 34vw, 150px);
   }
 }
 .title-hero-glint {
@@ -816,7 +807,43 @@ body.debug-controls-enabled[data-game-started="true"] .debug-outcome-controls {
   transform: translateY(1px);
 }
 
-body.quit-return-open .debug-outcome-controls {
+.debug-reward-die-btn {
+  position: fixed;
+  z-index: 144;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
+  min-width: 48px;
+  min-height: 30px;
+  padding: 0.24rem 0.42rem 0.19rem;
+  border: 1px solid rgba(255,252,223,0.38);
+  border-radius: 999px;
+  background: rgba(30,123,255,0.9);
+  color: #ffffff;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(0.56rem, 2vw, 0.68rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow:
+    0 5px 14px rgba(15,40,24,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+body.reward-review-enabled[data-game-started="true"] .debug-reward-die-btn {
+  display: inline-flex;
+}
+
+.debug-reward-die-btn:active {
+  transform: translateY(1px);
+}
+
+body.quit-return-open .debug-outcome-controls,
+body.quit-return-open .debug-reward-die-btn {
   opacity: 0;
   pointer-events: none;
 }
@@ -1197,12 +1224,14 @@ body.inline-game-over .roll-panel {
   --roll-strip-die-size: clamp(74px, 18vw, 106px);
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: clamp(0.16rem, 0.7vw, 0.3rem);
   width: min(75%, 345px);
   max-width: 345px;
-  min-height: clamp(64px, 15.75vw, 95px);
-  padding: clamp(0.42rem, 1.5vw, 0.56rem) clamp(0.52rem, 2vw, 0.76rem);
+  min-height: clamp(92px, 18vw, 124px);
+  padding: clamp(0.48rem, 1.5vw, 0.64rem) clamp(0.52rem, 2vw, 0.76rem) clamp(0.34rem, 1vw, 0.48rem);
   background:
     radial-gradient(ellipse at 28% 4%, rgba(255,255,255,0.58), transparent 42%),
     radial-gradient(ellipse at 78% 100%, var(--panel-glow), transparent 54%),
@@ -1884,6 +1913,312 @@ body.inline-game-over .roll-panel {
   animation: dieRevealGlint 0.3s cubic-bezier(.16,.82,.18,1) both;
 }
 .die.trashed { animation: dieTrash 0.55s ease-in forwards; }
+
+.reward-die-unlock[hidden] {
+  display: none !important;
+}
+
+.reward-die-unlock {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0) scale(0.96);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(.14,.82,.18,1);
+}
+
+.reward-die-unlock.show {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.reward-die-scene {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: clamp(7px, 1.9vw, 12px);
+  transform: translate3d(0, -7vh, 0);
+}
+
+.reward-die-name {
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(1.05rem, 5.4vw, 2.15rem);
+  line-height: 0.95;
+  color: #fff4a3;
+  text-shadow:
+    0 2px 0 #14361e,
+    0 5px 12px rgba(0,0,0,0.44);
+  letter-spacing: 0;
+  opacity: 0;
+  transform: translate3d(0, 6px, 0) scale(0.92);
+}
+
+.reward-die-unlock.show .reward-die-name {
+  animation: rewardNameFlash 1.05s cubic-bezier(.14,.86,.18,1) 0.08s both;
+}
+
+.reward-die-wrap {
+  width: clamp(54px, 17vw, 94px);
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 14px 12px rgba(0,0,0,0.36));
+}
+
+.reward-die {
+  --reward-face: #A9772F;
+  --reward-pip: #1A1A1A;
+  --reward-pip-outline: transparent;
+  --reward-edge: rgba(0,0,0,0.24);
+  --reward-glow: rgba(255,246,150,0.24);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 22%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+  padding: clamp(8px, 2.6vw, 13px);
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.72), rgba(255,255,255,0.2) 22%, transparent 42%),
+    linear-gradient(150deg, rgba(255,255,255,0.22), transparent 36%),
+    linear-gradient(330deg, rgba(0,0,0,0.28), transparent 54%),
+    var(--reward-face);
+  box-shadow:
+    5px 7px 0 var(--reward-edge),
+    10px 13px 0 rgba(0,0,0,0.24),
+    inset 0 0 0 2px rgba(255,255,255,0.16),
+    inset -10px -12px 18px rgba(0,0,0,0.2);
+  transform: perspective(520px) rotateX(-8deg) rotateY(12deg);
+  transform-origin: 50% 58%;
+  will-change: transform;
+}
+
+.reward-die-unlock.show .reward-die {
+  animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite;
+}
+
+.reward-die-pip-cell {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+.reward-die-pip {
+  width: clamp(7px, 2.2vw, 12px);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: var(--reward-pip);
+  box-shadow:
+    0 0 0 1.35px var(--reward-pip-outline),
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 1px 2px rgba(0,0,0,0.3);
+  opacity: 0;
+}
+
+.reward-die-pip-cell.is-on .reward-die-pip {
+  opacity: 1;
+}
+
+.reward-die::after {
+  content: '';
+  position: absolute;
+  inset: 6% 8% auto 8%;
+  height: 38%;
+  border-radius: 48% 38% 44% 34%;
+  background:
+    linear-gradient(112deg,
+      transparent 0%,
+      rgba(255,255,255,0.04) 22%,
+      rgba(255,255,255,0.58) 45%,
+      rgba(255,246,150,0.26) 52%,
+      transparent 72%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.reward-die.effect-toxicSpat {
+  background:
+    radial-gradient(ellipse at 22% 14%, rgba(184,255,49,0.94) 0 12%, transparent 13%),
+    radial-gradient(ellipse at 72% 73%, rgba(186,255,56,0.82) 0 15%, transparent 16%),
+    radial-gradient(ellipse at 45% 92%, rgba(12,93,25,0.26) 0 10%, transparent 11%),
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.52), rgba(255,255,255,0.14) 22%, transparent 42%),
+    linear-gradient(150deg, rgba(255,255,255,0.16), transparent 36%),
+    linear-gradient(330deg, rgba(0,0,0,0.34), transparent 54%),
+    var(--reward-face);
+}
+
+.reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip {
+  filter: drop-shadow(0 0 4px rgba(184,255,49,0.72));
+}
+
+.reward-die.effect-bolt::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 4% 18% 8% 20%;
+  background: #ffe642;
+  clip-path: polygon(54% 0, 27% 43%, 51% 43%, 35% 100%, 79% 34%, 56% 34%);
+  filter: drop-shadow(0 2px 0 rgba(37,49,12,0.36));
+  transform: rotate(-10deg);
+}
+
+.reward-die.effect-tieDye {
+  background: #ff55b7;
+}
+
+.reward-die.effect-tieDye::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: -26%;
+  border-radius: 28%;
+  background:
+    radial-gradient(circle at 26% 25%, #ff4fb0 0 19%, transparent 20%),
+    radial-gradient(circle at 71% 23%, #ffe642 0 20%, transparent 21%),
+    radial-gradient(circle at 30% 74%, #29d6ff 0 22%, transparent 23%),
+    radial-gradient(circle at 72% 75%, #8d5cff 0 21%, transparent 22%),
+    radial-gradient(circle at 50% 52%, #fff06a 0 12%, transparent 13%);
+  animation: rewardTieDyeSpin 3.8s linear infinite;
+}
+
+.reward-die.effect-tieDye .reward-die-pip-cell {
+  z-index: 2;
+}
+
+.reward-die.effect-aura {
+  box-shadow:
+    5px 7px 0 var(--reward-edge),
+    10px 13px 0 rgba(0,0,0,0.24),
+    0 0 20px var(--reward-glow),
+    inset 0 0 0 2px rgba(255,255,255,0.18),
+    inset -10px -12px 18px rgba(0,0,0,0.2);
+}
+
+.reward-die.effect-shineSweep::after {
+  inset: -6% auto -8% -48%;
+  width: 44%;
+  height: auto;
+  border-radius: 0;
+  background: linear-gradient(106deg, transparent, rgba(255,255,255,0.82), transparent);
+  transform: skewX(-12deg);
+  animation: rewardShineSweep 1.12s ease-in-out infinite;
+}
+
+.reward-die.effect-diamond {
+  background:
+    linear-gradient(132deg, rgba(255,255,255,0.74) 0 18%, transparent 19%),
+    linear-gradient(35deg, rgba(33,137,181,0.28) 0 28%, transparent 29%),
+    linear-gradient(165deg, transparent 0 38%, rgba(255,255,255,0.52) 39% 55%, transparent 56%),
+    linear-gradient(210deg, rgba(32,93,130,0.24) 0 32%, transparent 33%),
+    var(--reward-face);
+}
+
+.reward-die.effect-diamond::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  z-index: 1;
+  background:
+    linear-gradient(63deg, transparent 0 47%, rgba(27,80,119,0.38) 48% 50%, transparent 51%),
+    linear-gradient(120deg, transparent 0 48%, rgba(255,255,255,0.52) 49% 51%, transparent 52%),
+    linear-gradient(0deg, transparent 0 47%, rgba(55,128,168,0.34) 48% 50%, transparent 51%);
+  opacity: 0.82;
+}
+
+.reward-die-spark {
+  position: absolute;
+  top: 9%;
+  right: 12%;
+  z-index: 4;
+  width: clamp(9px, 2.8vw, 15px);
+  height: clamp(9px, 2.8vw, 15px);
+  opacity: 0;
+  background:
+    linear-gradient(90deg, transparent 42%, #fff7a8 42% 58%, transparent 58%),
+    linear-gradient(0deg, transparent 42%, #fff7a8 42% 58%, transparent 58%);
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.7));
+  transform: rotate(45deg) scale(0.6);
+}
+
+.reward-die.effect-glint .reward-die-spark {
+  animation: rewardGlint 0.84s ease-in-out infinite;
+}
+
+.reward-die.effect-colorCycle {
+  --reward-edge: rgba(42,31,83,0.36);
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.8), rgba(255,255,255,0.22) 22%, transparent 42%),
+    linear-gradient(135deg, #f64bff 0%, #26d6ff 30%, #fff369 58%, #4cff8a 78%, #f64bff 100%);
+  animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 2.2s linear infinite;
+}
+
+.reward-die-unlock.show .reward-die.effect-colorCycle {
+  animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 2.2s linear infinite;
+}
+
+@keyframes rewardDieWiggle {
+  0%, 100% { transform: perspective(520px) rotateX(-8deg) rotateY(12deg) rotateZ(-4deg) translate3d(0,0,0); }
+  28% { transform: perspective(520px) rotateX(-11deg) rotateY(16deg) rotateZ(6deg) translate3d(0,-3px,0); }
+  55% { transform: perspective(520px) rotateX(-6deg) rotateY(7deg) rotateZ(-7deg) translate3d(0,2px,0); }
+  78% { transform: perspective(520px) rotateX(-10deg) rotateY(14deg) rotateZ(4deg) translate3d(0,-1px,0); }
+}
+
+@keyframes rewardNameFlash {
+  0% { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.82); }
+  22% { opacity: 1; transform: translate3d(0, -2px, 0) scale(1.08); }
+  54% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes rewardPipPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(180,255,120,0)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 6px rgba(180,255,120,0.76)); transform: scale(1.12); }
+}
+
+@keyframes rewardTieDyeSpin {
+  0% { transform: rotate(0deg) scale(1.02); }
+  100% { transform: rotate(360deg) scale(1.02); }
+}
+
+@keyframes rewardShineSweep {
+  0% { transform: translateX(0) skewX(-12deg); opacity: 0; }
+  18% { opacity: 0.9; }
+  64% { opacity: 0.9; }
+  100% { transform: translateX(360%) skewX(-12deg); opacity: 0; }
+}
+
+@keyframes rewardGlint {
+  0%, 58%, 100% { opacity: 0; transform: rotate(45deg) scale(0.55); }
+  22% { opacity: 1; transform: rotate(45deg) scale(1.08); }
+}
+
+@keyframes rewardPrismCycle {
+  0% { filter: hue-rotate(0deg) saturate(1.12); }
+  100% { filter: hue-rotate(360deg) saturate(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reward-die-unlock.show .reward-die,
+  .reward-die.effect-colorCycle,
+  .reward-die.effect-glowPulse .reward-die-pip-cell.is-on .reward-die-pip,
+  .reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
+  .reward-die.effect-shineSweep::after,
+  .reward-die.effect-glint .reward-die-spark,
+  .reward-die.effect-tieDye::before,
+  .reward-die-unlock.show .reward-die-name {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
 @keyframes dieRoll {
   0% {
     transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) scale(1);
@@ -2036,14 +2371,16 @@ body.inline-game-over .roll-panel {
 .die.idle .dot { background: #555; }
 /* ── ROLL BUTTON ── */
 .roll-btn {
-  position: absolute;
-  inset: 6px;
+  position: relative;
+  inset: auto;
   z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: auto;
+  width: 100%;
+  min-height: clamp(56px, 12vw, 78px);
   height: auto;
+  flex: 1 1 auto;
   border: none;
   border-radius: 7px;
   background:
@@ -2060,6 +2397,31 @@ body.inline-game-over .roll-panel {
   pointer-events: auto;
   transition: transform 0.1s ease, filter 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
   touch-action: manipulation;
+}
+.game-tagline {
+  position: relative;
+  z-index: 4;
+  max-width: 100%;
+  color: rgba(15,95,50,0.9);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.58rem, 1.85vw, 0.78rem);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: normal;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.54),
+    1px 1px 0 rgba(255,210,32,0.35);
+}
+.game-tagline strong {
+  color: #e3271f;
+  font-weight: 900;
+  -webkit-text-stroke: 0.28px rgba(88,0,0,0.24);
+  paint-order: stroke fill;
+}
+body.inline-game-over .game-tagline {
+  display: none;
 }
 .roll-btn-label {
   display: block;
@@ -4769,7 +5131,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-panel {
     --roll-strip-die-size: clamp(62px, 18.7vw, 78px);
-    min-height: clamp(62px, 16.5vw, 72px);
+    min-height: clamp(86px, 22vw, 102px);
   }
 
   body.inline-game-over .roll-panel {
@@ -4779,7 +5141,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-btn {
-    inset: 5px;
+    inset: auto;
     padding-left: clamp(0.78rem, 3vw, 1.18rem);
     padding-right: clamp(0.78rem, 3vw, 1.18rem);
   }
@@ -5235,12 +5597,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .roll-panel {
     width: min(54%, 360px);
     max-width: 360px;
-    min-height: 68px;
+    min-height: 86px;
     margin-top: 0;
   }
 
   .roll-btn {
-    inset: 5px;
+    inset: auto;
   }
 
   .roll-btn-label {
@@ -5382,13 +5744,13 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .roll-panel {
     width: min(54%, 360px);
     max-width: 360px;
-    min-height: 62px;
+    min-height: 82px;
     margin-top: -0.12rem;
     padding: 0.32rem 0.54rem;
   }
 
   .roll-btn {
-    inset: 5px;
+    inset: auto;
   }
 
   .roll-btn-label {
@@ -5431,6 +5793,15 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     padding-left: 0.32rem;
     padding-right: 0.32rem;
   }
+
+  .debug-reward-die-btn {
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 142px);
+    min-width: 44px;
+    min-height: 28px;
+    padding-left: 0.34rem;
+    padding-right: 0.34rem;
+  }
 }
 
 @media (min-width: 721px) and (max-width: 1180px) and (max-height: 760px) {
@@ -5444,16 +5815,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .title-presenter {
-    top: calc(env(safe-area-inset-top, 0px) + 0.32rem);
+    top: calc(env(safe-area-inset-top, 0px) + 0.52rem);
   }
 
   .title-presenter-logo {
-    width: clamp(88px, 9.5vw, 100px);
+    width: clamp(100px, 10.8vw, 116px);
   }
 
   .title-presenter-sub {
-    font-size: 0.34rem;
-    letter-spacing: 0.1em;
+    font-size: 0.48rem;
+    letter-spacing: 0.12em;
   }
 
   .game-area {
@@ -5510,8 +5881,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-panel {
-    min-height: 58px;
+    min-height: 78px;
     margin-top: -0.2rem;
+  }
+
+  .game-tagline {
+    font-size: clamp(0.5rem, 1.45vh, 0.62rem);
   }
 
   .roll-btn-label {
@@ -5575,7 +5950,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-panel {
     --roll-strip-die-size: clamp(56px, 17vw, 68px);
-    min-height: clamp(58px, 16.5vw, 65px);
+    min-height: clamp(80px, 21.8vw, 92px);
+  }
+
+  .game-tagline {
+    font-size: clamp(0.48rem, 2.5vw, 0.62rem);
+    letter-spacing: 0.06em;
   }
 
   body.inline-game-over .roll-panel {
@@ -5638,16 +6018,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .title-presenter {
-    top: calc(env(safe-area-inset-top, 0px) + 0.34rem);
+    top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
   }
 
   .title-presenter-logo {
-    width: clamp(72px, 21vw, 84px);
+    width: clamp(92px, 27vw, 112px);
   }
 
   .title-presenter-sub {
-    font-size: 0.32rem;
-    letter-spacing: 0.1em;
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
   }
 
   .title-wrap.big .title-logo {
@@ -5659,13 +6039,13 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .start-overlay .title-wrap.big {
-    transform: translateY(1.55rem);
+    transform: translateY(1.08rem);
   }
 
   .start-overlay .start-blob-wrap {
     width: clamp(218px, 58vw, 240px);
     height: clamp(150px, 36vw, 168px);
-    transform: translateY(1.38rem);
+    transform: translateY(0.82rem);
   }
 
   .start-dice-row {
@@ -5678,23 +6058,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     height: clamp(68px, 18vw, 78px);
   }
 
-  .start-overlay .start-tagline {
-    max-width: min(86vw, 300px);
-    transform: translateY(1rem);
-    font-size: clamp(0.7rem, 3.2vw, 0.84rem);
-    line-height: 1;
-  }
-
   .title-legal {
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.22rem);
-    max-width: min(72vw, 250px);
-    font-size: clamp(0.32rem, 1.8vw, 0.4rem);
-    line-height: 1;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.38rem);
+    max-width: min(86vw, 320px);
+    font-size: clamp(0.5rem, 2.55vw, 0.62rem);
+    line-height: 1.08;
   }
 
   .title-odg-wordmark {
-    width: clamp(76px, 24vw, 96px);
+    width: clamp(104px, 32vw, 134px);
   }
 
   .game-area {
@@ -5806,12 +6179,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .roll-panel {
     --roll-strip-die-size: clamp(48px, 14.8vw, 58px);
     width: min(66%, 240px);
-    min-height: clamp(54px, 14.8vw, 58px);
+    min-height: clamp(74px, 20vw, 84px);
     margin-top: 0;
   }
 
   .roll-btn {
-    inset: 4px;
+    inset: auto;
     padding-left: 0.7rem;
     padding-right: 0.7rem;
   }
@@ -5842,6 +6215,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-width: 40px;
     min-height: 24px;
   }
+
+  .debug-reward-die-btn {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 122px);
+    min-width: 40px;
+    min-height: 26px;
+  }
 }
 
 @media (max-width: 360px) and (max-height: 620px) {
@@ -5866,7 +6245,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-panel {
-    min-height: 44px;
+    min-height: 70px;
   }
 }
 
@@ -6877,6 +7256,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   </svg>
 </button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
+<button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
   <button class="debug-outcome-btn lose" id="devLoseBtn" type="button" aria-label="Lose game now">LOSE</button>
@@ -7094,8 +7474,29 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   <!-- Yellow roll command — thumb-first action strip -->
   <div class="roll-panel" aria-label="Yellow roll action">
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
+    <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash."><strong>ROLL.</strong> COLLECT. AVOID THE TRASH.</div>
   </div>
 
+</div>
+
+<div class="reward-die-unlock" id="rewardDieUnlock" hidden aria-live="polite" aria-atomic="true">
+  <div class="reward-die-scene">
+    <div class="reward-die-name" id="rewardDieName">RUST</div>
+    <div class="reward-die-wrap">
+      <div class="reward-die effect-none" id="rewardDie" data-tier="0" data-effect="none" data-pip-outline="false" aria-hidden="true">
+        <span class="reward-die-pip-cell" data-pip="tl"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="tc"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="tr"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="ml"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="mc"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="mr"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="bl"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="bc"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-pip-cell" data-pip="br"><span class="reward-die-pip"></span></span>
+        <span class="reward-die-spark" aria-hidden="true"></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="message" id="message">ROLL TO START</div>
@@ -7183,7 +7584,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     </div>
     <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
-  <div class="start-tagline"><strong>Roll. Collect.</strong> Avoid the trash.</div>
   <div class="legacy-ipad-guidance" id="legacyIpadGuidance">For the smoothest experience, play on iPhone, desktop, or a newer iPad.</div>
   <div class="title-legal">
     <span>&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
@@ -7318,11 +7718,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const P0_START_ENABLED = false;
   const P0_DEBUG_AUTOPLAY_START = false;
   const FULL_FX_ENABLED = URL_OPTIONS.has('fullfx') || URL_HASH.includes('fullfx');
+  const REWARD_REVIEW_REQUESTED = URL_OPTIONS.has('reward-review') || URL_HASH.includes('reward-review');
   const FORCE_QA_ENABLED = FULL_FX_ENABLED || URL_OPTIONS.has('forceqa') || URL_HASH.includes('forceqa');
   const FAST_PREVIEW_REQUESTED = URL_OPTIONS.has('fast') || URL_OPTIONS.has('iter') || URL_OPTIONS.has('lite') || URL_HASH.includes('fast') || URL_HASH.includes('iter') || URL_HASH.includes('lite');
   const DEV_CHEATS_ENABLED = false;
   const QA_HOOKS_ENABLED = QA_ENABLED || URL_OPTIONS.has('qa-hooks') || URL_HASH.includes('qa-hooks');
   const DEBUG_CONTROLS_ENABLED = REVIEW_BUILD || QA_ENABLED || QA_HOOKS_ENABLED;
+  const REWARD_REVIEW_ENABLED = DEBUG_CONTROLS_ENABLED || REWARD_REVIEW_REQUESTED;
   const TABLET_REVIEW_SIZE = window.matchMedia('(min-width: 721px) and (max-width: 1180px) and (max-height: 1180px)').matches;
   const TABLET_EFFECTS_LITE = !FULL_FX_ENABLED && TABLET_REVIEW_SIZE && (MOBILE_REVIEW_DEVICE || navigator.maxTouchPoints > 0 || QA_ENABLED);
   const FAST_PREVIEW_ENABLED = !FULL_FX_ENABLED && (LOCAL_PREVIEW || LAN_PREVIEW || QA_ENABLED || P0_START_ENABLED || FAST_PREVIEW_REQUESTED);
@@ -7333,6 +7735,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
+  const FIRST_GAME_ASSIST_MAX_USES = 8;
+  const FIRST_GAME_ASSIST_PLAYER_HIT_CHANCE = 0.58;
+  const FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE = 0.82;
+  const FIRST_GAME_ASSIST_CPU_BRAKE_CHANCE = 0.42;
+  const FIRST_GAME_ASSIST_CPU_PRESSURE_BRAKE_CHANCE = 0.62;
   const ENDURANCE_ASSIST_START_ROUND = 5;
   const ENDURANCE_ASSIST_START_ROLLS = 36;
   const ENDURANCE_ASSIST_MAX_USES = 4;
@@ -7353,6 +7760,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.classList.toggle('legacy-ipad-performance', LEGACY_IPAD_PERFORMANCE_MODE);
   document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
+  document.body.classList.toggle('reward-review-enabled', REWARD_REVIEW_ENABLED);
   document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
   const orientationLockScreen = document.getElementById('orientationLockScreen');
@@ -7404,6 +7812,19 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
+  const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
+  const REWARD_DICE_UNLOCK_MS = 2800;
+  const REWARD_DIE_DISPLAY_VALUE = 5;
+  const REWARD_DICE = Object.freeze([
+    { tier: 1, minWins: 1, name: 'RUST', faceColor: '#C0421F', pipColor: '#FFFFFF', effect: 'none', pipOutline: false },
+    { tier: 2, minWins: 3, name: 'TOXIC SPAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
+    { tier: 3, minWins: 5, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'none', pipOutline: false },
+    { tier: 4, minWins: 10, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
+    { tier: 5, minWins: 15, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
+    { tier: 6, minWins: 25, name: 'CHROME', faceColor: '#C8CDD4', pipColor: '#1A1A1A', effect: 'shineSweep', pipOutline: false },
+    { tier: 7, minWins: 40, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
+    { tier: 8, minWins: 60, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true }
+  ]);
   let forcedRolls = [];
   let betaSocket = null;
   let betaRoomCode = TWO_PLAYER_ENABLED ? cleanRoomCode(URL_OPTIONS.get('room')) : '';
@@ -7462,6 +7883,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let inlineGameOverState = null;
   let inlineGameOverTimer = null;
   let inlineWinAccentTimer = null;
+  let rewardDieWins = readRewardDieWins();
+  let rewardDieUnlockTimer = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -7504,15 +7927,20 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const TD_ANALYTICS_QUEUE_LIMIT = 32;
   const TD_ANALYTICS_LOG_LIMIT = 80;
   const TD_VISIT_STORAGE_KEY = 'trashDiceHtml5VisitCount';
+  const TD_COMPLETED_GAMES_STORAGE_KEY = 'trashDiceHtml5CompletedGames';
   const TD_SOURCE = cleanAnalyticsValue(TD_LAUNCH_SOURCE || URL_OPTIONS.get('source') || URL_OPTIONS.get('utm_source') || (document.referrer ? 'referral' : 'direct'));
   const TD_REFERRER_HOST = getReferrerHost();
   const TD_VISIT_INFO = getVisitInfo();
+  let tdCompletedGames = getCompletedGameCount();
   const TD_SESSION_STARTED_AT = performance.now();
   let tdGameCount = 0;
   let tdGameStartedAt = 0;
   let tdLastCheckpoint = 'title';
   let tdExitTracked = false;
   let tdFirstRollTracked = false;
+  let firstGameAssistUses = 0;
+  let lastFirstGameAssist = null;
+  let rewardDieReviewIndex = -1;
 
   function cleanAnalyticsValue(value, fallback = 'unknown') {
     const cleaned = String(value || '').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
@@ -7540,6 +7968,32 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return { visitCount, returning };
   }
 
+  function normalizeCounter(value) {
+    return Math.max(0, Math.floor(Number(value) || 0));
+  }
+
+  function getCompletedGameCount() {
+    try {
+      return normalizeCounter(window.localStorage.getItem(TD_COMPLETED_GAMES_STORAGE_KEY));
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function writeCompletedGameCount(count) {
+    tdCompletedGames = normalizeCounter(count);
+    try {
+      window.localStorage.setItem(TD_COMPLETED_GAMES_STORAGE_KEY, String(tdCompletedGames));
+    } catch (_) {}
+    return tdCompletedGames;
+  }
+
+  function recordCompletedGame(winner) {
+    const before = normalizeCounter(tdCompletedGames);
+    const after = writeCompletedGameCount(before + 1);
+    return { before, after, winner: winner === 'p2' ? 'p2' : 'p1' };
+  }
+
   function totalPoolDice(player) {
     if (!pools || !pools[player]) return 0;
     return (pools[player].yellow || 0) + (pools[player].green || 0);
@@ -7552,6 +8006,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       source: TD_SOURCE,
       returning: TD_VISIT_INFO.returning,
       visit_count: TD_VISIT_INFO.visitCount,
+      completed_games: tdCompletedGames,
       referrer_host: TD_REFERRER_HOST,
       viewport: `${window.innerWidth}x${window.innerHeight}`,
       qa: QA_ENABLED,
@@ -7768,6 +8223,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     benchCelebrateTimer = null;
     terminalDiceCelebrateTimer = null;
     terminalDiceCelebrateRun++;
+    rewardDieUnlockTimer = null;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
@@ -8144,6 +8600,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const inlineResultBanner = document.getElementById('inlineResultBanner');
   const inlineResultTitle = document.getElementById('inlineResultTitle');
   const inlineResultSub = document.getElementById('inlineResultSub');
+  const rewardDieUnlock = document.getElementById('rewardDieUnlock');
+  const rewardDie = document.getElementById('rewardDie');
+  const rewardDieName = document.getElementById('rewardDieName');
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
   const roundFlash  = document.getElementById('roundFlash');
@@ -8172,10 +8631,170 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
+  const devRewardDieBtn = document.getElementById('devRewardDieBtn');
   const debugOutcomeControls = document.getElementById('debugOutcomeControls');
   const devWinBtn = document.getElementById('devWinBtn');
   const devLoseBtn = document.getElementById('devLoseBtn');
   const devStartBtn = document.getElementById('devStartBtn');
+
+  function normalizeRewardWins(value) {
+    return clamp(Math.floor(Number(value) || 0), 0, 999999);
+  }
+
+  function readRewardDieWins() {
+    try {
+      return normalizeRewardWins(window.localStorage.getItem(REWARD_DICE_STORAGE_KEY));
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function writeRewardDieWins(totalWins) {
+    const normalized = normalizeRewardWins(totalWins);
+    rewardDieWins = normalized;
+    try {
+      window.localStorage.setItem(REWARD_DICE_STORAGE_KEY, String(normalized));
+    } catch (_) {}
+    return rewardDieWins;
+  }
+
+  function activeRewardDie(totalWins) {
+    const wins = normalizeRewardWins(totalWins);
+    let active = null;
+    for (const die of REWARD_DICE) {
+      if (wins >= die.minWins) active = die;
+    }
+    return active;
+  }
+
+  function nextRewardDie(totalWins) {
+    const wins = normalizeRewardWins(totalWins);
+    return REWARD_DICE.find(die => wins < die.minWins) || null;
+  }
+
+  function rewardDieSnapshot(die) {
+    return die ? {
+      tier: die.tier,
+      minWins: die.minWins,
+      name: die.name,
+      faceColor: die.faceColor,
+      pipColor: die.pipColor,
+      effect: die.effect,
+      pipOutline: !!die.pipOutline
+    } : null;
+  }
+
+  function getRewardDieState() {
+    const totalWins = normalizeRewardWins(rewardDieWins);
+    const active = activeRewardDie(totalWins);
+    const next = nextRewardDie(totalWins);
+    return {
+      totalWins,
+      activeTier: active ? active.tier : 0,
+      activeName: active ? active.name : '',
+      activeDie: rewardDieSnapshot(active),
+      nextDie: rewardDieSnapshot(next),
+      capped: !next,
+      capTier: REWARD_DICE[REWARD_DICE.length - 1].tier
+    };
+  }
+
+  function renderRewardDiePips(value = REWARD_DIE_DISPLAY_VALUE) {
+    if (!rewardDie) return;
+    const pipMap = {
+      1: ['mc'],
+      2: ['tl', 'br'],
+      3: ['tl', 'mc', 'br'],
+      4: ['tl', 'tr', 'bl', 'br'],
+      5: ['tl', 'tr', 'mc', 'bl', 'br'],
+      6: ['tl', 'ml', 'bl', 'tr', 'mr', 'br']
+    };
+    const activePips = new Set(pipMap[clamp(Math.floor(Number(value) || 5), 1, 6)] || pipMap[5]);
+    rewardDie.querySelectorAll('.reward-die-pip-cell').forEach(cell => {
+      cell.classList.toggle('is-on', activePips.has(cell.dataset.pip));
+    });
+  }
+
+  function applyRewardDieStyle(die) {
+    if (!rewardDie || !die) return;
+    const effect = die.effect || 'none';
+    const faceColor = die.faceColor === 'holographic' ? '#D7FAFF' : die.faceColor;
+    rewardDie.className = `reward-die effect-${effect}`;
+    rewardDie.dataset.tier = String(die.tier);
+    rewardDie.dataset.effect = effect;
+    rewardDie.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    rewardDie.style.setProperty('--reward-face', faceColor);
+    rewardDie.style.setProperty('--reward-pip', die.pipColor);
+    rewardDie.style.setProperty('--reward-pip-outline', die.pipOutline ? 'rgba(0,0,0,0.72)' : 'transparent');
+    rewardDie.style.setProperty('--reward-edge', die.tier >= 6 ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)');
+    rewardDie.style.setProperty('--reward-glow', die.effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)');
+    renderRewardDiePips(REWARD_DIE_DISPLAY_VALUE);
+  }
+
+  function hideRewardDieUnlock() {
+    if (rewardDieUnlock) {
+      rewardDieUnlock.classList.remove('show');
+      rewardDieUnlock.hidden = true;
+      rewardDieUnlock.removeAttribute('data-tier');
+      rewardDieUnlock.removeAttribute('data-effect');
+      rewardDieUnlock.removeAttribute('data-pip-outline');
+    }
+    if (rewardDieUnlockTimer) {
+      cancelRuntimeTimer(rewardDieUnlockTimer);
+      rewardDieUnlockTimer = null;
+    }
+  }
+
+  function showRewardDieUnlock(die, totalWins) {
+    if (!rewardDieUnlock || !rewardDie || !die) return null;
+    if (rewardDieUnlockTimer) {
+      cancelRuntimeTimer(rewardDieUnlockTimer);
+      rewardDieUnlockTimer = null;
+    }
+    applyRewardDieStyle(die);
+    if (rewardDieName) rewardDieName.textContent = die.name;
+    rewardDieUnlock.dataset.tier = String(die.tier);
+    rewardDieUnlock.dataset.effect = die.effect || 'none';
+    rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    rewardDieUnlock.setAttribute('aria-label', `${die.name} reward die unlocked at ${totalWins} wins`);
+    rewardDieUnlock.hidden = false;
+    rewardDieUnlock.classList.remove('show');
+    void rewardDieUnlock.offsetWidth;
+    requestAnimationFrame(() => {
+      rewardDieUnlock.classList.add('show');
+    });
+    rewardDieUnlockTimer = runLater(() => {
+      rewardDieUnlockTimer = null;
+      hideRewardDieUnlock();
+    }, REWARD_DICE_UNLOCK_MS);
+    return rewardDieSnapshot(die);
+  }
+
+  function recordRewardDiePlayerWin() {
+    const beforeWins = normalizeRewardWins(rewardDieWins);
+    const beforeTier = activeRewardDie(beforeWins);
+    const afterWins = writeRewardDieWins(beforeWins + 1);
+    const afterTier = activeRewardDie(afterWins);
+    const unlocked = afterTier && (!beforeTier || afterTier.tier !== beforeTier.tier);
+    return {
+      beforeWins,
+      totalWins: afterWins,
+      activeDie: rewardDieSnapshot(afterTier),
+      unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins) : null
+    };
+  }
+
+  function cycleRewardDieReview() {
+    rewardDieReviewIndex = (rewardDieReviewIndex + 1) % REWARD_DICE.length;
+    const die = REWARD_DICE[rewardDieReviewIndex];
+    if (devRewardDieBtn) {
+      devRewardDieBtn.textContent = `D${die.tier}`;
+      devRewardDieBtn.setAttribute('aria-label', `Preview ${die.name} reward die`);
+      devRewardDieBtn.title = die.name;
+    }
+    showRewardDieUnlock(die, die.minWins);
+    return rewardDieSnapshot(die);
+  }
 
   let slotEls  = [];  // SVG slot elements
   let labelEls = [];  // SVG number labels
@@ -8350,6 +8969,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     enduranceAssistRolls = 0;
     enduranceAssistUsedThisRound = false;
     lastEnduranceAssist = null;
+    firstGameAssistUses = 0;
+    lastFirstGameAssist = null;
     roundWins = { p1: 0, p2: 0 };
     openingComebackAssistRolls = 0;
     if (trashCan) {
@@ -10570,6 +11191,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     hidePwaInstallHint();
     clearTerminalDiceCelebration();
     clearInlineEndingVisuals();
+    hideRewardDieUnlock();
     setRollButtonPlayAgainMode(false);
   }
 
@@ -10646,6 +11268,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     });
     tdTrack('td_game_complete', gameCompletePayload);
     tdTrack(playerWon ? 'td_game_win' : 'td_game_loss', gameCompletePayload);
+    inlineGameOverState.completedGame = recordCompletedGame(finalWinner);
+    inlineGameOverState.firstGameAssist = {
+      uses: firstGameAssistUses,
+      last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
+    };
+    if (playerWon) {
+      inlineGameOverState.rewardDie = recordRewardDiePlayerWin();
+    } else {
+      inlineGameOverState.rewardDie = getRewardDieState();
+    }
 
     gameStarted = true;
     busy = true;
@@ -11070,6 +11702,55 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       totalDice('p2') > 0;
   }
 
+  function isFirstGameAssistActive() {
+    return !p0Autoplay &&
+      !betaMultiplayerActive &&
+      tdCompletedGames === 0 &&
+      gameStarted &&
+      firstGameAssistUses < FIRST_GAME_ASSIST_MAX_USES &&
+      totalDice('p1') > 0 &&
+      totalDice('p2') > 0;
+  }
+
+  function createFirstGameAssistContext(openSlots = []) {
+    const p1Dice = totalDice('p1');
+    const p2Dice = totalDice('p2');
+    const diceDeficit = p2Dice - p1Dice;
+    const roundDeficit = (roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0);
+    const clearlyAhead = p1Dice >= p2Dice + 5 && roundDeficit < 0;
+    const pressure = diceDeficit >= 0 || roundDeficit >= 0 || openSlots.length <= 3;
+    const active = isFirstGameAssistActive() && !clearlyAhead && openSlots.length > 0;
+    return {
+      active,
+      pressure,
+      clearlyAhead,
+      p1Dice,
+      p2Dice,
+      diceDeficit,
+      roundDeficit,
+      openSlots: openSlots.length,
+      uses: firstGameAssistUses,
+      maxUses: FIRST_GAME_ASSIST_MAX_USES,
+      completedGames: tdCompletedGames
+    };
+  }
+
+  function markFirstGameAssist(reason, face, ctx) {
+    firstGameAssistUses++;
+    lastFirstGameAssist = {
+      reason,
+      face,
+      round,
+      totalRolls,
+      p1Dice: ctx ? ctx.p1Dice : totalDice('p1'),
+      p2Dice: ctx ? ctx.p2Dice : totalDice('p2'),
+      diceDeficit: ctx ? ctx.diceDeficit : totalDice('p2') - totalDice('p1'),
+      roundDeficit: ctx ? ctx.roundDeficit : ((roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0)),
+      uses: firstGameAssistUses,
+      at: Date.now()
+    };
+  }
+
   function createEnduranceAssistContext(openSlots = []) {
     const p1Dice = totalDice('p1');
     const p2Dice = totalDice('p2');
@@ -11154,7 +11835,29 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         }, [])
       : [];
     const comebackAssistActive = isOpeningComebackAssistActive();
+    const firstGameContext = createFirstGameAssistContext(openSlots);
     const enduranceContext = createEnduranceAssistContext(openSlots);
+    if (firstGameContext.active && player === 'p1' && openSlots.length > 0) {
+      const hitChance = openSlots.length === 1
+        ? FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE
+        : FIRST_GAME_ASSIST_PLAYER_HIT_CHANCE;
+      if (Math.random() < hitChance) {
+        const face = randomFrom(openSlots);
+        markFirstGameAssist(openSlots.length === 1 ? 'player-clutch' : 'player-open-slot', face, firstGameContext);
+        return face;
+      }
+    }
+    if (firstGameContext.active && player === 'p2' && openSlots.length > 0) {
+      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+      const brakeChance = firstGameContext.pressure
+        ? FIRST_GAME_ASSIST_CPU_PRESSURE_BRAKE_CHANCE
+        : FIRST_GAME_ASSIST_CPU_BRAKE_CHANCE;
+      if (takenFaces.length && Math.random() < brakeChance) {
+        const face = randomFrom(takenFaces);
+        markFirstGameAssist('cpu-soft-brake', face, firstGameContext);
+        return face;
+      }
+    }
     if (comebackAssistActive && player === 'p1' && openSlots.length > 0) {
       openingComebackAssistRolls++;
       return randomFrom(openSlots);
@@ -12054,6 +12757,75 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         runLater(() => gameOver(winner === 'p2' ? 'p2' : 'p1'), needsInit ? 80 : 0);
         return winner;
       },
+      rewardDiceConfig() {
+        return REWARD_DICE.map(rewardDieSnapshot);
+      },
+      rewardDieState() {
+        return getRewardDieState();
+      },
+      setRewardWins(totalWins = 0) {
+        writeRewardDieWins(totalWins);
+        hideRewardDieUnlock();
+        return getRewardDieState();
+      },
+      showRewardDieUnlock(tier = 1) {
+        const die = REWARD_DICE.find(item => item.tier === Math.floor(Number(tier) || 1)) || REWARD_DICE[0];
+        writeRewardDieWins(Math.max(rewardDieWins, die.minWins));
+        return {
+          shown: rewardDieSnapshot(die),
+          state: getRewardDieState(),
+          unlock: showRewardDieUnlock(die, rewardDieWins)
+        };
+      },
+      cycleRewardDieReview() {
+        return cycleRewardDieReview();
+      },
+      setCompletedGames(count = 0) {
+        writeCompletedGameCount(count);
+        firstGameAssistUses = 0;
+        lastFirstGameAssist = null;
+        return window.TrashDiceQA.state().firstGameAssist;
+      },
+      firstGameAssistProbe({ completedGames = 0, player = 'p1', filledSlots = 2, p1Dice = 12, p2Dice = 15, p1RoundWins = 0, p2RoundWins = 0 } = {}) {
+        ensureQaGame();
+        writeCompletedGameCount(completedGames);
+        firstGameAssistUses = 0;
+        lastFirstGameAssist = null;
+        forcedRolls = [];
+        pools = {
+          p1: { yellow: Math.max(1, Math.floor(Number(p1Dice) || 12)), green: 0 },
+          p2: { yellow: 0, green: Math.max(1, Math.floor(Number(p2Dice) || 15)) }
+        };
+        resetPoolFaces();
+        roundWins = {
+          p1: Math.max(0, Math.floor(Number(p1RoundWins) || 0)),
+          p2: Math.max(0, Math.floor(Number(p2RoundWins) || 0))
+        };
+        board = Array.from({ length: 6 }, (_, i) => i < clamp(Math.floor(Number(filledSlots) || 0), 0, 5)
+          ? { player: i % 2 ? 'p2' : 'p1', color: i % 2 ? 'green' : 'yellow', value: i + 1 }
+          : null);
+        current = player === 'p2' ? 'p2' : 'p1';
+        busy = false;
+        buildSlots();
+        board.forEach((die, i) => { if (die) paintSlot(i, die); });
+        syncUI();
+        const openSlots = board.reduce((slots, slot, i) => {
+          if (slot === null) slots.push(i + 1);
+          return slots;
+        }, []);
+        const context = createFirstGameAssistContext(openSlots);
+        const beforeUses = firstGameAssistUses;
+        const samples = Array.from({ length: 24 }, () => chooseRollValue(current));
+        return {
+          context,
+          beforeUses,
+          afterUses: firstGameAssistUses,
+          lastFirstGameAssist: lastFirstGameAssist ? { ...lastFirstGameAssist } : null,
+          samples,
+          openSlots,
+          completedGames: tdCompletedGames
+        };
+      },
       enduranceAssistProbe(config = {}) {
         ensureQaGame();
         const previous = {
@@ -12278,6 +13050,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           tabletEffectsLite: TABLET_EFFECTS_LITE,
           iPadGameplayPerformanceMode: IPAD_GAMEPLAY_PERFORMANCE_MODE,
           legacyIpadPerformanceMode: LEGACY_IPAD_PERFORMANCE_MODE,
+          rewardReviewEnabled: REWARD_REVIEW_ENABLED,
+          completedGames: tdCompletedGames,
+          firstGameAssist: {
+            active: isFirstGameAssistActive(),
+            uses: firstGameAssistUses,
+            maxUses: FIRST_GAME_ASSIST_MAX_USES,
+            last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
+          },
           timings: {
             rollAnimationMs: ROLL_ANIMATION_MS,
             rollRevealHoldMs: ROLL_REVEAL_HOLD_MS,
@@ -12296,6 +13076,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           board: Array.isArray(board) ? board.map(Boolean) : [],
           forcedRolls: forcedRolls.slice(),
           inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
+          rewardDie: getRewardDieState(),
           enduranceAssist: pools && Array.isArray(board) ? createEnduranceAssistContext(
             board.reduce((slots, slot, i) => {
               if (slot === null) slots.push(i + 1);
@@ -12398,6 +13179,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       toggleDevP0Autoplay();
     });
   }
+  if (devRewardDieBtn) {
+    devRewardDieBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      cycleRewardDieReview();
+    });
+  }
   if (devWinBtn) {
     devWinBtn.addEventListener('click', event => {
       event.preventDefault();
@@ -12424,6 +13212,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (!p0ReviewMode) return;
     if (p0ReviewToggle && event.target === p0ReviewToggle) return;
     if (devP0Btn && event.target === devP0Btn) return;
+    if (devRewardDieBtn && event.target === devRewardDieBtn) return;
     if (debugOutcomeControls && debugOutcomeControls.contains(event.target)) return;
     if (devCheatBar && devCheatBar.contains(event.target)) return;
     event.preventDefault();
@@ -12519,6 +13308,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         busy,
         round,
         roundWins: { ...roundWins },
+        completedGames: tdCompletedGames,
+        firstGameAssist: {
+          active: isFirstGameAssistActive(),
+          uses: firstGameAssistUses,
+          maxUses: FIRST_GAME_ASSIST_MAX_USES,
+          last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
+        },
         openingComebackAssist: isOpeningComebackAssistActive(),
         openingComebackAssistRolls,
         enduranceAssist: pools && Array.isArray(board)
@@ -12534,6 +13330,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         lastEnduranceAssist: lastEnduranceAssist ? { ...lastEnduranceAssist } : null,
         totalRolls,
         inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
+        rewardDie: getRewardDieState(),
         terminal: terminalState ? { ...terminalState } : null,
         terminalWinner,
         terminalRunId,

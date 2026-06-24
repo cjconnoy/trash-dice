@@ -257,6 +257,7 @@ async function main() {
     for (const viewport of desktopScrollViewports) {
       const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
       await evalValue(page, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
+      await evalValue(page, `window.TrashDiceQA.setCompletedGames(0); window.TrashDiceQA.setRewardWins(0); true`);
       await evalValue(page, `document.getElementById('startBtn').click(); true`);
       await waitEval(page, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${viewport.name} game start`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p2'); true`);
@@ -317,6 +318,8 @@ async function main() {
         devControls: !!document.querySelector('#devCheatBar,#p0ReviewToggle,#debugBadge'),
         p0Button: !!document.getElementById('devP0Btn'),
         p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+        rewardReviewButton: !!document.getElementById('devRewardDieBtn'),
+        rewardReviewButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
         winButton: !!document.getElementById('devWinBtn'),
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
@@ -418,8 +421,8 @@ async function main() {
         })(),
         titleLayout: (() => {
           const presenterLogo = document.querySelector('.title-presenter-logo');
+          const presenterSub = document.querySelector('.title-presenter-sub');
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
-          const tagline = document.querySelector('.start-tagline');
           const legal = document.querySelector('.title-legal');
           const studioLabel = document.querySelector('.title-studio-label');
           const odgLogo = document.querySelector('.title-odg-wordmark');
@@ -429,29 +432,30 @@ async function main() {
             return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
           };
           const presenterRect = rect(presenterLogo);
+          const presenterSubRect = rect(presenterSub);
           const titleRect = rect(titleLogo);
           const startCard = document.querySelector('.start-blob-wrap');
           const startCardRect = rect(startCard);
           const startCanRect = rect(startCan);
-          const taglineRect = rect(tagline);
           const legalRect = rect(legal);
           const odgRect = rect(odgLogo);
           return {
             presenterLogoWidth: presenterRect.width,
+            presenterSubHeight: presenterSubRect.height,
             presenterToTitle: titleRect.top - presenterRect.bottom,
             titleToStartCard: startCardRect.top - titleRect.bottom,
             startCanToCard: startCardRect.left - startCanRect.right,
-            startCardToTagline: taglineRect.top - startCardRect.bottom,
-            taglineToLegal: legalRect.top - taglineRect.bottom,
+            startCardToLegal: legalRect.top - startCardRect.bottom,
+            titleTaglinePresent: !!document.querySelector('.start-overlay .start-tagline'),
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
             odgLogoSrc: odgLogo ? odgLogo.getAttribute('src') : '',
             odgLogoAlt: odgLogo ? odgLogo.getAttribute('alt') : '',
             odgCenterOffset: odgRect.left + odgRect.width / 2 - window.innerWidth / 2,
             presenterRect,
+            presenterSubRect,
             titleRect,
             startCardRect,
             startCanRect,
-            taglineRect,
             legalRect,
             odgRect
           };
@@ -465,6 +469,8 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
       assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
+      assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
+      assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
@@ -478,15 +484,10 @@ async function main() {
       if (viewport.width <= 720) {
         assert(initial.quitRect.height >= 46, `${viewport.name}: mobile quit button is too short ${JSON.stringify(initial.quitRect)}`);
         assert(initial.quitRect.top <= 32 && initial.quitRect.left <= 24, `${viewport.name}: mobile quit button should stay in top-left escape position ${JSON.stringify(initial.quitRect)}`);
-        const clearTagline = initial.quitRect.top >= initial.titleLayout.taglineRect.bottom + 4 ||
-          initial.quitRect.left >= initial.titleLayout.taglineRect.right + 4 ||
-          initial.quitRect.right <= initial.titleLayout.taglineRect.left - 4 ||
-          initial.quitRect.bottom <= initial.titleLayout.taglineRect.top - 4;
         const clearLegal = initial.quitRect.top >= initial.titleLayout.legalRect.bottom + 4 ||
           initial.quitRect.left >= initial.titleLayout.legalRect.right + 4 ||
           initial.quitRect.right <= initial.titleLayout.legalRect.left - 4 ||
           initial.quitRect.bottom <= initial.titleLayout.legalRect.top - 4;
-        assert(clearTagline, `${viewport.name}: mobile quit button overlaps title tagline ${JSON.stringify({ quit: initial.quitRect, tagline: initial.titleLayout.taglineRect })}`);
         assert(clearLegal, `${viewport.name}: mobile quit button overlaps legal copy ${JSON.stringify({ quit: initial.quitRect, legal: initial.titleLayout.legalRect })}`);
       } else {
         assert(initial.quitRect.top <= 24, `${viewport.name}: desktop/tablet quit button should remain easy to find at top right ${JSON.stringify(initial.quitRect)}`);
@@ -536,20 +537,22 @@ async function main() {
       })()`);
       assert(muteToggle.muted.pressed === 'true' && muteToggle.muted.label === 'Mute sound' && muteToggle.muted.iconOnVisible === false && muteToggle.muted.iconMutedVisible === true && muteToggle.muted.bodyMuted === true && muteToggle.muted.audioMuted === true && muteToggle.muted.stored === '1', `${viewport.name}: mute did not engage ${JSON.stringify(muteToggle)}`);
       assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.iconOnVisible === true && muteToggle.unmuted.iconMutedVisible === false && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
-      assert(initial.titleLayout.taglineToLegal >= 8, `${viewport.name}: title tagline overlaps legal ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.titleTaglinePresent === false, `${viewport.name}: title tagline should move off the title screen ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: start card overlaps title legal ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.studioLabelText === 'Digital companion by', `${viewport.name}: title studio credit label missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgLogoSrc.includes('assets/brand/odg-logo-charcoal.png') && initial.titleLayout.odgLogoAlt === 'OneDayGames', `${viewport.name}: title ODG wordmark missing ${JSON.stringify(initial.titleLayout)}`);
-      assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 70 : 72) && initial.titleLayout.odgRect.height >= 26, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.presenterSubHeight >= (viewport.mobile ? 8 : 9), `${viewport.name}: Presents text too small ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 100 : 104) && initial.titleLayout.odgRect.height >= 30, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
       assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.badgeRect === null, `${viewport.name}: beta badge should be removed from retail title ${JSON.stringify(initial.badgeRect)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
-        assert(initial.titleLayout.startCardToTagline >= 8, `${viewport.name}: mobile tagline overlaps start card ${JSON.stringify(initial.titleLayout)}`);
+        assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: mobile start card overlaps legal ${JSON.stringify(initial.titleLayout)}`);
         if (viewport.width <= 720) {
-          assert(initial.titleLayout.presenterLogoWidth <= 125, `${viewport.name}: mobile presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.presenterLogoWidth <= 150, `${viewport.name}: mobile presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
         } else {
           const compactTabletLandscape = viewport.height <= 760;
-          assert(initial.titleLayout.presenterLogoWidth <= (compactTabletLandscape ? 112 : 132), `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
+          assert(initial.titleLayout.presenterLogoWidth <= (compactTabletLandscape ? 122 : 152), `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
           assert(initial.titleLayout.presenterToTitle >= (compactTabletLandscape ? 8 : 28), `${viewport.name}: tablet presenter needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
           assert(initial.titleLayout.titleToStartCard >= (compactTabletLandscape ? 16 : 28) && initial.titleLayout.titleToStartCard <= (compactTabletLandscape ? 96 : 115), `${viewport.name}: tablet title-to-start-card spacing is off ${JSON.stringify(initial.titleLayout)}`);
           assert(initial.titleLayout.startCanRect.width >= (compactTabletLandscape ? 96 : 120), `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
@@ -607,26 +610,39 @@ async function main() {
       const activeLayout = await evalValue(page, `(() => {
         const roll = document.getElementById('rollBtn');
         const panel = document.querySelector('.roll-panel');
+        const gameTagline = document.querySelector('.game-tagline');
         const p0Button = document.getElementById('devP0Btn');
+        const rewardButton = document.getElementById('devRewardDieBtn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
         const badge = document.querySelector('.milestone-badge');
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
+        const tr = gameTagline ? gameTagline.getBoundingClientRect() : null;
         const br = p0Button.getBoundingClientRect();
+        const rbr = rewardButton.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
+          gameTagline: gameTagline ? {
+            text: gameTagline.textContent.trim(),
+            visible: getComputedStyle(gameTagline).display !== 'none' && tr.width > 80 && tr.height >= 8 && tr.bottom <= pr.bottom + 1,
+            belowRoll: tr.top >= rr.bottom - 1,
+            inPanel: tr.left >= pr.left - 1 && tr.right <= pr.right + 1,
+            rect: { top: tr.top, bottom: tr.bottom, left: tr.left, right: tr.right, width: tr.width, height: tr.height }
+          } : null,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
+          rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
+            (rbr.bottom <= qr.top - 4 || rbr.left >= qr.right + 4 || rbr.right <= qr.left - 4 || rbr.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
-          debugLowerRight: br.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.48 && or.top >= window.innerHeight * 0.48,
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -646,6 +662,7 @@ async function main() {
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
+          rewardButtonRect: { top: rbr.top, bottom: rbr.bottom, left: rbr.left, right: rbr.right, width: rbr.width, height: rbr.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
           badgeRect: gr ? { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height } : null,
@@ -668,7 +685,9 @@ async function main() {
       })()`);
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
@@ -691,9 +710,60 @@ async function main() {
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
       }
+      const rewardReviewBefore = await evalValue(page, `window.TrashDiceQA.rewardDieState()`);
+      await evalValue(page, `document.getElementById('devRewardDieBtn').click(); true`);
+      await waitEval(page, `(() => {
+        const shell = document.getElementById('rewardDieUnlock');
+        const die = document.getElementById('rewardDie');
+        if (!shell || !die) return false;
+        const r = die.getBoundingClientRect();
+        return !shell.hidden && shell.classList.contains('show') && r.width >= 48 && r.height >= 48;
+      })()`, `${viewport.name} reward die review preview`);
+      const rewardReview = await evalValue(page, `(() => {
+        const btn = document.getElementById('devRewardDieBtn');
+        const shell = document.getElementById('rewardDieUnlock');
+        const die = document.getElementById('rewardDie');
+        const name = document.getElementById('rewardDieName');
+        const r = die.getBoundingClientRect();
+        return {
+          buttonText: btn.textContent.trim(),
+          buttonLabel: btn.getAttribute('aria-label'),
+          visible: !shell.hidden && shell.classList.contains('show') && r.width >= 48 && r.height >= 48,
+          tier: shell.dataset.tier || die.dataset.tier || '',
+          effect: shell.dataset.effect || die.dataset.effect || '',
+          name: name.textContent || '',
+          pipCount: die.querySelectorAll('.reward-die-pip-cell.is-on .reward-die-pip').length,
+          progressState: window.TrashDiceQA.rewardDieState()
+        };
+      })()`);
+      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'RUST' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
+      const firstGameAssist = await evalValue(page, `(() => {
+        const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
+        const inactive = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 1, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
+        window.TrashDiceDebug.gameStart();
+        window.TrashDiceQA.setCompletedGames(0);
+        window.TrashDiceQA.setRewardWins(0);
+        return { active, inactive, resetState: window.TrashDiceQA.state() };
+      })()`);
+      assert(firstGameAssist.active.context.active === true && firstGameAssist.active.afterUses > firstGameAssist.active.beforeUses && firstGameAssist.active.afterUses <= firstGameAssist.active.context.maxUses, `${viewport.name}: first-game assist should nudge only during first game ${JSON.stringify(firstGameAssist.active)}`);
+      assert(firstGameAssist.inactive.context.active === false && firstGameAssist.inactive.afterUses === 0, `${viewport.name}: first-game assist should disable after one completed game ${JSON.stringify(firstGameAssist.inactive)}`);
+      assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
+      const rewardCap = await evalValue(page, `(() => {
+        window.TrashDiceQA.setRewardWins(100);
+        const cap = window.TrashDiceQA.rewardDieState();
+        window.TrashDiceQA.setRewardWins(2);
+        return cap;
+      })()`);
+      assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
+      const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
+      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'RUST|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' && rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye', `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);
@@ -764,6 +834,29 @@ async function main() {
             logoWidth: lr.width
           };
         })(),
+        rewardDie: (() => {
+          const shell = document.getElementById('rewardDieUnlock');
+          const die = document.getElementById('rewardDie');
+          const name = document.getElementById('rewardDieName');
+          if (!shell || !die || !name) return { present: false };
+          const r = die.getBoundingClientRect();
+          const shellStyle = getComputedStyle(shell);
+          const dieStyle = getComputedStyle(die);
+          return {
+            present: true,
+            visible: !shell.hidden && shell.classList.contains('show') && shellStyle.display !== 'none' && parseFloat(shellStyle.opacity || '0') > 0.9 && r.width >= 48 && r.height >= 48,
+            tier: shell.dataset.tier || die.dataset.tier || '',
+            effect: shell.dataset.effect || die.dataset.effect || '',
+            name: name.textContent || '',
+            pipCount: die.querySelectorAll('.reward-die-pip-cell.is-on .reward-die-pip').length,
+            pipOutline: shell.dataset.pipOutline || die.dataset.pipOutline || '',
+            faceColor: dieStyle.getPropertyValue('--reward-face').trim(),
+            pipColor: dieStyle.getPropertyValue('--reward-pip').trim(),
+            pipOutlineColor: dieStyle.getPropertyValue('--reward-pip-outline').trim(),
+            state: window.TrashDiceQA.rewardDieState(),
+            rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }
+          };
+        })(),
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
         events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
       }))()`);
@@ -791,6 +884,11 @@ async function main() {
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
+      assert(terminal.rewardDie.present === true && terminal.rewardDie.visible === true, `${viewport.name}: reward die unlock should be visible on new tier ${JSON.stringify(terminal.rewardDie)}`);
+      assert(terminal.rewardDie.tier === '2' && terminal.rewardDie.name === 'TOXIC SPAT' && terminal.rewardDie.effect === 'toxicSpat', `${viewport.name}: reward die should unlock TOXIC SPAT at 3 wins ${JSON.stringify(terminal.rewardDie)}`);
+      assert(terminal.rewardDie.pipCount === 5 && terminal.rewardDie.rect.width >= 48 && terminal.rewardDie.rect.height >= 48, `${viewport.name}: reward die pips should stay fixed and legible ${JSON.stringify(terminal.rewardDie)}`);
+      assert(terminal.rewardDie.pipOutline === 'false' && terminal.rewardDie.pipOutlineColor === 'transparent', `${viewport.name}: TOXIC SPAT should use dark pips without patterned outline ${JSON.stringify(terminal.rewardDie)}`);
+      assert(terminal.rewardDie.state.totalWins === 3 && terminal.rewardDie.state.activeTier === 2 && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === 'BUBBLEGUM', `${viewport.name}: reward die state did not persist TOXIC SPAT threshold ${JSON.stringify(terminal.rewardDie.state)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminal.activeAnimationCount <= 6, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
       }
@@ -808,6 +906,10 @@ async function main() {
           const style = getComputedStyle(stamp);
           return style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.9 && r.width > 0 && r.height > 0;
         })(),
+        rewardVisible: (() => {
+          const shell = document.getElementById('rewardDieUnlock');
+          return !!shell && !shell.hidden && shell.classList.contains('show');
+        })(),
         celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
       }))()`);
@@ -818,6 +920,7 @@ async function main() {
       assert(terminalLoop.winnerLabel === 'WINNER', `${viewport.name}: winner label did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.trashedVisible === true, `${viewport.name}: TRASHED stamp did not persist through game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.rewardVisible === false, `${viewport.name}: reward unlock should clear before sustained win loop ${JSON.stringify(terminalLoop)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminalLoop.activeAnimationCount <= 5, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
       }
