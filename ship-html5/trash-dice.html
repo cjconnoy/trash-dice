@@ -2024,9 +2024,9 @@ body.inline-game-over .roll-panel {
   isolation: isolate;
   display: grid;
   justify-items: center;
-  gap: clamp(6px, 1.6vw, 10px);
-  padding: clamp(14px, 4vw, 24px) clamp(18px, 5vw, 32px) clamp(16px, 4.4vw, 28px);
-  transform: translate3d(0, 12vh, 0);
+  gap: clamp(5px, 1.25vmin, 9px);
+  padding: clamp(10px, 2.8vmin, 22px) clamp(14px, 3.8vmin, 30px) clamp(12px, 3vmin, 24px);
+  transform: translate3d(0, clamp(8px, 6vh, 44px), 0);
 }
 
 .reward-die-scene::before {
@@ -2091,9 +2091,16 @@ body.inline-game-over .roll-panel {
 .reward-die-wrap {
   position: relative;
   z-index: 1;
-  width: clamp(54px, 17vw, 94px);
+  width: clamp(150px, min(42vw, 48vh), 260px);
   aspect-ratio: 1 / 1;
-  filter: drop-shadow(0 14px 12px rgba(0,0,0,0.36));
+  filter: drop-shadow(0 18px 18px rgba(0,0,0,0.4));
+  opacity: 0;
+  transform: translate3d(0, 18px, 0) scale(0.42) rotate(-8deg);
+  transform-origin: 50% 56%;
+}
+
+.reward-die-unlock.show .reward-die-wrap {
+  animation: rewardDieHeroPop 0.62s cubic-bezier(.12,.92,.14,1.15) 0.03s both;
 }
 
 .reward-die {
@@ -2109,8 +2116,8 @@ body.inline-game-over .roll-panel {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 4px;
-  padding: clamp(8px, 2.6vw, 13px);
+  gap: clamp(6px, 1.4vmin, 10px);
+  padding: clamp(16px, 4.8vmin, 28px);
   isolation: isolate;
   overflow: hidden;
   background:
@@ -2142,12 +2149,12 @@ body.inline-game-over .roll-panel {
 .reward-die-pip {
   position: relative;
   z-index: 4;
-  width: clamp(7px, 2.2vw, 12px);
+  width: clamp(16px, 5.2vmin, 30px);
   aspect-ratio: 1 / 1;
   border-radius: 999px;
   background: var(--reward-pip);
   box-shadow:
-    0 0 0 1.35px var(--reward-pip-outline),
+    0 0 0 clamp(1.4px, 0.42vmin, 2.4px) var(--reward-pip-outline),
     inset 0 1px 0 rgba(255,255,255,0.18),
     0 1px 2px rgba(0,0,0,0.3);
   opacity: 0;
@@ -2615,6 +2622,13 @@ body.inline-game-over .roll-panel {
   78% { transform: perspective(520px) rotateX(-10deg) rotateY(14deg) rotateZ(4deg) translate3d(0,-1px,0); }
 }
 
+@keyframes rewardDieHeroPop {
+  0% { opacity: 0; transform: translate3d(0,18px,0) scale(0.42) rotate(-8deg); filter: brightness(1.32); }
+  55% { opacity: 1; transform: translate3d(0,-8px,0) scale(1.08) rotate(3deg); filter: brightness(1.16); }
+  78% { opacity: 1; transform: translate3d(0,2px,0) scale(0.98) rotate(-1deg); filter: brightness(1); }
+  100% { opacity: 1; transform: translate3d(0,0,0) scale(1) rotate(0deg); filter: brightness(1); }
+}
+
 @keyframes rewardNameFlash {
   0% { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.82); }
   22% { opacity: 1; transform: translate3d(0, -2px, 0) scale(1.08); }
@@ -2793,7 +2807,37 @@ body.inline-game-over .roll-panel {
   100% { filter: hue-rotate(360deg) saturate(1.35) contrast(1.08); opacity: 0.72; transform: scale(1); }
 }
 
+@media (max-height: 460px) and (orientation: landscape) {
+  .reward-die-scene {
+    gap: 5px;
+    padding: 10px 16px 12px;
+    transform: translate3d(0, clamp(4px, 3vh, 18px), 0);
+  }
+
+  .reward-die-name {
+    font-size: clamp(1rem, 4.2vh, 1.5rem);
+  }
+
+  .reward-die-sub {
+    padding: 3px 9px 4px;
+    font-size: clamp(0.72rem, 3.1vh, 0.95rem);
+  }
+
+  .reward-die-wrap {
+    width: clamp(142px, 44vh, 190px);
+  }
+
+  .reward-die {
+    padding: clamp(14px, 4.4vh, 22px);
+  }
+
+  .reward-die-pip {
+    width: clamp(14px, 4.4vh, 22px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .reward-die-unlock.show .reward-die-wrap,
   .reward-die-unlock.show .reward-die,
   .reward-die.effect-colorCycle,
   .reward-die.effect-glowPulse .reward-die-pip-cell.is-on .reward-die-pip,

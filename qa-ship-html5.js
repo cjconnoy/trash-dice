@@ -751,20 +751,39 @@ async function main() {
         const die = document.getElementById('rewardDie');
         if (!shell || !die) return false;
         const r = die.getBoundingClientRect();
-        return !shell.hidden && shell.classList.contains('show') && r.width >= 48 && r.height >= 48;
+        return !shell.hidden && shell.classList.contains('show') && r.width >= 140 && r.height >= 140;
       })()`, `${viewport.name} reward die review preview`);
       const rewardReview = await evalValue(page, `(() => {
         const btn = document.getElementById('devRewardDieBtn');
         const shell = document.getElementById('rewardDieUnlock');
+        const scene = document.querySelector('.reward-die-scene');
         const die = document.getElementById('rewardDie');
         const name = document.getElementById('rewardDieName');
         const sub = document.getElementById('rewardDieSub');
         const playerDie = document.getElementById('p1Die');
         const r = die.getBoundingClientRect();
+        const sceneRect = scene ? scene.getBoundingClientRect() : null;
+        const toRect = (rect) => rect ? ({
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height
+        }) : null;
+        const fitsViewport = (rect) => !!rect &&
+          rect.left >= -1 &&
+          rect.top >= -1 &&
+          rect.right <= window.innerWidth + 1 &&
+          rect.bottom <= window.innerHeight + 1;
         return {
           buttonText: btn.textContent.trim(),
           buttonLabel: btn.getAttribute('aria-label'),
-          visible: !shell.hidden && shell.classList.contains('show') && r.width >= 48 && r.height >= 48,
+          visible: !shell.hidden && shell.classList.contains('show') && r.width >= 140 && r.height >= 140,
+          dieRect: toRect(r),
+          sceneRect: toRect(sceneRect),
+          dieFitsViewport: fitsViewport(r),
+          sceneFitsViewport: fitsViewport(sceneRect),
           tier: shell.dataset.tier || die.dataset.tier || '',
           effect: shell.dataset.effect || die.dataset.effect || '',
           name: name.textContent || '',
@@ -780,6 +799,8 @@ async function main() {
         };
       })()`);
       assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.sub === 'SKIN UNLOCKED' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.dieRect.width >= 140 && rewardReview.dieRect.height >= 140, `${viewport.name}: reward review die should be hero-sized ${JSON.stringify(rewardReview.dieRect)}`);
+      assert(rewardReview.dieFitsViewport === true && rewardReview.sceneFitsViewport === true, `${viewport.name}: reward review die should stay inside viewport ${JSON.stringify({ dieRect: rewardReview.dieRect, sceneRect: rewardReview.sceneRect })}`);
       assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'PLUME' && rewardReview.playerSkin.effect === 'featherRipple', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
