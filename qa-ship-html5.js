@@ -524,6 +524,24 @@ async function main() {
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameOverflow === 'visible' && initial.titleLogoGlint.frameContain === 'none', `${viewport.name}: title logo frame should not clip drop-shadow/backing paint ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.clipPath === 'none' && initial.titleLogoGlint.maskImage !== 'none' && initial.titleLogoGlint.backgroundSize !== 'auto', `${viewport.name}: title logo glint should use a masked horizontal background sweep ${JSON.stringify(initial.titleLogoGlint)}`);
+      await evalValue(page, `window.localStorage.setItem('trashDiceRewardWinsV1', '3'); true`);
+      await page.cdp('Page.navigate', { url: `${baseUrl}?source=qa&qa=1&staleRewardProbe=${encodeURIComponent(viewport.name)}` });
+      await sleep(700);
+      await waitEval(page, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, `${viewport.name} stale reward storage reload`);
+      const staleRewardStorage = await evalValue(page, `(() => {
+        const state = window.TrashDiceQA.rewardDieState();
+        const skin = window.TrashDiceQA.rewardSkinProbe();
+        return {
+          stored: window.localStorage.getItem('trashDiceRewardWinsV1'),
+          totalWins: state.totalWins,
+          activeTier: state.activeTier,
+          activeName: state.activeName,
+          playerRewardSkinned: skin.playerDie.rewardSkinned,
+          playerTier: skin.playerDie.tier,
+          previewOverride: skin.previewOverride
+        };
+      })()`);
+      assert(staleRewardStorage.stored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '', `${viewport.name}: stale reward storage should not skin a fresh session ${JSON.stringify(staleRewardStorage)}`);
       const muteToggle = await evalValue(page, `(() => {
         const btn = document.getElementById('audioMuteBtn');
         btn.click();

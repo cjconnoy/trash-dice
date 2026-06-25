@@ -8813,18 +8813,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function readRewardDieWins() {
     try {
-      return normalizeRewardWins(window.localStorage.getItem(REWARD_DICE_STORAGE_KEY));
+      window.localStorage.removeItem(REWARD_DICE_STORAGE_KEY);
     } catch (_) {
-      return 0;
     }
+    return 0;
   }
 
   function writeRewardDieWins(totalWins) {
     const normalized = normalizeRewardWins(totalWins);
     rewardDieWins = normalized;
-    try {
-      window.localStorage.setItem(REWARD_DICE_STORAGE_KEY, String(normalized));
-    } catch (_) {}
     return rewardDieWins;
   }
 
