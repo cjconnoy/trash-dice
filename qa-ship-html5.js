@@ -784,8 +784,9 @@ async function main() {
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
-        const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
-        const activeCpu = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
+        const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, sampleCount: 96 });
+        const activeCpu = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 2, p1Dice: 10, p2Dice: 15, sampleCount: 96 });
+        const cpuIntro = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 1, p1Dice: 10, p2Dice: 15, sampleCount: 24 });
         const inactive = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 1, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
         const softLater = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, roundNumber: 2 });
         const miraclePlayer = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 5, p1Dice: 3, p2Dice: 12, p1RoundWins: 1, p2RoundWins: 2, roundNumber: 4 });
@@ -794,12 +795,13 @@ async function main() {
         window.TrashDiceDebug.gameStart();
         window.TrashDiceQA.setCompletedGames(0);
         window.TrashDiceQA.setRewardWins(0);
-        return { active, activeCpu, inactive, softLater, miraclePlayer, miracleCpu, miracleInactive, resetState: window.TrashDiceQA.state() };
+        return { active, activeCpu, cpuIntro, inactive, softLater, miraclePlayer, miracleCpu, miracleInactive, resetState: window.TrashDiceQA.state() };
       })()`);
       assert(firstGameAssist.active.context.active === true && firstGameAssist.active.firstRoundGuardActive === true && firstGameAssist.active.afterGuardRolls > firstGameAssist.active.beforeGuardRolls, `${viewport.name}: first-round guard should activate for player in fresh game ${JSON.stringify(firstGameAssist.active)}`);
-      assert(firstGameAssist.active.samples.length > 0 && firstGameAssist.active.samples.every(face => firstGameAssist.active.openSlots.includes(face)), `${viewport.name}: first-round player guard should always hit open slots ${JSON.stringify(firstGameAssist.active)}`);
+      assert(firstGameAssist.active.openHits > firstGameAssist.active.takenHits && firstGameAssist.active.takenHits > 0, `${viewport.name}: first-round player guard should be weighted, not perfect ${JSON.stringify(firstGameAssist.active)}`);
       assert(firstGameAssist.activeCpu.firstRoundGuardActive === true && firstGameAssist.activeCpu.afterGuardRolls > firstGameAssist.activeCpu.beforeGuardRolls, `${viewport.name}: first-round guard should activate for CPU in fresh game ${JSON.stringify(firstGameAssist.activeCpu)}`);
-      assert(firstGameAssist.activeCpu.samples.length > 0 && firstGameAssist.activeCpu.samples.every(face => !firstGameAssist.activeCpu.openSlots.includes(face)), `${viewport.name}: first-round CPU guard should always avoid open slots ${JSON.stringify(firstGameAssist.activeCpu)}`);
+      assert(firstGameAssist.activeCpu.openHits > 0 && firstGameAssist.activeCpu.takenHits > 0, `${viewport.name}: first-round CPU guard should allow both landed and trashed rolls ${JSON.stringify(firstGameAssist.activeCpu)}`);
+      assert(firstGameAssist.cpuIntro.firstRoundCpuIntroPlaced === true && firstGameAssist.cpuIntro.openSlots.includes(firstGameAssist.cpuIntro.samples[0]), `${viewport.name}: first-round CPU should get an early visible successful placement ${JSON.stringify(firstGameAssist.cpuIntro)}`);
       assert(firstGameAssist.inactive.context.active === false && firstGameAssist.inactive.firstRoundGuardActive === false && firstGameAssist.inactive.afterUses === 0 && firstGameAssist.inactive.afterGuardRolls === 0, `${viewport.name}: first-game assist should disable after one completed game ${JSON.stringify(firstGameAssist.inactive)}`);
       assert(firstGameAssist.softLater.firstRoundGuardActive === false && firstGameAssist.softLater.context.active === true && firstGameAssist.softLater.afterUses > firstGameAssist.softLater.beforeUses && firstGameAssist.softLater.afterUses <= firstGameAssist.softLater.context.maxUses, `${viewport.name}: later first-game assist should remain soft after round one ${JSON.stringify(firstGameAssist.softLater)}`);
       assert(firstGameAssist.miraclePlayer.miracleContext.active === true && firstGameAssist.miraclePlayer.afterMiracleRolls > firstGameAssist.miraclePlayer.beforeMiracleRolls && firstGameAssist.miraclePlayer.samples.length > 0 && firstGameAssist.miraclePlayer.samples.every(face => firstGameAssist.miraclePlayer.openSlots.includes(face)), `${viewport.name}: first-game miracle should force player comeback hits when low on dice ${JSON.stringify(firstGameAssist.miraclePlayer)}`);

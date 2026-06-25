@@ -8499,6 +8499,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE = 0.82;
   const FIRST_GAME_ASSIST_CPU_BRAKE_CHANCE = 0.42;
   const FIRST_GAME_ASSIST_CPU_PRESSURE_BRAKE_CHANCE = 0.62;
+  const FIRST_ROUND_PLAYER_HIT_CHANCE = 0.68;
+  const FIRST_ROUND_PLAYER_BACKSTOP_OPEN_SLOTS = 2;
+  const FIRST_ROUND_PLAYER_DICE_SAFETY_MARGIN = 2;
+  const FIRST_ROUND_CPU_BRAKE_CHANCE = 0.38;
   const FIRST_GAME_MIRACLE_MAX_PLAYER_DICE = 5;
   const FIRST_GAME_MIRACLE_PANIC_PLAYER_DICE = 3;
   const FIRST_GAME_MIRACLE_OPEN_SLOT_PRESSURE = 2;
@@ -8654,6 +8658,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let rewardDiePreviewOverride = null;
   let firstRoundGuardRolls = 0;
   let lastFirstRoundGuard = null;
+  let firstRoundCpuIntroPlaced = false;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -10034,6 +10039,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     lastFirstGameMiracle = null;
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
+    firstRoundCpuIntroPlaced = false;
     roundWins = { p1: 0, p2: 0 };
     openingComebackAssistRolls = 0;
     if (trashCan) {
@@ -12973,6 +12979,60 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return randomFrom(otherFaces);
   }
 
+  function boardPlacementCount(player) {
+    if (!Array.isArray(board)) return 0;
+    return board.reduce((count, die) => count + (die && die.player === player ? 1 : 0), 0);
+  }
+
+  function chooseFirstRoundProtectedValue(player, openSlots = []) {
+    if (!isFirstRoundGuardActive() || openSlots.length <= 0) return null;
+    const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+
+    if (player === 'p1') {
+      const playerPlacements = boardPlacementCount('p1');
+      const openingRoll = playerPlacements === 0;
+      const lowDiceBackstop = totalDice('p1') <= openSlots.length + FIRST_ROUND_PLAYER_DICE_SAFETY_MARGIN;
+      const closingBackstop = openSlots.length <= FIRST_ROUND_PLAYER_BACKSTOP_OPEN_SLOTS;
+      const shouldHelp =
+        openingRoll ||
+        lowDiceBackstop ||
+        closingBackstop ||
+        Math.random() < FIRST_ROUND_PLAYER_HIT_CHANCE;
+
+      if (shouldHelp) {
+        const face = randomFrom(openSlots);
+        const reason = openingRoll
+          ? 'round-one-player-opening-hit'
+          : (closingBackstop || lowDiceBackstop ? 'round-one-player-backstop-hit' : 'round-one-player-weighted-hit');
+        markFirstRoundGuard(reason, face, openSlots);
+        return face;
+      }
+      return randomDieFace();
+    }
+
+    if (player === 'p2') {
+      const cpuPlacements = boardPlacementCount('p2');
+      if (!firstRoundCpuIntroPlaced && cpuPlacements === 0 && openSlots.length > 1) {
+        firstRoundCpuIntroPlaced = true;
+        const face = randomFrom(openSlots);
+        markFirstRoundGuard('round-one-cpu-intro-place', face, openSlots);
+        return face;
+      }
+
+      if (takenFaces.length) {
+        const preventCpuClose = openSlots.length <= 1;
+        if (preventCpuClose || Math.random() < FIRST_ROUND_CPU_BRAKE_CHANCE) {
+          const face = randomFrom(takenFaces);
+          markFirstRoundGuard(preventCpuClose ? 'round-one-cpu-close-brake' : 'round-one-cpu-soft-brake', face, openSlots);
+          return face;
+        }
+      }
+      return randomDieFace();
+    }
+
+    return null;
+  }
+
   function chooseRollValue(player) {
     if (forcedRolls.length) return forcedRolls.shift();
     const openSlots = Array.isArray(board)
@@ -12986,18 +13046,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const firstGameMiracleContext = createFirstGameMiracleContext(openSlots);
     const firstGameContext = createFirstGameAssistContext(openSlots);
     const enduranceContext = createEnduranceAssistContext(openSlots);
-    if (firstRoundGuardActive && player === 'p1' && openSlots.length > 0) {
-      const face = randomFrom(openSlots);
-      markFirstRoundGuard('round-one-player-open-slot', face, openSlots);
-      return face;
-    }
-    if (firstRoundGuardActive && player === 'p2' && openSlots.length > 0) {
-      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
-      if (takenFaces.length) {
-        const face = randomFrom(takenFaces);
-        markFirstRoundGuard('round-one-cpu-trash-brake', face, openSlots);
-        return face;
-      }
+    if (firstRoundGuardActive) {
+      const protectedFace = chooseFirstRoundProtectedValue(player, openSlots);
+      if (protectedFace !== null) return protectedFace;
     }
     if (firstGameMiracleContext.active && player === 'p1' && openSlots.length > 0) {
       const face = randomFrom(openSlots);
@@ -13218,6 +13269,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     openingComebackAssistRolls = 0;
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
+    firstRoundCpuIntroPlaced = false;
     firstGameMiracleRolls = 0;
     lastFirstGameMiracle = null;
     gameStarted = true;
@@ -14039,9 +14091,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         lastFirstGameMiracle = null;
         firstRoundGuardRolls = 0;
         lastFirstRoundGuard = null;
+        firstRoundCpuIntroPlaced = false;
         return window.TrashDiceQA.state().firstGameAssist;
       },
-      firstGameAssistProbe({ completedGames = 0, player = 'p1', filledSlots = 2, p1Dice = 12, p2Dice = 15, p1RoundWins = 0, p2RoundWins = 0, roundNumber = 1 } = {}) {
+      firstGameAssistProbe({ completedGames = 0, player = 'p1', filledSlots = 2, p1Dice = 12, p2Dice = 15, p1RoundWins = 0, p2RoundWins = 0, roundNumber = 1, sampleCount = 24 } = {}) {
         ensureQaGame();
         writeCompletedGameCount(completedGames);
         firstGameAssistUses = 0;
@@ -14050,6 +14103,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         lastFirstGameMiracle = null;
         firstRoundGuardRolls = 0;
         lastFirstRoundGuard = null;
+        firstRoundCpuIntroPlaced = false;
         forcedRolls = [];
         round = Math.max(1, Math.floor(Number(roundNumber) || 1));
         pools = {
@@ -14078,11 +14132,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         const beforeUses = firstGameAssistUses;
         const beforeMiracleRolls = firstGameMiracleRolls;
         const beforeGuardRolls = firstRoundGuardRolls;
-        const samples = Array.from({ length: 24 }, () => chooseRollValue(current));
+        const boundedSampleCount = clamp(Math.floor(Number(sampleCount) || 24), 1, 240);
+        const samples = Array.from({ length: boundedSampleCount }, () => chooseRollValue(current));
+        const openSet = new Set(openSlots);
+        const openHits = samples.filter(face => openSet.has(face)).length;
+        const takenHits = samples.length - openHits;
         return {
           context,
           miracleContext,
           firstRoundGuardActive: isFirstRoundGuardActive(),
+          firstRoundCpuIntroPlaced,
           beforeUses,
           afterUses: firstGameAssistUses,
           beforeMiracleRolls,
@@ -14093,6 +14152,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           lastFirstGameMiracle: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null,
           lastFirstRoundGuard: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null,
           samples,
+          openHits,
+          takenHits,
           openSlots,
           completedGames: tdCompletedGames
         };
@@ -14347,6 +14408,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           firstRoundGuard: {
             active: isFirstRoundGuardActive(),
             rolls: firstRoundGuardRolls,
+            cpuIntroPlaced: firstRoundCpuIntroPlaced,
             last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
           },
           timings: {
@@ -14609,6 +14671,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         firstRoundGuard: {
           active: isFirstRoundGuardActive(),
           rolls: firstRoundGuardRolls,
+          cpuIntroPlaced: firstRoundCpuIntroPlaced,
           last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
         },
         openingComebackAssist: isOpeningComebackAssistActive(),
