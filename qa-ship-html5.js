@@ -485,8 +485,9 @@ async function main() {
             rewardNames: dice.map(el => el.dataset.rewardName || ''),
             rewardEffects: dice.map(el => el.dataset.rewardEffect || ''),
             rewardSkinned: dice.map(el => el.classList.contains('reward-skinned')),
-            dotCells: dice.map(el => el.querySelectorAll('.dot-cell').length),
-            dots: dice.map(el => el.querySelectorAll('.dot').length),
+            usesRewardDieComponent: dice.map(el => !!el.querySelector('.reward-die.title-reward-die')),
+            dotCells: dice.map(el => el.querySelectorAll('.dot-cell, .reward-die-pip-cell').length),
+            dots: dice.map(el => el.querySelectorAll('.dot, .reward-die-pip-cell.is-on .reward-die-pip').length),
             state: window.TrashDiceQA.titleHeroDiceState()
           };
         })(),
@@ -672,8 +673,9 @@ async function main() {
       const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
       assert(titleHeroDiceNames.join(' > ') === [...rewardPairNames, 'DEFAULT|DEFAULT', rewardPairNames[0]].join(' > '), `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify({ rewardConfig, titleHeroDiceCycle })}`);
       assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.usesRewardDieComponent === true)), `${viewport.name}: title reward dice should use the same reward-die component as the in-game unlock UI ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.dotCells === 9 && die.dots === 5)), `${viewport.name}: title reward dice should render with full in-game reward pip geometry ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle[rewardPairCount].dice.every(die => die.rewardSkinned === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[rewardPairCount])}`);
+      assert(titleHeroDiceCycle[rewardPairCount].dice.every(die => die.rewardSkinned === false && die.usesRewardDieComponent === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[rewardPairCount])}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: mobile start card overlaps legal ${JSON.stringify(initial.titleLayout)}`);

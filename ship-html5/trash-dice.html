@@ -7656,6 +7656,27 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 .start-die.green::after {
   animation-delay: 0.42s;
 }
+.start-die.title-reward-shell {
+  background: transparent;
+  border-radius: 22%;
+  box-shadow: none;
+  overflow: visible;
+  transform: none;
+  animation: none;
+}
+.start-die.title-reward-shell::before,
+.start-die.title-reward-shell::after {
+  content: none;
+}
+.start-die.title-reward-shell .title-reward-die {
+  width: 100%;
+  height: 100%;
+  gap: 5%;
+  padding: 17%;
+}
+.start-die.title-reward-shell .title-reward-die .reward-die-pip {
+  width: 62%;
+}
 .start-die .dot-cell {
   position: absolute;
   width: 28%;
@@ -10507,13 +10528,49 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function applyRewardDieStyle(die) {
     if (!rewardDie || !die) return;
+    applyRewardDieComponentStyle(rewardDie, die);
+  }
+
+  function rewardDieComponentMarkup() {
+    return `
+      <span class="reward-die-pip-cell" data-pip="tl"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="tc"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="tr"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="ml"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="mc"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="mr"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="bl"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="bc"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-pip-cell" data-pip="br"><span class="reward-die-pip"></span></span>
+      <span class="reward-die-spark" aria-hidden="true"></span>
+    `;
+  }
+
+  function renderRewardDiePipsInto(el, value = REWARD_DIE_DISPLAY_VALUE) {
+    if (!el) return;
+    const pipMap = {
+      1: ['mc'],
+      2: ['tl', 'br'],
+      3: ['tl', 'mc', 'br'],
+      4: ['tl', 'tr', 'bl', 'br'],
+      5: ['tl', 'tr', 'mc', 'bl', 'br'],
+      6: ['tl', 'ml', 'bl', 'tr', 'mr', 'br']
+    };
+    const activePips = new Set(pipMap[clamp(Math.floor(Number(value) || 5), 1, 6)] || pipMap[5]);
+    el.querySelectorAll('.reward-die-pip-cell').forEach(cell => {
+      cell.classList.toggle('is-on', activePips.has(cell.dataset.pip));
+    });
+  }
+
+  function applyRewardDieComponentStyle(el, die, extraClass = '') {
+    if (!el || !die) return;
     const effect = die.effect || 'none';
-    rewardDie.className = `reward-die effect-${effect}`;
-    rewardDie.dataset.tier = String(die.tier);
-    rewardDie.dataset.effect = effect;
-    rewardDie.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-    setRewardDieCssVars(rewardDie, die);
-    renderRewardDiePips(REWARD_DIE_DISPLAY_VALUE);
+    el.className = ['reward-die', extraClass, `effect-${effect}`].filter(Boolean).join(' ');
+    el.dataset.tier = String(die.tier);
+    el.dataset.effect = effect;
+    el.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    setRewardDieCssVars(el, die);
+    renderRewardDiePipsInto(el, REWARD_DIE_DISPLAY_VALUE);
   }
 
   function hideRewardDieUnlock() {
@@ -10697,10 +10754,27 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         rewardTier: el ? el.dataset.rewardTier || '' : '',
         rewardName: el ? el.dataset.rewardName || '' : '',
         rewardEffect: el ? el.dataset.rewardEffect || '' : '',
-        dotCells: el ? el.querySelectorAll('.dot-cell').length : 0,
-        dots: el ? el.querySelectorAll('.dot').length : 0
+        usesRewardDieComponent: !!(el && el.querySelector('.reward-die.title-reward-die')),
+        dotCells: el ? el.querySelectorAll('.dot-cell, .reward-die-pip-cell').length : 0,
+        dots: el ? el.querySelectorAll('.dot, .reward-die-pip-cell.is-on .reward-die-pip').length : 0
       }))
     };
+  }
+
+  function renderTitleRewardDie(el, die) {
+    if (!el || !die) return;
+    clearRewardDieElementVisual(el);
+    el.className = 'start-die title-reward-shell reward-skinned';
+    el.dataset.rewardTier = String(die.tier);
+    el.dataset.rewardName = die.name;
+    el.dataset.rewardEffect = die.effect || 'none';
+    el.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    el.innerHTML = '<div class="reward-die title-reward-die" aria-hidden="true"></div>';
+    const rewardComponent = el.querySelector('.title-reward-die');
+    if (rewardComponent) {
+      rewardComponent.innerHTML = rewardDieComponentMarkup();
+      applyRewardDieComponentStyle(rewardComponent, die, 'title-reward-die');
+    }
   }
 
   function applyTitleHeroDiceCycle(index = -1) {
@@ -10712,10 +10786,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       el.dataset.titleRewardPair = titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1);
       const die = pairStart >= 0 ? REWARD_DICE[pairStart + i] : null;
       if (die) {
-        const base = startHeroDieDefaults[i] || startHeroDieDefaults[0] || { className: 'start-die die', html: '' };
-        el.className = `${base.className} title-reward-die`;
-        renderRewardNudgeDie(el, die);
-        el.classList.add('title-reward-die');
+        renderTitleRewardDie(el, die);
       } else {
         const base = startHeroDieDefaults[i] || { className: 'start-die die', html: '' };
         clearRewardDieElementVisual(el);
