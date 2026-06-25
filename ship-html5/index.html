@@ -3093,6 +3093,135 @@ body.inline-game-over .roll-panel {
 body.inline-game-over .game-tagline {
   display: none;
 }
+.terminal-reward-nudge[hidden],
+.round-loss-reward-nudge[hidden] {
+  display: none !important;
+}
+.terminal-reward-nudge {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.38rem, 1.6vw, 0.58rem);
+  width: min(100%, 520px);
+  padding: clamp(0.34rem, 1.25vw, 0.5rem) clamp(0.5rem, 2.4vw, 0.82rem);
+  border: 2px solid rgba(255,244,163,0.76);
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(255,255,255,0.34), transparent 44%),
+    linear-gradient(180deg, rgba(18,95,50,0.96), rgba(7,57,29,0.92));
+  box-shadow:
+    0 3px 0 rgba(5,50,27,0.54),
+    0 0 22px rgba(245,200,0,0.28),
+    inset 0 0 0 1px rgba(255,255,255,0.14);
+  color: #fff27a;
+  text-align: left;
+  pointer-events: none;
+}
+body.inline-game-over .terminal-reward-nudge {
+  margin-bottom: clamp(0.22rem, 1vw, 0.42rem);
+}
+.terminal-reward-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.04rem;
+}
+.terminal-reward-kicker,
+.round-loss-reward-kicker {
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.66rem, 1.9vw, 0.86rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff7a8;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.42);
+}
+.terminal-reward-line,
+.round-loss-reward-line {
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.78rem, 2.35vw, 1.02rem);
+  line-height: 1.06;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.5),
+    0 0 10px rgba(245,200,0,0.24);
+}
+.reward-nudge-die {
+  flex: 0 0 clamp(31px, 7.4vw, 42px);
+  width: clamp(31px, 7.4vw, 42px);
+  height: clamp(31px, 7.4vw, 42px);
+  padding: clamp(4px, 1.1vw, 6px);
+  gap: 1px;
+  border-radius: 23%;
+  transform: none !important;
+  box-shadow:
+    3px 4px 0 var(--reward-edge),
+    7px 8px 0 rgba(0,0,0,0.26),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.reward-nudge-die::after {
+  top: 6%;
+  left: 9%;
+  width: 58%;
+  height: 34%;
+}
+.reward-nudge-die .dot {
+  width: clamp(6px, 1.7vw, 9px);
+  height: clamp(6px, 1.7vw, 9px);
+}
+.round-loss-reward-nudge {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(7.4rem, 22dvh, 12.5rem);
+  z-index: 170;
+  width: min(calc(100vw - 28px), 520px);
+  padding: clamp(0.54rem, 1.8vw, 0.74rem) clamp(0.82rem, 3.2vw, 1.12rem);
+  border: 2px solid rgba(255,244,163,0.86);
+  border-radius: 15px;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(255,255,255,0.28), transparent 48%),
+    linear-gradient(180deg, rgba(19,100,52,0.97), rgba(7,57,29,0.95));
+  box-shadow:
+    0 7px 0 rgba(6,53,29,0.42),
+    0 16px 32px rgba(0,0,0,0.28),
+    0 0 26px rgba(245,200,0,0.32),
+    inset 0 0 0 2px rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.45rem, 2vw, 0.66rem);
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-50%, 18px, 0) scale(0.96);
+}
+.round-loss-reward-nudge.show {
+  opacity: 1;
+  visibility: visible;
+  animation: roundLossRewardNudgePop 2.65s cubic-bezier(.16,.86,.18,1) both;
+}
+.round-loss-reward-copy {
+  min-width: 0;
+}
+@keyframes roundLossRewardNudgePop {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 20px, 0) scale(0.92);
+  }
+  14%, 82% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 8px, 0) scale(0.98);
+  }
+}
 .roll-btn-label {
   display: block;
   color: #e3271f;
@@ -8291,6 +8420,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   <!-- Yellow roll command — thumb-first action strip -->
   <div class="roll-panel" aria-label="Yellow roll action">
+    <div class="terminal-reward-nudge" id="terminalRewardNudge" hidden aria-live="polite">
+      <div class="die reward-nudge-die" id="terminalRewardNudgeDie" aria-hidden="true"></div>
+      <div class="terminal-reward-copy">
+        <div class="terminal-reward-kicker" id="terminalRewardNudgeKicker">Keep playing</div>
+        <div class="terminal-reward-line" id="terminalRewardNudgeLine">Win 1 round to unlock PLUME HERO SKIN</div>
+      </div>
+    </div>
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
     <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash."><strong>ROLL.</strong> COLLECT. AVOID THE TRASH.</div>
   </div>
@@ -8417,6 +8553,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   <div class="round-win-burst-content">
     <div class="round-win-burst-title"><span>ROUND</span><span>WINNER</span></div>
     <div class="round-win-burst-sub" id="roundWinBurstSub">Reward die ready</div>
+  </div>
+</div>
+<div class="round-loss-reward-nudge" id="roundLossRewardNudge" hidden aria-live="polite" aria-atomic="true">
+  <div class="die reward-nudge-die" id="roundLossRewardNudgeDie" aria-hidden="true"></div>
+  <div class="round-loss-reward-copy">
+    <div class="round-loss-reward-kicker" id="roundLossRewardNudgeKicker">Keep rolling</div>
+    <div class="round-loss-reward-line" id="roundLossRewardNudgeLine">Win 1 round to unlock PLUME HERO SKIN</div>
   </div>
 </div>
 <div class="overlay" id="overlay">
@@ -8721,6 +8864,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let rewardDieWins = readRewardDieWins();
   let rewardDieUnlockTimer = null;
   let roundWinBurstTimer = null;
+  let roundLossRewardNudgeTimer = null;
   let rewardDiePreviewOverride = null;
   let firstRoundGuardRolls = 0;
   let lastFirstRoundGuard = null;
@@ -9060,6 +9204,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     terminalDiceCelebrateRun++;
     rewardDieUnlockTimer = null;
     roundWinBurstTimer = null;
+    roundLossRewardNudgeTimer = null;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
@@ -9078,6 +9223,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     inlineGameOverRunId++;
     roundResolutionRunId++;
     roundResolutionState = null;
+    hideTerminalRewardNudge();
+    hideRoundLossRewardNudge(false);
   }
 
   function totalDice(player) {
@@ -9593,6 +9740,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const rewardDie = document.getElementById('rewardDie');
   const rewardDieName = document.getElementById('rewardDieName');
   const rewardDieSub = document.getElementById('rewardDieSub');
+  const terminalRewardNudge = document.getElementById('terminalRewardNudge');
+  const terminalRewardNudgeDie = document.getElementById('terminalRewardNudgeDie');
+  const terminalRewardNudgeKicker = document.getElementById('terminalRewardNudgeKicker');
+  const terminalRewardNudgeLine = document.getElementById('terminalRewardNudgeLine');
+  const roundLossRewardNudge = document.getElementById('roundLossRewardNudge');
+  const roundLossRewardNudgeDie = document.getElementById('roundLossRewardNudgeDie');
+  const roundLossRewardNudgeKicker = document.getElementById('roundLossRewardNudgeKicker');
+  const roundLossRewardNudgeLine = document.getElementById('roundLossRewardNudgeLine');
   const roundWinBurst = document.getElementById('roundWinBurst');
   const roundWinBurstSub = document.getElementById('roundWinBurstSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
@@ -9763,6 +9918,122 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       capped: !next,
       capTier: REWARD_DICE[REWARD_DICE.length - 1].tier
     };
+  }
+
+  function renderPipsIntoDieElement(el, value = REWARD_DIE_DISPLAY_VALUE) {
+    if (!el) return;
+    const safeValue = clamp(Math.floor(Number(value) || REWARD_DIE_DISPLAY_VALUE), 1, 6);
+    el.innerHTML = '';
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const cell = document.createElement('div');
+        cell.className = 'dot-cell';
+        if ((DOTS[safeValue] || []).some(([dr, dc]) => dr === row && dc === col)) {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          cell.appendChild(dot);
+        }
+        el.appendChild(cell);
+      }
+    }
+  }
+
+  function rewardNudgeModel(totalWins = rewardDieWins) {
+    const wins = normalizeRewardWins(totalWins);
+    const active = activeRewardDie(wins);
+    const next = nextRewardDie(wins);
+    if (next) {
+      const roundsNeeded = Math.max(1, next.minWins - wins);
+      const roundText = `${roundsNeeded} ${roundsNeeded === 1 ? 'round' : 'rounds'}`;
+      const moreText = wins > 0 ? `${roundsNeeded} more ${roundsNeeded === 1 ? 'round' : 'rounds'}` : roundText;
+      return {
+        totalWins: wins,
+        activeDie: rewardDieSnapshot(active),
+        nextDie: rewardDieSnapshot(next),
+        previewDie: active || next,
+        previewKind: active ? 'current' : 'next',
+        roundsNeeded,
+        terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'HERO SKINS',
+        roundLossKicker: 'KEEP ROLLING',
+        line: `Win ${moreText} to unlock ${next.name} HERO SKIN`
+      };
+    }
+    return {
+      totalWins: wins,
+      activeDie: rewardDieSnapshot(active),
+      nextDie: null,
+      previewDie: active,
+      previewKind: 'current',
+      roundsNeeded: 0,
+      terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'HERO SKINS',
+      roundLossKicker: active ? `${active.name} UNLOCKED` : 'KEEP ROLLING',
+      line: active ? `Keep rolling with ${active.name} HERO SKIN` : 'Keep playing to unlock HERO SKINS'
+    };
+  }
+
+  function renderRewardNudgeDie(el, die) {
+    if (!el) return;
+    renderPipsIntoDieElement(el, REWARD_DIE_DISPLAY_VALUE);
+    clearRewardDieElementVisual(el);
+    el.hidden = !die;
+    if (die) applyRewardDieElementVisual(el, die);
+  }
+
+  function hideTerminalRewardNudge() {
+    if (!terminalRewardNudge) return;
+    terminalRewardNudge.hidden = true;
+    terminalRewardNudge.removeAttribute('data-preview');
+    terminalRewardNudge.removeAttribute('data-next-name');
+    terminalRewardNudge.removeAttribute('data-rounds-needed');
+  }
+
+  function showTerminalRewardNudge() {
+    if (!terminalRewardNudge) return null;
+    const model = rewardNudgeModel();
+    if (terminalRewardNudgeKicker) terminalRewardNudgeKicker.textContent = model.terminalKicker;
+    if (terminalRewardNudgeLine) terminalRewardNudgeLine.textContent = model.line;
+    renderRewardNudgeDie(terminalRewardNudgeDie, model.previewDie);
+    terminalRewardNudge.dataset.preview = model.previewKind;
+    terminalRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
+    terminalRewardNudge.dataset.roundsNeeded = String(model.roundsNeeded);
+    terminalRewardNudge.hidden = false;
+    return model;
+  }
+
+  function hideRoundLossRewardNudge(cancelTimer = true) {
+    if (cancelTimer && roundLossRewardNudgeTimer) {
+      cancelRuntimeTimer(roundLossRewardNudgeTimer);
+      roundLossRewardNudgeTimer = null;
+    }
+    if (!roundLossRewardNudge) return;
+    roundLossRewardNudge.classList.remove('show');
+    roundLossRewardNudge.hidden = true;
+    roundLossRewardNudge.removeAttribute('data-preview');
+    roundLossRewardNudge.removeAttribute('data-next-name');
+    roundLossRewardNudge.removeAttribute('data-rounds-needed');
+  }
+
+  function showRoundLossRewardNudge() {
+    if (!roundLossRewardNudge || tdCompletedGames >= 2) return null;
+    const model = rewardNudgeModel();
+    hideRoundLossRewardNudge();
+    if (roundLossRewardNudgeKicker) roundLossRewardNudgeKicker.textContent = model.roundLossKicker;
+    if (roundLossRewardNudgeLine) roundLossRewardNudgeLine.textContent = model.line;
+    renderRewardNudgeDie(roundLossRewardNudgeDie, model.previewDie);
+    roundLossRewardNudge.dataset.preview = model.previewKind;
+    roundLossRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
+    roundLossRewardNudge.dataset.roundsNeeded = String(model.roundsNeeded);
+    roundLossRewardNudge.hidden = false;
+    roundLossRewardNudge.classList.remove('show');
+    void roundLossRewardNudge.offsetWidth;
+    requestAnimationFrame(() => {
+      roundLossRewardNudge.classList.add('show');
+    });
+    roundLossRewardNudgeTimer = runLater(() => {
+      roundLossRewardNudgeTimer = null;
+      hideRoundLossRewardNudge(false);
+    }, 2650);
+    return model;
   }
 
   function renderRewardDiePips(value = REWARD_DIE_DISPLAY_VALUE) {
@@ -12332,6 +12603,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearInlineEndingVisuals();
     hideRewardDieUnlock();
     hideRoundWinBurst();
+    hideTerminalRewardNudge();
+    hideRoundLossRewardNudge();
     setRollButtonPlayAgainMode(false);
   }
 
@@ -12432,6 +12705,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
     startInlineEndingVisuals(playerWon);
+    showTerminalRewardNudge();
     updatePwaInstallHint();
 
     p1Inventory.classList.add('has-status');
@@ -13737,6 +14011,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const winnerStatusDuration = spillDuration + 260;
     startRoundWinnerStatus(winner, winnerStatusDuration);
     if (winner === 'p1') showRoundWinBurst(winner, rewardProgress);
+    else showRoundLossRewardNudge();
 
     // Only dice still sitting in the lid pay out; trash dice are already lost.
     showClaimBadge(winner, payoutDice, spillDuration);
@@ -13783,6 +14058,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (maybeEndMathematicalGame('post-round-insufficient-dice')) return;
 
       current = 'p1';
+      hideRoundLossRewardNudge();
       clearDie(null);
       clearRoundWinnerStatus(false);
       clearPlayerPayoutFanfare(false);
@@ -14844,6 +15120,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           const burstStyle = roundWinBurst ? getComputedStyle(roundWinBurst) : null;
           const rewardStyle = rewardDieUnlock ? getComputedStyle(rewardDieUnlock) : null;
           const rewardRect = rewardDie ? rewardDie.getBoundingClientRect() : null;
+          const roundLossNudgeStyle = roundLossRewardNudge ? getComputedStyle(roundLossRewardNudge) : null;
+          const roundLossNudgeRect = roundLossRewardNudge ? roundLossRewardNudge.getBoundingClientRect() : null;
           resolve({
             winner: forcedWinner,
             multiplayerActive: betaMultiplayerActive,
@@ -14877,6 +15155,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             rewardDieName: rewardDieName ? rewardDieName.textContent || '' : '',
             rewardDieSub: rewardDieSub ? rewardDieSub.textContent || '' : '',
             rewardDieState: getRewardDieState(),
+            rewardNudgeModel: rewardNudgeModel(),
+            roundLossRewardNudgeVisible: !!(roundLossRewardNudge && !roundLossRewardNudge.hidden && roundLossRewardNudge.classList.contains('show') && roundLossNudgeStyle && roundLossNudgeStyle.display !== 'none' && parseFloat(roundLossNudgeStyle.opacity || '0') > 0 && roundLossNudgeRect && roundLossNudgeRect.width >= 48 && roundLossNudgeRect.height >= 24),
+            roundLossRewardNudgeText: roundLossRewardNudge ? roundLossRewardNudge.textContent.replace(/\s+/g, ' ').trim() : '',
+            roundLossRewardNudgeNextName: roundLossRewardNudge ? roundLossRewardNudge.dataset.nextName || '' : '',
+            roundLossRewardNudgeRoundsNeeded: roundLossRewardNudge ? roundLossRewardNudge.dataset.roundsNeeded || '' : '',
+            roundLossRewardNudgePreview: roundLossRewardNudge ? roundLossRewardNudge.dataset.preview || '' : '',
+            roundLossRewardNudgeFitsViewport: !!(roundLossNudgeRect && roundLossNudgeRect.left >= -1 && roundLossNudgeRect.right <= window.innerWidth + 1 && roundLossNudgeRect.top >= -1 && roundLossNudgeRect.bottom <= window.innerHeight + 1),
             payoutComets: document.querySelectorAll('.player-payout-comet').length
           });
         }, 180);
