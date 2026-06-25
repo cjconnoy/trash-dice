@@ -8470,7 +8470,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <div class="reward-die-unlock" id="rewardDieUnlock" hidden aria-live="polite" aria-atomic="true">
   <div class="reward-die-scene">
     <div class="reward-die-name" id="rewardDieName">PLUME</div>
-    <div class="reward-die-sub" id="rewardDieSub">SKIN UNLOCKED</div>
+    <div class="reward-die-sub" id="rewardDieSub">DIE SKIN UNLOCKED</div>
     <div class="reward-die-wrap">
       <div class="reward-die effect-none" id="rewardDie" data-tier="0" data-effect="none" data-pip-outline="false" aria-hidden="true">
         <span class="reward-die-pip-cell" data-pip="tl"><span class="reward-die-pip"></span></span>
@@ -10132,11 +10132,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       rewardDieUnlockTimer = null;
       applyRewardDieStyle(die);
       if (rewardDieName) rewardDieName.textContent = die.name;
-      if (rewardDieSub) rewardDieSub.textContent = 'SKIN UNLOCKED';
+      if (rewardDieSub) rewardDieSub.textContent = 'DIE SKIN UNLOCKED';
       rewardDieUnlock.dataset.tier = String(die.tier);
       rewardDieUnlock.dataset.effect = die.effect || 'none';
       rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-      rewardDieUnlock.setAttribute('aria-label', `${die.name} skin unlocked at ${totalWins} player round wins`);
+      rewardDieUnlock.setAttribute('aria-label', `${die.name} die skin unlocked at ${totalWins} player round wins`);
       rewardDieUnlock.hidden = false;
       rewardDieUnlock.classList.remove('show');
       void rewardDieUnlock.offsetWidth;
@@ -10191,7 +10191,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (roundWinBurstSub) {
       const totalWins = rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins;
       roundWinBurstSub.textContent = unlockedDie
-        ? `${unlockedDie.name} SKIN UNLOCKED`
+        ? `${unlockedDie.name} DIE SKIN UNLOCKED`
         : `${totalWins} ROUND ${totalWins === 1 ? 'WIN' : 'WINS'}`;
     }
     void roundWinBurst.offsetWidth;
