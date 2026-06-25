@@ -1060,6 +1060,7 @@ async function main() {
           const btn = document.getElementById('rollBtn');
           if (!nudge || !die || !line || !unlock || !kicker || !btn) return { present: false };
           const r = nudge.getBoundingClientRect();
+          const dieRect = die.getBoundingClientRect();
           const dieStyle = getComputedStyle(die);
           const style = getComputedStyle(nudge);
           const btnRect = btn.getBoundingClientRect();
@@ -1077,6 +1078,8 @@ async function main() {
             dieName: die.dataset.rewardName || '',
             dieEffect: die.dataset.rewardEffect || '',
             diePipColor: dieStyle.getPropertyValue('--reward-pip').trim(),
+            rect: { width: Math.round(r.width), height: Math.round(r.height), top: Math.round(r.top), bottom: Math.round(r.bottom) },
+            dieRect: { width: Math.round(dieRect.width), height: Math.round(dieRect.height) },
             abovePlayAgain: r.bottom <= btnRect.top + 2,
             fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1
           };
@@ -1114,6 +1117,7 @@ async function main() {
       assert(terminal.terminalRewardNudge.kicker === 'NEXT SKIN: BUBBLEGUM' && terminal.terminalRewardNudge.line === 'Win 2 more rounds to unlock:' && terminal.terminalRewardNudge.unlockLine === 'BUBBLEGUM DIE SKIN', `${viewport.name}: terminal reward nudge copy wrong ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.nextName === 'BUBBLEGUM' && terminal.terminalRewardNudge.roundsNeeded === '2' && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === 'BUBBLEGUM' && terminal.terminalRewardNudge.dieEffect === 'bubblePop', `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      assert(terminal.terminalRewardNudge.rect.height >= 54 && terminal.terminalRewardNudge.dieRect.width >= 52 && terminal.terminalRewardNudge.dieRect.height >= 52, `${viewport.name}: terminal reward nudge should stay enlarged ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true, `${viewport.name}: terminal reward nudge should fit above Play Again ${JSON.stringify(terminal.terminalRewardNudge)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminal.activeAnimationCount <= 8, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
@@ -1822,6 +1826,70 @@ async function main() {
         };
       })()`);
       assert(roundWinAfterFanfare.statusText === 'WINNER' && roundWinAfterFanfare.payoutStatusActive === true && roundWinAfterFanfare.roundWinnerStatusLarge === true, `${winner} round-win probe: winner status disappeared before fanfare window ended ${JSON.stringify({ roundWinEarly, roundWinAfterFanfare })}`);
+      await sleep(3600);
+      const postRewardHoldState = await evalValue(roundWinProbe, `(() => {
+        const state = window.TrashDiceQA.state();
+        const roll = document.getElementById('rollBtn');
+        const burst = document.getElementById('roundWinBurst');
+        const loss = document.getElementById('roundLossRewardNudge');
+        const reward = document.getElementById('rewardDieUnlock');
+        return {
+          current: state.current,
+          busy: state.busy,
+          totalRolls: state.totalRolls,
+          inlineGameOver: !!state.inlineGameOver,
+          rollDisabled: !!(roll && roll.disabled),
+          rollText: roll ? roll.textContent.trim() : '',
+          burstHidden: !burst || burst.hidden,
+          lossHidden: !loss || loss.hidden,
+          rewardHidden: !reward || reward.hidden
+        };
+      })()`);
+      assert(postRewardHoldState.current === 'p1' && postRewardHoldState.rollDisabled === false, `${winner} round-win probe roll not ready after reward hold ${JSON.stringify({ roundWinEarly, postRewardHoldState })}`);
+      const rollGatedReward = await evalValue(roundWinProbe, `(() => {
+        const burst = document.getElementById('roundWinBurst');
+        const loss = document.getElementById('roundLossRewardNudge');
+        const rewardShell = document.getElementById('rewardDieUnlock');
+        const rewardDie = document.getElementById('rewardDie');
+        const visible = (el) => {
+          const style = el ? getComputedStyle(el) : null;
+          return !!(el && !el.hidden && el.classList.contains('show') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0);
+        };
+        const toRect = (el) => {
+          const rect = el ? el.getBoundingClientRect() : null;
+          return rect ? { width: Math.round(rect.width), height: Math.round(rect.height), left: Math.round(rect.left), right: Math.round(rect.right), top: Math.round(rect.top), bottom: Math.round(rect.bottom) } : null;
+        };
+        return {
+          burstVisible: visible(burst),
+          burstText: burst ? burst.textContent.replace(/\\s+/g, ' ').trim() : '',
+          burstRect: toRect(burst),
+          lossVisible: visible(loss),
+          lossText: loss ? loss.textContent.replace(/\\s+/g, ' ').trim() : '',
+          lossRect: toRect(loss),
+          rewardVisible: visible(rewardShell),
+          rewardRect: toRect(rewardDie),
+          rewardName: (document.getElementById('rewardDieName') || {}).textContent || '',
+          rewardSub: (document.getElementById('rewardDieSub') || {}).textContent || ''
+        };
+      })()`);
+      if (winner === 'p2') {
+        assert(rollGatedReward.lossVisible === true, `green round-win probe: round-loss reward nudge should persist until Roll ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.lossText.includes('Win 1 round to unlock:') && rollGatedReward.lossText.includes('PLUME DIE SKIN'), `green round-win probe: persistent loss reward nudge copy wrong ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.lossRect && rollGatedReward.lossRect.height >= 64 && rollGatedReward.lossRect.left >= -1 && rollGatedReward.lossRect.right <= viewports[0].width + 1, `green round-win probe: persistent loss reward nudge should stay enlarged and in viewport ${JSON.stringify(rollGatedReward)}`);
+      } else {
+        assert(rollGatedReward.burstVisible === true && rollGatedReward.burstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should persist until Roll ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === 'PLUME' && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rewardRect && rollGatedReward.rewardRect.width >= 140 && rollGatedReward.rewardRect.height >= 140, `yellow round-win probe: persistent unlock die should stay hero-sized ${JSON.stringify(rollGatedReward)}`);
+      }
+      await evalValue(roundWinProbe, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(roundWinProbe, `(() => {
+        const burst = document.getElementById('roundWinBurst');
+        const loss = document.getElementById('roundLossRewardNudge');
+        const reward = document.getElementById('rewardDieUnlock');
+        return (!burst || burst.hidden || !burst.classList.contains('show')) &&
+          (!loss || loss.hidden || !loss.classList.contains('show')) &&
+          (!reward || reward.hidden || !reward.classList.contains('show'));
+      })()`, `${winner} round-win probe reward UI clears on Roll`);
     }
 
     for (const outcome of [
