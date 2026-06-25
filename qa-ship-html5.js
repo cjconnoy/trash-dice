@@ -763,6 +763,7 @@ async function main() {
         const playerDie = document.getElementById('p1Die');
         const r = die.getBoundingClientRect();
         const sceneRect = scene ? scene.getBoundingClientRect() : null;
+        const dieStyle = getComputedStyle(die);
         const toRect = (rect) => rect ? ({
           left: rect.left,
           top: rect.top,
@@ -788,6 +789,12 @@ async function main() {
           effect: shell.dataset.effect || die.dataset.effect || '',
           name: name.textContent || '',
           sub: sub ? sub.textContent || '' : '',
+          dieClipStyle: {
+            borderRadius: dieStyle.borderRadius,
+            backgroundClip: dieStyle.backgroundClip,
+            webkitMaskImage: dieStyle.webkitMaskImage || '',
+            backfaceVisibility: dieStyle.backfaceVisibility || ''
+          },
           playerSkin: {
             rewardSkinned: playerDie.classList.contains('reward-skinned'),
             tier: playerDie.dataset.rewardTier || '',
@@ -801,6 +808,9 @@ async function main() {
       assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.sub === 'SKIN UNLOCKED' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
       assert(rewardReview.dieRect.width >= 140 && rewardReview.dieRect.height >= 140, `${viewport.name}: reward review die should be hero-sized ${JSON.stringify(rewardReview.dieRect)}`);
       assert(rewardReview.dieFitsViewport === true && rewardReview.sceneFitsViewport === true, `${viewport.name}: reward review die should stay inside viewport ${JSON.stringify({ dieRect: rewardReview.dieRect, sceneRect: rewardReview.sceneRect })}`);
+      if (viewport.mobile && viewport.width <= 720) {
+        assert(/padding-box/i.test(rewardReview.dieClipStyle.backgroundClip) && /radial-gradient/i.test(rewardReview.dieClipStyle.webkitMaskImage) && /hidden/i.test(rewardReview.dieClipStyle.backfaceVisibility), `${viewport.name}: mobile reward unlock die should use soft clipped edges ${JSON.stringify(rewardReview.dieClipStyle)}`);
+      }
       assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'PLUME' && rewardReview.playerSkin.effect === 'featherRipple', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);

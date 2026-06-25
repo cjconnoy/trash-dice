@@ -6125,6 +6125,24 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     transform: translateZ(0);
   }
 
+  .reward-die {
+    border-radius: 26%;
+    background-clip: padding-box;
+    backface-visibility: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translate3d(0,0,0) perspective(520px) rotateX(-8deg) rotateY(12deg);
+  }
+
+  .reward-die[class*="effect-"] {
+    background-clip: padding-box;
+  }
+
+  .reward-die::before,
+  .reward-die::after,
+  .reward-die-spark {
+    transform: translateZ(0);
+  }
+
   body.fast-preview .roll-die-stage .die.rolling {
     animation-duration: 0.42s;
   }
