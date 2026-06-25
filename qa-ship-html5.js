@@ -868,6 +868,30 @@ async function main() {
       assert(playerRewardSlot.animationNames.includes('slotRewardTieDyeDrift'), `${viewport.name}: player's seated reward die should keep its live animation ${JSON.stringify(playerRewardSlot)}`);
       assert(diamondRewardSlot && diamondRewardSlot.rewardSkinned === true && diamondRewardSlot.tier === '7' && diamondRewardSlot.name === 'DIAMOND' && diamondRewardSlot.animationNames.includes('slotRewardDiamondSparkle'), `${viewport.name}: diamond seated reward die should sparkle ${JSON.stringify(diamondRewardSlot)}`);
       assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
+      const rewardSkinGreenClassPips = await evalValue(page, `(() => {
+        window.TrashDiceQA.rewardSkinFixture(2);
+        const die = document.getElementById('p1Die');
+        die.classList.remove('p1');
+        die.classList.add('p2');
+        const dot = die.querySelector('.dot');
+        const dieStyle = getComputedStyle(die);
+        const rewardPip = dieStyle.getPropertyValue('--reward-pip').trim();
+        const probe = document.createElement('span');
+        probe.style.color = rewardPip;
+        document.body.appendChild(probe);
+        const expected = getComputedStyle(probe).color;
+        probe.remove();
+        const result = {
+          className: die.className,
+          rewardPip,
+          expected,
+          computedDotBackground: dot ? getComputedStyle(dot).backgroundColor : '',
+          activeDie: window.TrashDiceQA.rewardDieState().activeDie
+        };
+        window.TrashDiceQA.rewardSkinFixture(2);
+        return result;
+      })()`);
+      assert(rewardSkinGreenClassPips.computedDotBackground === rewardSkinGreenClassPips.expected, `${viewport.name}: reward-skinned player die with collected green class should keep reward pip color ${JSON.stringify(rewardSkinGreenClassPips)}`);
       const rewardSkinLadderFixtures = await evalValue(page, `(() => {
         const milestones = [1, 2, 4, 7, 11, 16, 24, 35];
         const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));
