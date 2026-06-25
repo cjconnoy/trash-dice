@@ -816,6 +816,7 @@ async function main() {
       assert(rewardSkinFixture.playerDie.rewardSkinned === true && rewardSkinFixture.playerDie.tier === '5' && rewardSkinFixture.playerDie.name === 'TIE-DYE', `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture)}`);
       assert(rewardSkinFixture.cpuDie.rewardSkinned === false && rewardSkinFixture.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.cpuDie)}`);
       assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === '5' && playerRewardSlot.name === 'TIE-DYE' && playerRewardSlot.pipOutline === 'true', `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
+      assert(playerRewardSlot.animationNames.includes('slotRewardTieDyeDrift'), `${viewport.name}: player's seated reward die should keep its live animation ${JSON.stringify(playerRewardSlot)}`);
       assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
