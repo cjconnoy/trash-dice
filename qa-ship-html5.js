@@ -1150,8 +1150,28 @@ async function main() {
       if (viewport.mobile && viewport.width > 720) {
         assert(terminalLoop.activeAnimationCount <= 5, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
       }
-      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
-      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} play again restart`);
+      const utilityClick = await evalValue(page, `(() => {
+        const mute = document.getElementById('audioMuteBtn');
+        if (!mute) return { clicked: false, stillComplete: false };
+        const wasPressed = mute.getAttribute('aria-pressed') === 'true';
+        mute.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+        const stillAfterFirstClick = !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active);
+        if ((mute.getAttribute('aria-pressed') === 'true') !== wasPressed) {
+          mute.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+        }
+        return {
+          clicked: true,
+          stillComplete: stillAfterFirstClick && !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
+          restored: (mute.getAttribute('aria-pressed') === 'true') === wasPressed,
+          events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
+        };
+      })()`);
+      assert(utilityClick.clicked === true && utilityClick.stillComplete === true && utilityClick.restored === true, `${viewport.name}: utility control click should not restart game over ${JSON.stringify(utilityClick)}`);
+      await evalValue(page, `document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, clientX: Math.round(window.innerWidth / 2), clientY: Math.round(window.innerHeight / 2) })); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} screen tap play again restart`);
+      const screenRestartEvents = await evalValue(page, `window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))`);
+      assert(screenRestartEvents.some(item => item.eventName === 'td_play_again' && item.method === 'screen_tap'), `${viewport.name}: screen tap restart analytics missing ${JSON.stringify(screenRestartEvents)}`);
+      assert(screenRestartEvents.some(item => item.eventName === 'td_game_start' && item.method === 'screen_tap'), `${viewport.name}: screen tap game start analytics missing ${JSON.stringify(screenRestartEvents)}`);
       const terminalCleared = await evalValue(page, `(() => ({
         titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
@@ -1300,8 +1320,10 @@ async function main() {
       assert(mathPlayerLossUi.p1StatusFits, `${viewport.name}: yellow loser status should fit in the viewport ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.trashedVisible === false, `${viewport.name}: TRASHED stamp should not appear when CPU wins ${JSON.stringify(mathPlayerLossUi)}`);
 
-      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
-      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player loss`);
+      await evalValue(page, `document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, clientX: Math.round(window.innerWidth / 2), clientY: Math.round(window.innerHeight / 2) })); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} screen tap restart after mathematical player loss`);
+      const lossScreenRestartCount = await evalValue(page, `window.TrashDiceAnalyticsDebug.log.filter(item => item.eventName === 'td_play_again' && item.payload && item.payload.method === 'screen_tap').length`);
+      assert(lossScreenRestartCount >= 2, `${viewport.name}: loss screen tap restart analytics missing`);
 
       await evalValue(page, `window.__tdForceQuitFallback = true; document.getElementById('quitGameBtn').click(); true`);
       await waitEval(page, `(() => {

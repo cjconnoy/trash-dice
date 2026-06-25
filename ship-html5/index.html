@@ -3815,7 +3815,15 @@ body.inline-game-loss .inline-result-banner {
 }
 body.inline-game-over .board-scene,
 body.inline-game-over .board-scene * {
-  cursor: default;
+  cursor: pointer;
+}
+body.inline-game-over button,
+body.inline-game-over a,
+body.inline-game-over input,
+body.inline-game-over select,
+body.inline-game-over textarea,
+body.inline-game-over [role="button"] {
+  cursor: pointer;
 }
 .board-scene.lid-weight-hit {
   animation: sceneLidWeight 0.38s cubic-bezier(.15,.82,.16,1);
@@ -13684,11 +13692,42 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   // ── ROLL ─────────────────────────────────────────────────────
+  function shouldIgnoreInlineGameOverRestartTarget(target) {
+    if (!target || !target.closest) return false;
+    return !!target.closest([
+      'button',
+      'a',
+      'input',
+      'select',
+      'textarea',
+      '[role="button"]',
+      '#quitReturnSheet',
+      '#pwaInstallCard',
+      '.quit-return-sheet',
+      '.pwa-install-card'
+    ].join(','));
+  }
+
+  function restartFromInlineGameOver(source = 'screen_tap') {
+    if (!isInlineGameOverActive()) return false;
+    trackPlayAgain(source);
+    trackNewGameStart(source);
+    init();
+    return true;
+  }
+
+  function handleInlineGameOverScreenRestart(event) {
+    if (!isInlineGameOverActive()) return;
+    if (event.defaultPrevented) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    if (shouldIgnoreInlineGameOverRestartTarget(event.target)) return;
+    const pointerSource = event.pointerType ? `screen_${event.pointerType}` : 'screen_tap';
+    restartFromInlineGameOver(pointerSource);
+  }
+
   function handleRollButtonClick() {
     if (isInlineGameOverActive()) {
-      trackPlayAgain('roll_button');
-      trackNewGameStart('roll_button');
-      init();
+      restartFromInlineGameOver('roll_button');
       return;
     }
     if (betaMultiplayerActive) {
@@ -13700,10 +13739,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   rollBtn.addEventListener('click', handleRollButtonClick);
   playAgainBtn.addEventListener('click', () => {
+    if (restartFromInlineGameOver('play_again_button')) return;
     trackPlayAgain('play_again_button');
     trackNewGameStart('play_again_button');
     init();
   });
+  document.addEventListener('click', handleInlineGameOverScreenRestart);
 
   async function doRoll() {
     clearP0Timer();
