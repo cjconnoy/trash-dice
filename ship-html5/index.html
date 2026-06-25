@@ -2387,47 +2387,49 @@ body.inline-game-over .roll-panel {
     inset -10px -12px 18px rgba(0,0,0,0.2);
 }
 
-.reward-die.effect-hatchChick,
-.die.reward-skinned.effect-hatchChick {
+.reward-die.effect-sunrise,
+.die.reward-skinned.effect-sunrise {
   background:
     radial-gradient(circle at 30% 18%, rgba(255,255,255,0.76), rgba(255,255,255,0.18) 22%, transparent 43%),
-    radial-gradient(ellipse at 50% 82%, rgba(255,244,196,0.86), transparent 45%),
+    linear-gradient(180deg, #ffcf55 0%, #ff8d43 38%, #946b8c 66%, #315f79 100%),
     linear-gradient(150deg, rgba(255,255,255,0.24), transparent 36%),
-    linear-gradient(330deg, rgba(110,69,21,0.24), transparent 54%),
+    linear-gradient(330deg, rgba(28,47,75,0.28), transparent 54%),
     var(--reward-face);
 }
 
-.reward-die.effect-hatchChick::before,
-.die.reward-skinned.effect-hatchChick::before {
+.reward-die.effect-sunrise::before,
+.die.reward-skinned.effect-sunrise::before {
   content: '';
   position: absolute;
-  inset: -7%;
+  inset: -10%;
   z-index: 1;
   border-radius: 28%;
   background:
-    radial-gradient(ellipse 33% 38% at 50% 43%, #ffd94d 0 54%, #ffc92f 66%, transparent 68%),
-    radial-gradient(circle at 41% 36%, #24310e 0 2.8%, transparent 3.4%),
-    radial-gradient(circle at 59% 36%, #24310e 0 2.8%, transparent 3.4%),
-    conic-gradient(from 47deg at 50% 45%, transparent 0 37%, #ff8a2a 37% 49%, transparent 49% 100%),
-    radial-gradient(ellipse at 50% 83%, rgba(255,252,233,0.86) 0 40%, transparent 42%);
-  filter: drop-shadow(0 0 7px rgba(255,218,72,0.42));
-  animation: rewardHatchChickPeek 1.5s ease-in-out infinite;
+    radial-gradient(circle at 50% 42%, #fff36a 0 19%, #ffb23e 20% 31%, transparent 32%),
+    linear-gradient(0deg, transparent 0 46%, rgba(255,255,160,0.72) 47% 49%, transparent 50% 100%),
+    linear-gradient(20deg, transparent 0 47%, rgba(255,236,118,0.72) 48% 50%, transparent 51% 100%),
+    linear-gradient(-20deg, transparent 0 47%, rgba(255,236,118,0.72) 48% 50%, transparent 51% 100%),
+    linear-gradient(46deg, transparent 0 48%, rgba(255,210,100,0.62) 49% 50%, transparent 51% 100%),
+    linear-gradient(-46deg, transparent 0 48%, rgba(255,210,100,0.62) 49% 50%, transparent 51% 100%);
+  filter: drop-shadow(0 0 10px rgba(255,202,64,0.62));
+  animation: rewardSunriseGlow 1.7s ease-in-out infinite;
 }
 
-.reward-die.effect-hatchChick::after,
-.die.reward-skinned.effect-hatchChick::after {
-  inset: 40% -6% -8%;
+.reward-die.effect-sunrise::after,
+.die.reward-skinned.effect-sunrise::after {
+  inset: 44% -8% -8%;
   height: auto;
   z-index: 3;
   border-radius: 0 0 28% 28%;
   background:
-    linear-gradient(180deg, #fffef0 0%, #f7e9bf 62%, #dfbc73 100%),
-    radial-gradient(ellipse at 50% 86%, rgba(106,72,24,0.18), transparent 50%);
-  clip-path: polygon(0 24%, 10% 5%, 20% 24%, 31% 4%, 43% 26%, 54% 5%, 66% 26%, 78% 4%, 90% 24%, 100% 8%, 100% 100%, 0 100%);
+    linear-gradient(135deg, transparent 0 13%, #273c5e 14% 39%, transparent 40% 100%),
+    linear-gradient(45deg, transparent 0 17%, #173f54 18% 43%, transparent 44% 100%),
+    linear-gradient(180deg, rgba(48,79,108,0.92), rgba(18,55,74,0.98));
+  clip-path: polygon(0 48%, 17% 29%, 28% 44%, 43% 18%, 55% 42%, 72% 22%, 100% 50%, 100% 100%, 0 100%);
   box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.85),
-    0 -2px 0 rgba(139,91,32,0.2);
-  animation: rewardEggShellBounce 1.5s ease-in-out infinite;
+    inset 0 2px 0 rgba(255,255,255,0.16),
+    0 -3px 0 rgba(255,178,62,0.22);
+  animation: rewardSunriseMountains 1.7s ease-in-out infinite;
 }
 
 .reward-die.effect-shineSweep::after,
@@ -2590,8 +2592,8 @@ body.inline-game-over .roll-panel {
   animation: slotRewardTieDyeDrift 3.8s ease-in-out infinite;
 }
 
-.slot-die.reward-skinned.effect-hatchChick .slot-reward-effect {
-  animation: slotRewardHatchChick 1.7s ease-in-out infinite;
+.slot-die.reward-skinned.effect-sunrise .slot-reward-effect {
+  animation: slotRewardSunrise 1.7s ease-in-out infinite;
 }
 
 .slot-die.reward-skinned.effect-shineSweep .slot-reward-effect {
@@ -2682,16 +2684,16 @@ body.inline-game-over .roll-panel {
   100% { transform: translateX(360%) skewX(-12deg); opacity: 0; }
 }
 
-@keyframes rewardHatchChickPeek {
-  0%, 100% { transform: translate3d(0,4px,0) scale(0.98); filter: drop-shadow(0 0 4px rgba(255,218,72,0.28)); }
-  38% { transform: translate3d(0,-3px,0) scale(1.05); filter: drop-shadow(0 0 10px rgba(255,218,72,0.62)); }
-  58% { transform: translate3d(1px,0,0) rotate(2deg) scale(1.03); }
+@keyframes rewardSunriseGlow {
+  0%, 100% { transform: translate3d(0,2px,0) scale(0.98); filter: drop-shadow(0 0 5px rgba(255,202,64,0.35)); opacity: 0.9; }
+  38% { transform: translate3d(0,-3px,0) scale(1.08); filter: drop-shadow(0 0 14px rgba(255,228,94,0.8)); opacity: 1; }
+  64% { transform: translate3d(0,-1px,0) scale(1.03); opacity: 0.96; }
 }
 
-@keyframes rewardEggShellBounce {
-  0%, 100% { transform: translate3d(0,0,0) rotate(0deg); }
-  38% { transform: translate3d(0,2px,0) rotate(-1deg); }
-  58% { transform: translate3d(1px,0,0) rotate(1deg); }
+@keyframes rewardSunriseMountains {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
+  38% { transform: translate3d(0,2px,0) scale(1.02); filter: brightness(1.12); }
+  64% { transform: translate3d(0,0,0) scale(1); }
 }
 
 @keyframes rewardGlint {
@@ -2772,10 +2774,10 @@ body.inline-game-over .roll-panel {
   100% { opacity: 0; transform: translateX(15px) skewX(-12deg); }
 }
 
-@keyframes slotRewardHatchChick {
+@keyframes slotRewardSunrise {
   0%, 100% { opacity: 0.86; transform: translate3d(0,0.8px,0) scale(0.98); }
-  40% { opacity: 1; transform: translate3d(0,-0.8px,0) scale(1.06); filter: drop-shadow(0 0 3px rgba(255,218,72,0.72)); }
-  62% { transform: translate3d(0.5px,0,0) rotate(2deg) scale(1.03); }
+  40% { opacity: 1; transform: translate3d(0,-0.9px,0) scale(1.07); filter: drop-shadow(0 0 3px rgba(255,202,64,0.76)); }
+  62% { transform: translate3d(0,0,0) scale(1.03); }
 }
 
 @keyframes slotRewardDiamondSparkle {
@@ -2806,8 +2808,8 @@ body.inline-game-over .roll-panel {
   .reward-die.effect-bolt::after,
   .reward-die.effect-bubblePop::before,
   .reward-die.effect-bubblePop::after,
-  .reward-die.effect-hatchChick::before,
-  .reward-die.effect-hatchChick::after,
+  .reward-die.effect-sunrise::before,
+  .reward-die.effect-sunrise::after,
   .reward-die.effect-diamond::before,
   .reward-die.effect-diamond::after,
   .reward-die.effect-diamond .reward-die-spark,
@@ -2822,8 +2824,8 @@ body.inline-game-over .roll-panel {
   .die.reward-skinned.effect-bolt::after,
   .die.reward-skinned.effect-bubblePop::before,
   .die.reward-skinned.effect-bubblePop::after,
-  .die.reward-skinned.effect-hatchChick::before,
-  .die.reward-skinned.effect-hatchChick::after,
+  .die.reward-skinned.effect-sunrise::before,
+  .die.reward-skinned.effect-sunrise::after,
   .die.reward-skinned.effect-diamond::before,
   .die.reward-skinned.effect-diamond::after,
   .die.reward-skinned.effect-colorCycle,
@@ -8464,6 +8466,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE = 0.82;
   const FIRST_GAME_ASSIST_CPU_BRAKE_CHANCE = 0.42;
   const FIRST_GAME_ASSIST_CPU_PRESSURE_BRAKE_CHANCE = 0.62;
+  const FIRST_GAME_MIRACLE_MAX_PLAYER_DICE = 5;
+  const FIRST_GAME_MIRACLE_PANIC_PLAYER_DICE = 3;
+  const FIRST_GAME_MIRACLE_OPEN_SLOT_PRESSURE = 2;
+  const FIRST_GAME_MIRACLE_MIN_DICE_DEFICIT = 0;
   const ENDURANCE_ASSIST_START_ROUND = 5;
   const ENDURANCE_ASSIST_START_ROLLS = 36;
   const ENDURANCE_ASSIST_MAX_USES = 4;
@@ -8542,11 +8548,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const REWARD_DICE = Object.freeze([
     { tier: 1, minWins: 1, name: 'PLUME', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
-    { tier: 2, minWins: 2, name: 'TOXIC SPAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
+    { tier: 2, minWins: 2, name: 'TOXIC SPLAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
     { tier: 3, minWins: 4, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'bubblePop', pipOutline: false },
     { tier: 4, minWins: 7, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
     { tier: 5, minWins: 11, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
-    { tier: 6, minWins: 16, name: 'HATCHLING', faceColor: '#FFF0B8', pipColor: '#4A2C0C', effect: 'hatchChick', pipOutline: false },
+    { tier: 6, minWins: 16, name: 'SUNRISE', faceColor: '#FFB24B', pipColor: '#243653', effect: 'sunrise', pipOutline: false },
     { tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
     { tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true }
   ]);
@@ -8669,6 +8675,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let tdFirstRollTracked = false;
   let firstGameAssistUses = 0;
   let lastFirstGameAssist = null;
+  let firstGameMiracleRolls = 0;
+  let lastFirstGameMiracle = null;
   let rewardDieReviewIndex = -1;
 
   function cleanAnalyticsValue(value, fallback = 'unknown') {
@@ -8702,18 +8710,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function getCompletedGameCount() {
-    try {
-      return normalizeCounter(window.localStorage.getItem(TD_COMPLETED_GAMES_STORAGE_KEY));
-    } catch (_) {
-      return 0;
-    }
+    return 0;
   }
 
   function writeCompletedGameCount(count) {
     tdCompletedGames = normalizeCounter(count);
-    try {
-      window.localStorage.setItem(TD_COMPLETED_GAMES_STORAGE_KEY, String(tdCompletedGames));
-    } catch (_) {}
     return tdCompletedGames;
   }
 
@@ -9337,17 +9338,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       }));
       return;
     }
-    if (effect === 'hatchChick') {
-      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: '0', cy: f(-size * 0.08), r: f(size * 0.23), fill: '#ffd94d', opacity: '0.98', filter: 'drop-shadow(0 0 2px rgba(255,218,72,0.55))' }));
-      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: f(-size * 0.08), cy: f(-size * 0.13), r: f(size * 0.025), fill: '#24310e' }));
-      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: f(size * 0.08), cy: f(-size * 0.13), r: f(size * 0.025), fill: '#24310e' }));
-      g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.05)} ${f(-size * 0.06)} L0 ${f(size * 0.03)} L${f(size * 0.08)} ${f(-size * 0.06)} Z`, fill: '#ff8a2a' }));
+    if (effect === 'sunrise') {
+      g.appendChild(make('rect', { class: 'slot-reward-effect', x: f(-size * 0.5), y: f(-size * 0.5), width: f(size), height: f(size), rx: '5.8', fill: 'rgba(255,141,67,0.54)' }));
+      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: '0', cy: f(-size * 0.12), r: f(size * 0.24), fill: '#fff36a', opacity: '0.98', filter: 'drop-shadow(0 0 3px rgba(255,202,64,0.72))' }));
       g.appendChild(make('path', {
         class: 'slot-reward-effect',
-        d: `M${f(-size * 0.5)} ${f(size * 0.04)} L${f(-size * 0.4)} ${f(-size * 0.08)} L${f(-size * 0.28)} ${f(size * 0.05)} L${f(-size * 0.14)} ${f(-size * 0.08)} L0 ${f(size * 0.06)} L${f(size * 0.14)} ${f(-size * 0.08)} L${f(size * 0.28)} ${f(size * 0.05)} L${f(size * 0.42)} ${f(-size * 0.07)} L${f(size * 0.5)} ${f(size * 0.05)} L${f(size * 0.5)} ${f(size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`,
-        fill: '#fff8df',
-        stroke: 'rgba(139,91,32,0.28)',
-        'stroke-width': '0.8'
+        d: `M${f(-size * 0.5)} ${f(size * 0.08)} L${f(-size * 0.32)} ${f(-size * 0.09)} L${f(-size * 0.16)} ${f(size * 0.08)} L0 ${f(-size * 0.18)} L${f(size * 0.17)} ${f(size * 0.09)} L${f(size * 0.34)} ${f(-size * 0.12)} L${f(size * 0.5)} ${f(size * 0.08)} L${f(size * 0.5)} ${f(size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`,
+        fill: '#243653',
+        stroke: 'rgba(255,236,118,0.34)',
+        'stroke-width': '0.85'
       }));
       return;
     }
@@ -9984,6 +9983,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     lastEnduranceAssist = null;
     firstGameAssistUses = 0;
     lastFirstGameAssist = null;
+    firstGameMiracleRolls = 0;
+    lastFirstGameMiracle = null;
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
     roundWins = { p1: 0, p2: 0 };
@@ -12293,6 +12294,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       uses: firstGameAssistUses,
       last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
     };
+    inlineGameOverState.firstGameMiracle = {
+      rolls: firstGameMiracleRolls,
+      last: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null
+    };
     inlineGameOverState.rewardDie = getRewardDieState();
 
     gameStarted = true;
@@ -12781,6 +12786,56 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     };
   }
 
+  function createFirstGameMiracleContext(openSlots = []) {
+    const p1Dice = totalDice('p1');
+    const p2Dice = totalDice('p2');
+    const diceDeficit = p2Dice - p1Dice;
+    const roundDeficit = (roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0);
+    const criticalDice = p1Dice <= FIRST_GAME_MIRACLE_MAX_PLAYER_DICE;
+    const underPressure =
+      diceDeficit >= FIRST_GAME_MIRACLE_MIN_DICE_DEFICIT ||
+      roundDeficit >= 0 ||
+      p1Dice <= FIRST_GAME_MIRACLE_PANIC_PLAYER_DICE ||
+      openSlots.length <= FIRST_GAME_MIRACLE_OPEN_SLOT_PRESSURE;
+    const active = !p0Autoplay &&
+      !betaMultiplayerActive &&
+      tdCompletedGames === 0 &&
+      gameStarted &&
+      criticalDice &&
+      underPressure &&
+      openSlots.length > 0 &&
+      p1Dice > 0 &&
+      p2Dice > 0;
+    return {
+      active,
+      criticalDice,
+      underPressure,
+      p1Dice,
+      p2Dice,
+      diceDeficit,
+      roundDeficit,
+      openSlots: openSlots.length,
+      rolls: firstGameMiracleRolls,
+      completedGames: tdCompletedGames
+    };
+  }
+
+  function markFirstGameMiracle(reason, face, ctx) {
+    firstGameMiracleRolls++;
+    lastFirstGameMiracle = {
+      reason,
+      face,
+      round,
+      totalRolls,
+      p1Dice: ctx ? ctx.p1Dice : totalDice('p1'),
+      p2Dice: ctx ? ctx.p2Dice : totalDice('p2'),
+      diceDeficit: ctx ? ctx.diceDeficit : totalDice('p2') - totalDice('p1'),
+      roundDeficit: ctx ? ctx.roundDeficit : ((roundWins && roundWins.p2 ? roundWins.p2 : 0) - (roundWins && roundWins.p1 ? roundWins.p1 : 0)),
+      rolls: firstGameMiracleRolls,
+      at: Date.now()
+    };
+  }
+
   function markFirstRoundGuard(reason, face, openSlots = []) {
     firstRoundGuardRolls++;
     lastFirstRoundGuard = {
@@ -12881,6 +12936,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       : [];
     const comebackAssistActive = isOpeningComebackAssistActive();
     const firstRoundGuardActive = isFirstRoundGuardActive();
+    const firstGameMiracleContext = createFirstGameMiracleContext(openSlots);
     const firstGameContext = createFirstGameAssistContext(openSlots);
     const enduranceContext = createEnduranceAssistContext(openSlots);
     if (firstRoundGuardActive && player === 'p1' && openSlots.length > 0) {
@@ -12893,6 +12949,19 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (takenFaces.length) {
         const face = randomFrom(takenFaces);
         markFirstRoundGuard('round-one-cpu-trash-brake', face, openSlots);
+        return face;
+      }
+    }
+    if (firstGameMiracleContext.active && player === 'p1' && openSlots.length > 0) {
+      const face = randomFrom(openSlots);
+      markFirstGameMiracle(openSlots.length === 1 ? 'player-miracle-clutch' : 'player-miracle-open-slot', face, firstGameMiracleContext);
+      return face;
+    }
+    if (firstGameMiracleContext.active && player === 'p2' && openSlots.length > 0) {
+      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+      if (takenFaces.length) {
+        const face = randomFrom(takenFaces);
+        markFirstGameMiracle('cpu-miracle-brake', face, firstGameMiracleContext);
         return face;
       }
     }
@@ -13102,6 +13171,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     openingComebackAssistRolls = 0;
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
+    firstGameMiracleRolls = 0;
+    lastFirstGameMiracle = null;
     gameStarted = true;
     document.body.dataset.gameStarted = 'true';
     Audio.setMusicActive(true);
@@ -13917,6 +13988,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         writeCompletedGameCount(count);
         firstGameAssistUses = 0;
         lastFirstGameAssist = null;
+        firstGameMiracleRolls = 0;
+        lastFirstGameMiracle = null;
         firstRoundGuardRolls = 0;
         lastFirstRoundGuard = null;
         return window.TrashDiceQA.state().firstGameAssist;
@@ -13926,6 +13999,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         writeCompletedGameCount(completedGames);
         firstGameAssistUses = 0;
         lastFirstGameAssist = null;
+        firstGameMiracleRolls = 0;
+        lastFirstGameMiracle = null;
         firstRoundGuardRolls = 0;
         lastFirstRoundGuard = null;
         forcedRolls = [];
@@ -13952,17 +14027,23 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           return slots;
         }, []);
         const context = createFirstGameAssistContext(openSlots);
+        const miracleContext = createFirstGameMiracleContext(openSlots);
         const beforeUses = firstGameAssistUses;
+        const beforeMiracleRolls = firstGameMiracleRolls;
         const beforeGuardRolls = firstRoundGuardRolls;
         const samples = Array.from({ length: 24 }, () => chooseRollValue(current));
         return {
           context,
+          miracleContext,
           firstRoundGuardActive: isFirstRoundGuardActive(),
           beforeUses,
           afterUses: firstGameAssistUses,
+          beforeMiracleRolls,
+          afterMiracleRolls: firstGameMiracleRolls,
           beforeGuardRolls,
           afterGuardRolls: firstRoundGuardRolls,
           lastFirstGameAssist: lastFirstGameAssist ? { ...lastFirstGameAssist } : null,
+          lastFirstGameMiracle: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null,
           lastFirstRoundGuard: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null,
           samples,
           openSlots,
@@ -14201,6 +14282,21 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             maxUses: FIRST_GAME_ASSIST_MAX_USES,
             last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
           },
+          firstGameMiracle: pools && Array.isArray(board)
+            ? {
+              ...createFirstGameMiracleContext(
+                board.reduce((slots, slot, i) => {
+                  if (slot === null) slots.push(i + 1);
+                  return slots;
+                }, [])
+              ),
+              last: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null
+            }
+            : {
+              active: false,
+              rolls: firstGameMiracleRolls,
+              last: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null
+            },
           firstRoundGuard: {
             active: isFirstRoundGuardActive(),
             rolls: firstRoundGuardRolls,

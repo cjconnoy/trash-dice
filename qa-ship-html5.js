@@ -788,10 +788,13 @@ async function main() {
         const activeCpu = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
         const inactive = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 1, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
         const softLater = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, roundNumber: 2 });
+        const miraclePlayer = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 5, p1Dice: 3, p2Dice: 12, p1RoundWins: 1, p2RoundWins: 2, roundNumber: 4 });
+        const miracleCpu = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 5, p1Dice: 3, p2Dice: 12, p1RoundWins: 1, p2RoundWins: 2, roundNumber: 4 });
+        const miracleInactive = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 1, player: 'p1', filledSlots: 5, p1Dice: 3, p2Dice: 12, p1RoundWins: 1, p2RoundWins: 2, roundNumber: 4 });
         window.TrashDiceDebug.gameStart();
         window.TrashDiceQA.setCompletedGames(0);
         window.TrashDiceQA.setRewardWins(0);
-        return { active, activeCpu, inactive, softLater, resetState: window.TrashDiceQA.state() };
+        return { active, activeCpu, inactive, softLater, miraclePlayer, miracleCpu, miracleInactive, resetState: window.TrashDiceQA.state() };
       })()`);
       assert(firstGameAssist.active.context.active === true && firstGameAssist.active.firstRoundGuardActive === true && firstGameAssist.active.afterGuardRolls > firstGameAssist.active.beforeGuardRolls, `${viewport.name}: first-round guard should activate for player in fresh game ${JSON.stringify(firstGameAssist.active)}`);
       assert(firstGameAssist.active.samples.length > 0 && firstGameAssist.active.samples.every(face => firstGameAssist.active.openSlots.includes(face)), `${viewport.name}: first-round player guard should always hit open slots ${JSON.stringify(firstGameAssist.active)}`);
@@ -799,7 +802,10 @@ async function main() {
       assert(firstGameAssist.activeCpu.samples.length > 0 && firstGameAssist.activeCpu.samples.every(face => !firstGameAssist.activeCpu.openSlots.includes(face)), `${viewport.name}: first-round CPU guard should always avoid open slots ${JSON.stringify(firstGameAssist.activeCpu)}`);
       assert(firstGameAssist.inactive.context.active === false && firstGameAssist.inactive.firstRoundGuardActive === false && firstGameAssist.inactive.afterUses === 0 && firstGameAssist.inactive.afterGuardRolls === 0, `${viewport.name}: first-game assist should disable after one completed game ${JSON.stringify(firstGameAssist.inactive)}`);
       assert(firstGameAssist.softLater.firstRoundGuardActive === false && firstGameAssist.softLater.context.active === true && firstGameAssist.softLater.afterUses > firstGameAssist.softLater.beforeUses && firstGameAssist.softLater.afterUses <= firstGameAssist.softLater.context.maxUses, `${viewport.name}: later first-game assist should remain soft after round one ${JSON.stringify(firstGameAssist.softLater)}`);
-      assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true && firstGameAssist.resetState.firstRoundGuard.active === true, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
+      assert(firstGameAssist.miraclePlayer.miracleContext.active === true && firstGameAssist.miraclePlayer.afterMiracleRolls > firstGameAssist.miraclePlayer.beforeMiracleRolls && firstGameAssist.miraclePlayer.samples.length > 0 && firstGameAssist.miraclePlayer.samples.every(face => firstGameAssist.miraclePlayer.openSlots.includes(face)), `${viewport.name}: first-game miracle should force player comeback hits when low on dice ${JSON.stringify(firstGameAssist.miraclePlayer)}`);
+      assert(firstGameAssist.miracleCpu.miracleContext.active === true && firstGameAssist.miracleCpu.afterMiracleRolls > firstGameAssist.miracleCpu.beforeMiracleRolls && firstGameAssist.miracleCpu.samples.length > 0 && firstGameAssist.miracleCpu.samples.every(face => !firstGameAssist.miracleCpu.openSlots.includes(face)), `${viewport.name}: first-game miracle should force CPU brake rolls when player is low on dice ${JSON.stringify(firstGameAssist.miracleCpu)}`);
+      assert(firstGameAssist.miracleInactive.miracleContext.active === false && firstGameAssist.miracleInactive.afterMiracleRolls === 0, `${viewport.name}: first-game miracle should disable after one completed game ${JSON.stringify(firstGameAssist.miracleInactive)}`);
+      assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true && firstGameAssist.resetState.firstRoundGuard.active === true && firstGameAssist.resetState.firstGameMiracle.rolls === 0, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
@@ -811,15 +817,15 @@ async function main() {
       })()`);
       assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
       const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
-      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|HATCHLING|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPLAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|SUNRISE|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.map(item => item.minWins).join('|') === '1|2|4|7|11|16|24|35', `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
       assert(
         rewardConfig.find(item => item.name === 'PLUME').effect === 'featherRipple' &&
-        rewardConfig.find(item => item.name === 'TOXIC SPAT').effect === 'toxicSpat' &&
+        rewardConfig.find(item => item.name === 'TOXIC SPLAT').effect === 'toxicSpat' &&
         rewardConfig.find(item => item.name === 'BUBBLEGUM').effect === 'bubblePop' &&
         rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' &&
         rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye' &&
-        rewardConfig.find(item => item.name === 'HATCHLING').effect === 'hatchChick' &&
+        rewardConfig.find(item => item.name === 'SUNRISE').effect === 'sunrise' &&
         rewardConfig.find(item => item.name === 'DIAMOND').effect === 'diamond',
         `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`
       );
@@ -850,9 +856,9 @@ async function main() {
           playerSlot: fixture.slots.find(slot => slot.player === 'p1')
         }));
       })()`);
-      assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|HATCHLING|DIAMOND|PRISM', `${viewport.name}: all reward ladder skins should activate in order ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === 'PLUME|TOXIC SPLAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|SUNRISE|DIAMOND|PRISM', `${viewport.name}: all reward ladder skins should activate in order ${JSON.stringify(rewardSkinLadderFixtures)}`);
       assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.length > 0), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
-      assert(rewardSkinLadderFixtures.find(item => item.activeName === 'HATCHLING').activeEffect === 'hatchChick' && rewardSkinLadderFixtures.find(item => item.activeName === 'HATCHLING').playerSlot.animationNames.includes('slotRewardHatchChick'), `${viewport.name}: hatchling reward skin should replace chrome and animate in the lid ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').activeEffect === 'sunrise' && rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').playerSlot.animationNames.includes('slotRewardSunrise'), `${viewport.name}: sunrise reward skin should animate in the lid ${JSON.stringify(rewardSkinLadderFixtures)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);
