@@ -839,6 +839,12 @@ async function main() {
       assert(firstGameAssist.miracleCpu.miracleContext.active === true && firstGameAssist.miracleCpu.afterMiracleRolls > firstGameAssist.miracleCpu.beforeMiracleRolls && firstGameAssist.miracleCpu.samples.length > 0 && firstGameAssist.miracleCpu.samples.every(face => !firstGameAssist.miracleCpu.openSlots.includes(face)), `${viewport.name}: first-game miracle should force CPU brake rolls when player is low on dice ${JSON.stringify(firstGameAssist.miracleCpu)}`);
       assert(firstGameAssist.miracleInactive.miracleContext.active === false && firstGameAssist.miracleInactive.afterMiracleRolls === 0, `${viewport.name}: first-game miracle should disable after one completed game ${JSON.stringify(firstGameAssist.miracleInactive)}`);
       assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true && firstGameAssist.resetState.firstRoundGuard.active === true && firstGameAssist.resetState.firstGameMiracle.rolls === 0, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
+      const postLossComeback = await evalValue(page, `window.TrashDiceQA.postLossComebackProbe()`);
+      assert(postLossComeback.activeBefore.pending === true && postLossComeback.activeBefore.active === true, `${viewport.name}: post-loss comeback round should arm for next round-one game ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.playerSamples.length > 0 && postLossComeback.playerSamples.every(face => postLossComeback.openSlots.includes(face)), `${viewport.name}: post-loss comeback should force player first-round hits ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.cpuSamples.length > 0 && postLossComeback.cpuSamples.every(face => postLossComeback.takenFaces.includes(face)), `${viewport.name}: post-loss comeback should force CPU first-round misses after player places ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.activeAfterSamples.pending === true && postLossComeback.activeAfterSamples.rolls === postLossComeback.playerSamples.length + postLossComeback.cpuSamples.length, `${viewport.name}: post-loss comeback should stay active through the protected first round ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.consumed.pending === false && postLossComeback.consumed.consumed === true && postLossComeback.consumed.last && postLossComeback.consumed.last.winner === 'p1', `${viewport.name}: post-loss comeback should consume after the protected round completes ${JSON.stringify(postLossComeback)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
@@ -1350,6 +1356,7 @@ async function main() {
         const stampStyle = stamp ? getComputedStyle(stamp) : null;
         return {
           state: window.TrashDiceQA.state().inlineGameOver,
+          postLossComeback: window.TrashDiceQA.state().postLossComebackRound,
           title,
           sub,
           p1Text: (document.getElementById('p1StatusText') || {}).textContent || '',
@@ -1380,6 +1387,7 @@ async function main() {
       })()`);
       assert(mathPlayerLoss.passed === true, `${viewport.name}: mathematical player loss proof failed ${JSON.stringify(mathPlayerLoss)}`);
       assert(mathPlayerLossUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player loss reason missing ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.postLossComeback.pending === true && mathPlayerLossUi.postLossComeback.active === false, `${viewport.name}: player game loss should arm next-game comeback without activating on game-over screen ${JSON.stringify(mathPlayerLossUi.postLossComeback)}`);
       assert(mathPlayerLossUi.title === 'GAME OVER' && mathPlayerLossUi.sub === 'CPU WINS', `${viewport.name}: player-loss banner should stay normal ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerLossUi.p1LoserReason === true, `${viewport.name}: yellow loser status should explain mathematical elimination ${JSON.stringify(mathPlayerLossUi)}`);
       assert(!mathPlayerLossUi.p2Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerLossUi.p2LoserReason === false, `${viewport.name}: winning green panel should not carry mathematical loser copy ${JSON.stringify(mathPlayerLossUi)}`);
@@ -1388,6 +1396,8 @@ async function main() {
 
       await evalValue(page, `document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, clientX: Math.round(window.innerWidth / 2), clientY: Math.round(window.innerHeight / 2) })); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} screen tap restart after mathematical player loss`);
+      const postLossRestart = await evalValue(page, `window.TrashDiceQA.state().postLossComebackRound`);
+      assert(postLossRestart.pending === true && postLossRestart.active === true && postLossRestart.consumed === false, `${viewport.name}: post-loss comeback should activate on the next game's first round ${JSON.stringify(postLossRestart)}`);
       const lossScreenRestartCount = await evalValue(page, `window.TrashDiceAnalyticsDebug.log.filter(item => item.eventName === 'td_play_again' && item.payload && item.payload.method === 'screen_tap').length`);
       assert(lossScreenRestartCount >= 2, `${viewport.name}: loss screen tap restart analytics missing`);
 

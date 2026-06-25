@@ -9006,6 +9006,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let firstRoundGuardRolls = 0;
   let lastFirstRoundGuard = null;
   let firstRoundCpuIntroPlaced = false;
+  let postLossComebackRoundPending = false;
+  let postLossComebackRoundRolls = 0;
+  let postLossComebackRoundConsumed = false;
+  let lastPostLossComebackRound = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -10582,6 +10586,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
     firstRoundCpuIntroPlaced = false;
+    if (postLossComebackRoundPending) {
+      postLossComebackRoundRolls = 0;
+      postLossComebackRoundConsumed = false;
+    }
     roundWins = { p1: 0, p2: 0 };
     openingComebackAssistRolls = 0;
     if (trashCan) {
@@ -12888,6 +12896,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       recordRoundWin('p1');
       finalRewardProgress = recordRewardDiePlayerRoundWin();
     }
+    if (playerWon) {
+      clearPostLossComebackRound('player-game-win');
+    } else {
+      armPostLossComebackRound(gameOverReason);
+    }
     tdLastCheckpoint = 'game_complete';
     const gameCompletePayload = tdGamePayload({
       winner: finalWinner,
@@ -13357,6 +13370,86 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       totalDice('p2') > 0;
   }
 
+  function isPostLossComebackRoundActive() {
+    return postLossComebackRoundPending &&
+      !p0Autoplay &&
+      !betaMultiplayerActive &&
+      gameStarted &&
+      !isInlineGameOverActive() &&
+      round === 1 &&
+      roundWins &&
+      roundWins.p1 === 0 &&
+      roundWins.p2 === 0 &&
+      totalDice('p1') > 0 &&
+      totalDice('p2') > 0;
+  }
+
+  function snapshotPostLossComebackRound() {
+    return {
+      pending: postLossComebackRoundPending,
+      active: isPostLossComebackRoundActive(),
+      consumed: postLossComebackRoundConsumed,
+      rolls: postLossComebackRoundRolls,
+      last: lastPostLossComebackRound ? { ...lastPostLossComebackRound } : null
+    };
+  }
+
+  function armPostLossComebackRound(reason = 'player-game-loss') {
+    postLossComebackRoundPending = true;
+    postLossComebackRoundRolls = 0;
+    postLossComebackRoundConsumed = false;
+    lastPostLossComebackRound = {
+      reason,
+      phase: 'armed',
+      round,
+      totalRolls,
+      at: Date.now()
+    };
+  }
+
+  function clearPostLossComebackRound(reason = 'cleared') {
+    if (!postLossComebackRoundPending && postLossComebackRoundRolls === 0) return;
+    postLossComebackRoundPending = false;
+    postLossComebackRoundConsumed = false;
+    postLossComebackRoundRolls = 0;
+    lastPostLossComebackRound = {
+      reason,
+      phase: 'cleared',
+      round,
+      totalRolls,
+      at: Date.now()
+    };
+  }
+
+  function markPostLossComebackRound(reason, face, openSlots = []) {
+    postLossComebackRoundRolls++;
+    lastPostLossComebackRound = {
+      reason,
+      phase: 'roll',
+      face,
+      round,
+      totalRolls,
+      openSlots: openSlots.slice(),
+      rolls: postLossComebackRoundRolls,
+      at: Date.now()
+    };
+  }
+
+  function consumePostLossComebackRound(reason = 'round-complete', winner = current) {
+    if (!postLossComebackRoundPending && postLossComebackRoundRolls === 0) return;
+    postLossComebackRoundPending = false;
+    postLossComebackRoundConsumed = true;
+    lastPostLossComebackRound = {
+      reason,
+      phase: 'consumed',
+      winner: winner === 'p2' ? 'p2' : 'p1',
+      round,
+      totalRolls,
+      rolls: postLossComebackRoundRolls,
+      at: Date.now()
+    };
+  }
+
   function createFirstGameAssistContext(openSlots = []) {
     const p1Dice = totalDice('p1');
     const p2Dice = totalDice('p2');
@@ -13590,6 +13683,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return null;
   }
 
+  function choosePostLossComebackValue(player, openSlots = []) {
+    if (!isPostLossComebackRoundActive() || openSlots.length <= 0) return null;
+    if (player === 'p1') {
+      const face = randomFrom(openSlots);
+      markPostLossComebackRound('post-loss-round-one-player-hit', face, openSlots);
+      return face;
+    }
+    if (player === 'p2') {
+      const takenFaces = [1, 2, 3, 4, 5, 6].filter(face => !openSlots.includes(face));
+      if (takenFaces.length) {
+        const face = randomFrom(takenFaces);
+        markPostLossComebackRound('post-loss-round-one-cpu-brake', face, openSlots);
+        return face;
+      }
+    }
+    return null;
+  }
+
   function chooseRollValue(player) {
     if (forcedRolls.length) return forcedRolls.shift();
     const openSlots = Array.isArray(board)
@@ -13600,6 +13711,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       : [];
     const comebackAssistActive = isOpeningComebackAssistActive();
     const firstRoundGuardActive = isFirstRoundGuardActive();
+    const postLossComebackFace = choosePostLossComebackValue(player, openSlots);
+    if (postLossComebackFace !== null) return postLossComebackFace;
     const firstGameMiracleContext = createFirstGameMiracleContext(openSlots);
     const firstGameContext = createFirstGameAssistContext(openSlots);
     const enduranceContext = createEnduranceAssistContext(openSlots);
@@ -13827,6 +13940,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     firstRoundGuardRolls = 0;
     lastFirstRoundGuard = null;
     firstRoundCpuIntroPlaced = false;
+    if (postLossComebackRoundPending) {
+      postLossComebackRoundRolls = 0;
+      postLossComebackRoundConsumed = false;
+    }
     firstGameMiracleRolls = 0;
     lastFirstGameMiracle = null;
     gameStarted = true;
@@ -14230,9 +14347,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     syncHeroIdleState();
 
     const winner = state.winner;
+    const postLossComebackRoundWasActive = isPostLossComebackRoundActive();
     recordRoundWin(winner);
     const rewardProgress = winner === 'p1' ? recordRewardDiePlayerRoundWin() : null;
     state.rewardDie = rewardProgress;
+    if (postLossComebackRoundWasActive) {
+      consumePostLossComebackRound('round-complete', winner);
+    }
     const payoutDice = board.filter(Boolean);
     const lostTrashCount = Array.isArray(trashDice) ? trashDice.length : 0;
     const spillLoad = payoutDice.length;
@@ -14807,6 +14928,79 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           completedGames: tdCompletedGames
         };
       },
+      postLossComebackProbe() {
+        ensureQaGame();
+        const previous = {
+          board: Array.isArray(board) ? board.map(slot => slot ? { ...slot } : null) : board,
+          pools: JSON.parse(JSON.stringify(pools)),
+          round,
+          totalRolls,
+          roundWins: { ...roundWins },
+          current,
+          p0Autoplay,
+          p0ReviewMode,
+          postLossComebackRoundPending,
+          postLossComebackRoundRolls,
+          postLossComebackRoundConsumed,
+          lastPostLossComebackRound: lastPostLossComebackRound ? { ...lastPostLossComebackRound } : null
+        };
+
+        p0Autoplay = false;
+        p0ReviewMode = false;
+        round = 1;
+        totalRolls = 0;
+        roundWins = { p1: 0, p2: 0 };
+        pools = { p1: { yellow: 12, green: 0 }, p2: { yellow: 0, green: 12 } };
+        resetPoolFaces();
+        board = [
+          { player: 'p1', color: 'yellow', value: 1 },
+          { player: 'p2', color: 'green', value: 2 },
+          null,
+          null,
+          null,
+          null
+        ];
+        buildSlots();
+        board.forEach((die, i) => { if (die) paintSlot(i, die); });
+        armPostLossComebackRound('qa-probe');
+        const openSlots = [3, 4, 5, 6];
+        const takenFaces = [1, 2];
+        const activeBefore = snapshotPostLossComebackRound();
+        current = 'p1';
+        const playerSamples = Array.from({ length: 36 }, () => chooseRollValue('p1'));
+        current = 'p2';
+        const cpuSamples = Array.from({ length: 36 }, () => chooseRollValue('p2'));
+        const activeAfterSamples = snapshotPostLossComebackRound();
+        consumePostLossComebackRound('qa-probe-complete', 'p1');
+        const consumed = snapshotPostLossComebackRound();
+
+        board = previous.board;
+        pools = previous.pools;
+        resetPoolFaces();
+        round = previous.round;
+        totalRolls = previous.totalRolls;
+        roundWins = previous.roundWins;
+        current = previous.current;
+        p0Autoplay = previous.p0Autoplay;
+        p0ReviewMode = previous.p0ReviewMode;
+        postLossComebackRoundPending = previous.postLossComebackRoundPending;
+        postLossComebackRoundRolls = previous.postLossComebackRoundRolls;
+        postLossComebackRoundConsumed = previous.postLossComebackRoundConsumed;
+        lastPostLossComebackRound = previous.lastPostLossComebackRound;
+        buildSlots();
+        board.forEach((die, i) => { if (die) paintSlot(i, die); });
+        syncUI();
+
+        return {
+          activeBefore,
+          activeAfterSamples,
+          consumed,
+          openSlots,
+          takenFaces,
+          playerSamples,
+          cpuSamples
+        };
+      },
       enduranceAssistProbe(config = {}) {
         ensureQaGame();
         const previous = {
@@ -15060,6 +15254,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             cpuIntroPlaced: firstRoundCpuIntroPlaced,
             last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
           },
+          postLossComebackRound: snapshotPostLossComebackRound(),
           timings: {
             rollAnimationMs: ROLL_ANIMATION_MS,
             rollRevealHoldMs: ROLL_REVEAL_HOLD_MS,
@@ -15323,6 +15518,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           cpuIntroPlaced: firstRoundCpuIntroPlaced,
           last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
         },
+        postLossComebackRound: snapshotPostLossComebackRound(),
         openingComebackAssist: isOpeningComebackAssistActive(),
         openingComebackAssistRolls,
         enduranceAssist: pools && Array.isArray(board)
