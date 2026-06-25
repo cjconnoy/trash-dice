@@ -1825,6 +1825,9 @@ body.inline-game-over .roll-panel {
   transform: perspective(560px) rotateX(-8deg) rotateY(12deg);
 }
 .die { position: relative; overflow: visible; }
+.die.reward-skinned {
+  overflow: hidden;
+}
 .die::before {
   content: '';
   position: absolute;
@@ -2130,16 +2133,17 @@ body.inline-game-over .roll-panel {
   content: '';
   position: absolute;
   z-index: 1;
-  inset: -16% -10%;
+  inset: -24% -18%;
   border-radius: 28%;
   background:
-    linear-gradient(116deg, transparent 0 22%, rgba(255,214,76,0.95) 23% 33%, transparent 34% 100%),
-    linear-gradient(142deg, transparent 0 30%, rgba(255,88,169,0.9) 31% 42%, transparent 43% 100%),
-    linear-gradient(72deg, transparent 0 38%, rgba(74,255,136,0.9) 39% 49%, transparent 50% 100%),
-    linear-gradient(24deg, transparent 0 46%, rgba(112,106,255,0.88) 47% 58%, transparent 59% 100%);
-  opacity: 0.9;
+    linear-gradient(113deg, transparent 0 12%, rgba(255,214,76,0.98) 13% 30%, transparent 31% 100%),
+    linear-gradient(145deg, transparent 0 22%, rgba(255,88,169,0.96) 23% 41%, transparent 42% 100%),
+    linear-gradient(72deg, transparent 0 32%, rgba(74,255,136,0.96) 33% 52%, transparent 53% 100%),
+    linear-gradient(28deg, transparent 0 44%, rgba(112,106,255,0.94) 45% 65%, transparent 66% 100%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.24), transparent 58%);
+  opacity: 0.98;
   transform: rotate(-8deg);
-  animation: rewardFeatherRipple 2.4s ease-in-out infinite;
+  animation: rewardFeatherRipple 1.75s ease-in-out infinite;
 }
 
 .reward-die.effect-featherRipple .reward-die-pip-cell,
@@ -2164,15 +2168,16 @@ body.inline-game-over .roll-panel {
   content: '';
   position: absolute;
   z-index: 1;
-  inset: 4% 7% 7%;
-  border-radius: 24% 22% 34% 28%;
+  inset: -6%;
+  border-radius: 25%;
   background:
-    radial-gradient(ellipse at 28% 18%, rgba(189,255,58,0.92) 0 14%, transparent 15%),
-    radial-gradient(ellipse at 70% 76%, rgba(134,255,42,0.72) 0 18%, transparent 19%),
-    linear-gradient(180deg, rgba(184,255,49,0.22), rgba(19,95,19,0.16));
-  clip-path: polygon(0 0, 100% 0, 100% 70%, 78% 70%, 74% 100%, 60% 71%, 45% 72%, 41% 94%, 29% 72%, 0 72%);
-  opacity: 0.92;
-  animation: rewardToxicOoze 1.7s ease-in-out infinite;
+    radial-gradient(ellipse at 18% 16%, rgba(217,255,42,0.98) 0 19%, transparent 20%),
+    radial-gradient(ellipse at 78% 30%, rgba(136,255,42,0.9) 0 16%, transparent 17%),
+    radial-gradient(ellipse at 55% 76%, rgba(196,255,56,0.82) 0 22%, transparent 23%),
+    linear-gradient(180deg, rgba(184,255,49,0.48), rgba(19,95,19,0.3));
+  clip-path: polygon(0 0, 100% 0, 100% 74%, 90% 76%, 84% 100%, 72% 76%, 61% 80%, 54% 98%, 45% 78%, 34% 79%, 25% 100%, 17% 76%, 0 74%);
+  opacity: 0.98;
+  animation: rewardToxicOoze 1.28s ease-in-out infinite;
 }
 
 .reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
@@ -2190,12 +2195,17 @@ body.inline-game-over .roll-panel {
   content: '';
   position: absolute;
   z-index: 1;
-  inset: 4% 18% 8% 20%;
-  background: #ffe642;
-  clip-path: polygon(54% 0, 27% 43%, 51% 43%, 35% 100%, 79% 34%, 56% 34%);
-  filter: drop-shadow(0 2px 0 rgba(37,49,12,0.36));
-  transform: rotate(-10deg);
-  animation: rewardBoltZap 0.72s steps(2, end) infinite;
+  inset: -8%;
+  border-radius: 25%;
+  background:
+    linear-gradient(126deg, transparent 0 13%, rgba(255,246,66,0.96) 14% 22%, transparent 23% 100%),
+    linear-gradient(42deg, transparent 0 34%, rgba(255,246,66,0.82) 35% 42%, transparent 43% 100%),
+    linear-gradient(158deg, transparent 0 55%, rgba(255,246,66,0.9) 56% 64%, transparent 65% 100%),
+    radial-gradient(circle at 50% 47%, rgba(255,246,66,0.55), transparent 62%);
+  clip-path: polygon(48% 0, 24% 36%, 42% 36%, 18% 100%, 82% 33%, 60% 33%, 76% 0);
+  filter: drop-shadow(0 0 7px rgba(255,247,98,0.85));
+  transform: rotate(-8deg) scale(1.08);
+  animation: rewardBoltZap 0.58s steps(2, end) infinite;
 }
 
 .reward-die.effect-bubblePop,
@@ -2213,16 +2223,16 @@ body.inline-game-over .roll-panel {
   content: '';
   position: absolute;
   z-index: 1;
-  top: 16%;
-  left: 53%;
-  width: 35%;
-  aspect-ratio: 1 / 1;
-  border-radius: 999px;
+  inset: -7%;
+  border-radius: 24%;
   background:
-    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.92) 0 15%, transparent 17%),
-    radial-gradient(circle at 52% 54%, rgba(255,184,235,0.74), rgba(255,92,190,0.35) 62%, transparent 66%);
-  border: 1.5px solid rgba(255,245,255,0.72);
-  animation: rewardBubblePop 1.65s ease-in-out infinite;
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,0.94) 0 6%, transparent 7%),
+    radial-gradient(circle at 36% 36%, rgba(255,223,250,0.86), rgba(255,92,190,0.46) 27%, transparent 29%),
+    radial-gradient(circle at 72% 27%, rgba(255,245,255,0.84), rgba(255,128,211,0.44) 18%, transparent 20%),
+    radial-gradient(circle at 64% 72%, rgba(255,235,250,0.74), rgba(255,104,198,0.36) 21%, transparent 23%),
+    radial-gradient(circle at 22% 76%, rgba(255,236,250,0.68), rgba(255,96,192,0.28) 17%, transparent 19%);
+  box-shadow: inset 0 0 0 2px rgba(255,245,255,0.52);
+  animation: rewardBubblePop 1.28s ease-in-out infinite;
 }
 
 .reward-die.effect-bubblePop .reward-die-pip-cell,
@@ -2240,15 +2250,16 @@ body.inline-game-over .roll-panel {
   content: '';
   position: absolute;
   z-index: 0;
-  inset: -26%;
+  inset: -34%;
   border-radius: 28%;
   background:
-    radial-gradient(circle at 26% 25%, #ff4fb0 0 19%, transparent 20%),
-    radial-gradient(circle at 71% 23%, #ffe642 0 20%, transparent 21%),
-    radial-gradient(circle at 30% 74%, #29d6ff 0 22%, transparent 23%),
-    radial-gradient(circle at 72% 75%, #8d5cff 0 21%, transparent 22%),
-    radial-gradient(circle at 50% 52%, #fff06a 0 12%, transparent 13%);
-  animation: rewardTieDyeSpin 3.8s linear infinite;
+    radial-gradient(circle at 25% 24%, #ff4fb0 0 24%, transparent 25%),
+    radial-gradient(circle at 72% 22%, #ffe642 0 25%, transparent 26%),
+    radial-gradient(circle at 28% 76%, #29d6ff 0 27%, transparent 28%),
+    radial-gradient(circle at 74% 76%, #8d5cff 0 26%, transparent 27%),
+    radial-gradient(circle at 50% 52%, #fff06a 0 18%, transparent 19%);
+  opacity: 0.98;
+  animation: rewardTieDyeSpin 2.85s linear infinite;
 }
 
 .reward-die.effect-tieDye .reward-die-pip-cell,
@@ -2268,13 +2279,15 @@ body.inline-game-over .roll-panel {
 
 .reward-die.effect-shineSweep::after,
 .die.reward-skinned.effect-shineSweep::after {
-  inset: -6% auto -8% -48%;
-  width: 44%;
+  inset: -8% auto -10% -78%;
+  width: 72%;
   height: auto;
   border-radius: 0;
-  background: linear-gradient(106deg, transparent, rgba(255,255,255,0.82), transparent);
+  background:
+    linear-gradient(106deg, transparent 0 18%, rgba(255,255,255,0.42) 32%, rgba(255,255,255,0.92) 49%, rgba(255,246,180,0.62) 60%, transparent 82%),
+    linear-gradient(106deg, transparent 0 56%, rgba(255,255,255,0.38) 64%, transparent 78%);
   transform: skewX(-12deg);
-  animation: rewardShineSweep 1.12s ease-in-out infinite;
+  animation: rewardShineSweep 0.92s ease-in-out infinite;
 }
 
 .reward-die.effect-diamond,
@@ -2291,14 +2304,16 @@ body.inline-game-over .roll-panel {
 .die.reward-skinned.effect-diamond::before {
   content: '';
   position: absolute;
-  inset: 12%;
+  inset: -2%;
   z-index: 1;
   background:
-    linear-gradient(63deg, transparent 0 47%, rgba(27,80,119,0.38) 48% 50%, transparent 51%),
-    linear-gradient(120deg, transparent 0 48%, rgba(255,255,255,0.52) 49% 51%, transparent 52%),
-    linear-gradient(0deg, transparent 0 47%, rgba(55,128,168,0.34) 48% 50%, transparent 51%);
-  opacity: 0.82;
-  animation: rewardDiamondFacetGlimmer 1.7s ease-in-out infinite;
+    linear-gradient(63deg, transparent 0 36%, rgba(27,80,119,0.42) 37% 40%, transparent 41%),
+    linear-gradient(120deg, transparent 0 42%, rgba(255,255,255,0.78) 43% 47%, transparent 48%),
+    linear-gradient(0deg, transparent 0 46%, rgba(55,128,168,0.38) 47% 50%, transparent 51%),
+    linear-gradient(22deg, transparent 0 58%, rgba(255,255,255,0.56) 59% 63%, transparent 64%),
+    radial-gradient(circle at 74% 24%, rgba(255,255,255,0.66), transparent 18%);
+  opacity: 0.94;
+  animation: rewardDiamondFacetGlimmer 1.08s ease-in-out infinite;
 }
 
 .reward-die.effect-diamond .reward-die-spark {
@@ -2334,6 +2349,10 @@ body.inline-game-over .roll-panel {
 
 .reward-die.effect-colorCycle {
   animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 2.2s linear infinite;
+}
+
+.die.reward-skinned.effect-colorCycle {
+  animation: rewardPrismCycle 2.2s linear infinite;
 }
 
 .reward-die-unlock.show .reward-die.effect-colorCycle {
@@ -2399,29 +2418,29 @@ body.inline-game-over .roll-panel {
 }
 
 @keyframes rewardFeatherRipple {
-  0%, 100% { transform: rotate(-9deg) translate3d(0,0,0) skewX(0deg); filter: hue-rotate(0deg) saturate(1.02); }
-  35% { transform: rotate(-6deg) translate3d(2px,-1px,0) skewX(-4deg); filter: hue-rotate(10deg) saturate(1.14); }
-  70% { transform: rotate(-11deg) translate3d(-1px,1px,0) skewX(3deg); filter: hue-rotate(-8deg) saturate(1.08); }
+  0%, 100% { transform: rotate(-10deg) translate3d(-3px,0,0) scale(1.04,1) skewX(0deg); filter: hue-rotate(0deg) saturate(1.08); }
+  34% { transform: rotate(-4deg) translate3d(4px,-2px,0) scale(1.1,0.96) skewX(-8deg); filter: hue-rotate(16deg) saturate(1.3); }
+  68% { transform: rotate(-14deg) translate3d(-4px,2px,0) scale(1.05,1.06) skewX(7deg); filter: hue-rotate(-12deg) saturate(1.2); }
 }
 
 @keyframes rewardToxicOoze {
-  0%, 100% { transform: translate3d(0,-2px,0) scale(1,0.96); filter: drop-shadow(0 0 0 rgba(184,255,49,0)); opacity: 0.82; }
-  45% { transform: translate3d(0,2px,0) scale(1.04,1.09); filter: drop-shadow(0 0 6px rgba(184,255,49,0.62)); opacity: 1; }
-  72% { transform: translate3d(0,4px,0) scale(0.98,1.13); opacity: 0.94; }
+  0%, 100% { transform: translate3d(0,-4px,0) scale(1.03,0.92); filter: drop-shadow(0 0 0 rgba(184,255,49,0)); opacity: 0.88; }
+  44% { transform: translate3d(0,3px,0) scale(1.09,1.12); filter: drop-shadow(0 0 9px rgba(184,255,49,0.76)); opacity: 1; }
+  72% { transform: translate3d(0,7px,0) scale(0.97,1.2); opacity: 0.98; }
 }
 
 @keyframes rewardBoltZap {
-  0%, 100% { opacity: 0.8; filter: drop-shadow(0 2px 0 rgba(37,49,12,0.36)); transform: rotate(-10deg) scale(1); }
-  18% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255,247,98,0.95)); transform: rotate(-10deg) scale(1.1); }
-  26% { opacity: 0.48; filter: drop-shadow(0 1px 0 rgba(37,49,12,0.26)); transform: rotate(-10deg) scale(0.96); }
-  38% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,247,98,0.9)); transform: rotate(-10deg) scale(1.06); }
+  0%, 100% { opacity: 0.62; filter: drop-shadow(0 0 3px rgba(255,247,98,0.45)); transform: rotate(-8deg) scale(1.02); }
+  16% { opacity: 1; filter: drop-shadow(0 0 14px rgba(255,247,98,1)); transform: rotate(-5deg) scale(1.18); }
+  26% { opacity: 0.36; filter: drop-shadow(0 0 0 rgba(255,247,98,0.2)); transform: rotate(-11deg) scale(0.94); }
+  40% { opacity: 1; filter: drop-shadow(0 0 12px rgba(255,247,98,0.95)); transform: rotate(-7deg) scale(1.13); }
 }
 
 @keyframes rewardBubblePop {
-  0%, 100% { opacity: 0; transform: scale(0.22) translate3d(0,7px,0); }
-  18% { opacity: 0.74; transform: scale(0.66) translate3d(0,2px,0); }
-  48% { opacity: 0.92; transform: scale(1.05) translate3d(0,-1px,0); }
-  64% { opacity: 0; transform: scale(1.38) translate3d(0,-3px,0); }
+  0%, 100% { opacity: 0.42; transform: scale(0.72) translate3d(0,7px,0); filter: saturate(1); }
+  20% { opacity: 0.92; transform: scale(0.95) translate3d(0,2px,0); filter: saturate(1.08); }
+  50% { opacity: 1; transform: scale(1.12) translate3d(0,-2px,0); filter: saturate(1.18); }
+  66% { opacity: 0.36; transform: scale(1.34) translate3d(0,-4px,0); filter: saturate(1.06); }
 }
 
 @keyframes rewardTieDyeSpin {
@@ -2431,8 +2450,8 @@ body.inline-game-over .roll-panel {
 
 @keyframes rewardShineSweep {
   0% { transform: translateX(0) skewX(-12deg); opacity: 0; }
-  18% { opacity: 0.9; }
-  64% { opacity: 0.9; }
+  18% { opacity: 1; }
+  64% { opacity: 1; }
   100% { transform: translateX(360%) skewX(-12deg); opacity: 0; }
 }
 
@@ -2442,9 +2461,9 @@ body.inline-game-over .roll-panel {
 }
 
 @keyframes rewardDiamondFacetGlimmer {
-  0%, 100% { opacity: 0.54; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
-  35% { opacity: 0.96; filter: drop-shadow(0 0 5px rgba(255,255,255,0.66)); }
-  64% { opacity: 0.72; filter: drop-shadow(0 0 2px rgba(132,220,255,0.5)); }
+  0%, 100% { opacity: 0.66; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); transform: scale(1); }
+  32% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,255,255,0.82)); transform: scale(1.05); }
+  64% { opacity: 0.82; filter: drop-shadow(0 0 5px rgba(132,220,255,0.68)); transform: scale(0.98); }
 }
 
 @keyframes rewardDiamondSparkle {
@@ -2527,6 +2546,7 @@ body.inline-game-over .roll-panel {
   .die.reward-skinned.effect-bolt::before,
   .die.reward-skinned.effect-bubblePop::before,
   .die.reward-skinned.effect-diamond::before,
+  .die.reward-skinned.effect-colorCycle,
   .slot-die.reward-skinned .slot-reward-effect,
   .slot-die.reward-skinned .slot-reward-pip,
   .round-win-burst.show,
@@ -8939,49 +8959,59 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           class: 'slot-reward-effect',
           cx: f(x * size),
           cy: f(y * size),
-          rx: f(size * 0.11),
-          ry: f(size * 0.34),
+          rx: f(size * 0.17),
+          ry: f(size * 0.46),
           fill,
-          opacity: '0.84',
+          opacity: '0.94',
           transform: `rotate(${angle} ${f(x * size)} ${f(y * size)})`
         }));
       });
       return;
     }
     if (effect === 'toxicSpat') {
-      g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(-size * 0.23), cy: f(-size * 0.25), rx: f(size * 0.18), ry: f(size * 0.13), fill: 'rgba(184,255,49,0.88)' }));
-      g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(size * 0.22), cy: f(size * 0.2), rx: f(size * 0.17), ry: f(size * 0.14), fill: 'rgba(186,255,56,0.72)' }));
+      g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(-size * 0.27), cy: f(-size * 0.27), rx: f(size * 0.25), ry: f(size * 0.18), fill: 'rgba(184,255,49,0.96)' }));
+      g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(size * 0.24), cy: f(size * 0.16), rx: f(size * 0.24), ry: f(size * 0.19), fill: 'rgba(186,255,56,0.84)' }));
+      g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(size * 0.02), cy: f(size * 0.35), rx: f(size * 0.26), ry: f(size * 0.16), fill: 'rgba(137,255,42,0.72)' }));
       g.appendChild(make('path', {
         class: 'slot-reward-effect',
-        d: `M${f(-size * 0.4)} ${f(size * 0.08)} C${f(-size * 0.08)} ${f(size * 0.18)} ${f(size * 0.18)} ${f(size * 0.02)} ${f(size * 0.42)} ${f(size * 0.15)} L${f(size * 0.3)} ${f(size * 0.38)} C${f(size * 0.08)} ${f(size * 0.25)} ${f(-size * 0.16)} ${f(size * 0.42)} ${f(-size * 0.33)} ${f(size * 0.27)} Z`,
-        fill: 'rgba(120,255,40,0.42)'
+        d: `M${f(-size * 0.5)} ${f(size * 0.06)} C${f(-size * 0.18)} ${f(size * 0.2)} ${f(size * 0.2)} ${f(size * 0.02)} ${f(size * 0.5)} ${f(size * 0.16)} L${f(size * 0.42)} ${f(size * 0.5)} C${f(size * 0.22)} ${f(size * 0.26)} ${f(size * 0.02)} ${f(size * 0.53)} ${f(-size * 0.12)} ${f(size * 0.28)} C${f(-size * 0.24)} ${f(size * 0.5)} ${f(-size * 0.38)} ${f(size * 0.28)} ${f(-size * 0.5)} ${f(size * 0.42)} Z`,
+        fill: 'rgba(120,255,40,0.56)'
       }));
       return;
     }
     if (effect === 'bolt') {
       const pts = [
-        [0.11, -0.43], [-0.2, -0.02], [0.03, -0.02],
-        [-0.14, 0.43], [0.31, -0.1], [0.09, -0.1]
+        [0.03, -0.5], [-0.31, -0.05], [-0.07, -0.05],
+        [-0.35, 0.5], [0.43, -0.14], [0.13, -0.14], [0.32, -0.5]
       ].map(([x, y]) => `${f(x * size)},${f(y * size)}`).join(' ');
-      g.appendChild(make('polygon', { class: 'slot-reward-effect', points: pts, fill: '#ffe642', opacity: '0.94', filter: 'drop-shadow(0 0.8px 0 rgba(37,49,12,0.38))' }));
+      g.appendChild(make('polygon', { class: 'slot-reward-effect', points: pts, fill: '#ffe642', opacity: '0.98', filter: 'drop-shadow(0 0 2px rgba(255,247,98,0.85))' }));
       return;
     }
     if (effect === 'bubblePop') {
       g.appendChild(make('circle', {
         class: 'slot-reward-effect',
-        cx: f(size * 0.2),
-        cy: f(-size * 0.2),
-        r: f(size * 0.18),
-        fill: 'rgba(255,211,245,0.68)',
+        cx: f(-size * 0.12),
+        cy: f(-size * 0.1),
+        r: f(size * 0.28),
+        fill: 'rgba(255,211,245,0.76)',
         stroke: 'rgba(255,255,255,0.74)',
         'stroke-width': '0.9'
       }));
       g.appendChild(make('circle', {
         class: 'slot-reward-effect',
-        cx: f(size * 0.13),
-        cy: f(-size * 0.27),
-        r: f(size * 0.045),
-        fill: 'rgba(255,255,255,0.92)'
+        cx: f(size * 0.25),
+        cy: f(size * 0.19),
+        r: f(size * 0.19),
+        fill: 'rgba(255,168,229,0.58)',
+        stroke: 'rgba(255,255,255,0.62)',
+        'stroke-width': '0.75'
+      }));
+      g.appendChild(make('circle', {
+        class: 'slot-reward-effect',
+        cx: f(-size * 0.22),
+        cy: f(-size * 0.22),
+        r: f(size * 0.055),
+        fill: 'rgba(255,255,255,0.96)'
       }));
       return;
     }
@@ -9005,8 +9035,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       return;
     }
     if (effect === 'diamond') {
-      g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.34)} ${f(-size * 0.03)} L${f(size * 0.34)} ${f(-size * 0.03)} M0 ${f(-size * 0.38)} L0 ${f(size * 0.38)} M${f(-size * 0.3)} ${f(size * 0.34)} L${f(size * 0.32)} ${f(-size * 0.34)}`, fill: 'none', stroke: 'rgba(27,80,119,0.42)', 'stroke-width': '1.25', 'stroke-linecap': 'round' }));
-      g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.42)} ${f(-size * 0.42)} L${f(size * 0.18)} ${f(-size * 0.42)} L${f(-size * 0.42)} ${f(size * 0.16)} Z`, fill: 'rgba(255,255,255,0.42)' }));
+      g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.48)} ${f(-size * 0.06)} L${f(size * 0.48)} ${f(-size * 0.06)} M0 ${f(-size * 0.5)} L0 ${f(size * 0.5)} M${f(-size * 0.42)} ${f(size * 0.42)} L${f(size * 0.42)} ${f(-size * 0.42)} M${f(size * 0.46)} ${f(size * 0.32)} L${f(-size * 0.22)} ${f(-size * 0.48)}`, fill: 'none', stroke: 'rgba(27,80,119,0.54)', 'stroke-width': '1.55', 'stroke-linecap': 'round' }));
+      g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.5)} ${f(-size * 0.5)} L${f(size * 0.34)} ${f(-size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.34)} Z`, fill: 'rgba(255,255,255,0.58)' }));
       return;
     }
     if (effect === 'colorCycle') {
