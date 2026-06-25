@@ -3126,7 +3126,13 @@ body.inline-game-over .terminal-reward-nudge {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.04rem;
+  gap: 0.06rem;
+}
+.round-loss-reward-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.06rem;
 }
 .terminal-reward-kicker,
 .round-loss-reward-kicker {
@@ -3141,7 +3147,7 @@ body.inline-game-over .terminal-reward-nudge {
 .terminal-reward-line,
 .round-loss-reward-line {
   font-family: 'Fredoka One', system-ui, sans-serif;
-  font-size: clamp(0.78rem, 2.35vw, 1.02rem);
+  font-size: clamp(0.68rem, 2.05vw, 0.86rem);
   line-height: 1.06;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -3149,6 +3155,18 @@ body.inline-game-over .terminal-reward-nudge {
   text-shadow:
     0 1px 0 rgba(0,0,0,0.5),
     0 0 10px rgba(245,200,0,0.24);
+}
+.terminal-reward-unlock,
+.round-loss-reward-unlock {
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.86rem, 2.68vw, 1.12rem);
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.52),
+    0 0 10px rgba(245,200,0,0.28);
 }
 .reward-nudge-die {
   flex: 0 0 clamp(31px, 7.4vw, 42px);
@@ -3204,9 +3222,6 @@ body.inline-game-over .terminal-reward-nudge {
   opacity: 1;
   visibility: visible;
   animation: roundLossRewardNudgePop 2.65s cubic-bezier(.16,.86,.18,1) both;
-}
-.round-loss-reward-copy {
-  min-width: 0;
 }
 @keyframes roundLossRewardNudgePop {
   0% {
@@ -8442,7 +8457,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       <div class="die reward-nudge-die" id="terminalRewardNudgeDie" aria-hidden="true"></div>
       <div class="terminal-reward-copy">
         <div class="terminal-reward-kicker" id="terminalRewardNudgeKicker">Keep playing</div>
-        <div class="terminal-reward-line" id="terminalRewardNudgeLine">Win 1 round to unlock PLUME HERO SKIN</div>
+        <div class="terminal-reward-line" id="terminalRewardNudgeLine">Win 1 round to unlock:</div>
+        <div class="terminal-reward-unlock" id="terminalRewardNudgeUnlock">PLUME DIE SKIN</div>
       </div>
     </div>
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
@@ -8577,7 +8593,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   <div class="die reward-nudge-die" id="roundLossRewardNudgeDie" aria-hidden="true"></div>
   <div class="round-loss-reward-copy">
     <div class="round-loss-reward-kicker" id="roundLossRewardNudgeKicker">Keep rolling</div>
-    <div class="round-loss-reward-line" id="roundLossRewardNudgeLine">Win 1 round to unlock PLUME HERO SKIN</div>
+    <div class="round-loss-reward-line" id="roundLossRewardNudgeLine">Win 1 round to unlock:</div>
+    <div class="round-loss-reward-unlock" id="roundLossRewardNudgeUnlock">PLUME DIE SKIN</div>
   </div>
 </div>
 <div class="overlay" id="overlay">
@@ -9762,10 +9779,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const terminalRewardNudgeDie = document.getElementById('terminalRewardNudgeDie');
   const terminalRewardNudgeKicker = document.getElementById('terminalRewardNudgeKicker');
   const terminalRewardNudgeLine = document.getElementById('terminalRewardNudgeLine');
+  const terminalRewardNudgeUnlock = document.getElementById('terminalRewardNudgeUnlock');
   const roundLossRewardNudge = document.getElementById('roundLossRewardNudge');
   const roundLossRewardNudgeDie = document.getElementById('roundLossRewardNudgeDie');
   const roundLossRewardNudgeKicker = document.getElementById('roundLossRewardNudgeKicker');
   const roundLossRewardNudgeLine = document.getElementById('roundLossRewardNudgeLine');
+  const roundLossRewardNudgeUnlock = document.getElementById('roundLossRewardNudgeUnlock');
   const roundWinBurst = document.getElementById('roundWinBurst');
   const roundWinBurstSub = document.getElementById('roundWinBurstSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
@@ -9971,9 +9990,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         previewDie: active || next,
         previewKind: active ? 'current' : 'next',
         roundsNeeded,
-        terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'HERO SKINS',
+        terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'DIE SKINS',
         roundLossKicker: 'KEEP ROLLING',
-        line: `Win ${moreText} to unlock ${next.name} HERO SKIN`
+        line: `Win ${moreText} to unlock:`,
+        unlockLine: `${next.name} DIE SKIN`
       };
     }
     return {
@@ -9983,9 +10003,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       previewDie: active,
       previewKind: 'current',
       roundsNeeded: 0,
-      terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'HERO SKINS',
+      terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'DIE SKINS',
       roundLossKicker: active ? `${active.name} UNLOCKED` : 'KEEP ROLLING',
-      line: active ? `Keep rolling with ${active.name} HERO SKIN` : 'Keep playing to unlock HERO SKINS'
+      line: active ? 'Keep rolling with:' : 'Keep playing to unlock:',
+      unlockLine: active ? `${active.name} DIE SKIN` : 'DIE SKINS'
     };
   }
 
@@ -10010,6 +10031,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const model = rewardNudgeModel();
     if (terminalRewardNudgeKicker) terminalRewardNudgeKicker.textContent = model.terminalKicker;
     if (terminalRewardNudgeLine) terminalRewardNudgeLine.textContent = model.line;
+    if (terminalRewardNudgeUnlock) terminalRewardNudgeUnlock.textContent = model.unlockLine;
     renderRewardNudgeDie(terminalRewardNudgeDie, model.previewDie);
     terminalRewardNudge.dataset.preview = model.previewKind;
     terminalRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
@@ -10037,6 +10059,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     hideRoundLossRewardNudge();
     if (roundLossRewardNudgeKicker) roundLossRewardNudgeKicker.textContent = model.roundLossKicker;
     if (roundLossRewardNudgeLine) roundLossRewardNudgeLine.textContent = model.line;
+    if (roundLossRewardNudgeUnlock) roundLossRewardNudgeUnlock.textContent = model.unlockLine;
     renderRewardNudgeDie(roundLossRewardNudgeDie, model.previewDie);
     roundLossRewardNudge.dataset.preview = model.previewKind;
     roundLossRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
