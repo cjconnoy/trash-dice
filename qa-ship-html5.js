@@ -108,6 +108,52 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+const REWARD_BASE_NAMES = ['PLUME', 'TOXIC SPLAT', 'BUBBLEGUM', 'VOLT ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM'];
+const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
+const REWARD_MILESTONES = '1|2|4|7|11|16|24|35';
+const REWARD_EFFECTS_BY_NAME = {
+  'PLUME': 'featherRipple',
+  'TOXIC SPLAT': 'toxicSpat',
+  'BUBBLEGUM': 'bubblePop',
+  'VOLT ZAP': 'bolt',
+  'TIE-DYE': 'tieDye',
+  'SUNRISE': 'sunrise',
+  'DIAMOND': 'diamond',
+  'PRISM': 'colorCycle',
+  'LETHAL CHICKEN': 'lethalChicken',
+  'BIG DISCOVERIES': 'bigCompass'
+};
+const REWARD_SLOT_ANIMATION_BY_EFFECT = {
+  featherRipple: 'slotRewardFeatherRipple',
+  toxicSpat: 'slotRewardToxicOoze',
+  bolt: 'slotRewardBoltZap',
+  bubblePop: 'slotRewardBubblePop',
+  tieDye: 'slotRewardTieDyeDrift',
+  sunrise: 'slotRewardSunrise',
+  shineSweep: 'slotRewardShineSweep',
+  diamond: 'slotRewardDiamondSparkle',
+  colorCycle: 'slotRewardPrismCycle',
+  bigCompass: 'slotRewardCompassSpin',
+  lethalChicken: 'slotRewardChickenHop'
+};
+const REWARD_OUTLINED_BASE_NAMES = ['PLUME', 'TIE-DYE', 'DIAMOND', 'PRISM'];
+
+function rewardAtWins(config, wins) {
+  return config.reduce((active, item) => wins >= item.minWins ? item : active, null);
+}
+
+function nextRewardAtWins(config, wins) {
+  return config.find(item => wins < item.minWins) || null;
+}
+
+function rewardAtMinWins(config, minWins) {
+  return config.find(item => item.minWins === minWins);
+}
+
+function rewardSlotAnimation(effect) {
+  return REWARD_SLOT_ANIMATION_BY_EFFECT[effect] || '';
+}
+
 async function main() {
   if (!fs.existsSync(path.join(shipDir, 'index.html'))) {
     throw new Error(`missing ship build: ${path.join(shipDir, 'index.html')}`);
@@ -208,6 +254,18 @@ async function main() {
     const baseUrl = `http://127.0.0.1:${appPort}/`;
     const productionLikeBaseUrl = `http://lvh.me:${appPort}/`;
     const reports = [];
+    let rewardConfig = null;
+    let rewardConfigNames = [];
+    let rewardPairCount = 0;
+    let rewardPairNames = [];
+    let rewardFirst = null;
+    let rewardSecond = null;
+    let rewardCapDie = null;
+    let rewardAtTwo = null;
+    let rewardNextAfterTwo = null;
+    let rewardNextAfterSix = null;
+    let rewardAtEleven = null;
+    let rewardNextAfterEleven = null;
 
     for (const viewport of orientationLockedViewports) {
       const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
@@ -556,6 +614,20 @@ async function main() {
         };
       })()`);
       assert(staleRewardStorage.stored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '', `${viewport.name}: stale reward storage should not skin a fresh session ${JSON.stringify(staleRewardStorage)}`);
+      rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
+      rewardConfigNames = rewardConfig.map(item => item.name);
+      rewardPairCount = Math.ceil(rewardConfig.length / 2);
+      rewardPairNames = Array.from({ length: rewardPairCount }, (_, i) =>
+        rewardConfig.slice(i * 2, i * 2 + 2).map(item => item ? item.name : 'DEFAULT').join('|')
+      );
+      rewardFirst = rewardConfig[0];
+      rewardSecond = rewardConfig[1];
+      rewardCapDie = rewardConfig[rewardConfig.length - 1];
+      rewardAtTwo = rewardAtWins(rewardConfig, 2);
+      rewardNextAfterTwo = nextRewardAtWins(rewardConfig, 2);
+      rewardNextAfterSix = nextRewardAtWins(rewardConfig, 6);
+      rewardAtEleven = rewardAtMinWins(rewardConfig, 11);
+      rewardNextAfterEleven = nextRewardAtWins(rewardConfig, 11);
       const muteToggle = await evalValue(page, `(() => {
         const btn = document.getElementById('audioMuteBtn');
         btn.click();
@@ -594,13 +666,14 @@ async function main() {
       assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.badgeRect === null, `${viewport.name}: beta badge should be removed from retail title ${JSON.stringify(initial.badgeRect)}`);
       const titleHeroDiceCycle = await evalValue(page, `(() => {
-        return Array.from({ length: 6 }, () => window.TrashDiceQA.advanceTitleHeroDiceCycle());
+        const pairCount = Math.ceil(window.TrashDiceQA.rewardDiceConfig().length / 2);
+        return Array.from({ length: pairCount + 2 }, () => window.TrashDiceQA.advanceTitleHeroDiceCycle());
       })()`);
       const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
-      assert(titleHeroDiceNames.join(' > ') === 'PLUME|TOXIC SPLAT > BUBBLEGUM|VOLT ZAP > TIE-DYE|SUNRISE > DIAMOND|PRISM > DEFAULT|DEFAULT > PLUME|TOXIC SPLAT', `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle.slice(0, 4).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle.slice(0, 4).every(step => step.dice.every(die => die.dotCells === 9 && die.dots === 5)), `${viewport.name}: title reward dice should render with full in-game reward pip geometry ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle[4].dice.every(die => die.rewardSkinned === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[4])}`);
+      assert(titleHeroDiceNames.join(' > ') === [...rewardPairNames, 'DEFAULT|DEFAULT', rewardPairNames[0]].join(' > '), `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify({ rewardConfig, titleHeroDiceCycle })}`);
+      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.dotCells === 9 && die.dots === 5)), `${viewport.name}: title reward dice should render with full in-game reward pip geometry ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle[rewardPairCount].dice.every(die => die.rewardSkinned === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[rewardPairCount])}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: mobile start card overlaps legal ${JSON.stringify(initial.titleLayout)}`);
@@ -827,13 +900,13 @@ async function main() {
           progressState: window.TrashDiceQA.rewardDieState()
         };
       })()`);
-      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.sub === 'DIE SKIN UNLOCKED' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.visible === true && rewardReview.tier === String(rewardFirst.tier) && rewardReview.name === rewardFirst.name && rewardReview.sub === 'DIE SKIN UNLOCKED' && rewardReview.effect === rewardFirst.effect && rewardReview.buttonText === `D${rewardFirst.tier}`, `${viewport.name}: reward review button did not preview first active die ${JSON.stringify({ rewardFirst, rewardReview })}`);
       assert(rewardReview.dieRect.width >= 140 && rewardReview.dieRect.height >= 140, `${viewport.name}: reward review die should be hero-sized ${JSON.stringify(rewardReview.dieRect)}`);
       assert(rewardReview.dieFitsViewport === true && rewardReview.sceneFitsViewport === true, `${viewport.name}: reward review die should stay inside viewport ${JSON.stringify({ dieRect: rewardReview.dieRect, sceneRect: rewardReview.sceneRect })}`);
       if (viewport.mobile && viewport.width <= 720) {
         assert(/padding-box/i.test(rewardReview.dieClipStyle.backgroundClip) && /radial-gradient/i.test(rewardReview.dieClipStyle.webkitMaskImage) && /hidden/i.test(rewardReview.dieClipStyle.backfaceVisibility), `${viewport.name}: mobile reward unlock die should use soft clipped edges ${JSON.stringify(rewardReview.dieClipStyle)}`);
       }
-      assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'PLUME' && rewardReview.playerSkin.effect === 'featherRipple', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
+      assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === String(rewardFirst.tier) && rewardReview.playerSkin.name === rewardFirst.name && rewardReview.playerSkin.effect === rewardFirst.effect, `${viewport.name}: reward review should skin the real player die ${JSON.stringify({ rewardFirst, playerSkin: rewardReview.playerSkin })}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
@@ -876,36 +949,32 @@ async function main() {
         window.TrashDiceQA.setRewardWins(2);
         return cap;
       })()`);
-      assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
-      const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
-      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPLAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|SUNRISE|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
-      assert(rewardConfig.map(item => item.minWins).join('|') === '1|2|4|7|11|16|24|35', `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
-      assert(
-        rewardConfig.find(item => item.name === 'PLUME').effect === 'featherRipple' &&
-        rewardConfig.find(item => item.name === 'TOXIC SPLAT').effect === 'toxicSpat' &&
-        rewardConfig.find(item => item.name === 'BUBBLEGUM').effect === 'bubblePop' &&
-        rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' &&
-        rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye' &&
-        rewardConfig.find(item => item.name === 'SUNRISE').effect === 'sunrise' &&
-        rewardConfig.find(item => item.name === 'DIAMOND').effect === 'diamond',
-        `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`
-      );
-      assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'PLUME|TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
+      const rewardSpecials = rewardConfig.filter(item => REWARD_SPECIAL_NAMES.includes(item.name));
+      const rewardMissingBaseNames = REWARD_BASE_NAMES.filter(name => !rewardConfigNames.includes(name));
+      assert(rewardCap.activeTier === rewardCapDie.tier && rewardCap.activeName === rewardCapDie.name && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at final active rung ${JSON.stringify({ rewardCapDie, rewardCap })}`);
+      assert(rewardConfig.length === 8 && new Set(rewardConfig.map(item => item.tier)).size === 8, `${viewport.name}: reward dice should stay at exactly eight rungs ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.map(item => item.minWins).join('|') === REWARD_MILESTONES, `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
+      assert(rewardSpecials.length === 2 && REWARD_SPECIAL_NAMES.every(name => rewardConfigNames.includes(name)), `${viewport.name}: branded session reward dice missing ${JSON.stringify(rewardConfig)}`);
+      assert(rewardSpecials.every(item => item.sessionVariant === true && item.replacementFor && REWARD_BASE_NAMES.includes(item.replacementFor)), `${viewport.name}: branded dice should replace existing base rungs ${JSON.stringify(rewardSpecials)}`);
+      assert(rewardMissingBaseNames.length === 2 && rewardSpecials.map(item => item.replacementFor).sort().join('|') === rewardMissingBaseNames.sort().join('|'), `${viewport.name}: branded dice should take the place of two base dice, not add ladder rungs ${JSON.stringify({ rewardConfig, rewardMissingBaseNames, rewardSpecials })}`);
+      assert(rewardConfig.every(item => REWARD_EFFECTS_BY_NAME[item.name] === item.effect), `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.filter(item => REWARD_OUTLINED_BASE_NAMES.includes(item.name)).every(item => item.pipOutline === true), `${viewport.name}: outlined base reward dice should keep pip outlines ${JSON.stringify(rewardConfig)}`);
       const rewardSkinFixture = await evalValue(page, `(() => {
-        const tieDye = window.TrashDiceQA.rewardSkinFixture(11);
-        const diamond = window.TrashDiceQA.rewardSkinFixture(24);
+        const outlined = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => item.pipOutline) || rewardFirst).minWins)});
+        const animated = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => rewardSlotAnimation(item.effect)) || rewardFirst).minWins)});
         window.TrashDiceQA.setRewardWins(2);
-        return { tieDye, diamond };
+        return { outlined, animated };
       })()`);
-      const playerRewardSlot = rewardSkinFixture.tieDye.slots.find(slot => slot.player === 'p1');
-      const cpuRewardSlot = rewardSkinFixture.tieDye.slots.find(slot => slot.player === 'p2');
-      const diamondRewardSlot = rewardSkinFixture.diamond.slots.find(slot => slot.player === 'p1');
-      assert(rewardSkinFixture.tieDye.playerDie.rewardSkinned === true && rewardSkinFixture.tieDye.playerDie.tier === '5' && rewardSkinFixture.tieDye.playerDie.name === 'TIE-DYE', `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture.tieDye)}`);
-      assert(rewardSkinFixture.tieDye.cpuDie.rewardSkinned === false && rewardSkinFixture.tieDye.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.tieDye.cpuDie)}`);
-      assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === '5' && playerRewardSlot.name === 'TIE-DYE' && playerRewardSlot.pipOutline === 'true', `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
-      assert(playerRewardSlot.animationNames.includes('slotRewardTieDyeDrift'), `${viewport.name}: player's seated reward die should keep its live animation ${JSON.stringify(playerRewardSlot)}`);
-      assert(diamondRewardSlot && diamondRewardSlot.rewardSkinned === true && diamondRewardSlot.tier === '7' && diamondRewardSlot.name === 'DIAMOND' && diamondRewardSlot.animationNames.includes('slotRewardDiamondSparkle'), `${viewport.name}: diamond seated reward die should sparkle ${JSON.stringify(diamondRewardSlot)}`);
-      assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
+      const outlinedConfig = rewardConfig.find(item => item.minWins === rewardSkinFixture.outlined.activePlayerDie.minWins) || rewardFirst;
+      const animatedConfig = rewardConfig.find(item => item.minWins === rewardSkinFixture.animated.activePlayerDie.minWins) || rewardFirst;
+      const playerRewardSlot = rewardSkinFixture.outlined.slots.find(slot => slot.player === 'p1');
+      const cpuRewardSlot = rewardSkinFixture.outlined.slots.find(slot => slot.player === 'p2');
+      const animatedRewardSlot = rewardSkinFixture.animated.slots.find(slot => slot.player === 'p1');
+      assert(rewardSkinFixture.outlined.playerDie.rewardSkinned === true && rewardSkinFixture.outlined.playerDie.tier === String(outlinedConfig.tier) && rewardSkinFixture.outlined.playerDie.name === outlinedConfig.name, `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture.outlined)}`);
+      assert(rewardSkinFixture.outlined.cpuDie.rewardSkinned === false && rewardSkinFixture.outlined.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.outlined.cpuDie)}`);
+      assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === String(outlinedConfig.tier) && playerRewardSlot.name === outlinedConfig.name && playerRewardSlot.pipOutline === String(!!outlinedConfig.pipOutline), `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.outlined.slots)}`);
+      assert(animatedRewardSlot && animatedRewardSlot.rewardSkinned === true && animatedRewardSlot.tier === String(animatedConfig.tier) && animatedRewardSlot.name === animatedConfig.name && animatedRewardSlot.animationNames.includes(rewardSlotAnimation(animatedConfig.effect)), `${viewport.name}: animated seated reward die should keep its live animation ${JSON.stringify({ animatedConfig, animatedRewardSlot })}`);
+      assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.outlined.slots)}`);
       const rewardSkinGreenClassPips = await evalValue(page, `(() => {
         window.TrashDiceQA.rewardSkinFixture(2);
         const die = document.getElementById('p1Die');
@@ -931,7 +1000,7 @@ async function main() {
       })()`);
       assert(rewardSkinGreenClassPips.computedDotBackground === rewardSkinGreenClassPips.expected, `${viewport.name}: reward-skinned player die with collected green class should keep reward pip color ${JSON.stringify(rewardSkinGreenClassPips)}`);
       const rewardSkinLadderFixtures = await evalValue(page, `(() => {
-        const milestones = [1, 2, 4, 7, 11, 16, 24, 35];
+        const milestones = ${JSON.stringify([1, 2, 4, 7, 11, 16, 24, 35])};
         const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));
         window.TrashDiceQA.setRewardWins(2);
         return fixtures.map(fixture => ({
@@ -941,9 +1010,8 @@ async function main() {
           playerSlot: fixture.slots.find(slot => slot.player === 'p1')
         }));
       })()`);
-      assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === 'PLUME|TOXIC SPLAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|SUNRISE|DIAMOND|PRISM', `${viewport.name}: all reward ladder skins should activate in order ${JSON.stringify(rewardSkinLadderFixtures)}`);
-      assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.length > 0), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
-      assert(rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').activeEffect === 'sunrise' && rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').playerSlot.animationNames.includes('slotRewardSunrise'), `${viewport.name}: sunrise reward skin should animate in the lid ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === rewardConfigNames.join('|'), `${viewport.name}: all reward ladder skins should activate in active order ${JSON.stringify({ rewardConfig, rewardSkinLadderFixtures })}`);
+      assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.includes(rewardSlotAnimation(item.activeEffect))), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
       const liveRewardDieEdge = await evalValue(page, `(() => {
         const fixture = window.TrashDiceQA.rewardSkinFixture(35);
         const stage = document.getElementById('p1DieStage');
@@ -978,18 +1046,18 @@ async function main() {
       if (viewport.mobile && viewport.width <= 720) {
         const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
-        assert(liveRewardDieEdge.rewardSkinned === true && liveRewardDieEdge.effect === 'colorCycle', `${viewport.name}: mobile live reward die probe did not activate PRISM skin ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.rewardSkinned === true && liveRewardDieEdge.effect === rewardCapDie.effect, `${viewport.name}: mobile live reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
         assert(radiusIsPercent || (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.2), `${viewport.name}: mobile live reward die needs a soft rounded edge ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.webkitMaskImage !== 'none' && liveRewardDieEdge.webkitMaskImage !== '', `${viewport.name}: mobile live reward die needs Safari mask rounding ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep a softened live face treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
-      assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === 'colorCycle', `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify(liveRewardDieEdge)}`);
+      assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
       const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(35)`);
       if (viewport.mobile && viewport.width <= 720) {
         for (const travelState of [travellingRewardDieEdge.toSlot, travellingRewardDieEdge.toTrash]) {
           const radiusValue = parseFloat(travelState.borderRadius || '0');
           const radiusIsPercent = String(travelState.borderRadius || '').includes('%');
-          assert(travelState.rewardSkinned === true && travelState.effect === 'colorCycle', `${viewport.name}: travelling reward die probe did not activate PRISM skin ${JSON.stringify(travellingRewardDieEdge)}`);
+          assert(travelState.rewardSkinned === true && travelState.effect === rewardCapDie.effect, `${viewport.name}: travelling reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, travellingRewardDieEdge })}`);
           assert(radiusIsPercent || (travelState.rect && radiusValue >= travelState.rect.width * 0.2), `${viewport.name}: travelling reward die needs a soft rounded edge ${JSON.stringify(travelState)}`);
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage !== 'none' && travelState.webkitMaskImage !== '', `${viewport.name}: travelling reward die needs Safari mask rounding ${JSON.stringify(travelState)}`);
@@ -1152,7 +1220,7 @@ async function main() {
       assert(terminal.winnerPraise === true, `${viewport.name}: winner praise state missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 36, `${viewport.name}: game-win winner status should use the extra-large winner treatment ${JSON.stringify(terminal)}`);
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
-      assert(terminal.winnerStatusChaseDie.present === true && terminal.winnerStatusChaseDie.visible === true && terminal.winnerStatusChaseDie.name === 'BUBBLEGUM' && terminal.winnerStatusChaseDie.effect === 'bubblePop', `${viewport.name}: game-win winner status should show the chase die visual ${JSON.stringify(terminal.winnerStatusChaseDie)}`);
+      assert(terminal.winnerStatusChaseDie.present === true && terminal.winnerStatusChaseDie.visible === true && terminal.winnerStatusChaseDie.name === rewardNextAfterTwo.name && terminal.winnerStatusChaseDie.effect === rewardNextAfterTwo.effect, `${viewport.name}: game-win winner status should show the chase die visual ${JSON.stringify({ rewardNextAfterTwo, winnerStatusChaseDie: terminal.winnerStatusChaseDie })}`);
       assert(terminal.winnerStatusChaseDie.fitsStatus === true, `${viewport.name}: game-win winner status chase die should fit inside the pill ${JSON.stringify(terminal.winnerStatusChaseDie)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.trashedStamp.present === true && terminal.trashedStamp.text === 'TRASHED!' && terminal.trashedStamp.visible === true, `${viewport.name}: TRASHED stamp should appear on player game win ${JSON.stringify(terminal.trashedStamp)}`);
@@ -1171,11 +1239,11 @@ async function main() {
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.rewardDie.present === true && terminal.rewardDie.visible === false, `${viewport.name}: game win should not trigger a separate reward unlock after round-win migration ${JSON.stringify(terminal.rewardDie)}`);
-      assert(terminal.rewardDie.state.totalWins === 2 && terminal.rewardDie.state.activeTier === 2 && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === 'BUBBLEGUM', `${viewport.name}: game win should preserve round-win reward state without double-counting ${JSON.stringify(terminal.rewardDie.state)}`);
+      assert(terminal.rewardDie.state.totalWins === 2 && terminal.rewardDie.state.activeTier === rewardAtTwo.tier && terminal.rewardDie.state.activeName === rewardAtTwo.name && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === rewardNextAfterTwo.name, `${viewport.name}: game win should preserve round-win reward state without double-counting ${JSON.stringify({ rewardAtTwo, rewardNextAfterTwo, state: terminal.rewardDie.state })}`);
       assert(terminal.terminalRewardNudge.present === true && terminal.terminalRewardNudge.visible === true, `${viewport.name}: terminal reward nudge missing ${JSON.stringify(terminal.terminalRewardNudge)}`);
-      assert(terminal.terminalRewardNudge.kicker === 'NEXT SKIN: BUBBLEGUM' && terminal.terminalRewardNudge.line === 'Win 2 more rounds to unlock:' && terminal.terminalRewardNudge.unlockLine === 'BUBBLEGUM DIE SKIN', `${viewport.name}: terminal reward nudge copy wrong ${JSON.stringify(terminal.terminalRewardNudge)}`);
-      assert(terminal.terminalRewardNudge.nextName === 'BUBBLEGUM' && terminal.terminalRewardNudge.roundsNeeded === '2' && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify(terminal.terminalRewardNudge)}`);
-      assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === 'BUBBLEGUM' && terminal.terminalRewardNudge.dieEffect === 'bubblePop', `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      assert(terminal.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterTwo.name}` && terminal.terminalRewardNudge.line === `Win ${rewardNextAfterTwo.minWins - 2} more rounds to unlock:` && terminal.terminalRewardNudge.unlockLine === `${rewardNextAfterTwo.name} DIE SKIN`, `${viewport.name}: terminal reward nudge copy wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
+      assert(terminal.terminalRewardNudge.nextName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.roundsNeeded === String(rewardNextAfterTwo.minWins - 2) && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
+      assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.dieEffect === rewardNextAfterTwo.effect, `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.rect.height >= 54 && terminal.terminalRewardNudge.dieRect.width >= 52 && terminal.terminalRewardNudge.dieRect.height >= 52, `${viewport.name}: terminal reward nudge should stay enlarged ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true, `${viewport.name}: terminal reward nudge should fit above Play Again ${JSON.stringify(terminal.terminalRewardNudge)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -1346,13 +1414,13 @@ async function main() {
       assert(mathPlayerWin.passed === true, `${viewport.name}: mathematical player win proof failed ${JSON.stringify(mathPlayerWin)}`);
       assert(mathPlayerWinUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player win reason missing ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWin.inlineGameOver.finalRewardRoundCredited === true, `${viewport.name}: mathematical player win should mark the final reward round as credited ${JSON.stringify(mathPlayerWin.inlineGameOver)}`);
-      assert(mathPlayerWin.inlineGameOver.rewardDie && mathPlayerWin.inlineGameOver.rewardDie.totalWins === 11 && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie.name === 'TIE-DYE', `${viewport.name}: mathematical player win should credit the final reward round at the Tie-Dye threshold ${JSON.stringify(mathPlayerWin)}`);
-      assert(mathPlayerWinUi.rewardState.totalWins === 11 && mathPlayerWinUi.rewardState.activeName === 'TIE-DYE', `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify(mathPlayerWinUi.rewardState)}`);
+      assert(mathPlayerWin.inlineGameOver.rewardDie && mathPlayerWin.inlineGameOver.rewardDie.totalWins === 11 && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie.name === rewardAtEleven.name, `${viewport.name}: mathematical player win should credit the final reward round at the tier-five threshold ${JSON.stringify({ rewardAtEleven, mathPlayerWin })}`);
+      assert(mathPlayerWinUi.rewardState.totalWins === 11 && mathPlayerWinUi.rewardState.activeName === rewardAtEleven.name, `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify({ rewardAtEleven, rewardState: mathPlayerWinUi.rewardState })}`);
       assert(mathPlayerWinUi.roundWins && mathPlayerWinUi.roundWins.p1 >= 1, `${viewport.name}: mathematical player win should count as a player round win ${JSON.stringify(mathPlayerWinUi.roundWins)}`);
       assert(mathPlayerWinUi.terminalRewardNudge.present === true && mathPlayerWinUi.terminalRewardNudge.visible === true, `${viewport.name}: mathematical player win terminal reward nudge missing ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.kicker === 'NEXT SKIN: SUNRISE' && mathPlayerWinUi.terminalRewardNudge.line === 'Win 5 more rounds to unlock:' && mathPlayerWinUi.terminalRewardNudge.unlockLine === 'SUNRISE DIE SKIN', `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked Tie-Dye skin ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.nextName === 'SUNRISE' && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === '5' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === 'SUNRISE' && mathPlayerWinUi.terminalRewardNudge.dieEffect === 'sunrise', `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `Win ${rewardNextAfterEleven.minWins - 11} more rounds to unlock:` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked tier-five skin ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.title === 'GAME WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
@@ -1864,8 +1932,8 @@ async function main() {
         assert(roundWinEarly.payoutPanelActive === false && roundWinEarly.payoutInventoryActive === false && roundWinEarly.payoutComets === 0, `green round-win probe: CPU round should not gain player payout fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === false && roundWinEarly.rewardDieVisible === false && roundWinEarly.rewardDieState.totalWins === 0, `green round-win probe: CPU round should not trigger player reward fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundLossRewardNudgeVisible === true, `green round-win probe: player round-loss reward nudge missing ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.roundLossRewardNudgeText.includes('KEEP ROLLING') && roundWinEarly.roundLossRewardNudgeText.includes('Win 1 round to unlock:') && roundWinEarly.roundLossRewardNudgeText.includes('PLUME DIE SKIN'), `green round-win probe: player round-loss reward nudge copy wrong ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.roundLossRewardNudgeNextName === 'PLUME' && roundWinEarly.roundLossRewardNudgeRoundsNeeded === '1' && roundWinEarly.roundLossRewardNudgePreview === 'next', `green round-win probe: player round-loss reward nudge milestone metadata wrong ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundLossRewardNudgeText.includes('KEEP ROLLING') && roundWinEarly.roundLossRewardNudgeText.includes('Win 1 round to unlock:') && roundWinEarly.roundLossRewardNudgeText.includes(`${rewardFirst.name} DIE SKIN`), `green round-win probe: player round-loss reward nudge copy wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
+        assert(roundWinEarly.roundLossRewardNudgeNextName === rewardFirst.name && roundWinEarly.roundLossRewardNudgeRoundsNeeded === '1' && roundWinEarly.roundLossRewardNudgePreview === 'next', `green round-win probe: player round-loss reward nudge milestone metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundLossRewardNudgeFitsViewport === true, `green round-win probe: player round-loss reward nudge should fit viewport ${JSON.stringify(roundWinEarly)}`);
         await sleep(760);
         roundWinProbeElapsedMs += 760;
@@ -1882,12 +1950,12 @@ async function main() {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.lidDance === true, `yellow round-win probe: player payout lid dance missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.titleFanfareActive === true, `yellow round-win probe: player round should still pulse the title logo ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.statusChaseDieVisible === true && roundWinEarly.statusChaseDieName === 'TOXIC SPLAT' && roundWinEarly.statusChaseDieEffect === 'toxicSpat', `yellow round-win probe: winner status pill should show the next chase die ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.statusChaseDieVisible === true && roundWinEarly.statusChaseDieName === rewardSecond.name && roundWinEarly.statusChaseDieEffect === rewardSecond.effect, `yellow round-win probe: winner status pill should show the next chase die ${JSON.stringify({ rewardSecond, roundWinEarly })}`);
         assert(roundWinEarly.statusChaseDieFitsStatus === true, `yellow round-win probe: winner status chase die should fit inside the status pill ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === 'PLUME' && roundWinEarly.roundWinBurstDieEffect === 'featherRipple', `yellow round-win probe: ROUND WINNER burst should show the reward die visual ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.roundWinBurstPreviewTier === '1' && roundWinEarly.roundWinBurstPreviewName === 'PLUME', `yellow round-win probe: ROUND WINNER burst preview metadata wrong ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstRewardTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstRewardName === rewardFirst.name, `yellow round-win probe: first round win should attach first active reward to burst ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
+        assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === rewardFirst.name && roundWinEarly.roundWinBurstDieEffect === rewardFirst.effect, `yellow round-win probe: ROUND WINNER burst should show the reward die visual ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
+        assert(roundWinEarly.roundWinBurstPreviewTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstPreviewName === rewardFirst.name, `yellow round-win probe: ROUND WINNER burst preview metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundWinBurstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should describe die skin unlock ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieVisible === false, `yellow round-win probe: reward die reveal should wait until ROUND WIN reads ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);
@@ -1908,7 +1976,7 @@ async function main() {
             sub: sub ? sub.textContent || '' : ''
           };
         })()`);
-        assert(delayedRewardDie.visible === true && delayedRewardDie.tier === '1' && delayedRewardDie.name === 'PLUME', `yellow round-win probe: delayed PLUME reward die reveal missing ${JSON.stringify({ roundWinEarly, delayedRewardDie })}`);
+        assert(delayedRewardDie.visible === true && delayedRewardDie.tier === String(rewardFirst.tier) && delayedRewardDie.name === rewardFirst.name, `yellow round-win probe: delayed first reward die reveal missing ${JSON.stringify({ rewardFirst, roundWinEarly, delayedRewardDie })}`);
         assert(delayedRewardDie.sub === 'DIE SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include die skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
@@ -1974,11 +2042,11 @@ async function main() {
       })()`);
       if (winner === 'p2') {
         assert(rollGatedReward.lossVisible === true, `green round-win probe: round-loss reward nudge should persist until Roll ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.lossText.includes('Win 1 round to unlock:') && rollGatedReward.lossText.includes('PLUME DIE SKIN'), `green round-win probe: persistent loss reward nudge copy wrong ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.lossText.includes('Win 1 round to unlock:') && rollGatedReward.lossText.includes(`${rewardFirst.name} DIE SKIN`), `green round-win probe: persistent loss reward nudge copy wrong ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
         assert(rollGatedReward.lossRect && rollGatedReward.lossRect.height >= 64 && rollGatedReward.lossRect.left >= -1 && rollGatedReward.lossRect.right <= viewports[0].width + 1, `green round-win probe: persistent loss reward nudge should stay enlarged and in viewport ${JSON.stringify(rollGatedReward)}`);
       } else {
         assert(rollGatedReward.burstVisible === true && rollGatedReward.burstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should persist until Roll ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === 'PLUME' && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === rewardFirst.name && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
         assert(rollGatedReward.rewardRect && rollGatedReward.rewardRect.width >= 140 && rollGatedReward.rewardRect.height >= 140, `yellow round-win probe: persistent unlock die should stay hero-sized ${JSON.stringify(rollGatedReward)}`);
       }
       await evalValue(roundWinProbe, `document.getElementById('rollBtn').click(); true`);
@@ -1998,8 +2066,8 @@ async function main() {
     await evalValue(lateSessionRoundLossProbe, `window.TrashDiceQA.setCompletedGames(3); window.TrashDiceQA.setRewardWins(6); true`);
     const lateSessionRoundLoss = await evalValue(lateSessionRoundLossProbe, `window.TrashDiceDebug.roundWinEventProbe('p2')`);
     assert(lateSessionRoundLoss.roundLossRewardNudgeVisible === true, `late-session round-loss nudge probe: player chase nudge should still show after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
-    assert(lateSessionRoundLoss.roundLossRewardNudgeText.includes('KEEP ROLLING') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('Win 1 more round to unlock:') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('VOLT ZAP DIE SKIN'), `late-session round-loss nudge probe: chase nudge copy wrong after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
-    assert(lateSessionRoundLoss.roundLossRewardNudgeNextName === 'VOLT ZAP' && lateSessionRoundLoss.roundLossRewardNudgeRoundsNeeded === '1' && lateSessionRoundLoss.roundLossRewardNudgePreview === 'next', `late-session round-loss nudge probe: chase nudge metadata wrong after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeText.includes('KEEP ROLLING') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('Win 1 more round to unlock:') && lateSessionRoundLoss.roundLossRewardNudgeText.includes(`${rewardNextAfterSix.name} DIE SKIN`), `late-session round-loss nudge probe: chase nudge copy wrong after multiple completed games ${JSON.stringify({ rewardNextAfterSix, lateSessionRoundLoss })}`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeNextName === rewardNextAfterSix.name && lateSessionRoundLoss.roundLossRewardNudgeRoundsNeeded === '1' && lateSessionRoundLoss.roundLossRewardNudgePreview === 'next', `late-session round-loss nudge probe: chase nudge metadata wrong after multiple completed games ${JSON.stringify({ rewardNextAfterSix, lateSessionRoundLoss })}`);
 
     const cappedRoundWinsProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=capped`, viewports[0]);
     await evalValue(cappedRoundWinsProbe, `document.getElementById('startBtn').click(); true`);
