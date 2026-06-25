@@ -981,6 +981,23 @@ async function main() {
         winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
         winnerStatusFontSize: getComputedStyle(document.getElementById('p1StatusBar')).fontSize,
         winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
+        winnerStatusChaseDie: (() => {
+          const bar = document.getElementById('p1StatusBar');
+          const die = document.getElementById('p1StatusChaseDie');
+          if (!bar || !die) return { present: false };
+          const r = die.getBoundingClientRect();
+          const br = bar.getBoundingClientRect();
+          const style = getComputedStyle(die);
+          return {
+            present: true,
+            visible: bar.classList.contains('has-chase-die') && !die.hidden && style.display !== 'none' && r.width >= 28 && r.height >= 28,
+            name: die.dataset.rewardName || '',
+            effect: die.dataset.rewardEffect || '',
+            fitsStatus: r.left >= br.left - 1 && r.right <= br.right + 1 && r.top >= br.top - 1 && r.bottom <= br.bottom + 1,
+            rect: { width: Math.round(r.width), height: Math.round(r.height), left: Math.round(r.left), right: Math.round(r.right) },
+            barRect: { width: Math.round(br.width), height: Math.round(br.height), left: Math.round(br.left), right: Math.round(br.right) }
+          };
+        })(),
         winnerCount: document.getElementById('p1Pool').classList.contains('payout-jackpot'),
         trashedStamp: (() => {
           const stamp = document.getElementById('p2TrashedStamp');
@@ -1107,6 +1124,8 @@ async function main() {
       assert(terminal.winnerPraise === true, `${viewport.name}: winner praise state missing ${JSON.stringify(terminal)}`);
       assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 36, `${viewport.name}: game-win winner status should use the extra-large winner treatment ${JSON.stringify(terminal)}`);
       assert(terminal.winnerLabel === 'WINNER', `${viewport.name}: winner label missing ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerStatusChaseDie.present === true && terminal.winnerStatusChaseDie.visible === true && terminal.winnerStatusChaseDie.name === 'BUBBLEGUM' && terminal.winnerStatusChaseDie.effect === 'bubblePop', `${viewport.name}: game-win winner status should show the chase die visual ${JSON.stringify(terminal.winnerStatusChaseDie)}`);
+      assert(terminal.winnerStatusChaseDie.fitsStatus === true, `${viewport.name}: game-win winner status chase die should fit inside the pill ${JSON.stringify(terminal.winnerStatusChaseDie)}`);
       assert(terminal.winnerCount === true, `${viewport.name}: winner count fanfare missing ${JSON.stringify(terminal)}`);
       assert(terminal.trashedStamp.present === true && terminal.trashedStamp.text === 'TRASHED!' && terminal.trashedStamp.visible === true, `${viewport.name}: TRASHED stamp should appear on player game win ${JSON.stringify(terminal.trashedStamp)}`);
       assert(terminal.trashedStamp.fitsViewport === true && terminal.trashedStamp.fitsPanel === true, `${viewport.name}: TRASHED stamp should fit inside the green loser panel ${JSON.stringify(terminal.trashedStamp)}`);
@@ -1808,6 +1827,7 @@ async function main() {
         assert(roundWinEarly.titleFanfareActive === false, `green round-win probe: CPU round should not pulse the title logo ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.lidDance === false, `green round-win probe: CPU round should not pulse the lid payout panel ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.canDance === false, `green round-win probe: CPU round should not gain player-only can dance ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.statusChaseDieVisible === false && roundWinEarly.statusChaseDieName === '', `green round-win probe: CPU winner pill should not show the player's chase die ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.payoutPanelActive === false && roundWinEarly.payoutInventoryActive === false && roundWinEarly.payoutComets === 0, `green round-win probe: CPU round should not gain player payout fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === false && roundWinEarly.rewardDieVisible === false && roundWinEarly.rewardDieState.totalWins === 0, `green round-win probe: CPU round should not trigger player reward fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundLossRewardNudgeVisible === true, `green round-win probe: player round-loss reward nudge missing ${JSON.stringify(roundWinEarly)}`);
@@ -1829,8 +1849,12 @@ async function main() {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.lidDance === true, `yellow round-win probe: player payout lid dance missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.titleFanfareActive === true, `yellow round-win probe: player round should still pulse the title logo ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.statusChaseDieVisible === true && roundWinEarly.statusChaseDieName === 'TOXIC SPLAT' && roundWinEarly.statusChaseDieEffect === 'toxicSpat', `yellow round-win probe: winner status pill should show the next chase die ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.statusChaseDieFitsStatus === true, `yellow round-win probe: winner status chase die should fit inside the status pill ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === 'PLUME' && roundWinEarly.roundWinBurstDieEffect === 'featherRipple', `yellow round-win probe: ROUND WINNER burst should show the reward die visual ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstPreviewTier === '1' && roundWinEarly.roundWinBurstPreviewName === 'PLUME', `yellow round-win probe: ROUND WINNER burst preview metadata wrong ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should describe die skin unlock ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieVisible === false, `yellow round-win probe: reward die reveal should wait until ROUND WIN reads ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);

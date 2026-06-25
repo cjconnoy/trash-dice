@@ -1186,6 +1186,46 @@ body.inline-game-over .roll-panel {
   width: clamp(16px, 3.5vw, 21px);
   height: clamp(16px, 3.5vw, 21px);
 }
+.status-chase-die[hidden] {
+  display: none !important;
+}
+.status-chase-die {
+  flex: 0 0 clamp(30px, 7vw, 46px);
+  width: clamp(30px, 7vw, 46px);
+  height: clamp(30px, 7vw, 46px);
+  padding: clamp(4px, 1.2vw, 7px);
+  gap: 1px;
+  border-radius: 23%;
+  transform: none !important;
+  box-shadow:
+    2px 3px 0 var(--reward-edge),
+    4px 5px 0 rgba(0,0,0,0.24),
+    inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+.status-chase-die::after {
+  top: 6%;
+  left: 9%;
+  width: 58%;
+  height: 34%;
+}
+.status-chase-die .dot {
+  width: clamp(5px, 1.45vw, 9px);
+  height: clamp(5px, 1.45vw, 9px);
+}
+.status-bar.has-chase-die .turn-dot {
+  display: none;
+}
+.status-bar.round-winner-praise.has-chase-die {
+  min-width: clamp(14.4rem, 66vw, 19.2rem);
+  padding-left: clamp(0.82rem, 3vw, 1.2rem);
+  padding-right: clamp(1rem, 3.6vw, 1.55rem);
+}
+.status-bar.round-winner-praise .status-chase-die {
+  flex-basis: clamp(38px, 8.5vw, 56px);
+  width: clamp(38px, 8.5vw, 56px);
+  height: clamp(38px, 8.5vw, 56px);
+  padding: clamp(5px, 1.35vw, 8px);
+}
 .pool-count.payout-jackpot {
   animation: playerPayoutCountJackpot 0.52s cubic-bezier(.12,.88,.16,1) infinite;
   will-change: transform, filter;
@@ -3731,6 +3771,23 @@ body.inline-game-loss .inline-result-banner {
 .round-win-burst-title span {
   display: block;
   font-size: clamp(2.35rem, 11.4vw, 5.85rem);
+}
+
+.round-win-burst-die[hidden] {
+  display: none !important;
+}
+
+.round-win-burst-die {
+  width: clamp(58px, 15vw, 96px);
+  height: clamp(58px, 15vw, 96px);
+  flex: 0 0 auto;
+  margin-bottom: clamp(1px, 0.8vw, 6px);
+  transform: rotate(-8deg) !important;
+}
+
+.round-win-burst-die .dot {
+  width: clamp(10px, 2.6vw, 18px);
+  height: clamp(10px, 2.6vw, 18px);
 }
 
 .round-win-burst-sub {
@@ -8487,6 +8544,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <div class="inventory-cluster has-status" id="p1Inventory">
       <div class="status-bar yellow-turn" id="p1StatusBar">
         <div class="turn-dot" id="p1TurnDot"></div>
+        <div class="die status-chase-die" id="p1StatusChaseDie" hidden aria-hidden="true"></div>
         <span class="status-text" id="p1StatusText">Your Turn</span>
       </div>
       <div class="dice-pile panel-pile" id="p1Pile"></div>
@@ -8630,6 +8688,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <div class="round-flash" id="roundFlash"></div>
 <div class="round-win-burst" id="roundWinBurst" hidden aria-live="polite" aria-atomic="true">
   <div class="round-win-burst-content">
+    <div class="die reward-nudge-die round-win-burst-die" id="roundWinBurstDie" hidden aria-hidden="true"></div>
     <div class="round-win-burst-title"><span>ROUND</span><span>WINNER</span></div>
     <div class="round-win-burst-sub" id="roundWinBurstSub">Reward die ready</div>
   </div>
@@ -9805,6 +9864,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const p1StatusBar = document.getElementById('p1StatusBar');
   const p1StatusText = document.getElementById('p1StatusText');
   const p1TurnDot   = document.getElementById('p1TurnDot');
+  const p1StatusChaseDie = document.getElementById('p1StatusChaseDie');
   const p2StatusBar = document.getElementById('p2StatusBar');
   const p2StatusText = document.getElementById('p2StatusText');
   const p2TurnDot   = document.getElementById('p2TurnDot');
@@ -9833,6 +9893,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const roundLossRewardNudgeLine = document.getElementById('roundLossRewardNudgeLine');
   const roundLossRewardNudgeUnlock = document.getElementById('roundLossRewardNudgeUnlock');
   const roundWinBurst = document.getElementById('roundWinBurst');
+  const roundWinBurstDie = document.getElementById('roundWinBurstDie');
   const roundWinBurstSub = document.getElementById('roundWinBurstSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
@@ -10065,6 +10126,40 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (die) applyRewardDieElementVisual(el, die);
   }
 
+  function hidePlayerStatusChaseDie() {
+    if (p1StatusBar) p1StatusBar.classList.remove('has-chase-die');
+    if (!p1StatusChaseDie) return;
+    p1StatusChaseDie.hidden = true;
+    p1StatusChaseDie.innerHTML = '';
+    clearRewardDieElementVisual(p1StatusChaseDie);
+  }
+
+  function showPlayerStatusChaseDie() {
+    if (!p1StatusBar || !p1StatusChaseDie) return null;
+    const model = rewardNudgeModel();
+    if (!model.previewDie) {
+      hidePlayerStatusChaseDie();
+      return null;
+    }
+    renderRewardNudgeDie(p1StatusChaseDie, model.previewDie);
+    p1StatusBar.classList.add('has-chase-die');
+    return model;
+  }
+
+  function updatePlayerStatusChaseDie() {
+    const payoutWinner =
+      playerPayoutFanfareActive &&
+      playerPayoutFanfarePlayer === 'p1' &&
+      String(playerPayoutFanfareText || '').toUpperCase() === 'WINNER';
+    const roundWinner =
+      roundWinnerStatusActive &&
+      roundWinnerStatusPlayer === 'p1' &&
+      String(roundWinnerStatusText || '').toUpperCase() === 'WINNER';
+    return payoutWinner || roundWinner
+      ? showPlayerStatusChaseDie()
+      : (hidePlayerStatusChaseDie(), null);
+  }
+
   function hideTerminalRewardNudge() {
     if (!terminalRewardNudge) return;
     terminalRewardNudge.hidden = true;
@@ -10198,10 +10293,18 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function hideRoundWinBurst() {
     if (roundWinBurst) {
-      roundWinBurst.classList.remove('show', 'p1', 'has-reward');
+      roundWinBurst.classList.remove('show', 'p1', 'has-reward', 'has-chase-die');
       roundWinBurst.hidden = true;
       roundWinBurst.removeAttribute('data-reward-tier');
       roundWinBurst.removeAttribute('data-reward-name');
+      roundWinBurst.removeAttribute('data-preview-name');
+      roundWinBurst.removeAttribute('data-preview-tier');
+      roundWinBurst.removeAttribute('data-preview-effect');
+    }
+    if (roundWinBurstDie) {
+      roundWinBurstDie.hidden = true;
+      roundWinBurstDie.innerHTML = '';
+      clearRewardDieElementVisual(roundWinBurstDie);
     }
     if (roundWinBurstTimer) {
       cancelRuntimeTimer(roundWinBurstTimer);
@@ -10227,6 +10330,23 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     } else {
       roundWinBurst.removeAttribute('data-reward-tier');
       roundWinBurst.removeAttribute('data-reward-name');
+    }
+    const previewDie = unlockedDie || rewardModel.previewDie;
+    if (previewDie && roundWinBurstDie) {
+      renderRewardNudgeDie(roundWinBurstDie, previewDie);
+      roundWinBurst.classList.add('has-chase-die');
+      roundWinBurst.dataset.previewName = previewDie.name;
+      roundWinBurst.dataset.previewTier = String(previewDie.tier);
+      roundWinBurst.dataset.previewEffect = previewDie.effect || 'none';
+    } else {
+      if (roundWinBurstDie) {
+        roundWinBurstDie.hidden = true;
+        clearRewardDieElementVisual(roundWinBurstDie);
+      }
+      roundWinBurst.classList.remove('has-chase-die');
+      roundWinBurst.removeAttribute('data-preview-name');
+      roundWinBurst.removeAttribute('data-preview-tier');
+      roundWinBurst.removeAttribute('data-preview-effect');
     }
     if (roundWinBurstSub) {
       const totalWins = rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins;
@@ -11257,6 +11377,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (ui.poolEl) ui.poolEl.classList.remove('payout-jackpot');
       if (resetStatus) restorePayoutStatusText(player);
     });
+    updatePlayerStatusChaseDie();
     if (boardWrap) {
       boardWrap.classList.remove('player-payout-lid-dance');
       boardWrap.style.removeProperty('--payout-lid-dance-rate');
@@ -11285,6 +11406,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       ui.statusBar.classList.add('payout-praise');
       ui.statusBar.classList.toggle('round-winner-praise', String(playerPayoutFanfareText).toUpperCase() === 'WINNER');
     }
+    updatePlayerStatusChaseDie();
     if (ui.poolEl) ui.poolEl.classList.add('payout-jackpot');
     if (duration > 0) {
       playerPayoutFanfareTimer = runLater(() => {
@@ -11301,6 +11423,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (ui.inventory) ui.inventory.classList.add('has-status');
     ui.statusBar.classList.add('active', 'payout-praise', 'round-winner-praise');
     ui.statusText.textContent = roundWinnerStatusText;
+    updatePlayerStatusChaseDie();
   }
 
   function clearRoundWinnerStatus(resetStatus = false) {
@@ -11322,6 +11445,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       }
       if (resetStatus && player === activePlayer) restorePayoutStatusText(player);
     });
+    updatePlayerStatusChaseDie();
   }
 
   function startRoundWinnerStatus(player = 'p1', duration = 1800, label = 'WINNER') {
@@ -13083,6 +13207,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
     applyRoundWinnerStatus();
+    updatePlayerStatusChaseDie();
     const p1StatusLocked =
       (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p1') ||
       (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p1');
@@ -15305,8 +15430,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           const ui = getPlayerUi(forcedWinner);
           const statusStyle = ui.statusBar ? getComputedStyle(ui.statusBar) : null;
           const statusRect = ui.statusBar ? ui.statusBar.getBoundingClientRect() : null;
+          const statusChaseStyle = p1StatusChaseDie ? getComputedStyle(p1StatusChaseDie) : null;
+          const statusChaseRect = p1StatusChaseDie ? p1StatusChaseDie.getBoundingClientRect() : null;
           const burstStyle = roundWinBurst ? getComputedStyle(roundWinBurst) : null;
           const burstRect = roundWinBurst ? roundWinBurst.getBoundingClientRect() : null;
+          const burstDieStyle = roundWinBurstDie ? getComputedStyle(roundWinBurstDie) : null;
+          const burstDieRect = roundWinBurstDie ? roundWinBurstDie.getBoundingClientRect() : null;
           const rewardStyle = rewardDieUnlock ? getComputedStyle(rewardDieUnlock) : null;
           const rewardRect = rewardDie ? rewardDie.getBoundingClientRect() : null;
           const roundLossNudgeStyle = roundLossRewardNudge ? getComputedStyle(roundLossRewardNudge) : null;
@@ -15335,11 +15464,23 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             payoutStatusFontSize: statusStyle ? statusStyle.fontSize : '',
             payoutStatusRect: statusRect ? { width: statusRect.width, height: statusRect.height } : null,
             payoutStatusText: ui.statusText ? ui.statusText.textContent : '',
+            statusChaseDieVisible: !!(p1StatusChaseDie && p1StatusBar && p1StatusBar.classList.contains('has-chase-die') && !p1StatusChaseDie.hidden && statusChaseStyle && statusChaseStyle.display !== 'none' && statusChaseRect && statusChaseRect.width >= 28 && statusChaseRect.height >= 28),
+            statusChaseDieName: p1StatusChaseDie ? p1StatusChaseDie.dataset.rewardName || '' : '',
+            statusChaseDieEffect: p1StatusChaseDie ? p1StatusChaseDie.dataset.rewardEffect || '' : '',
+            statusChaseDieFitsStatus: !!(statusChaseRect && statusRect && statusChaseRect.left >= statusRect.left - 1 && statusChaseRect.right <= statusRect.right + 1 && statusChaseRect.top >= statusRect.top - 1 && statusChaseRect.bottom <= statusRect.bottom + 1),
+            statusChaseDieRect: statusChaseRect ? { left: Math.round(statusChaseRect.left), right: Math.round(statusChaseRect.right), top: Math.round(statusChaseRect.top), bottom: Math.round(statusChaseRect.bottom), width: Math.round(statusChaseRect.width), height: Math.round(statusChaseRect.height) } : null,
             roundWinBurstVisible: !!(roundWinBurst && !roundWinBurst.hidden && roundWinBurst.classList.contains('show') && burstStyle && burstStyle.display !== 'none' && parseFloat(burstStyle.opacity || '0') > 0),
             roundWinBurstRect: burstRect ? { left: Math.round(burstRect.left), right: Math.round(burstRect.right), top: Math.round(burstRect.top), bottom: Math.round(burstRect.bottom), width: Math.round(burstRect.width), height: Math.round(burstRect.height) } : null,
             roundWinBurstText: roundWinBurst ? roundWinBurst.textContent.replace(/\s+/g, ' ').trim() : '',
             roundWinBurstRewardTier: roundWinBurst ? roundWinBurst.dataset.rewardTier || '' : '',
             roundWinBurstRewardName: roundWinBurst ? roundWinBurst.dataset.rewardName || '' : '',
+            roundWinBurstPreviewName: roundWinBurst ? roundWinBurst.dataset.previewName || '' : '',
+            roundWinBurstPreviewTier: roundWinBurst ? roundWinBurst.dataset.previewTier || '' : '',
+            roundWinBurstPreviewEffect: roundWinBurst ? roundWinBurst.dataset.previewEffect || '' : '',
+            roundWinBurstDieVisible: !!(roundWinBurstDie && !roundWinBurstDie.hidden && burstDieStyle && burstDieStyle.display !== 'none' && burstDieRect && burstDieRect.width >= 48 && burstDieRect.height >= 48),
+            roundWinBurstDieName: roundWinBurstDie ? roundWinBurstDie.dataset.rewardName || '' : '',
+            roundWinBurstDieEffect: roundWinBurstDie ? roundWinBurstDie.dataset.rewardEffect || '' : '',
+            roundWinBurstDieRect: burstDieRect ? { left: Math.round(burstDieRect.left), right: Math.round(burstDieRect.right), top: Math.round(burstDieRect.top), bottom: Math.round(burstDieRect.bottom), width: Math.round(burstDieRect.width), height: Math.round(burstDieRect.height) } : null,
             rewardDieVisible: !!(rewardDieUnlock && rewardDie && !rewardDieUnlock.hidden && rewardDieUnlock.classList.contains('show') && rewardStyle && rewardStyle.display !== 'none' && rewardRect && rewardRect.width >= 48 && rewardRect.height >= 48),
             rewardDieRect: rewardRect ? { left: Math.round(rewardRect.left), right: Math.round(rewardRect.right), top: Math.round(rewardRect.top), bottom: Math.round(rewardRect.bottom), width: Math.round(rewardRect.width), height: Math.round(rewardRect.height) } : null,
             rewardDieTier: rewardDieUnlock ? rewardDieUnlock.dataset.tier || '' : '',
