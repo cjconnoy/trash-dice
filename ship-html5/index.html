@@ -274,8 +274,13 @@ body:not([data-game-started="true"]) #trashCan > svg {
   align-items: center;
   gap: 0;
 }
-.title-legal > span:first-child {
+.title-copyright {
+  display: block;
+  max-width: 100%;
+  font-size: 0.96em;
+  letter-spacing: 0.018em;
   margin-bottom: clamp(0.3rem, 0.9vh, 0.46rem);
+  white-space: nowrap;
 }
 .title-studio-label {
   color: rgba(47,52,45,0.82);
@@ -389,7 +394,7 @@ body:not([data-game-started="true"]) #trashCan > svg {
   .title-legal {
     left: 50%;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 0.62rem);
-    max-width: min(84vw, 330px);
+    max-width: min(94vw, 352px);
     font-size: clamp(0.56rem, 2.8vw, 0.72rem);
     line-height: 1.12;
   }
@@ -6068,7 +6073,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .title-legal {
     left: 50%;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 0.38rem);
-    max-width: min(86vw, 320px);
+    max-width: min(94vw, 336px);
     font-size: clamp(0.5rem, 2.55vw, 0.62rem);
     line-height: 1.08;
   }
@@ -7593,7 +7598,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   </div>
   <div class="legacy-ipad-guidance" id="legacyIpadGuidance">For the smoothest experience, play on iPhone, desktop, or a newer iPad.</div>
   <div class="title-legal">
-    <span>&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
+    <span class="title-copyright">&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
     <span class="title-studio-label">Digital companion by</span>
     <img class="title-odg-wordmark" src="assets/brand/odg-logo-charcoal.png" alt="OneDayGames" width="951" height="425" decoding="async" loading="eager">
   </div>

@@ -424,7 +424,7 @@ async function main() {
           const presenterSub = document.querySelector('.title-presenter-sub');
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
           const legal = document.querySelector('.title-legal');
-          const copyright = legal ? legal.querySelector('span:first-child') : null;
+          const copyright = document.querySelector('.title-copyright');
           const studioLabel = document.querySelector('.title-studio-label');
           const odgLogo = document.querySelector('.title-odg-wordmark');
           const startCan = document.querySelector('.start-lurker-can');
@@ -442,6 +442,7 @@ async function main() {
           const copyrightRect = rect(copyright);
           const studioLabelRect = rect(studioLabel);
           const odgRect = rect(odgLogo);
+          const copyrightStyle = getComputedStyle(copyright);
           return {
             presenterLogoWidth: presenterRect.width,
             presenterSubHeight: presenterSubRect.height,
@@ -452,6 +453,9 @@ async function main() {
             startCardToLegal: legalRect.top - startCardRect.bottom,
             copyrightToStudio: studioLabelRect.top - copyrightRect.bottom,
             studioToOdg: odgRect.top - studioLabelRect.bottom,
+            copyrightText: copyright ? copyright.textContent.trim() : '',
+            copyrightWhiteSpace: copyrightStyle.whiteSpace,
+            copyrightFitsViewport: copyrightRect.left >= -1 && copyrightRect.right <= window.innerWidth + 1,
             titleTaglinePresent: !!document.querySelector('.start-overlay .start-tagline'),
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
             studioLabelColor: studioLabel ? getComputedStyle(studioLabel).color : '',
@@ -548,6 +552,7 @@ async function main() {
       assert(muteToggle.unmuted.pressed === 'false' && muteToggle.unmuted.label === 'Mute sound' && muteToggle.unmuted.iconOnVisible === true && muteToggle.unmuted.iconMutedVisible === false && muteToggle.unmuted.bodyMuted === false && muteToggle.unmuted.audioMuted === false && muteToggle.unmuted.stored === '0', `${viewport.name}: mute did not disengage ${JSON.stringify(muteToggle)}`);
       assert(initial.titleLayout.titleTaglinePresent === false, `${viewport.name}: title tagline should move off the title screen ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: start card overlaps title legal ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.copyrightText === '© 2026 Big Discoveries. Trash Dice™.' && initial.titleLayout.copyrightWhiteSpace === 'nowrap' && initial.titleLayout.copyrightFitsViewport === true, `${viewport.name}: title copyright should stay on one fitted line ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.studioLabelText === 'Digital companion by', `${viewport.name}: title studio credit label missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.copyrightToStudio >= 4 && initial.titleLayout.studioToOdg <= initial.titleLayout.copyrightToStudio + 4, `${viewport.name}: studio credit should group with ODG logo, not Big Discoveries copyright ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.studioLabelColor.includes('47, 52, 45'), `${viewport.name}: studio credit color should match ODG wordmark family ${JSON.stringify(initial.titleLayout)}`);
