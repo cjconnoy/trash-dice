@@ -882,6 +882,46 @@ async function main() {
       assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === 'PLUME|TOXIC SPLAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|SUNRISE|DIAMOND|PRISM', `${viewport.name}: all reward ladder skins should activate in order ${JSON.stringify(rewardSkinLadderFixtures)}`);
       assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.length > 0), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
       assert(rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').activeEffect === 'sunrise' && rewardSkinLadderFixtures.find(item => item.activeName === 'SUNRISE').playerSlot.animationNames.includes('slotRewardSunrise'), `${viewport.name}: sunrise reward skin should animate in the lid ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      const liveRewardDieEdge = await evalValue(page, `(() => {
+        const fixture = window.TrashDiceQA.rewardSkinFixture(35);
+        const stage = document.getElementById('p1DieStage');
+        const die = document.getElementById('p1Die');
+        if (stage) stage.classList.add('active');
+        if (die) die.classList.add('roll-resolved');
+        const style = die ? getComputedStyle(die) : null;
+        const before = die ? getComputedStyle(die, '::before') : null;
+        const rect = die ? die.getBoundingClientRect() : null;
+        const slot = document.querySelector('.slot-die.reward-skinned');
+        const result = {
+          fixture,
+          className: die ? die.className : '',
+          stageClass: stage ? stage.className : '',
+          rewardSkinned: !!(die && die.classList.contains('reward-skinned')),
+          effect: die ? die.dataset.rewardEffect || '' : '',
+          borderRadius: style ? style.borderTopLeftRadius : '',
+          backgroundClip: style ? style.backgroundClip : '',
+          overflow: style ? style.overflow : '',
+          webkitMaskImage: style ? style.webkitMaskImage || '' : '',
+          maskImage: style ? style.maskImage || '' : '',
+          boxShadow: style ? style.boxShadow : '',
+          beforeTransform: before ? before.transform : '',
+          rect: rect ? { width: rect.width, height: rect.height } : null,
+          seatedRewardStillSvg: !!slot,
+          seatedRewardEffect: slot ? slot.dataset.rewardEffect || '' : ''
+        };
+        if (stage) stage.classList.remove('active');
+        window.TrashDiceQA.setRewardWins(2);
+        return result;
+      })()`);
+      if (viewport.mobile && viewport.width <= 720) {
+        const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
+        const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
+        assert(liveRewardDieEdge.rewardSkinned === true && liveRewardDieEdge.effect === 'colorCycle', `${viewport.name}: mobile live reward die probe did not activate PRISM skin ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(radiusIsPercent || (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.2), `${viewport.name}: mobile live reward die needs a soft rounded edge ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.webkitMaskImage !== 'none' && liveRewardDieEdge.webkitMaskImage !== '', `${viewport.name}: mobile live reward die needs Safari mask rounding ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep a softened live face treatment ${JSON.stringify(liveRewardDieEdge)}`);
+      }
+      assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === 'colorCycle', `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify(liveRewardDieEdge)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);

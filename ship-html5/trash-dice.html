@@ -5974,6 +5974,24 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
       inset 0 0 0 1px rgba(255,255,255,0.15);
   }
 
+  .roll-die-stage .die.reward-skinned {
+    border-radius: 26%;
+    background-clip: padding-box;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    box-shadow:
+      6px 7px 0 var(--reward-edge),
+      11px 12px 0 rgba(0,0,0,0.24),
+      0 12px 20px rgba(0,0,0,0.42),
+      inset 0 0 0 2px rgba(255,255,255,0.22),
+      inset 9px 10px 18px rgba(255,255,255,0.1),
+      inset -15px -17px 22px rgba(0,0,0,0.24);
+  }
+
+  .roll-die-stage .die.reward-skinned::before,
+  .roll-die-stage .die.reward-skinned::after {
+    transform: translateZ(0);
+  }
+
   body.fast-preview .roll-die-stage .die.rolling {
     animation-duration: 0.42s;
   }
