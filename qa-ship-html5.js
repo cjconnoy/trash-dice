@@ -1970,6 +1970,15 @@ async function main() {
       })()`, `${winner} round-win probe reward UI clears on Roll`);
     }
 
+    const lateSessionRoundLossProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-loss-nudge=late-session`, viewports[0]);
+    await evalValue(lateSessionRoundLossProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(lateSessionRoundLossProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `late-session round-loss nudge probe game start`);
+    await evalValue(lateSessionRoundLossProbe, `window.TrashDiceQA.setCompletedGames(3); window.TrashDiceQA.setRewardWins(6); true`);
+    const lateSessionRoundLoss = await evalValue(lateSessionRoundLossProbe, `window.TrashDiceDebug.roundWinEventProbe('p2')`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeVisible === true, `late-session round-loss nudge probe: player chase nudge should still show after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeText.includes('KEEP ROLLING') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('Win 1 more round to unlock:') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('VOLT ZAP DIE SKIN'), `late-session round-loss nudge probe: chase nudge copy wrong after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeNextName === 'VOLT ZAP' && lateSessionRoundLoss.roundLossRewardNudgeRoundsNeeded === '1' && lateSessionRoundLoss.roundLossRewardNudgePreview === 'next', `late-session round-loss nudge probe: chase nudge metadata wrong after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
+
     const cappedRoundWinsProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=capped`, viewports[0]);
     await evalValue(cappedRoundWinsProbe, `document.getElementById('startBtn').click(); true`);
     await waitEval(cappedRoundWinsProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `capped round-win copy probe game start`);

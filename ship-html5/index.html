@@ -10202,7 +10202,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function showRoundLossRewardNudge() {
-    if (!roundLossRewardNudge || tdCompletedGames >= 2) return null;
+    if (!roundLossRewardNudge) return null;
     const model = rewardNudgeModel();
     hideRoundLossRewardNudge();
     if (roundLossRewardNudgeKicker) roundLossRewardNudgeKicker.textContent = model.roundLossKicker;
