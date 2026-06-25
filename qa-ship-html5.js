@@ -956,6 +956,18 @@ async function main() {
         assert(liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep a softened live face treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === 'colorCycle', `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify(liveRewardDieEdge)}`);
+      const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(35)`);
+      if (viewport.mobile && viewport.width <= 720) {
+        for (const travelState of [travellingRewardDieEdge.toSlot, travellingRewardDieEdge.toTrash]) {
+          const radiusValue = parseFloat(travelState.borderRadius || '0');
+          const radiusIsPercent = String(travelState.borderRadius || '').includes('%');
+          assert(travelState.rewardSkinned === true && travelState.effect === 'colorCycle', `${viewport.name}: travelling reward die probe did not activate PRISM skin ${JSON.stringify(travellingRewardDieEdge)}`);
+          assert(radiusIsPercent || (travelState.rect && radiusValue >= travelState.rect.width * 0.2), `${viewport.name}: travelling reward die needs a soft rounded edge ${JSON.stringify(travelState)}`);
+          assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
+          assert(travelState.webkitMaskImage !== 'none' && travelState.webkitMaskImage !== '', `${viewport.name}: travelling reward die needs Safari mask rounding ${JSON.stringify(travelState)}`);
+          assert(travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should be composited inside the rounded face ${JSON.stringify(travelState)}`);
+        }
+      }
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);

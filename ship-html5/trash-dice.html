@@ -6172,8 +6172,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
       inset -15px -17px 22px rgba(0,0,0,0.24);
   }
 
+  .die.travelling-die.reward-skinned {
+    border-radius: 26%;
+    background-clip: padding-box;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+
   .roll-die-stage .die.reward-skinned::before,
-  .roll-die-stage .die.reward-skinned::after {
+  .roll-die-stage .die.reward-skinned::after,
+  .die.travelling-die.reward-skinned::before,
+  .die.travelling-die.reward-skinned::after {
     transform: translateZ(0);
   }
 
@@ -14517,6 +14525,64 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         renderDie(2, 'p2', 'green');
         syncUI();
         return qaRewardSkinProbe();
+      },
+      rewardTravelCloneProbe(totalWins = 35) {
+        ensureQaGame();
+        const previousWins = rewardDieWins;
+        rewardDiePreviewOverride = null;
+        writeRewardDieWins(totalWins);
+        hideRewardDieUnlock();
+        hideRoundWinBurst();
+        current = 'p1';
+        busy = false;
+        rollBtn.disabled = false;
+        board = [
+          { player: 'p1', color: 'yellow', value: 5 },
+          null,
+          null,
+          null,
+          null,
+          null
+        ];
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        renderDie(5, 'p1', 'yellow');
+        syncUI();
+        const inspectClone = motionClass => {
+          const { clone, source } = makeDieClone('p1', 'yellow');
+          clone.classList.add(motionClass);
+          const style = getComputedStyle(clone);
+          const before = getComputedStyle(clone, '::before');
+          const after = getComputedStyle(clone, '::after');
+          const rect = clone.getBoundingClientRect();
+          const result = {
+            motionClass,
+            className: clone.className,
+            rewardSkinned: clone.classList.contains('reward-skinned'),
+            effect: clone.dataset.rewardEffect || '',
+            borderRadius: style.borderTopLeftRadius,
+            backgroundClip: style.backgroundClip,
+            overflow: style.overflow,
+            webkitMaskImage: style.webkitMaskImage || '',
+            maskImage: style.maskImage || '',
+            backfaceVisibility: style.backfaceVisibility || '',
+            beforeTransform: before ? before.transform : '',
+            afterTransform: after ? after.transform : '',
+            rect: { width: rect.width, height: rect.height }
+          };
+          clone.remove();
+          source.style.opacity = '';
+          return result;
+        };
+        const result = {
+          toSlot: inspectClone('to-slot-physical'),
+          toTrash: inspectClone('to-trash-physical')
+        };
+        writeRewardDieWins(previousWins);
+        clearDie('p1');
+        return result;
       },
       showRewardDieUnlock(tier = 1) {
         const die = REWARD_DICE.find(item => item.tier === Math.floor(Number(tier) || 1)) || REWARD_DICE[0];
