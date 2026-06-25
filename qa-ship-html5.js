@@ -1525,7 +1525,9 @@ async function main() {
       badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
       betaWipCopyPresent: document.body.textContent.includes('BETA WIP') || document.body.textContent.includes('NOT LIVE'),
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      rewardButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       qaHooksPresent: !!window.TrashDiceQA,
       guidanceVisible: (() => {
@@ -1536,19 +1538,21 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.p0ButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
     await waitEval(publicProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'public probe game start');
     const publicActive = await evalValue(publicProbe, `(() => ({
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      rewardButtonVisible: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display !== 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.p0ButtonHidden === true && publicActive.outcomeButtonsHidden === true, `public probe: debug controls should stay hidden during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.rewardButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: only reward review button should show during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
