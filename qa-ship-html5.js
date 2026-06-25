@@ -783,15 +783,21 @@ async function main() {
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
         const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
+        const activeCpu = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p2', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
         const inactive = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 1, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15 });
+        const softLater = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, roundNumber: 2 });
         window.TrashDiceDebug.gameStart();
         window.TrashDiceQA.setCompletedGames(0);
         window.TrashDiceQA.setRewardWins(0);
-        return { active, inactive, resetState: window.TrashDiceQA.state() };
+        return { active, activeCpu, inactive, softLater, resetState: window.TrashDiceQA.state() };
       })()`);
-      assert(firstGameAssist.active.context.active === true && firstGameAssist.active.afterUses > firstGameAssist.active.beforeUses && firstGameAssist.active.afterUses <= firstGameAssist.active.context.maxUses, `${viewport.name}: first-game assist should nudge only during first game ${JSON.stringify(firstGameAssist.active)}`);
-      assert(firstGameAssist.inactive.context.active === false && firstGameAssist.inactive.afterUses === 0, `${viewport.name}: first-game assist should disable after one completed game ${JSON.stringify(firstGameAssist.inactive)}`);
-      assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
+      assert(firstGameAssist.active.context.active === true && firstGameAssist.active.firstRoundGuardActive === true && firstGameAssist.active.afterGuardRolls > firstGameAssist.active.beforeGuardRolls, `${viewport.name}: first-round guard should activate for player in fresh game ${JSON.stringify(firstGameAssist.active)}`);
+      assert(firstGameAssist.active.samples.length > 0 && firstGameAssist.active.samples.every(face => firstGameAssist.active.openSlots.includes(face)), `${viewport.name}: first-round player guard should always hit open slots ${JSON.stringify(firstGameAssist.active)}`);
+      assert(firstGameAssist.activeCpu.firstRoundGuardActive === true && firstGameAssist.activeCpu.afterGuardRolls > firstGameAssist.activeCpu.beforeGuardRolls, `${viewport.name}: first-round guard should activate for CPU in fresh game ${JSON.stringify(firstGameAssist.activeCpu)}`);
+      assert(firstGameAssist.activeCpu.samples.length > 0 && firstGameAssist.activeCpu.samples.every(face => !firstGameAssist.activeCpu.openSlots.includes(face)), `${viewport.name}: first-round CPU guard should always avoid open slots ${JSON.stringify(firstGameAssist.activeCpu)}`);
+      assert(firstGameAssist.inactive.context.active === false && firstGameAssist.inactive.firstRoundGuardActive === false && firstGameAssist.inactive.afterUses === 0 && firstGameAssist.inactive.afterGuardRolls === 0, `${viewport.name}: first-game assist should disable after one completed game ${JSON.stringify(firstGameAssist.inactive)}`);
+      assert(firstGameAssist.softLater.firstRoundGuardActive === false && firstGameAssist.softLater.context.active === true && firstGameAssist.softLater.afterUses > firstGameAssist.softLater.beforeUses && firstGameAssist.softLater.afterUses <= firstGameAssist.softLater.context.maxUses, `${viewport.name}: later first-game assist should remain soft after round one ${JSON.stringify(firstGameAssist.softLater)}`);
+      assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true && firstGameAssist.resetState.firstRoundGuard.active === true, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
