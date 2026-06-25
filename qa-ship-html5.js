@@ -1246,7 +1246,7 @@ async function main() {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
 
-      await evalValue(page, `window.TrashDiceQA.setRewardWins(6); true`);
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(10); true`);
       const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player win complete`);
       await sleep(760);
@@ -1323,13 +1323,14 @@ async function main() {
       })()`);
       assert(mathPlayerWin.passed === true, `${viewport.name}: mathematical player win proof failed ${JSON.stringify(mathPlayerWin)}`);
       assert(mathPlayerWinUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player win reason missing ${JSON.stringify(mathPlayerWinUi)}`);
-      assert(mathPlayerWin.inlineGameOver.rewardDie && mathPlayerWin.inlineGameOver.rewardDie.totalWins === 7 && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie.name === 'VOLT ZAP', `${viewport.name}: mathematical player win should credit the final reward round ${JSON.stringify(mathPlayerWin)}`);
-      assert(mathPlayerWinUi.rewardState.totalWins === 7 && mathPlayerWinUi.rewardState.activeName === 'VOLT ZAP', `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify(mathPlayerWinUi.rewardState)}`);
+      assert(mathPlayerWin.inlineGameOver.finalRewardRoundCredited === true, `${viewport.name}: mathematical player win should mark the final reward round as credited ${JSON.stringify(mathPlayerWin.inlineGameOver)}`);
+      assert(mathPlayerWin.inlineGameOver.rewardDie && mathPlayerWin.inlineGameOver.rewardDie.totalWins === 11 && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie.name === 'TIE-DYE', `${viewport.name}: mathematical player win should credit the final reward round at the Tie-Dye threshold ${JSON.stringify(mathPlayerWin)}`);
+      assert(mathPlayerWinUi.rewardState.totalWins === 11 && mathPlayerWinUi.rewardState.activeName === 'TIE-DYE', `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify(mathPlayerWinUi.rewardState)}`);
       assert(mathPlayerWinUi.roundWins && mathPlayerWinUi.roundWins.p1 >= 1, `${viewport.name}: mathematical player win should count as a player round win ${JSON.stringify(mathPlayerWinUi.roundWins)}`);
       assert(mathPlayerWinUi.terminalRewardNudge.present === true && mathPlayerWinUi.terminalRewardNudge.visible === true, `${viewport.name}: mathematical player win terminal reward nudge missing ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.kicker === 'NEXT SKIN: TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.line === 'Win 4 more rounds to unlock:' && mathPlayerWinUi.terminalRewardNudge.unlockLine === 'TIE-DYE DIE SKIN', `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked Volt Zap skin ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.nextName === 'TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === '4' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === 'TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.dieEffect === 'tieDye', `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.kicker === 'NEXT SKIN: SUNRISE' && mathPlayerWinUi.terminalRewardNudge.line === 'Win 5 more rounds to unlock:' && mathPlayerWinUi.terminalRewardNudge.unlockLine === 'SUNRISE DIE SKIN', `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked Tie-Dye skin ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.nextName === 'SUNRISE' && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === '5' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === 'SUNRISE' && mathPlayerWinUi.terminalRewardNudge.dieEffect === 'sunrise', `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
       assert(mathPlayerWinUi.title === 'GAME WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);

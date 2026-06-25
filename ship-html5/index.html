@@ -9465,6 +9465,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (roundResolutionState && roundResolutionState.active) return false;
     const winner = findMathematicalGameOverWinner();
     if (!winner) return false;
+    const finalRewardRoundAlreadyRecorded = reason === 'post-round-insufficient-dice';
     lastProgressionRecovery = {
       reason,
       winner,
@@ -9477,7 +9478,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     gameOver(winner, {
       reason: 'mathematical_elimination',
       sourceReason: reason,
-      creditFinalRewardRound: winner === 'p1'
+      creditFinalRewardRound: winner === 'p1' && !finalRewardRoundAlreadyRecorded,
+      finalRewardRoundAlreadyRecorded
     });
     return true;
   }
@@ -12853,8 +12855,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const gameOverReason = options && options.reason ? String(options.reason) : 'dice_exhausted';
     const mathElimination = gameOverReason === 'mathematical_elimination';
     const sourceReason = options && options.sourceReason ? String(options.sourceReason) : '';
-    const roundRewardAlreadyRecorded = !!(roundResolutionState && roundResolutionState.rewardDie);
-    const shouldCreditFinalRewardRound = playerWon && !!(options && options.creditFinalRewardRound) && !roundRewardAlreadyRecorded;
+    const finalRewardRoundAlreadyRecorded = !!(options && options.finalRewardRoundAlreadyRecorded);
+    const shouldCreditFinalRewardRound = playerWon && !!(options && options.creditFinalRewardRound) && !finalRewardRoundAlreadyRecorded;
     clearRuntimeTimers();
     cancelProgressionWatchdog();
     stopTerminalAutoplayState();
@@ -12888,6 +12890,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       playerWon,
       reason: gameOverReason,
       sourceReason,
+      finalRewardRoundAlreadyRecorded,
+      finalRewardRoundCredited: false,
       autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS || null,
       autoRestartPausedForPwa: false
     };
@@ -12895,6 +12899,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (shouldCreditFinalRewardRound) {
       recordRoundWin('p1');
       finalRewardProgress = recordRewardDiePlayerRoundWin();
+      inlineGameOverState.finalRewardRoundCredited = true;
     }
     if (playerWon) {
       clearPostLossComebackRound('player-game-win');
