@@ -804,6 +804,7 @@ async function main() {
       assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
       const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
       assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.map(item => item.minWins).join('|') === '1|2|4|7|11|16|24|35', `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
       assert(
         rewardConfig.find(item => item.name === 'PLUME').effect === 'featherRipple' &&
         rewardConfig.find(item => item.name === 'TOXIC SPAT').effect === 'toxicSpat' &&
@@ -815,8 +816,8 @@ async function main() {
       );
       assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'PLUME|TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
       const rewardSkinFixture = await evalValue(page, `(() => {
-        const tieDye = window.TrashDiceQA.rewardSkinFixture(15);
-        const diamond = window.TrashDiceQA.rewardSkinFixture(40);
+        const tieDye = window.TrashDiceQA.rewardSkinFixture(11);
+        const diamond = window.TrashDiceQA.rewardSkinFixture(24);
         window.TrashDiceQA.setRewardWins(2);
         return { tieDye, diamond };
       })()`);
@@ -949,11 +950,8 @@ async function main() {
       assert(terminal.winLogoGlint.duplicateImageCount === 0, `${viewport.name}: win screen logo glint should not use duplicate logo bitmap ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.frameWidth <= terminal.winLogoGlint.logoWidth + 2, `${viewport.name}: win screen logo glint frame should not span the page ${JSON.stringify(terminal.winLogoGlint)}`);
       assert(terminal.winLogoGlint.logoFilter === 'none', `${viewport.name}: win screen logo should not use bitmap filter during title fanfare ${JSON.stringify(terminal.winLogoGlint)}`);
-      assert(terminal.rewardDie.present === true && terminal.rewardDie.visible === true, `${viewport.name}: reward die unlock should be visible on new tier ${JSON.stringify(terminal.rewardDie)}`);
-      assert(terminal.rewardDie.tier === '2' && terminal.rewardDie.name === 'TOXIC SPAT' && terminal.rewardDie.effect === 'toxicSpat', `${viewport.name}: reward die should unlock TOXIC SPAT at 3 wins ${JSON.stringify(terminal.rewardDie)}`);
-      assert(terminal.rewardDie.pipCount === 5 && terminal.rewardDie.rect.width >= 48 && terminal.rewardDie.rect.height >= 48, `${viewport.name}: reward die pips should stay fixed and legible ${JSON.stringify(terminal.rewardDie)}`);
-      assert(terminal.rewardDie.pipOutline === 'false' && terminal.rewardDie.pipOutlineColor === 'transparent', `${viewport.name}: TOXIC SPAT should use dark pips without patterned outline ${JSON.stringify(terminal.rewardDie)}`);
-      assert(terminal.rewardDie.state.totalWins === 3 && terminal.rewardDie.state.activeTier === 2 && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === 'BUBBLEGUM', `${viewport.name}: reward die state did not persist TOXIC SPAT threshold ${JSON.stringify(terminal.rewardDie.state)}`);
+      assert(terminal.rewardDie.present === true && terminal.rewardDie.visible === false, `${viewport.name}: game win should not trigger a separate reward unlock after round-win migration ${JSON.stringify(terminal.rewardDie)}`);
+      assert(terminal.rewardDie.state.totalWins === 2 && terminal.rewardDie.state.activeTier === 2 && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === 'BUBBLEGUM', `${viewport.name}: game win should preserve round-win reward state without double-counting ${JSON.stringify(terminal.rewardDie.state)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminal.activeAnimationCount <= 8, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
       }
@@ -1566,8 +1564,13 @@ async function main() {
       if (winner === 'p2') {
         assert(roundWinEarly.fullEvent === false && roundWinEarly.spillDuration === roundWinEarly.expectedCpuDuration, `green round-win probe: CPU round timing changed ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.canDance === false, `green round-win probe: CPU round should not gain player-only can dance ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstVisible === false && roundWinEarly.rewardDieVisible === false && roundWinEarly.rewardDieState.totalWins === 0, `green round-win probe: CPU round should not trigger player reward fanfare ${JSON.stringify(roundWinEarly)}`);
       } else {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.rewardDieVisible === true && roundWinEarly.rewardDieTier === '1' && roundWinEarly.rewardDieName === 'PLUME', `yellow round-win probe: first player round win should reveal PLUME reward die ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - 180));
       const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {

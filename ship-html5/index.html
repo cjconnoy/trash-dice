@@ -2529,6 +2529,7 @@ body.inline-game-over .roll-panel {
   .die.reward-skinned.effect-diamond::before,
   .slot-die.reward-skinned .slot-reward-effect,
   .slot-die.reward-skinned .slot-reward-pip,
+  .round-win-burst.show,
   .reward-die-unlock.show .reward-die-name {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
@@ -3127,6 +3128,79 @@ body.inline-game-loss .inline-result-banner {
 }
 .round-flash.p1 { animation: flashY 0.9s ease-out forwards; }
 .round-flash.p2 { animation: flashG 0.9s ease-out forwards; }
+
+.round-win-burst[hidden] {
+  display: none !important;
+}
+
+.round-win-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 170;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  opacity: 0;
+  transform: translate3d(0, -20vh, 0) scale(0.9);
+}
+
+.round-win-burst.show {
+  animation: roundWinBurstShell 1.75s cubic-bezier(.16,.92,.17,1) both;
+}
+
+.round-win-burst-content {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: clamp(4px, 1.5vw, 9px);
+  max-width: min(92vw, 680px);
+  text-align: center;
+  filter: drop-shadow(0 12px 13px rgba(16,39,20,0.34));
+}
+
+.round-win-burst-title {
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  line-height: 0.82;
+  color: #fff238;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 0 #0b5c31,
+    0 5px 0 #e1382b,
+    0 12px 18px rgba(0,0,0,0.34);
+}
+
+.round-win-burst-title span {
+  display: block;
+  font-size: clamp(2.35rem, 11.4vw, 5.85rem);
+}
+
+.round-win-burst-sub {
+  min-height: 1.1em;
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.82rem, 3.8vw, 1.3rem);
+  line-height: 1;
+  color: #e93a2d;
+  text-transform: uppercase;
+  text-shadow:
+    0 1.3px 0 #fff4a3,
+    0 4px 10px rgba(0,0,0,0.28);
+}
+
+.round-win-burst.has-reward .round-win-burst-sub {
+  color: #fff4a3;
+  text-shadow:
+    0 1.5px 0 #0b5c31,
+    0 4px 12px rgba(0,0,0,0.34);
+}
+
+@keyframes roundWinBurstShell {
+  0%   { opacity: 0; transform: translate3d(0, -18vh, 0) scale(0.78) rotate(-3deg); }
+  14%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1.08) rotate(2deg); }
+  25%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(0.99) rotate(-1deg); }
+  72%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate3d(0, -22vh, 0) scale(0.96) rotate(0deg); }
+}
 @keyframes flashY {
   0%   { background: rgba(245,200,0,0);    opacity: 1; }
   20%  { background: rgba(245,200,0,0.28); }
@@ -3670,6 +3744,13 @@ body.tablet-effects-lite.inline-game-over .roll-panel,
 body.tablet-effects-lite.inline-game-over .roll-btn {
   animation: none !important;
   filter: none !important;
+  will-change: auto;
+}
+body.tablet-effects-lite.inline-game-over .die.reward-skinned::before,
+body.tablet-effects-lite.inline-game-over .die.reward-skinned::after,
+body.tablet-effects-lite.inline-game-over .slot-die.reward-skinned .slot-reward-effect,
+body.tablet-effects-lite.inline-game-over .slot-die.reward-skinned .slot-reward-pip {
+  animation: none !important;
   will-change: auto;
 }
 body.tablet-effects-lite.inline-game-over .inline-result-banner {
@@ -7911,6 +7992,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 <!-- Flash + overlay -->
 <div class="round-flash" id="roundFlash"></div>
+<div class="round-win-burst" id="roundWinBurst" hidden aria-live="polite" aria-atomic="true">
+  <div class="round-win-burst-content">
+    <div class="round-win-burst-title"><span>ROUND</span><span>WINNER</span></div>
+    <div class="round-win-burst-sub" id="roundWinBurstSub">Reward die ready</div>
+  </div>
+</div>
 <div class="overlay" id="overlay">
   <div class="overlay-content">
     <div class="overlay-title" id="overlayTitle">Player 1 Wins!</div>
@@ -8131,16 +8218,17 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_UNLOCK_MS = 2800;
+  const ROUND_WIN_BURST_MS = 1750;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const REWARD_DICE = Object.freeze([
     { tier: 1, minWins: 1, name: 'PLUME', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
-    { tier: 2, minWins: 3, name: 'TOXIC SPAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
-    { tier: 3, minWins: 5, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'bubblePop', pipOutline: false },
-    { tier: 4, minWins: 10, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
-    { tier: 5, minWins: 15, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
-    { tier: 6, minWins: 25, name: 'CHROME', faceColor: '#C8CDD4', pipColor: '#1A1A1A', effect: 'shineSweep', pipOutline: false },
-    { tier: 7, minWins: 40, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
-    { tier: 8, minWins: 60, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true }
+    { tier: 2, minWins: 2, name: 'TOXIC SPAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
+    { tier: 3, minWins: 4, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'bubblePop', pipOutline: false },
+    { tier: 4, minWins: 7, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
+    { tier: 5, minWins: 11, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
+    { tier: 6, minWins: 16, name: 'CHROME', faceColor: '#C8CDD4', pipColor: '#1A1A1A', effect: 'shineSweep', pipOutline: false },
+    { tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
+    { tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true }
   ]);
   let forcedRolls = [];
   let betaSocket = null;
@@ -8202,6 +8290,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let inlineWinAccentTimer = null;
   let rewardDieWins = readRewardDieWins();
   let rewardDieUnlockTimer = null;
+  let roundWinBurstTimer = null;
   let rewardDiePreviewOverride = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
@@ -8542,6 +8631,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     terminalDiceCelebrateTimer = null;
     terminalDiceCelebrateRun++;
     rewardDieUnlockTimer = null;
+    roundWinBurstTimer = null;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
@@ -9047,6 +9137,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const rewardDieUnlock = document.getElementById('rewardDieUnlock');
   const rewardDie = document.getElementById('rewardDie');
   const rewardDieName = document.getElementById('rewardDieName');
+  const roundWinBurst = document.getElementById('roundWinBurst');
+  const roundWinBurstSub = document.getElementById('roundWinBurstSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
   const roundFlash  = document.getElementById('roundFlash');
@@ -9269,7 +9361,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     rewardDieUnlock.dataset.tier = String(die.tier);
     rewardDieUnlock.dataset.effect = die.effect || 'none';
     rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-    rewardDieUnlock.setAttribute('aria-label', `${die.name} reward die unlocked at ${totalWins} wins`);
+    rewardDieUnlock.setAttribute('aria-label', `${die.name} reward die unlocked at ${totalWins} player round wins`);
     rewardDieUnlock.hidden = false;
     rewardDieUnlock.classList.remove('show');
     void rewardDieUnlock.offsetWidth;
@@ -9283,7 +9375,58 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return rewardDieSnapshot(die);
   }
 
-  function recordRewardDiePlayerWin() {
+  function hideRoundWinBurst() {
+    if (roundWinBurst) {
+      roundWinBurst.classList.remove('show', 'p1', 'has-reward');
+      roundWinBurst.hidden = true;
+      roundWinBurst.removeAttribute('data-reward-tier');
+      roundWinBurst.removeAttribute('data-reward-name');
+    }
+    if (roundWinBurstTimer) {
+      cancelRuntimeTimer(roundWinBurstTimer);
+      roundWinBurstTimer = null;
+    }
+  }
+
+  function showRoundWinBurst(winner, rewardProgress = null) {
+    if (winner !== 'p1' || !roundWinBurst) return null;
+    const unlockedDie = rewardProgress && rewardProgress.unlockedDie ? rewardProgress.unlockedDie : null;
+    if (roundWinBurstTimer) {
+      cancelRuntimeTimer(roundWinBurstTimer);
+      roundWinBurstTimer = null;
+    }
+    roundWinBurst.hidden = false;
+    roundWinBurst.classList.remove('show', 'p1', 'has-reward');
+    roundWinBurst.classList.add('p1');
+    if (unlockedDie) {
+      roundWinBurst.classList.add('has-reward');
+      roundWinBurst.dataset.rewardTier = String(unlockedDie.tier);
+      roundWinBurst.dataset.rewardName = unlockedDie.name;
+    } else {
+      roundWinBurst.removeAttribute('data-reward-tier');
+      roundWinBurst.removeAttribute('data-reward-name');
+    }
+    if (roundWinBurstSub) {
+      roundWinBurstSub.textContent = unlockedDie
+        ? `${unlockedDie.name} die unlocked`
+        : `${rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins} round wins`;
+    }
+    void roundWinBurst.offsetWidth;
+    requestAnimationFrame(() => {
+      roundWinBurst.classList.add('show');
+    });
+    roundWinBurstTimer = runLater(() => {
+      roundWinBurstTimer = null;
+      hideRoundWinBurst();
+    }, ROUND_WIN_BURST_MS);
+    return {
+      shown: true,
+      unlockedDie: rewardDieSnapshot(unlockedDie),
+      totalWins: rewardProgress ? rewardProgress.totalWins : normalizeRewardWins(rewardDieWins)
+    };
+  }
+
+  function recordRewardDiePlayerRoundWin() {
     rewardDiePreviewOverride = null;
     const beforeWins = normalizeRewardWins(rewardDieWins);
     const beforeTier = activeRewardDie(beforeWins);
@@ -11712,6 +11855,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearTerminalDiceCelebration();
     clearInlineEndingVisuals();
     hideRewardDieUnlock();
+    hideRoundWinBurst();
     setRollButtonPlayAgainMode(false);
   }
 
@@ -11793,11 +11937,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       uses: firstGameAssistUses,
       last: lastFirstGameAssist ? { ...lastFirstGameAssist } : null
     };
-    if (playerWon) {
-      inlineGameOverState.rewardDie = recordRewardDiePlayerWin();
-    } else {
-      inlineGameOverState.rewardDie = getRewardDieState();
-    }
+    inlineGameOverState.rewardDie = getRewardDieState();
 
     gameStarted = true;
     busy = true;
@@ -12566,6 +12706,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.dataset.gameStarted = 'true';
     Audio.setMusicActive(true);
 
+    hideRoundWinBurst();
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
 
     requestAnimationFrame(() => {
@@ -12902,6 +13043,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   function recordRoundWin(winner) {
     if (!roundWins) roundWins = { p1: 0, p2: 0 };
     if (isValidPlayer(winner)) roundWins[winner]++;
+    return isValidPlayer(winner) ? roundWins[winner] : 0;
   }
 
   function beginRoundResolution(winner = current) {
@@ -12931,6 +13073,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     const winner = state.winner;
     recordRoundWin(winner);
+    const rewardProgress = winner === 'p1' ? recordRewardDiePlayerRoundWin() : null;
+    state.rewardDie = rewardProgress;
     const payoutDice = board.filter(Boolean);
     const lostTrashCount = Array.isArray(trashDice) ? trashDice.length : 0;
     const spillLoad = payoutDice.length;
@@ -12959,6 +13103,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
     const winnerStatusDuration = spillDuration + 260;
     startRoundWinnerStatus(winner, winnerStatusDuration);
+    if (winner === 'p1') showRoundWinBurst(winner, rewardProgress);
 
     // Only dice still sitting in the lid pay out; trash dice are already lost.
     showClaimBadge(winner, payoutDice, spillDuration);
@@ -13323,6 +13468,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       setRewardWins(totalWins = 0) {
         writeRewardDieWins(totalWins);
         hideRewardDieUnlock();
+        hideRoundWinBurst();
         resetRewardDieReviewPreview();
         return getRewardDieState();
       },
@@ -13334,6 +13480,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         rewardDiePreviewOverride = null;
         writeRewardDieWins(totalWins);
         hideRewardDieUnlock();
+        hideRoundWinBurst();
         current = 'p1';
         busy = false;
         rollBtn.disabled = false;
@@ -14003,6 +14150,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           const ui = getPlayerUi(forcedWinner);
           const statusStyle = ui.statusBar ? getComputedStyle(ui.statusBar) : null;
           const statusRect = ui.statusBar ? ui.statusBar.getBoundingClientRect() : null;
+          const burstStyle = roundWinBurst ? getComputedStyle(roundWinBurst) : null;
+          const rewardStyle = rewardDieUnlock ? getComputedStyle(rewardDieUnlock) : null;
+          const rewardRect = rewardDie ? rewardDie.getBoundingClientRect() : null;
           resolve({
             winner: forcedWinner,
             multiplayerActive: betaMultiplayerActive,
@@ -14027,6 +14177,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             payoutStatusFontSize: statusStyle ? statusStyle.fontSize : '',
             payoutStatusRect: statusRect ? { width: statusRect.width, height: statusRect.height } : null,
             payoutStatusText: ui.statusText ? ui.statusText.textContent : '',
+            roundWinBurstVisible: !!(roundWinBurst && !roundWinBurst.hidden && roundWinBurst.classList.contains('show') && burstStyle && burstStyle.display !== 'none' && parseFloat(burstStyle.opacity || '0') > 0),
+            roundWinBurstText: roundWinBurst ? roundWinBurst.textContent.replace(/\s+/g, ' ').trim() : '',
+            roundWinBurstRewardTier: roundWinBurst ? roundWinBurst.dataset.rewardTier || '' : '',
+            roundWinBurstRewardName: roundWinBurst ? roundWinBurst.dataset.rewardName || '' : '',
+            rewardDieVisible: !!(rewardDieUnlock && rewardDie && !rewardDieUnlock.hidden && rewardDieUnlock.classList.contains('show') && rewardStyle && rewardStyle.display !== 'none' && rewardRect && rewardRect.width >= 48 && rewardRect.height >= 48),
+            rewardDieTier: rewardDieUnlock ? rewardDieUnlock.dataset.tier || '' : '',
+            rewardDieName: rewardDieName ? rewardDieName.textContent || '' : '',
+            rewardDieState: getRewardDieState(),
             payoutComets: document.querySelectorAll('.player-payout-comet').length
           });
         }, 180);
