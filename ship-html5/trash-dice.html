@@ -9133,10 +9133,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     { id: 'diamond', tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
     { id: 'prism', tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true }
   ]);
-  const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([
-    { id: 'lethal-chicken', name: 'LETHAL CHICKEN', faceColor: '#FFD84A', pipColor: '#15130F', effect: 'lethalChicken', pipOutline: false },
-    { id: 'big-discoveries', name: 'BIG DISCOVERIES', faceColor: '#B7D70E', pipColor: '#2F342D', effect: 'bigCompass', pipOutline: false }
-  ]);
+  const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
   function rewardDiceSessionSeed() {
     const explicit = String(URL_OPTIONS.get('reward-seed') || URL_OPTIONS.get('rewardSeed') || '').trim();
