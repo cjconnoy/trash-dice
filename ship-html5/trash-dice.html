@@ -272,20 +272,25 @@ body:not([data-game-started="true"]) #trashCan > svg {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.08rem;
+  gap: 0;
+}
+.title-legal > span:first-child {
+  margin-bottom: clamp(0.3rem, 0.9vh, 0.46rem);
 }
 .title-studio-label {
-  color: rgba(15,95,50,0.74);
+  color: rgba(47,52,45,0.82);
   font-size: 0.76em;
   letter-spacing: 0.1em;
   line-height: 1;
+  margin-bottom: clamp(-0.08rem, -0.18vh, -0.02rem);
   text-transform: uppercase;
 }
 .title-odg-wordmark {
   display: block;
   width: clamp(118px, 9.4vw, 152px);
   height: auto;
-  opacity: 0.78;
+  margin-top: clamp(-0.18rem, -0.36vh, -0.06rem);
+  opacity: 0.82;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,0.3));
 }
 @media (min-width: 721px) {

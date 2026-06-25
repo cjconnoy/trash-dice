@@ -424,6 +424,7 @@ async function main() {
           const presenterSub = document.querySelector('.title-presenter-sub');
           const titleLogo = document.querySelector('.start-overlay .title-wrap.big .title-logo');
           const legal = document.querySelector('.title-legal');
+          const copyright = legal ? legal.querySelector('span:first-child') : null;
           const studioLabel = document.querySelector('.title-studio-label');
           const odgLogo = document.querySelector('.title-odg-wordmark');
           const startCan = document.querySelector('.start-lurker-can');
@@ -438,6 +439,8 @@ async function main() {
           const startCardRect = rect(startCard);
           const startCanRect = rect(startCan);
           const legalRect = rect(legal);
+          const copyrightRect = rect(copyright);
+          const studioLabelRect = rect(studioLabel);
           const odgRect = rect(odgLogo);
           return {
             presenterLogoWidth: presenterRect.width,
@@ -447,8 +450,11 @@ async function main() {
             titleToStartCard: startCardRect.top - titleRect.bottom,
             startCanToCard: startCardRect.left - startCanRect.right,
             startCardToLegal: legalRect.top - startCardRect.bottom,
+            copyrightToStudio: studioLabelRect.top - copyrightRect.bottom,
+            studioToOdg: odgRect.top - studioLabelRect.bottom,
             titleTaglinePresent: !!document.querySelector('.start-overlay .start-tagline'),
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
+            studioLabelColor: studioLabel ? getComputedStyle(studioLabel).color : '',
             odgLogoSrc: odgLogo ? odgLogo.getAttribute('src') : '',
             odgLogoAlt: odgLogo ? odgLogo.getAttribute('alt') : '',
             odgCenterOffset: odgRect.left + odgRect.width / 2 - window.innerWidth / 2,
@@ -458,6 +464,8 @@ async function main() {
             startCardRect,
             startCanRect,
             legalRect,
+            copyrightRect,
+            studioLabelRect,
             odgRect
           };
         })()
@@ -541,6 +549,8 @@ async function main() {
       assert(initial.titleLayout.titleTaglinePresent === false, `${viewport.name}: title tagline should move off the title screen ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: start card overlaps title legal ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.studioLabelText === 'Digital companion by', `${viewport.name}: title studio credit label missing ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.copyrightToStudio >= 4 && initial.titleLayout.studioToOdg <= initial.titleLayout.copyrightToStudio + 4, `${viewport.name}: studio credit should group with ODG logo, not Big Discoveries copyright ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.studioLabelColor.includes('47, 52, 45'), `${viewport.name}: studio credit color should match ODG wordmark family ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgLogoSrc.includes('assets/brand/odg-logo-charcoal.png') && initial.titleLayout.odgLogoAlt === 'OneDayGames', `${viewport.name}: title ODG wordmark missing ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.presenterSubHeight >= (viewport.mobile ? 8 : 9), `${viewport.name}: Presents text too small ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 100 : 104) && initial.titleLayout.odgRect.height >= 30, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
