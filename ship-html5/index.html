@@ -9995,10 +9995,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         totalWins: wins,
         activeDie: rewardDieSnapshot(active),
         nextDie: rewardDieSnapshot(next),
-        previewDie: active || next,
-        previewKind: active ? 'current' : 'next',
+        previewDie: next,
+        previewKind: 'next',
         roundsNeeded,
-        terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'DIE SKINS',
+        terminalKicker: `NEXT SKIN: ${next.name}`,
         roundLossKicker: 'KEEP ROLLING',
         line: `Win ${moreText} to unlock:`,
         unlockLine: `${next.name} DIE SKIN`
