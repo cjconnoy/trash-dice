@@ -2116,6 +2116,37 @@ body.inline-game-over .roll-panel {
   z-index: 3;
 }
 
+.reward-die.effect-featherRipple,
+.die.reward-skinned.effect-featherRipple {
+  background:
+    radial-gradient(circle at 26% 20%, rgba(255,255,255,0.76), rgba(255,255,255,0.16) 24%, transparent 45%),
+    linear-gradient(150deg, rgba(255,255,255,0.2), transparent 34%),
+    linear-gradient(330deg, rgba(0,0,0,0.25), transparent 56%),
+    var(--reward-face);
+}
+
+.reward-die.effect-featherRipple::before,
+.die.reward-skinned.effect-featherRipple::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: -16% -10%;
+  border-radius: 28%;
+  background:
+    linear-gradient(116deg, transparent 0 22%, rgba(255,214,76,0.95) 23% 33%, transparent 34% 100%),
+    linear-gradient(142deg, transparent 0 30%, rgba(255,88,169,0.9) 31% 42%, transparent 43% 100%),
+    linear-gradient(72deg, transparent 0 38%, rgba(74,255,136,0.9) 39% 49%, transparent 50% 100%),
+    linear-gradient(24deg, transparent 0 46%, rgba(112,106,255,0.88) 47% 58%, transparent 59% 100%);
+  opacity: 0.9;
+  transform: rotate(-8deg);
+  animation: rewardFeatherRipple 2.4s ease-in-out infinite;
+}
+
+.reward-die.effect-featherRipple .reward-die-pip-cell,
+.die.reward-skinned.effect-featherRipple .dot-cell {
+  z-index: 2;
+}
+
 .reward-die.effect-toxicSpat,
 .die.reward-skinned.effect-toxicSpat {
   background:
@@ -2128,9 +2159,30 @@ body.inline-game-over .roll-panel {
     var(--reward-face);
 }
 
+.reward-die.effect-toxicSpat::before,
+.die.reward-skinned.effect-toxicSpat::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 4% 7% 7%;
+  border-radius: 24% 22% 34% 28%;
+  background:
+    radial-gradient(ellipse at 28% 18%, rgba(189,255,58,0.92) 0 14%, transparent 15%),
+    radial-gradient(ellipse at 70% 76%, rgba(134,255,42,0.72) 0 18%, transparent 19%),
+    linear-gradient(180deg, rgba(184,255,49,0.22), rgba(19,95,19,0.16));
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 78% 70%, 74% 100%, 60% 71%, 45% 72%, 41% 94%, 29% 72%, 0 72%);
+  opacity: 0.92;
+  animation: rewardToxicOoze 1.7s ease-in-out infinite;
+}
+
 .reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
 .die.reward-skinned.effect-toxicSpat .dot {
   filter: drop-shadow(0 0 4px rgba(184,255,49,0.72));
+}
+
+.reward-die.effect-toxicSpat .reward-die-pip-cell,
+.die.reward-skinned.effect-toxicSpat .dot-cell {
+  z-index: 2;
 }
 
 .reward-die.effect-bolt::before,
@@ -2143,6 +2195,39 @@ body.inline-game-over .roll-panel {
   clip-path: polygon(54% 0, 27% 43%, 51% 43%, 35% 100%, 79% 34%, 56% 34%);
   filter: drop-shadow(0 2px 0 rgba(37,49,12,0.36));
   transform: rotate(-10deg);
+  animation: rewardBoltZap 0.72s steps(2, end) infinite;
+}
+
+.reward-die.effect-bubblePop,
+.die.reward-skinned.effect-bubblePop {
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.72), rgba(255,255,255,0.18) 22%, transparent 42%),
+    radial-gradient(circle at 64% 36%, rgba(255,230,249,0.66) 0 16%, transparent 18%),
+    linear-gradient(150deg, rgba(255,255,255,0.18), transparent 36%),
+    linear-gradient(330deg, rgba(0,0,0,0.24), transparent 54%),
+    var(--reward-face);
+}
+
+.reward-die.effect-bubblePop::before,
+.die.reward-skinned.effect-bubblePop::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 16%;
+  left: 53%;
+  width: 35%;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.92) 0 15%, transparent 17%),
+    radial-gradient(circle at 52% 54%, rgba(255,184,235,0.74), rgba(255,92,190,0.35) 62%, transparent 66%);
+  border: 1.5px solid rgba(255,245,255,0.72);
+  animation: rewardBubblePop 1.65s ease-in-out infinite;
+}
+
+.reward-die.effect-bubblePop .reward-die-pip-cell,
+.die.reward-skinned.effect-bubblePop .dot-cell {
+  z-index: 2;
 }
 
 .reward-die.effect-tieDye,
@@ -2213,6 +2298,11 @@ body.inline-game-over .roll-panel {
     linear-gradient(120deg, transparent 0 48%, rgba(255,255,255,0.52) 49% 51%, transparent 52%),
     linear-gradient(0deg, transparent 0 47%, rgba(55,128,168,0.34) 48% 50%, transparent 51%);
   opacity: 0.82;
+  animation: rewardDiamondFacetGlimmer 1.7s ease-in-out infinite;
+}
+
+.reward-die.effect-diamond .reward-die-spark {
+  animation: rewardDiamondSparkle 1.05s ease-in-out infinite;
 }
 
 .reward-die-spark {
@@ -2256,13 +2346,21 @@ body.inline-game-over .roll-panel {
   transform-origin: center;
 }
 
+.slot-die.reward-skinned.effect-featherRipple .slot-reward-effect {
+  animation: slotRewardFeatherRipple 2.3s ease-in-out infinite;
+}
+
 .slot-die.reward-skinned.effect-toxicSpat .slot-reward-effect,
 .slot-die.reward-skinned.effect-toxicSpat .slot-reward-pip {
-  animation: slotRewardToxicPulse 1.35s ease-in-out infinite;
+  animation: slotRewardToxicOoze 1.5s ease-in-out infinite;
 }
 
 .slot-die.reward-skinned.effect-bolt .slot-reward-effect {
-  animation: slotRewardBoltFlicker 1.18s steps(2, end) infinite;
+  animation: slotRewardBoltZap 0.72s steps(2, end) infinite;
+}
+
+.slot-die.reward-skinned.effect-bubblePop .slot-reward-effect {
+  animation: slotRewardBubblePop 1.65s ease-in-out infinite;
 }
 
 .slot-die.reward-skinned.effect-tieDye .slot-reward-effect {
@@ -2274,7 +2372,7 @@ body.inline-game-over .roll-panel {
 }
 
 .slot-die.reward-skinned.effect-diamond .slot-reward-effect {
-  animation: slotRewardDiamondGlint 1.65s ease-in-out infinite;
+  animation: slotRewardDiamondSparkle 1.25s ease-in-out infinite;
 }
 
 .slot-die.reward-skinned.effect-colorCycle .slot-reward-effect {
@@ -2300,6 +2398,32 @@ body.inline-game-over .roll-panel {
   50% { filter: drop-shadow(0 0 6px rgba(180,255,120,0.76)); transform: scale(1.12); }
 }
 
+@keyframes rewardFeatherRipple {
+  0%, 100% { transform: rotate(-9deg) translate3d(0,0,0) skewX(0deg); filter: hue-rotate(0deg) saturate(1.02); }
+  35% { transform: rotate(-6deg) translate3d(2px,-1px,0) skewX(-4deg); filter: hue-rotate(10deg) saturate(1.14); }
+  70% { transform: rotate(-11deg) translate3d(-1px,1px,0) skewX(3deg); filter: hue-rotate(-8deg) saturate(1.08); }
+}
+
+@keyframes rewardToxicOoze {
+  0%, 100% { transform: translate3d(0,-2px,0) scale(1,0.96); filter: drop-shadow(0 0 0 rgba(184,255,49,0)); opacity: 0.82; }
+  45% { transform: translate3d(0,2px,0) scale(1.04,1.09); filter: drop-shadow(0 0 6px rgba(184,255,49,0.62)); opacity: 1; }
+  72% { transform: translate3d(0,4px,0) scale(0.98,1.13); opacity: 0.94; }
+}
+
+@keyframes rewardBoltZap {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 2px 0 rgba(37,49,12,0.36)); transform: rotate(-10deg) scale(1); }
+  18% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255,247,98,0.95)); transform: rotate(-10deg) scale(1.1); }
+  26% { opacity: 0.48; filter: drop-shadow(0 1px 0 rgba(37,49,12,0.26)); transform: rotate(-10deg) scale(0.96); }
+  38% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,247,98,0.9)); transform: rotate(-10deg) scale(1.06); }
+}
+
+@keyframes rewardBubblePop {
+  0%, 100% { opacity: 0; transform: scale(0.22) translate3d(0,7px,0); }
+  18% { opacity: 0.74; transform: scale(0.66) translate3d(0,2px,0); }
+  48% { opacity: 0.92; transform: scale(1.05) translate3d(0,-1px,0); }
+  64% { opacity: 0; transform: scale(1.38) translate3d(0,-3px,0); }
+}
+
 @keyframes rewardTieDyeSpin {
   0% { transform: rotate(0deg) scale(1.02); }
   100% { transform: rotate(360deg) scale(1.02); }
@@ -2317,19 +2441,45 @@ body.inline-game-over .roll-panel {
   22% { opacity: 1; transform: rotate(45deg) scale(1.08); }
 }
 
+@keyframes rewardDiamondFacetGlimmer {
+  0%, 100% { opacity: 0.54; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  35% { opacity: 0.96; filter: drop-shadow(0 0 5px rgba(255,255,255,0.66)); }
+  64% { opacity: 0.72; filter: drop-shadow(0 0 2px rgba(132,220,255,0.5)); }
+}
+
+@keyframes rewardDiamondSparkle {
+  0%, 42%, 100% { opacity: 0; transform: rotate(45deg) scale(0.48); }
+  16% { opacity: 1; transform: rotate(45deg) scale(1.18); filter: drop-shadow(0 0 7px rgba(255,255,255,0.88)); }
+  26% { opacity: 0.35; transform: rotate(45deg) scale(0.78); }
+}
+
 @keyframes rewardPrismCycle {
   0% { filter: hue-rotate(0deg) saturate(1.12); }
   100% { filter: hue-rotate(360deg) saturate(1.12); }
 }
 
-@keyframes slotRewardToxicPulse {
-  0%, 100% { opacity: 0.72; filter: drop-shadow(0 0 0 rgba(184,255,49,0)); transform: scale(1); }
-  50% { opacity: 1; filter: drop-shadow(0 0 3px rgba(184,255,49,0.72)); transform: scale(1.08); }
+@keyframes slotRewardFeatherRipple {
+  0%, 100% { opacity: 0.72; transform: translate3d(0,0,0) rotate(0deg) scale(1); filter: hue-rotate(0deg); }
+  42% { opacity: 0.92; transform: translate3d(0.8px,-0.6px,0) rotate(-4deg) scale(1.05); filter: hue-rotate(10deg); }
+  72% { opacity: 0.86; transform: translate3d(-0.7px,0.5px,0) rotate(3deg) scale(1.03); filter: hue-rotate(-8deg); }
 }
 
-@keyframes slotRewardBoltFlicker {
-  0%, 100% { opacity: 0.78; filter: drop-shadow(0 0.8px 0 rgba(37,49,12,0.38)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 3px rgba(255,230,66,0.72)); }
+@keyframes slotRewardToxicOoze {
+  0%, 100% { opacity: 0.68; filter: drop-shadow(0 0 0 rgba(184,255,49,0)); transform: translateY(-0.5px) scale(1,0.96); }
+  52% { opacity: 1; filter: drop-shadow(0 0 3px rgba(184,255,49,0.72)); transform: translateY(1px) scale(1.07,1.13); }
+}
+
+@keyframes slotRewardBoltZap {
+  0%, 100% { opacity: 0.7; filter: drop-shadow(0 0.8px 0 rgba(37,49,12,0.38)); transform: scale(1); }
+  22%, 38% { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,230,66,0.82)); transform: scale(1.12); }
+  30% { opacity: 0.38; transform: scale(0.96); }
+}
+
+@keyframes slotRewardBubblePop {
+  0%, 100% { opacity: 0; transform: translate3d(0,2px,0) scale(0.22); }
+  24% { opacity: 0.78; transform: translate3d(0,0,0) scale(0.7); }
+  52% { opacity: 0.94; transform: translate3d(0,-1px,0) scale(1.05); }
+  66% { opacity: 0; transform: translate3d(0,-2px,0) scale(1.34); }
 }
 
 @keyframes slotRewardTieDyeDrift {
@@ -2344,9 +2494,10 @@ body.inline-game-over .roll-panel {
   100% { opacity: 0; transform: translateX(15px) skewX(-12deg); }
 }
 
-@keyframes slotRewardDiamondGlint {
-  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
-  45% { opacity: 0.92; filter: drop-shadow(0 0 3px rgba(255,255,255,0.72)); }
+@keyframes slotRewardDiamondSparkle {
+  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); transform: scale(1); }
+  36% { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,255,255,0.86)); transform: scale(1.08); }
+  58% { opacity: 0.54; filter: drop-shadow(0 0 2px rgba(132,220,255,0.62)); transform: scale(0.98); }
 }
 
 @keyframes slotRewardPrismCycle {
@@ -2362,9 +2513,20 @@ body.inline-game-over .roll-panel {
   .reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
   .reward-die.effect-shineSweep::after,
   .reward-die.effect-glint .reward-die-spark,
+  .reward-die.effect-featherRipple::before,
   .reward-die.effect-tieDye::before,
+  .reward-die.effect-toxicSpat::before,
+  .reward-die.effect-bolt::before,
+  .reward-die.effect-bubblePop::before,
+  .reward-die.effect-diamond::before,
+  .reward-die.effect-diamond .reward-die-spark,
+  .die.reward-skinned.effect-featherRipple::before,
   .die.reward-skinned.effect-shineSweep::after,
   .die.reward-skinned.effect-tieDye::before,
+  .die.reward-skinned.effect-toxicSpat::before,
+  .die.reward-skinned.effect-bolt::before,
+  .die.reward-skinned.effect-bubblePop::before,
+  .die.reward-skinned.effect-diamond::before,
   .slot-die.reward-skinned .slot-reward-effect,
   .slot-die.reward-skinned .slot-reward-pip,
   .reward-die-unlock.show .reward-die-name {
@@ -7636,7 +7798,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 <div class="reward-die-unlock" id="rewardDieUnlock" hidden aria-live="polite" aria-atomic="true">
   <div class="reward-die-scene">
-    <div class="reward-die-name" id="rewardDieName">RUST</div>
+    <div class="reward-die-name" id="rewardDieName">PLUME</div>
     <div class="reward-die-wrap">
       <div class="reward-die effect-none" id="rewardDie" data-tier="0" data-effect="none" data-pip-outline="false" aria-hidden="true">
         <span class="reward-die-pip-cell" data-pip="tl"><span class="reward-die-pip"></span></span>
@@ -7971,9 +8133,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const REWARD_DICE_UNLOCK_MS = 2800;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const REWARD_DICE = Object.freeze([
-    { tier: 1, minWins: 1, name: 'RUST', faceColor: '#C0421F', pipColor: '#FFFFFF', effect: 'none', pipOutline: false },
+    { tier: 1, minWins: 1, name: 'PLUME', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
     { tier: 2, minWins: 3, name: 'TOXIC SPAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
-    { tier: 3, minWins: 5, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'none', pipOutline: false },
+    { tier: 3, minWins: 5, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'bubblePop', pipOutline: false },
     { tier: 4, minWins: 10, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
     { tier: 5, minWins: 15, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
     { tier: 6, minWins: 25, name: 'CHROME', faceColor: '#C8CDD4', pipColor: '#1A1A1A', effect: 'shineSweep', pipOutline: false },
@@ -8674,9 +8836,34 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       return el;
     };
     const effect = die.effect || 'none';
+    if (effect === 'featherRipple') {
+      [
+        [-0.28, -0.22, '#ffd64c', -22],
+        [-0.02, -0.04, '#ff58a9', -10],
+        [0.23, 0.16, '#4aff88', 8],
+        [0.04, 0.27, '#706aff', 22]
+      ].forEach(([x, y, fill, angle]) => {
+        g.appendChild(make('ellipse', {
+          class: 'slot-reward-effect',
+          cx: f(x * size),
+          cy: f(y * size),
+          rx: f(size * 0.11),
+          ry: f(size * 0.34),
+          fill,
+          opacity: '0.84',
+          transform: `rotate(${angle} ${f(x * size)} ${f(y * size)})`
+        }));
+      });
+      return;
+    }
     if (effect === 'toxicSpat') {
       g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(-size * 0.23), cy: f(-size * 0.25), rx: f(size * 0.18), ry: f(size * 0.13), fill: 'rgba(184,255,49,0.88)' }));
       g.appendChild(make('ellipse', { class: 'slot-reward-effect', cx: f(size * 0.22), cy: f(size * 0.2), rx: f(size * 0.17), ry: f(size * 0.14), fill: 'rgba(186,255,56,0.72)' }));
+      g.appendChild(make('path', {
+        class: 'slot-reward-effect',
+        d: `M${f(-size * 0.4)} ${f(size * 0.08)} C${f(-size * 0.08)} ${f(size * 0.18)} ${f(size * 0.18)} ${f(size * 0.02)} ${f(size * 0.42)} ${f(size * 0.15)} L${f(size * 0.3)} ${f(size * 0.38)} C${f(size * 0.08)} ${f(size * 0.25)} ${f(-size * 0.16)} ${f(size * 0.42)} ${f(-size * 0.33)} ${f(size * 0.27)} Z`,
+        fill: 'rgba(120,255,40,0.42)'
+      }));
       return;
     }
     if (effect === 'bolt') {
@@ -8685,6 +8872,25 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         [-0.14, 0.43], [0.31, -0.1], [0.09, -0.1]
       ].map(([x, y]) => `${f(x * size)},${f(y * size)}`).join(' ');
       g.appendChild(make('polygon', { class: 'slot-reward-effect', points: pts, fill: '#ffe642', opacity: '0.94', filter: 'drop-shadow(0 0.8px 0 rgba(37,49,12,0.38))' }));
+      return;
+    }
+    if (effect === 'bubblePop') {
+      g.appendChild(make('circle', {
+        class: 'slot-reward-effect',
+        cx: f(size * 0.2),
+        cy: f(-size * 0.2),
+        r: f(size * 0.18),
+        fill: 'rgba(255,211,245,0.68)',
+        stroke: 'rgba(255,255,255,0.74)',
+        'stroke-width': '0.9'
+      }));
+      g.appendChild(make('circle', {
+        class: 'slot-reward-effect',
+        cx: f(size * 0.13),
+        cy: f(-size * 0.27),
+        r: f(size * 0.045),
+        fill: 'rgba(255,255,255,0.92)'
+      }));
       return;
     }
     if (effect === 'tieDye') {

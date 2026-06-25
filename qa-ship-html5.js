@@ -777,8 +777,8 @@ async function main() {
           progressState: window.TrashDiceQA.rewardDieState()
         };
       })()`);
-      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'RUST' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
-      assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'RUST', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
+      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'PLUME' && rewardReview.playerSkin.effect === 'featherRipple', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
@@ -803,21 +803,32 @@ async function main() {
       })()`);
       assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
       const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
-      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'RUST|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
-      assert(rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' && rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye', `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
-      assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
+      assert(
+        rewardConfig.find(item => item.name === 'PLUME').effect === 'featherRipple' &&
+        rewardConfig.find(item => item.name === 'TOXIC SPAT').effect === 'toxicSpat' &&
+        rewardConfig.find(item => item.name === 'BUBBLEGUM').effect === 'bubblePop' &&
+        rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' &&
+        rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye' &&
+        rewardConfig.find(item => item.name === 'DIAMOND').effect === 'diamond',
+        `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`
+      );
+      assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'PLUME|TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
       const rewardSkinFixture = await evalValue(page, `(() => {
-        const probe = window.TrashDiceQA.rewardSkinFixture(15);
+        const tieDye = window.TrashDiceQA.rewardSkinFixture(15);
+        const diamond = window.TrashDiceQA.rewardSkinFixture(40);
         window.TrashDiceQA.setRewardWins(2);
-        return probe;
+        return { tieDye, diamond };
       })()`);
-      const playerRewardSlot = rewardSkinFixture.slots.find(slot => slot.player === 'p1');
-      const cpuRewardSlot = rewardSkinFixture.slots.find(slot => slot.player === 'p2');
-      assert(rewardSkinFixture.playerDie.rewardSkinned === true && rewardSkinFixture.playerDie.tier === '5' && rewardSkinFixture.playerDie.name === 'TIE-DYE', `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture)}`);
-      assert(rewardSkinFixture.cpuDie.rewardSkinned === false && rewardSkinFixture.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.cpuDie)}`);
-      assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === '5' && playerRewardSlot.name === 'TIE-DYE' && playerRewardSlot.pipOutline === 'true', `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
+      const playerRewardSlot = rewardSkinFixture.tieDye.slots.find(slot => slot.player === 'p1');
+      const cpuRewardSlot = rewardSkinFixture.tieDye.slots.find(slot => slot.player === 'p2');
+      const diamondRewardSlot = rewardSkinFixture.diamond.slots.find(slot => slot.player === 'p1');
+      assert(rewardSkinFixture.tieDye.playerDie.rewardSkinned === true && rewardSkinFixture.tieDye.playerDie.tier === '5' && rewardSkinFixture.tieDye.playerDie.name === 'TIE-DYE', `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture.tieDye)}`);
+      assert(rewardSkinFixture.tieDye.cpuDie.rewardSkinned === false && rewardSkinFixture.tieDye.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.tieDye.cpuDie)}`);
+      assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === '5' && playerRewardSlot.name === 'TIE-DYE' && playerRewardSlot.pipOutline === 'true', `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
       assert(playerRewardSlot.animationNames.includes('slotRewardTieDyeDrift'), `${viewport.name}: player's seated reward die should keep its live animation ${JSON.stringify(playerRewardSlot)}`);
-      assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
+      assert(diamondRewardSlot && diamondRewardSlot.rewardSkinned === true && diamondRewardSlot.tier === '7' && diamondRewardSlot.name === 'DIAMOND' && diamondRewardSlot.animationNames.includes('slotRewardDiamondSparkle'), `${viewport.name}: diamond seated reward die should sparkle ${JSON.stringify(diamondRewardSlot)}`);
+      assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);
@@ -944,7 +955,7 @@ async function main() {
       assert(terminal.rewardDie.pipOutline === 'false' && terminal.rewardDie.pipOutlineColor === 'transparent', `${viewport.name}: TOXIC SPAT should use dark pips without patterned outline ${JSON.stringify(terminal.rewardDie)}`);
       assert(terminal.rewardDie.state.totalWins === 3 && terminal.rewardDie.state.activeTier === 2 && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === 'BUBBLEGUM', `${viewport.name}: reward die state did not persist TOXIC SPAT threshold ${JSON.stringify(terminal.rewardDie.state)}`);
       if (viewport.mobile && viewport.width > 720) {
-        assert(terminal.activeAnimationCount <= 6, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
+        assert(terminal.activeAnimationCount <= 8, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
       }
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
