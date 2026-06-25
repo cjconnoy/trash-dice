@@ -419,6 +419,17 @@ async function main() {
             transform: glintStyle.transform
           };
         })(),
+        titleHeroDice: (() => {
+          const dice = Array.from(document.querySelectorAll('.start-dice-row .start-die'));
+          return {
+            count: dice.length,
+            classNames: dice.map(el => el.className),
+            rewardNames: dice.map(el => el.dataset.rewardName || ''),
+            rewardEffects: dice.map(el => el.dataset.rewardEffect || ''),
+            rewardSkinned: dice.map(el => el.classList.contains('reward-skinned')),
+            state: window.TrashDiceQA.titleHeroDiceState()
+          };
+        })(),
         titleLayout: (() => {
           const presenterLogo = document.querySelector('.title-presenter-logo');
           const presenterSub = document.querySelector('.title-presenter-sub');
@@ -487,6 +498,7 @@ async function main() {
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
+      assert(initial.titleHeroDice.count === 2 && initial.titleHeroDice.state.pair === 'default' && initial.titleHeroDice.rewardSkinned.every(value => value === false), `${viewport.name}: title hero dice should start on default yellow/green dice ${JSON.stringify(initial.titleHeroDice)}`);
       assert(initial.quitButton === true, `${viewport.name}: quit button missing`);
       assert(initial.audioMuteButton === true, `${viewport.name}: mute button missing`);
       assert(initial.quitRect.width >= 88 && initial.quitRect.height >= 42, `${viewport.name}: quit button is too small ${JSON.stringify(initial.quitRect)}`);
@@ -579,6 +591,12 @@ async function main() {
       assert(initial.titleLayout.odgRect.width >= (viewport.mobile ? 100 : 104) && initial.titleLayout.odgRect.height >= 30, `${viewport.name}: title ODG wordmark too small ${JSON.stringify(initial.titleLayout)}`);
       assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.badgeRect === null, `${viewport.name}: beta badge should be removed from retail title ${JSON.stringify(initial.badgeRect)}`);
+      const titleHeroDiceCycle = await evalValue(page, `(() => {
+        return Array.from({ length: 6 }, () => window.TrashDiceQA.advanceTitleHeroDiceCycle());
+      })()`);
+      const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
+      assert(titleHeroDiceNames.join(' > ') === 'PLUME|TOXIC SPLAT > BUBBLEGUM|VOLT ZAP > TIE-DYE|SUNRISE > DIAMOND|PRISM > DEFAULT|DEFAULT > PLUME|TOXIC SPLAT', `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle.slice(0, 4).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: mobile start card overlaps legal ${JSON.stringify(initial.titleLayout)}`);

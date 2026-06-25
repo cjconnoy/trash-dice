@@ -7542,6 +7542,22 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     0 1px 1px rgba(255,255,255,0.16);
 }
 .start-die.green .dot { background: var(--green-pip); }
+.start-die.die.reward-skinned {
+  box-shadow:
+    7px 8px 0 var(--reward-edge),
+    13px 14px 0 rgba(0,0,0,0.34),
+    0 12px 28px rgba(0,0,0,0.5),
+    inset 0 0 0 2px rgba(255,255,255,0.16),
+    inset -10px -12px 16px rgba(0,0,0,0.18);
+}
+.start-die.die.reward-skinned .dot {
+  background: var(--reward-pip);
+  box-shadow:
+    0 0 0 1.5px var(--reward-pip-outline),
+    inset 1.7px 1.7px 3px rgba(0,0,0,0.48),
+    inset -1px -1px 2px rgba(255,255,255,0.14),
+    0 1px 1px rgba(255,255,255,0.13);
+}
 .start-tagline {
   font-size: clamp(1rem, 3.5vw, 1.3rem);
   letter-spacing: 0.08em;
@@ -8663,12 +8679,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       </svg>
     </div>
     <div class="start-dice-row">
-      <div class="start-die yellow">
+      <div class="start-die die yellow">
         <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
         <div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"><div class="dot"></div></div>
         <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
       </div>
-      <div class="start-die green">
+      <div class="start-die die green">
         <div class="dot-cell"></div><div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div>
         <div class="dot-cell"></div><div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div>
         <div class="dot-cell"><div class="dot"></div></div><div class="dot-cell"></div><div class="dot-cell"></div>
@@ -9926,6 +9942,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const betaRoomStatus = document.getElementById('betaRoomStatus');
   const startOverlayEl = document.getElementById('startOverlay');
   const startLurkerCan = document.querySelector('.start-lurker-can');
+  const startHeroDice = Array.from(document.querySelectorAll('.start-dice-row .start-die')).slice(0, 2);
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -10413,21 +10430,74 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let slotDiceEls = [];
   let slotInfo = [];
   let titleCanMotionTimer = null;
+  let titleCanMotionListener = null;
+  let titleHeroDiceCycleIndex = -1;
 
   function cleanRoomCode(value) {
     return String(value || '').replace(/\D/g, '').slice(0, 4);
   }
 
+  function titleHeroDiceSnapshot() {
+    return {
+      cycleIndex: titleHeroDiceCycleIndex,
+      pair: titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1),
+      dice: startHeroDice.map(el => ({
+        rewardSkinned: !!(el && el.classList.contains('reward-skinned')),
+        rewardTier: el ? el.dataset.rewardTier || '' : '',
+        rewardName: el ? el.dataset.rewardName || '' : '',
+        rewardEffect: el ? el.dataset.rewardEffect || '' : ''
+      }))
+    };
+  }
+
+  function applyTitleHeroDiceCycle(index = -1) {
+    const pairCount = Math.ceil(REWARD_DICE.length / 2);
+    titleHeroDiceCycleIndex = index >= 0 ? clamp(Math.floor(index), 0, pairCount - 1) : -1;
+    const pairStart = titleHeroDiceCycleIndex >= 0 ? titleHeroDiceCycleIndex * 2 : -1;
+    startHeroDice.forEach((el, i) => {
+      if (!el) return;
+      clearRewardDieElementVisual(el);
+      el.classList.remove('title-reward-die');
+      el.dataset.titleRewardPair = titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1);
+      const die = pairStart >= 0 ? REWARD_DICE[pairStart + i] : null;
+      if (die) {
+        applyRewardDieElementVisual(el, die);
+        el.classList.add('title-reward-die');
+      }
+    });
+    return titleHeroDiceSnapshot();
+  }
+
+  function advanceTitleHeroDiceCycle() {
+    if (gameStarted) return applyTitleHeroDiceCycle(-1);
+    const pairCount = Math.ceil(REWARD_DICE.length / 2);
+    const nextIndex = titleHeroDiceCycleIndex >= pairCount - 1 ? -1 : titleHeroDiceCycleIndex + 1;
+    return applyTitleHeroDiceCycle(nextIndex);
+  }
+
+  function onTitleCanAnimationIteration(event) {
+    if (event && event.animationName && !String(event.animationName).startsWith('startCanLurk')) return;
+    advanceTitleHeroDiceCycle();
+  }
+
   function startTitleCanMotion() {
-    // iPad title motion is CSS-owned so WebKit can keep it on the compositor.
-    if (IPAD_GAMEPLAY_PERFORMANCE_MODE) stopTitleCanMotion(true);
+    applyTitleHeroDiceCycle(-1);
+    if (!startLurkerCan) return;
+    if (titleCanMotionListener) startLurkerCan.removeEventListener('animationiteration', titleCanMotionListener);
+    titleCanMotionListener = onTitleCanAnimationIteration;
+    startLurkerCan.addEventListener('animationiteration', titleCanMotionListener);
   }
 
   function stopTitleCanMotion(reset = true) {
+    if (titleCanMotionListener && startLurkerCan) {
+      startLurkerCan.removeEventListener('animationiteration', titleCanMotionListener);
+      titleCanMotionListener = null;
+    }
     if (titleCanMotionTimer !== null) {
       window.clearInterval(titleCanMotionTimer);
       titleCanMotionTimer = null;
     }
+    if (reset) applyTitleHeroDiceCycle(-1);
     if (reset && startLurkerCan) {
       startLurkerCan.style.removeProperty('left');
       startLurkerCan.style.removeProperty('transform');
@@ -14751,6 +14821,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       },
       rewardDieState() {
         return getRewardDieState();
+      },
+      titleHeroDiceState() {
+        return titleHeroDiceSnapshot();
+      },
+      advanceTitleHeroDiceCycle() {
+        return advanceTitleHeroDiceCycle();
       },
       setRewardWins(totalWins = 0) {
         writeRewardDieWins(totalWins);
