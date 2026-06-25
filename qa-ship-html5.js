@@ -1221,6 +1221,7 @@ async function main() {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
 
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(6); true`);
       const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player win complete`);
       await sleep(760);
@@ -1236,8 +1237,17 @@ async function main() {
         const stampPanel = stamp ? stamp.closest('.player-panel') : null;
         const stampPanelRect = stampPanel ? stampPanel.getBoundingClientRect() : null;
         const stampStyle = stamp ? getComputedStyle(stamp) : null;
+        const nudge = document.getElementById('terminalRewardNudge');
+        const nudgeDie = document.getElementById('terminalRewardNudgeDie');
+        const nudgeLine = document.getElementById('terminalRewardNudgeLine');
+        const nudgeUnlock = document.getElementById('terminalRewardNudgeUnlock');
+        const nudgeKicker = document.getElementById('terminalRewardNudgeKicker');
+        const nudgeRect = nudge ? nudge.getBoundingClientRect() : null;
+        const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
         return {
           state: window.TrashDiceQA.state().inlineGameOver,
+          rewardState: window.TrashDiceQA.rewardDieState(),
+          roundWins: window.TrashDiceQA.state().roundWins,
           title,
           sub,
           p1Text: (document.getElementById('p1StatusText') || {}).textContent || '',
@@ -1252,6 +1262,20 @@ async function main() {
             visible: !!stampRect && !!stampStyle && stampStyle.visibility !== 'hidden' && parseFloat(stampStyle.opacity || '0') > 0.9 && stampRect.width > 0 && stampRect.height > 0,
             fitsViewport: !!stampRect && stampRect.left >= -1 && stampRect.right <= window.innerWidth + 1 && stampRect.top >= -1 && stampRect.bottom <= window.innerHeight + 1,
             fitsPanel: !!stampRect && !!stampPanelRect && stampRect.left >= stampPanelRect.left - 1 && stampRect.right <= stampPanelRect.right + 1 && stampRect.top >= stampPanelRect.top - 1 && stampRect.bottom <= stampPanelRect.bottom + 1
+          },
+          terminalRewardNudge: {
+            present: !!nudge,
+            visible: !!nudge && !!nudgeStyle && !nudge.hidden && nudgeStyle.display !== 'none' && !!nudgeRect && nudgeRect.width >= 120 && nudgeRect.height >= 28,
+            text: nudge ? nudge.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: nudgeKicker ? nudgeKicker.textContent || '' : '',
+            line: nudgeLine ? nudgeLine.textContent || '' : '',
+            unlockLine: nudgeUnlock ? nudgeUnlock.textContent || '' : '',
+            nextName: nudge ? nudge.dataset.nextName || '' : '',
+            roundsNeeded: nudge ? nudge.dataset.roundsNeeded || '' : '',
+            preview: nudge ? nudge.dataset.preview || '' : '',
+            dieRewardSkinned: !!(nudgeDie && nudgeDie.classList.contains('reward-skinned')),
+            dieName: nudgeDie ? nudgeDie.dataset.rewardName || '' : '',
+            dieEffect: nudgeDie ? nudgeDie.dataset.rewardEffect || '' : ''
           },
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           scrollWidth: document.body.scrollWidth,
@@ -1274,6 +1298,13 @@ async function main() {
       })()`);
       assert(mathPlayerWin.passed === true, `${viewport.name}: mathematical player win proof failed ${JSON.stringify(mathPlayerWin)}`);
       assert(mathPlayerWinUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player win reason missing ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWin.inlineGameOver.rewardDie && mathPlayerWin.inlineGameOver.rewardDie.totalWins === 7 && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie && mathPlayerWin.inlineGameOver.rewardDie.unlockedDie.name === 'VOLT ZAP', `${viewport.name}: mathematical player win should credit the final reward round ${JSON.stringify(mathPlayerWin)}`);
+      assert(mathPlayerWinUi.rewardState.totalWins === 7 && mathPlayerWinUi.rewardState.activeName === 'VOLT ZAP', `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify(mathPlayerWinUi.rewardState)}`);
+      assert(mathPlayerWinUi.roundWins && mathPlayerWinUi.roundWins.p1 >= 1, `${viewport.name}: mathematical player win should count as a player round win ${JSON.stringify(mathPlayerWinUi.roundWins)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.present === true && mathPlayerWinUi.terminalRewardNudge.visible === true, `${viewport.name}: mathematical player win terminal reward nudge missing ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.kicker === 'NEXT SKIN: TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.line === 'Win 4 more rounds to unlock:' && mathPlayerWinUi.terminalRewardNudge.unlockLine === 'TIE-DYE DIE SKIN', `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked Volt Zap skin ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.nextName === 'TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === '4' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === 'TIE-DYE' && mathPlayerWinUi.terminalRewardNudge.dieEffect === 'tieDye', `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
       assert(mathPlayerWinUi.title === 'GAME WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);

@@ -9411,7 +9411,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       p2Dice: totalDice('p2'),
       at: Date.now()
     };
-    gameOver(winner, { reason: 'mathematical_elimination', sourceReason: reason });
+    gameOver(winner, {
+      reason: 'mathematical_elimination',
+      sourceReason: reason,
+      creditFinalRewardRound: winner === 'p1'
+    });
     return true;
   }
 
@@ -12717,6 +12721,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const gameOverReason = options && options.reason ? String(options.reason) : 'dice_exhausted';
     const mathElimination = gameOverReason === 'mathematical_elimination';
     const sourceReason = options && options.sourceReason ? String(options.sourceReason) : '';
+    const roundRewardAlreadyRecorded = !!(roundResolutionState && roundResolutionState.rewardDie);
+    const shouldCreditFinalRewardRound = playerWon && !!(options && options.creditFinalRewardRound) && !roundRewardAlreadyRecorded;
     clearRuntimeTimers();
     cancelProgressionWatchdog();
     stopTerminalAutoplayState();
@@ -12753,6 +12759,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS || null,
       autoRestartPausedForPwa: false
     };
+    let finalRewardProgress = null;
+    if (shouldCreditFinalRewardRound) {
+      recordRoundWin('p1');
+      finalRewardProgress = recordRewardDiePlayerRoundWin();
+    }
     tdLastCheckpoint = 'game_complete';
     const gameCompletePayload = tdGamePayload({
       winner: finalWinner,
@@ -12771,7 +12782,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       rolls: firstGameMiracleRolls,
       last: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null
     };
-    inlineGameOverState.rewardDie = getRewardDieState();
+    inlineGameOverState.rewardDie = finalRewardProgress || getRewardDieState();
 
     gameStarted = true;
     busy = true;
