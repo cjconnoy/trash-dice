@@ -1924,6 +1924,67 @@ body.inline-game-over .roll-panel {
 }
 .die.trashed { animation: dieTrash 0.55s ease-in forwards; }
 
+.die.reward-skinned {
+  --reward-face: #C0421F;
+  --reward-pip: #FFFFFF;
+  --reward-pip-outline: transparent;
+  --reward-edge: rgba(0,0,0,0.24);
+  --reward-glow: rgba(255,246,150,0.24);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.72), rgba(255,255,255,0.2) 22%, transparent 42%),
+    linear-gradient(150deg, rgba(255,255,255,0.22), transparent 36%),
+    linear-gradient(330deg, rgba(0,0,0,0.28), transparent 54%),
+    var(--reward-face);
+  box-shadow:
+    7px 8px 0 var(--reward-edge),
+    13px 14px 0 rgba(0,0,0,0.32),
+    0 12px 30px rgba(0,0,0,0.55),
+    inset 0 0 0 2px rgba(255,255,255,0.16),
+    inset -12px -13px 18px rgba(0,0,0,0.2);
+}
+
+.die.reward-skinned::before {
+  content: none;
+}
+
+.die.reward-skinned::after,
+.die.idle.ready-p1.reward-skinned::after {
+  content: '';
+  inset: auto;
+  top: 7%;
+  left: 9%;
+  width: 58%;
+  height: 36%;
+  border-radius: 50%;
+  opacity: 1;
+  mix-blend-mode: normal;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+  animation: none;
+  background: radial-gradient(ellipse at 38% 28%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.15) 54%, transparent 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.die.idle.ready-p1.reward-skinned {
+  background:
+    radial-gradient(circle at 27% 20%, rgba(255,255,255,0.72), rgba(255,255,255,0.2) 22%, transparent 42%),
+    linear-gradient(150deg, rgba(255,255,255,0.22), transparent 36%),
+    linear-gradient(330deg, rgba(0,0,0,0.28), transparent 54%),
+    var(--reward-face);
+}
+
+.die.reward-skinned .dot {
+  background: var(--reward-pip);
+  box-shadow:
+    0 0 0 1.6px var(--reward-pip-outline),
+    inset 1.7px 1.7px 3.2px rgba(0,0,0,0.48),
+    inset -1px -1px 2px rgba(255,255,255,0.16),
+    0 1.2px 1px rgba(255,255,255,0.14);
+}
+
 .reward-die-unlock[hidden] {
   display: none !important;
 }
@@ -2055,7 +2116,8 @@ body.inline-game-over .roll-panel {
   z-index: 3;
 }
 
-.reward-die.effect-toxicSpat {
+.reward-die.effect-toxicSpat,
+.die.reward-skinned.effect-toxicSpat {
   background:
     radial-gradient(ellipse at 22% 14%, rgba(184,255,49,0.94) 0 12%, transparent 13%),
     radial-gradient(ellipse at 72% 73%, rgba(186,255,56,0.82) 0 15%, transparent 16%),
@@ -2066,11 +2128,13 @@ body.inline-game-over .roll-panel {
     var(--reward-face);
 }
 
-.reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip {
+.reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
+.die.reward-skinned.effect-toxicSpat .dot {
   filter: drop-shadow(0 0 4px rgba(184,255,49,0.72));
 }
 
-.reward-die.effect-bolt::before {
+.reward-die.effect-bolt::before,
+.die.reward-skinned.effect-bolt::before {
   content: '';
   position: absolute;
   z-index: 1;
@@ -2081,11 +2145,13 @@ body.inline-game-over .roll-panel {
   transform: rotate(-10deg);
 }
 
-.reward-die.effect-tieDye {
+.reward-die.effect-tieDye,
+.die.reward-skinned.effect-tieDye {
   background: #ff55b7;
 }
 
-.reward-die.effect-tieDye::before {
+.reward-die.effect-tieDye::before,
+.die.reward-skinned.effect-tieDye::before {
   content: '';
   position: absolute;
   z-index: 0;
@@ -2100,11 +2166,13 @@ body.inline-game-over .roll-panel {
   animation: rewardTieDyeSpin 3.8s linear infinite;
 }
 
-.reward-die.effect-tieDye .reward-die-pip-cell {
+.reward-die.effect-tieDye .reward-die-pip-cell,
+.die.reward-skinned.effect-tieDye .dot-cell {
   z-index: 2;
 }
 
-.reward-die.effect-aura {
+.reward-die.effect-aura,
+.die.reward-skinned.effect-aura {
   box-shadow:
     5px 7px 0 var(--reward-edge),
     10px 13px 0 rgba(0,0,0,0.24),
@@ -2113,7 +2181,8 @@ body.inline-game-over .roll-panel {
     inset -10px -12px 18px rgba(0,0,0,0.2);
 }
 
-.reward-die.effect-shineSweep::after {
+.reward-die.effect-shineSweep::after,
+.die.reward-skinned.effect-shineSweep::after {
   inset: -6% auto -8% -48%;
   width: 44%;
   height: auto;
@@ -2123,7 +2192,8 @@ body.inline-game-over .roll-panel {
   animation: rewardShineSweep 1.12s ease-in-out infinite;
 }
 
-.reward-die.effect-diamond {
+.reward-die.effect-diamond,
+.die.reward-skinned.effect-diamond {
   background:
     linear-gradient(132deg, rgba(255,255,255,0.74) 0 18%, transparent 19%),
     linear-gradient(35deg, rgba(33,137,181,0.28) 0 28%, transparent 29%),
@@ -2132,7 +2202,8 @@ body.inline-game-over .roll-panel {
     var(--reward-face);
 }
 
-.reward-die.effect-diamond::before {
+.reward-die.effect-diamond::before,
+.die.reward-skinned.effect-diamond::before {
   content: '';
   position: absolute;
   inset: 12%;
@@ -2163,11 +2234,15 @@ body.inline-game-over .roll-panel {
   animation: rewardGlint 0.84s ease-in-out infinite;
 }
 
-.reward-die.effect-colorCycle {
+.reward-die.effect-colorCycle,
+.die.reward-skinned.effect-colorCycle {
   --reward-edge: rgba(42,31,83,0.36);
   background:
     radial-gradient(circle at 27% 20%, rgba(255,255,255,0.8), rgba(255,255,255,0.22) 22%, transparent 42%),
     linear-gradient(135deg, #f64bff 0%, #26d6ff 30%, #fff369 58%, #4cff8a 78%, #f64bff 100%);
+}
+
+.reward-die.effect-colorCycle {
   animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 2.2s linear infinite;
 }
 
@@ -2224,6 +2299,8 @@ body.inline-game-over .roll-panel {
   .reward-die.effect-shineSweep::after,
   .reward-die.effect-glint .reward-die-spark,
   .reward-die.effect-tieDye::before,
+  .die.reward-skinned.effect-shineSweep::after,
+  .die.reward-skinned.effect-tieDye::before,
   .reward-die-unlock.show .reward-die-name {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
@@ -7897,6 +7974,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let inlineWinAccentTimer = null;
   let rewardDieWins = readRewardDieWins();
   let rewardDieUnlockTimer = null;
+  let rewardDiePreviewOverride = null;
   let roundResolutionRunId = 0;
   let roundResolutionState = null;
   const INVENTORY_MISCHIEF_SCENES = ['wave', 'chase', 'hopline'];
@@ -8508,8 +8586,73 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       : { fill: '#0f5f32', hi: '#1d8b50', low: '#052d18', stroke: '#06361c', label: '#f5c800', side: '#032112' };
   }
 
+  function rewardSlotColors(die) {
+    return {
+      fill: rewardDieFaceColor(die),
+      hi: 'rgba(255,255,255,0.42)',
+      low: 'rgba(0,0,0,0.28)',
+      stroke: die.tier >= 6 ? 'rgba(47,57,63,0.72)' : 'rgba(41,36,24,0.58)',
+      label: die.pipColor,
+      side: die.tier >= 6 ? 'rgba(54,62,69,0.72)' : 'rgba(47,31,18,0.42)',
+      pipStroke: die.pipOutline ? 'rgba(0,0,0,0.72)' : 'none',
+      pipStrokeWidth: die.pipOutline ? '1.05' : '0'
+    };
+  }
+
+  function appendRewardSlotEffect(g, die, NS, size) {
+    if (!g || !die) return;
+    const make = (tag, attrs = {}) => {
+      const el = document.createElementNS(NS, tag);
+      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+      el.setAttribute('pointer-events', 'none');
+      return el;
+    };
+    const effect = die.effect || 'none';
+    if (effect === 'toxicSpat') {
+      g.appendChild(make('ellipse', { cx: f(-size * 0.23), cy: f(-size * 0.25), rx: f(size * 0.18), ry: f(size * 0.13), fill: 'rgba(184,255,49,0.88)' }));
+      g.appendChild(make('ellipse', { cx: f(size * 0.22), cy: f(size * 0.2), rx: f(size * 0.17), ry: f(size * 0.14), fill: 'rgba(186,255,56,0.72)' }));
+      return;
+    }
+    if (effect === 'bolt') {
+      const pts = [
+        [0.11, -0.43], [-0.2, -0.02], [0.03, -0.02],
+        [-0.14, 0.43], [0.31, -0.1], [0.09, -0.1]
+      ].map(([x, y]) => `${f(x * size)},${f(y * size)}`).join(' ');
+      g.appendChild(make('polygon', { points: pts, fill: '#ffe642', opacity: '0.94', filter: 'drop-shadow(0 0.8px 0 rgba(37,49,12,0.38))' }));
+      return;
+    }
+    if (effect === 'tieDye') {
+      [
+        [-0.28, -0.25, '#ff4fb0'],
+        [0.28, -0.23, '#ffe642'],
+        [-0.23, 0.29, '#29d6ff'],
+        [0.27, 0.28, '#8d5cff']
+      ].forEach(([x, y, fill]) => {
+        g.appendChild(make('circle', { cx: f(x * size), cy: f(y * size), r: f(size * 0.25), fill, opacity: '0.86' }));
+      });
+      return;
+    }
+    if (effect === 'shineSweep') {
+      g.appendChild(make('path', {
+        d: `M${f(-size * 0.42)} ${f(size * 0.5)} L${f(-size * 0.12)} ${f(-size * 0.5)} L${f(size * 0.08)} ${f(-size * 0.5)} L${f(-size * 0.2)} ${f(size * 0.5)} Z`,
+        fill: 'rgba(255,255,255,0.48)'
+      }));
+      return;
+    }
+    if (effect === 'diamond') {
+      g.appendChild(make('path', { d: `M${f(-size * 0.34)} ${f(-size * 0.03)} L${f(size * 0.34)} ${f(-size * 0.03)} M0 ${f(-size * 0.38)} L0 ${f(size * 0.38)} M${f(-size * 0.3)} ${f(size * 0.34)} L${f(size * 0.32)} ${f(-size * 0.34)}`, fill: 'none', stroke: 'rgba(27,80,119,0.42)', 'stroke-width': '1.25', 'stroke-linecap': 'round' }));
+      g.appendChild(make('path', { d: `M${f(-size * 0.42)} ${f(-size * 0.42)} L${f(size * 0.18)} ${f(-size * 0.42)} L${f(-size * 0.42)} ${f(size * 0.16)} Z`, fill: 'rgba(255,255,255,0.42)' }));
+      return;
+    }
+    if (effect === 'colorCycle') {
+      g.appendChild(make('path', { d: `M${f(-size * 0.5)} ${f(-size * 0.5)} L${f(size * 0.5)} ${f(-size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`, fill: 'rgba(246,75,255,0.5)' }));
+      g.appendChild(make('path', { d: `M${f(size * 0.5)} ${f(-size * 0.5)} L${f(size * 0.5)} ${f(size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`, fill: 'rgba(38,214,255,0.45)' }));
+    }
+  }
+
   function paintSlot(idx, die) {
-    const colors = slotColors(die.color);
+    const rewardSkin = getPlayerRewardDie(die.player);
+    const colors = rewardSkin ? rewardSlotColors(rewardSkin) : slotColors(die.color);
     const slot = slotEls[idx];
     const label = labelEls[idx];
     slot.setAttribute('fill', '#737b7d');
@@ -8526,6 +8669,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
     const NS = 'http://www.w3.org/2000/svg';
     const g = document.createElementNS(NS, 'g');
+    g.classList.add('slot-die');
+    g.dataset.player = die.player || '';
+    if (rewardSkin) {
+      g.classList.add('reward-skinned');
+      g.dataset.rewardTier = String(rewardSkin.tier);
+      g.dataset.rewardName = rewardSkin.name;
+      g.dataset.rewardEffect = rewardSkin.effect || 'none';
+      g.dataset.pipOutline = rewardSkin.pipOutline ? 'true' : 'false';
+    }
     g.setAttribute('transform', `translate(${f(info.x)} ${f(info.y)}) rotate(${f(info.angle + 8)})`);
     g.setAttribute('pointer-events', 'none');
 
@@ -8549,6 +8701,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     face.setAttribute('filter', 'drop-shadow(0 2px 1px rgba(0,0,0,0.28))');
     g.appendChild(face);
 
+    if (rewardSkin) appendRewardSlotEffect(g, rewardSkin, NS, size);
+
     const shine = document.createElementNS(NS, 'ellipse');
     shine.setAttribute('cx', f(-size * 0.18));
     shine.setAttribute('cy', f(-size * 0.28));
@@ -8564,6 +8718,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       pip.setAttribute('cy', f((row - 1) * pipGap));
       pip.setAttribute('r', f(pipRadius));
       pip.setAttribute('fill', colors.label);
+      if (colors.pipStroke !== 'none') {
+        pip.setAttribute('stroke', colors.pipStroke);
+        pip.setAttribute('stroke-width', colors.pipStrokeWidth);
+      }
       pip.setAttribute('filter', 'drop-shadow(0 0.9px 0 rgba(0,0,0,0.58))');
       g.appendChild(pip);
     });
@@ -8696,6 +8854,83 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     } : null;
   }
 
+  function rewardDieEffectClass(die) {
+    return `effect-${(die && die.effect) || 'none'}`;
+  }
+
+  function rewardDieFaceColor(die) {
+    if (!die) return '#C0421F';
+    return die.faceColor === 'holographic' ? '#D7FAFF' : die.faceColor;
+  }
+
+  function clearRewardDieElementVisual(el) {
+    if (!el) return;
+    el.classList.remove('reward-skinned');
+    REWARD_DICE.forEach(die => el.classList.remove(rewardDieEffectClass(die)));
+    el.removeAttribute('data-reward-tier');
+    el.removeAttribute('data-reward-name');
+    el.removeAttribute('data-reward-effect');
+    el.removeAttribute('data-pip-outline');
+    el.style.removeProperty('--reward-face');
+    el.style.removeProperty('--reward-pip');
+    el.style.removeProperty('--reward-pip-outline');
+    el.style.removeProperty('--reward-edge');
+    el.style.removeProperty('--reward-glow');
+  }
+
+  function setRewardDieCssVars(el, die) {
+    if (!el || !die) return;
+    el.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    el.style.setProperty('--reward-face', rewardDieFaceColor(die));
+    el.style.setProperty('--reward-pip', die.pipColor);
+    el.style.setProperty('--reward-pip-outline', die.pipOutline ? 'rgba(0,0,0,0.72)' : 'transparent');
+    el.style.setProperty('--reward-edge', die.tier >= 6 ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)');
+    el.style.setProperty('--reward-glow', die.effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)');
+  }
+
+  function applyRewardDieElementVisual(el, die) {
+    clearRewardDieElementVisual(el);
+    if (!el || !die) return false;
+    const effect = die.effect || 'none';
+    el.classList.add('reward-skinned', rewardDieEffectClass(die));
+    el.dataset.rewardTier = String(die.tier);
+    el.dataset.rewardName = die.name;
+    el.dataset.rewardEffect = effect;
+    setRewardDieCssVars(el, die);
+    return true;
+  }
+
+  function getPlayerRewardDie(player) {
+    if (player !== 'p1') return null;
+    if (REWARD_REVIEW_ENABLED && rewardDiePreviewOverride) return rewardDiePreviewOverride;
+    return activeRewardDie(rewardDieWins);
+  }
+
+  function applyPlayerRewardSkin(el, player) {
+    return applyRewardDieElementVisual(el, getPlayerRewardDie(player));
+  }
+
+  function refreshPlayerRewardSkin(repaintSlots = false) {
+    applyPlayerRewardSkin(p1Die, 'p1');
+    applyPlayerRewardSkin(p2Die, 'p2');
+    if (repaintSlots && Array.isArray(board)) {
+      board.forEach((die, i) => {
+        if (die && slotDiceEls[i]) paintSlot(i, die);
+      });
+    }
+  }
+
+  function resetRewardDieReviewPreview() {
+    rewardDiePreviewOverride = null;
+    rewardDieReviewIndex = -1;
+    if (devRewardDieBtn) {
+      devRewardDieBtn.textContent = 'DIE';
+      devRewardDieBtn.setAttribute('aria-label', 'Preview reward die variants');
+      devRewardDieBtn.title = 'Preview reward die variants';
+    }
+    refreshPlayerRewardSkin(true);
+  }
+
   function getRewardDieState() {
     const totalWins = normalizeRewardWins(rewardDieWins);
     const active = activeRewardDie(totalWins);
@@ -8730,16 +8965,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   function applyRewardDieStyle(die) {
     if (!rewardDie || !die) return;
     const effect = die.effect || 'none';
-    const faceColor = die.faceColor === 'holographic' ? '#D7FAFF' : die.faceColor;
     rewardDie.className = `reward-die effect-${effect}`;
     rewardDie.dataset.tier = String(die.tier);
     rewardDie.dataset.effect = effect;
     rewardDie.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-    rewardDie.style.setProperty('--reward-face', faceColor);
-    rewardDie.style.setProperty('--reward-pip', die.pipColor);
-    rewardDie.style.setProperty('--reward-pip-outline', die.pipOutline ? 'rgba(0,0,0,0.72)' : 'transparent');
-    rewardDie.style.setProperty('--reward-edge', die.tier >= 6 ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)');
-    rewardDie.style.setProperty('--reward-glow', die.effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)');
+    setRewardDieCssVars(rewardDie, die);
     renderRewardDiePips(REWARD_DIE_DISPLAY_VALUE);
   }
 
@@ -8783,6 +9013,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function recordRewardDiePlayerWin() {
+    rewardDiePreviewOverride = null;
     const beforeWins = normalizeRewardWins(rewardDieWins);
     const beforeTier = activeRewardDie(beforeWins);
     const afterWins = writeRewardDieWins(beforeWins + 1);
@@ -8799,11 +9030,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   function cycleRewardDieReview() {
     rewardDieReviewIndex = (rewardDieReviewIndex + 1) % REWARD_DICE.length;
     const die = REWARD_DICE[rewardDieReviewIndex];
+    rewardDiePreviewOverride = die;
     if (devRewardDieBtn) {
       devRewardDieBtn.textContent = `D${die.tier}`;
       devRewardDieBtn.setAttribute('aria-label', `Preview ${die.name} reward die`);
       devRewardDieBtn.title = die.name;
     }
+    refreshPlayerRewardSkin(true);
     showRewardDieUnlock(die, die.minWins);
     return rewardDieSnapshot(die);
   }
@@ -10913,6 +11146,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         el.appendChild(cell);
       }
     }
+    applyPlayerRewardSkin(el, player);
   }
 
   // Update pips only — does NOT reset class/animation
@@ -10931,6 +11165,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         el.appendChild(cell);
       }
     }
+    applyPlayerRewardSkin(el, player);
   }
 
   function clearDie(player) {
@@ -10941,6 +11176,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       target.el.className = `die idle ready-${target.player}`;
       target.el.style.opacity = '';
       target.el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
+      applyPlayerRewardSkin(target.el, target.player);
       const stage = getDieStage(target.player);
       if (stage) stage.classList.remove('active');
     });
@@ -10952,6 +11188,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const clone = source.cloneNode(true);
     clone.removeAttribute('id');
     clone.className = 'die ' + colorClass(color) + ' travelling-die';
+    applyPlayerRewardSkin(clone, player);
     clone.style.left = r.left + 'px';
     clone.style.top = r.top + 'px';
     clone.style.width = r.width + 'px';
@@ -11606,6 +11843,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     rollBtn.className = 'roll-btn ' + current;
     p1Die.classList.toggle('ready-p1', p1Die.classList.contains('idle'));
     p2Die.classList.toggle('ready-p2', p2Die.classList.contains('idle'));
+    refreshPlayerRewardSkin(false);
     renderCanLoad();
     syncHeroIdleState();
   }
@@ -12622,6 +12860,37 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         inGame: p1 + p2 + lid + trash
       };
     }
+    function qaRewardSkinElement(el) {
+      if (!el) return { present: false };
+      const style = getComputedStyle(el);
+      return {
+        present: true,
+        rewardSkinned: el.classList.contains('reward-skinned'),
+        tier: el.dataset.rewardTier || '',
+        name: el.dataset.rewardName || '',
+        effect: el.dataset.rewardEffect || '',
+        pipOutline: el.dataset.pipOutline || '',
+        rewardFace: style.getPropertyValue('--reward-face').trim(),
+        rewardPip: style.getPropertyValue('--reward-pip').trim()
+      };
+    }
+    function qaRewardSkinProbe() {
+      return {
+        previewOverride: rewardDieSnapshot(rewardDiePreviewOverride),
+        activePlayerDie: rewardDieSnapshot(getPlayerRewardDie('p1')),
+        playerDie: qaRewardSkinElement(p1Die),
+        cpuDie: qaRewardSkinElement(p2Die),
+        slots: slotDiceEls.map((el, i) => ({
+          index: i,
+          player: el ? el.dataset.player || '' : '',
+          rewardSkinned: !!(el && el.classList.contains('reward-skinned')),
+          tier: el ? el.dataset.rewardTier || '' : '',
+          name: el ? el.dataset.rewardName || '' : '',
+          effect: el ? el.dataset.rewardEffect || '' : '',
+          pipOutline: el ? el.dataset.pipOutline || '' : ''
+        }))
+      };
+    }
     window.TrashDiceQA = {
       queueRolls(values) {
         forcedRolls = values.map(v => clamp(Math.floor(v), 1, 6));
@@ -12778,7 +13047,36 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       setRewardWins(totalWins = 0) {
         writeRewardDieWins(totalWins);
         hideRewardDieUnlock();
+        resetRewardDieReviewPreview();
         return getRewardDieState();
+      },
+      rewardSkinProbe() {
+        return qaRewardSkinProbe();
+      },
+      rewardSkinFixture(totalWins = 1) {
+        ensureQaGame();
+        rewardDiePreviewOverride = null;
+        writeRewardDieWins(totalWins);
+        hideRewardDieUnlock();
+        current = 'p1';
+        busy = false;
+        rollBtn.disabled = false;
+        board = [
+          { player: 'p1', color: 'yellow', value: 5 },
+          { player: 'p2', color: 'green', value: 2 },
+          null,
+          null,
+          null,
+          null
+        ];
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        renderDie(5, 'p1', 'yellow');
+        renderDie(2, 'p2', 'green');
+        syncUI();
+        return qaRewardSkinProbe();
       },
       showRewardDieUnlock(tier = 1) {
         const die = REWARD_DICE.find(item => item.tier === Math.floor(Number(tier) || 1)) || REWARD_DICE[0];

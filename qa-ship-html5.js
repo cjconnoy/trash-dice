@@ -740,6 +740,7 @@ async function main() {
         const shell = document.getElementById('rewardDieUnlock');
         const die = document.getElementById('rewardDie');
         const name = document.getElementById('rewardDieName');
+        const playerDie = document.getElementById('p1Die');
         const r = die.getBoundingClientRect();
         return {
           buttonText: btn.textContent.trim(),
@@ -748,11 +749,18 @@ async function main() {
           tier: shell.dataset.tier || die.dataset.tier || '',
           effect: shell.dataset.effect || die.dataset.effect || '',
           name: name.textContent || '',
+          playerSkin: {
+            rewardSkinned: playerDie.classList.contains('reward-skinned'),
+            tier: playerDie.dataset.rewardTier || '',
+            name: playerDie.dataset.rewardName || '',
+            effect: playerDie.dataset.rewardEffect || ''
+          },
           pipCount: die.querySelectorAll('.reward-die-pip-cell.is-on .reward-die-pip').length,
           progressState: window.TrashDiceQA.rewardDieState()
         };
       })()`);
       assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'RUST' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'RUST', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
@@ -780,6 +788,17 @@ async function main() {
       assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'RUST|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' && rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye', `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.filter(item => item.pipOutline).map(item => item.name).join('|') === 'TIE-DYE|DIAMOND|PRISM', `${viewport.name}: patterned reward dice should carry pip outlines ${JSON.stringify(rewardConfig)}`);
+      const rewardSkinFixture = await evalValue(page, `(() => {
+        const probe = window.TrashDiceQA.rewardSkinFixture(15);
+        window.TrashDiceQA.setRewardWins(2);
+        return probe;
+      })()`);
+      const playerRewardSlot = rewardSkinFixture.slots.find(slot => slot.player === 'p1');
+      const cpuRewardSlot = rewardSkinFixture.slots.find(slot => slot.player === 'p2');
+      assert(rewardSkinFixture.playerDie.rewardSkinned === true && rewardSkinFixture.playerDie.tier === '5' && rewardSkinFixture.playerDie.name === 'TIE-DYE', `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture)}`);
+      assert(rewardSkinFixture.cpuDie.rewardSkinned === false && rewardSkinFixture.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.cpuDie)}`);
+      assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === '5' && playerRewardSlot.name === 'TIE-DYE' && playerRewardSlot.pipOutline === 'true', `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
+      assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.slots)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);
