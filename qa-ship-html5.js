@@ -282,7 +282,7 @@ async function main() {
       assert(shortBeforeScroll.htmlOverflowY === 'hidden', `${viewport.name}: document root should not create a second vertical scroll surface ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.bodyScrollHeight > shortBeforeScroll.viewportHeight, `${viewport.name}: short viewport should expose scrollable height when content exceeds the window ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.horizontalFits === true, `${viewport.name}: desktop short viewport should not create horizontal overflow ${JSON.stringify(shortBeforeScroll)}`);
-      assert(shortBeforeScroll.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: short viewport Play Again CTA missing ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.playAgain.text.includes('KEEP PLAYING!'), `${viewport.name}: short viewport Keep Playing CTA missing ${JSON.stringify(shortBeforeScroll)}`);
       await evalValue(page, `document.body.scrollTo(0, document.body.scrollHeight); true`);
       await sleep(160);
       const shortAfterScroll = await evalValue(page, `(() => {
@@ -1097,7 +1097,7 @@ async function main() {
       assert(terminal.trashedStamp.fitsViewport === true && terminal.trashedStamp.fitsPanel === true, `${viewport.name}: TRASHED stamp should fit inside the green loser panel ${JSON.stringify(terminal.trashedStamp)}`);
       assert(terminal.celebratingDice > 0, `${viewport.name}: looping dice celebration missing ${JSON.stringify(terminal)}`);
       assert(terminal.bodyFits, `${viewport.name}: win screen creates horizontal overflow ${JSON.stringify(terminal)}`);
-      assert(terminal.playAgain.text.includes('PLAY AGAIN'), `${viewport.name}: Play Again CTA missing ${JSON.stringify(terminal)}`);
+      assert(terminal.playAgain.text.includes('KEEP PLAYING!'), `${viewport.name}: Keep Playing CTA missing ${JSON.stringify(terminal)}`);
       assert(terminal.playAgain.visible, `${viewport.name}: Play Again is not fully visible or tappable ${JSON.stringify(terminal)}`);
       assert(terminal.winTitleCursor !== 'none', `${viewport.name}: cursor hidden over congratulations title ${JSON.stringify(terminal)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -1822,7 +1822,7 @@ async function main() {
       })()`);
       assert(outcomeState.active === true, `${outcome.label} probe: wrap-up not active ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
-      assert(outcomeState.rollButtonText.includes('PLAY AGAIN'), `${outcome.label} probe: play-again CTA missing ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.rollButtonText.includes('KEEP PLAYING!'), `${outcome.label} probe: keep-playing CTA missing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
     }
 

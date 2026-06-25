@@ -8602,7 +8602,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <div class="overlay-title" id="overlayTitle">Player 1 Wins!</div>
     <div class="overlay-sub"   id="overlaySub">Player 2 ran out of dice</div>
     <div class="overlay-stats" id="overlayStats"></div>
-    <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+    <button class="play-again-btn" id="playAgainBtn">KEEP PLAYING!</button>
   </div>
 </div>
 
@@ -12572,7 +12572,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function setRollButtonPlayAgainMode(enabled) {
-    if (rollBtnLabel) rollBtnLabel.textContent = enabled ? 'PLAY AGAIN' : 'ROLL!';
+    if (rollBtnLabel) rollBtnLabel.textContent = enabled ? 'KEEP PLAYING!' : 'ROLL!';
     rollBtn.setAttribute('aria-label', enabled ? 'Start a fresh game' : 'Roll yellow die');
     rollBtn.classList.toggle('inline-play-again', !!enabled);
   }
@@ -12988,7 +12988,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       : '<span class="win-line">CPU</span><span class="win-line">WINS!</span>';
     overlaySub.textContent = playerWon ? 'PLAYER BEAT CPU' : 'CPU BEAT PLAYER';
     overlayStats.textContent = '';
-    playAgainBtn.textContent = 'PLAY AGAIN';
+    playAgainBtn.textContent = 'KEEP PLAYING!';
     overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega', 'mobile-terminal-rest');
     overlay.classList.add('victory', playerWon ? 'winner-yellow' : 'winner-green');
     overlay.classList.toggle('player-win-mega', playerWon);
