@@ -442,7 +442,8 @@ async function main() {
           return {
             presenterLogoWidth: presenterRect.width,
             presenterSubHeight: presenterSubRect.height,
-            presenterToTitle: titleRect.top - presenterRect.bottom,
+            presenterLogoToTitle: titleRect.top - presenterRect.bottom,
+            presenterToTitle: titleRect.top - presenterSubRect.bottom,
             titleToStartCard: startCardRect.top - titleRect.bottom,
             startCanToCard: startCardRect.left - startCanRect.right,
             startCardToLegal: legalRect.top - startCardRect.bottom,
