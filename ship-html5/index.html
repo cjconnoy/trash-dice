@@ -2026,7 +2026,7 @@ body.inline-game-over .roll-panel {
   justify-items: center;
   gap: clamp(6px, 1.6vw, 10px);
   padding: clamp(14px, 4vw, 24px) clamp(18px, 5vw, 32px) clamp(16px, 4.4vw, 28px);
-  transform: translate3d(0, -7vh, 0);
+  transform: translate3d(0, 12vh, 0);
 }
 
 .reward-die-scene::before {
@@ -3206,10 +3206,16 @@ body.inline-game-win .inline-result-banner {
   top: 38.5%;
   width: min(98vw, 900px);
   min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: clamp(0.52rem, 2vw, 0.86rem) clamp(0.82rem, 3vw, 1.35rem) clamp(0.58rem, 2vw, 0.94rem);
+  border: 2px solid rgba(255,244,163,0.9);
+  border-radius: clamp(15px, 3.8vw, 24px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,242,56,0.24), transparent 52%),
+    linear-gradient(180deg, rgba(10,54,29,0.96), rgba(16,89,44,0.92));
+  box-shadow:
+    0 12px 0 rgba(6,53,29,0.5),
+    0 18px 34px rgba(0,0,0,0.42),
+    inset 0 0 0 3px rgba(255,255,255,0.12);
   contain: none;
   overflow: visible;
   color: #f5c800;
@@ -3222,15 +3228,29 @@ body.inline-game-win .inline-result-banner {
 }
 body.inline-game-win .inline-result-title {
   display: block;
-  padding: 0.12em 0.34em 0.18em;
-  margin: -0.12em -0.34em -0.18em;
-  font-size: clamp(3.2rem, 7vw, 5.9rem);
+  padding: 0;
+  margin: 0;
+  font-size: clamp(2.75rem, 6.6vw, 5.6rem);
   line-height: 0.8;
   overflow: visible;
   transform: rotate(-2deg) skewX(-4deg);
 }
 body.inline-game-win .inline-result-sub {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: clamp(0.16rem, 1.1vw, 0.34rem);
+  padding: 5px 13px 6px;
+  border-radius: 999px;
+  background: rgba(255,244,163,0.95);
+  color: #0b5c31;
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.88rem, 2.4vw, 1.22rem);
+  line-height: 1;
+  text-shadow: none;
+  box-shadow:
+    0 3px 0 rgba(227,56,43,0.78),
+    0 8px 14px rgba(0,0,0,0.22);
 }
 body.inline-game-loss .inline-result-banner {
   background:
@@ -3298,11 +3318,13 @@ body.inline-game-loss .inline-result-banner {
     top: 37.5%;
     width: calc(100% - 22px);
     min-width: 0;
-    padding: 0;
-    border: 0;
+    padding: 0.54rem 0.68rem 0.6rem;
   }
   body.inline-game-win .inline-result-title {
-    font-size: clamp(2rem, 8.9vw, 3.35rem);
+    font-size: clamp(1.88rem, 8.3vw, 3.05rem);
+  }
+  body.inline-game-win .inline-result-sub {
+    font-size: clamp(0.76rem, 3.6vw, 1rem);
   }
 }
 @media (max-width: 380px) {
@@ -3310,7 +3332,7 @@ body.inline-game-loss .inline-result-banner {
     font-size: 1.68rem;
   }
   body.inline-game-win .inline-result-title {
-    font-size: clamp(1.82rem, 8.4vw, 2.85rem);
+    font-size: clamp(1.72rem, 7.8vw, 2.62rem);
   }
 }
 .roll-btn:disabled {
@@ -7628,15 +7650,26 @@ body.mobile-roll-smoothing .overlay-title {
 }
 .overlay.victory .overlay-sub {
   width: min(90vw, 560px);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  background: rgba(255,244,163,0.94);
+  border: 2px solid rgba(255,255,255,0.74);
+  border-radius: 999px;
+  box-shadow:
+    0 4px 0 rgba(6,53,29,0.48),
+    0 0 22px var(--winner-glow);
   color: #fff6bc;
   text-shadow:
     0 2px 0 rgba(0,0,0,0.68),
     0 0 18px var(--winner-glow);
   transform: rotate(-1deg);
+}
+.overlay.winner-yellow .overlay-sub {
+  color: #0b5c31;
+  text-shadow: none;
+}
+.overlay.winner-green .overlay-sub {
+  background: rgba(34,45,36,0.88);
+  border-color: rgba(255,143,82,0.9);
+  color: #fff4a3;
 }
 .overlay.victory .overlay-title {
   width: min(98vw, 960px);
@@ -7659,7 +7692,7 @@ body.mobile-roll-smoothing .overlay.loss .overlay-title {
   line-height: 0.94;
 }
 .overlay.victory .overlay-title::before {
-  content: "GAME WIN";
+  content: "GAME WINNER";
   display: block;
   margin-bottom: clamp(0.16rem, 1.2vw, 0.42rem);
   padding: 0.16em 0.68em 0.2em;
@@ -8544,6 +8577,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_UNLOCK_MS = 4000;
+  const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const ROUND_WIN_BURST_MS = 2800;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const REWARD_DICE = Object.freeze([
@@ -9701,29 +9735,42 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
   }
 
-  function showRewardDieUnlock(die, totalWins) {
+  function showRewardDieUnlock(die, totalWins, options = {}) {
     if (!rewardDieUnlock || !rewardDie || !die) return null;
     if (rewardDieUnlockTimer) {
       cancelRuntimeTimer(rewardDieUnlockTimer);
       rewardDieUnlockTimer = null;
     }
-    applyRewardDieStyle(die);
-    if (rewardDieName) rewardDieName.textContent = die.name;
-    if (rewardDieSub) rewardDieSub.textContent = 'SKIN UNLOCKED';
-    rewardDieUnlock.dataset.tier = String(die.tier);
-    rewardDieUnlock.dataset.effect = die.effect || 'none';
-    rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-    rewardDieUnlock.setAttribute('aria-label', `${die.name} skin unlocked at ${totalWins} player round wins`);
-    rewardDieUnlock.hidden = false;
     rewardDieUnlock.classList.remove('show');
-    void rewardDieUnlock.offsetWidth;
-    requestAnimationFrame(() => {
-      rewardDieUnlock.classList.add('show');
-    });
-    rewardDieUnlockTimer = runLater(() => {
+    rewardDieUnlock.hidden = true;
+
+    const delayMs = Math.max(0, Number(options.delayMs) || 0);
+    const reveal = () => {
       rewardDieUnlockTimer = null;
-      hideRewardDieUnlock();
-    }, REWARD_DICE_UNLOCK_MS);
+      applyRewardDieStyle(die);
+      if (rewardDieName) rewardDieName.textContent = die.name;
+      if (rewardDieSub) rewardDieSub.textContent = 'SKIN UNLOCKED';
+      rewardDieUnlock.dataset.tier = String(die.tier);
+      rewardDieUnlock.dataset.effect = die.effect || 'none';
+      rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+      rewardDieUnlock.setAttribute('aria-label', `${die.name} skin unlocked at ${totalWins} player round wins`);
+      rewardDieUnlock.hidden = false;
+      rewardDieUnlock.classList.remove('show');
+      void rewardDieUnlock.offsetWidth;
+      requestAnimationFrame(() => {
+        rewardDieUnlock.classList.add('show');
+      });
+      rewardDieUnlockTimer = runLater(() => {
+        rewardDieUnlockTimer = null;
+        hideRewardDieUnlock();
+      }, REWARD_DICE_UNLOCK_MS);
+    };
+
+    if (delayMs > 0) {
+      rewardDieUnlockTimer = runLater(reveal, delayMs);
+    } else {
+      reveal();
+    }
     return rewardDieSnapshot(die);
   }
 
@@ -9790,7 +9837,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       beforeWins,
       totalWins: afterWins,
       activeDie: rewardDieSnapshot(afterTier),
-      unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins) : null
+      unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins, { delayMs: REWARD_DICE_ROUND_UNLOCK_DELAY_MS }) : null
     };
   }
 
@@ -12169,8 +12216,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
       inlineResultBanner.setAttribute('aria-hidden', 'false');
     }
-    if (inlineResultTitle) inlineResultTitle.textContent = playerWon ? 'CONGRATULATIONS!' : 'GAME OVER';
-    if (inlineResultSub) inlineResultSub.textContent = playerWon ? '' : 'CPU WINS';
+    if (inlineResultTitle) inlineResultTitle.textContent = playerWon ? 'GAME WINNER' : 'GAME OVER';
+    if (inlineResultSub) inlineResultSub.textContent = playerWon ? 'PLAYER WINS' : 'CPU WINS';
     if (boardWrap) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
       boardWrap.classList.add('inline-ending-lid-dance');
@@ -12552,7 +12599,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     overlayTitle.innerHTML = playerWon
       ? '<span class="win-line">PLAYER</span><span class="win-line">WINS!</span>'
       : '<span class="win-line">CPU</span><span class="win-line">WINS!</span>';
-    overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
+    overlaySub.textContent = playerWon ? 'PLAYER BEAT CPU' : 'CPU BEAT PLAYER';
     overlayStats.textContent = '';
     playAgainBtn.textContent = 'PLAY AGAIN';
     overlay.classList.remove('victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega', 'mobile-terminal-rest');
@@ -13569,7 +13616,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const fanfareDuration = isFullRoundWinEvent(winner)
       ? spillDuration
       : clamp(spillDuration * 0.42, 850, 1700);
-    triggerTitleRoundWinFanfare(fanfareDuration);
+    if (isFullRoundWinEvent(winner)) triggerTitleRoundWinFanfare(fanfareDuration);
     Audio.roundWonFanfare(fanfareDuration);
     if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
     const winnerStatusDuration = spillDuration + 260;

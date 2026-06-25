@@ -1101,8 +1101,8 @@ async function main() {
       })()`);
       assert(mathPlayerWin.passed === true, `${viewport.name}: mathematical player win proof failed ${JSON.stringify(mathPlayerWin)}`);
       assert(mathPlayerWinUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player win reason missing ${JSON.stringify(mathPlayerWinUi)}`);
-      assert(mathPlayerWinUi.title === 'CONGRATULATIONS!', `${viewport.name}: player-win title changed ${JSON.stringify(mathPlayerWinUi)}`);
-      assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under congratulations ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'GAME WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2StatusFits, `${viewport.name}: green loser status should fit in the viewport ${JSON.stringify(mathPlayerWinUi)}`);
@@ -1586,6 +1586,7 @@ async function main() {
       await evalValue(roundWinProbe, `document.getElementById('startBtn').click(); true`);
       await waitEval(roundWinProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${winner} round-win probe game start`);
       const roundWinEarly = await evalValue(roundWinProbe, `window.TrashDiceDebug.roundWinEventProbe(${JSON.stringify(winner)})`);
+      let roundWinProbeElapsedMs = 180;
       const fontSize = parseFloat(roundWinEarly.payoutStatusFontSize || '0');
       assert(roundWinEarly.winner === winner, `${winner} round-win probe: wrong winner ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.payoutStatusActive === true && roundWinEarly.roundWinnerStatusActive === true, `${winner} round-win probe: winner status inactive ${JSON.stringify(roundWinEarly)}`);
@@ -1594,18 +1595,37 @@ async function main() {
       assert(roundWinEarly.winnerStatusDuration === roundWinEarly.spillDuration + 260, `${winner} round-win probe: winner status duration should track round resolution without extending it ${JSON.stringify(roundWinEarly)}`);
       if (winner === 'p2') {
         assert(roundWinEarly.fullEvent === false && roundWinEarly.spillDuration === roundWinEarly.expectedCpuDuration, `green round-win probe: CPU round timing changed ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.titleFanfareActive === false, `green round-win probe: CPU round should not pulse the title logo ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.canDance === false, `green round-win probe: CPU round should not gain player-only can dance ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === false && roundWinEarly.rewardDieVisible === false && roundWinEarly.rewardDieState.totalWins === 0, `green round-win probe: CPU round should not trigger player reward fanfare ${JSON.stringify(roundWinEarly)}`);
       } else {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.titleFanfareActive === true, `yellow round-win probe: player round should still pulse the title logo ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstText.includes('SKIN UNLOCKED'), `yellow round-win probe: reward burst should describe skin unlock ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.rewardDieVisible === true && roundWinEarly.rewardDieTier === '1' && roundWinEarly.rewardDieName === 'PLUME', `yellow round-win probe: first player round win should reveal PLUME reward die ${JSON.stringify(roundWinEarly)}`);
-        assert(roundWinEarly.rewardDieSub === 'SKIN UNLOCKED', `yellow round-win probe: reward reveal should include skin unlocked subtitle ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.rewardDieVisible === false, `yellow round-win probe: reward die reveal should wait until ROUND WIN reads ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);
+        await sleep(1450);
+        roundWinProbeElapsedMs += 1450;
+        const delayedRewardDie = await evalValue(roundWinProbe, `(() => {
+          const shell = document.getElementById('rewardDieUnlock');
+          const die = document.getElementById('rewardDie');
+          const name = document.getElementById('rewardDieName');
+          const sub = document.getElementById('rewardDieSub');
+          const style = shell ? getComputedStyle(shell) : null;
+          const rect = die ? die.getBoundingClientRect() : null;
+          return {
+            visible: !!(shell && die && !shell.hidden && shell.classList.contains('show') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0 && rect && rect.width >= 48 && rect.height >= 48),
+            tier: shell ? shell.dataset.tier || '' : '',
+            name: name ? name.textContent || '' : '',
+            sub: sub ? sub.textContent || '' : ''
+          };
+        })()`);
+        assert(delayedRewardDie.visible === true && delayedRewardDie.tier === '1' && delayedRewardDie.name === 'PLUME', `yellow round-win probe: delayed PLUME reward die reveal missing ${JSON.stringify({ roundWinEarly, delayedRewardDie })}`);
+        assert(delayedRewardDie.sub === 'SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
       }
-      await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - 180));
+      await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
       const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {
         const id = ${JSON.stringify(winner === 'p1' ? 'p1StatusBar' : 'p2StatusBar')};
         const textId = ${JSON.stringify(winner === 'p1' ? 'p1StatusText' : 'p2StatusText')};
