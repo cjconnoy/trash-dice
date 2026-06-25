@@ -7543,6 +7543,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 }
 .start-die.green .dot { background: var(--green-pip); }
 .start-die.die.reward-skinned {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: clamp(4px, 0.78vw, 8px);
+  padding: clamp(14px, 2.8vw, 22px);
+  border-radius: 22%;
   box-shadow:
     7px 8px 0 var(--reward-edge),
     13px 14px 0 rgba(0,0,0,0.34),
@@ -7550,7 +7556,20 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     inset 0 0 0 2px rgba(255,255,255,0.16),
     inset -10px -12px 16px rgba(0,0,0,0.18);
 }
+.start-die.die.reward-skinned .dot-cell {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+  display: grid;
+  place-items: center;
+}
 .start-die.die.reward-skinned .dot {
+  width: clamp(14px, 1.7vw, 24px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
   background: var(--reward-pip);
   box-shadow:
     0 0 0 1.5px var(--reward-pip-outline),
@@ -9943,6 +9962,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const startOverlayEl = document.getElementById('startOverlay');
   const startLurkerCan = document.querySelector('.start-lurker-can');
   const startHeroDice = Array.from(document.querySelectorAll('.start-dice-row .start-die')).slice(0, 2);
+  const startHeroDieDefaults = startHeroDice.map(el => ({
+    className: el ? el.className : '',
+    html: el ? el.innerHTML : ''
+  }));
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
   const devP0Btn = document.getElementById('devP0Btn');
@@ -10445,7 +10468,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         rewardSkinned: !!(el && el.classList.contains('reward-skinned')),
         rewardTier: el ? el.dataset.rewardTier || '' : '',
         rewardName: el ? el.dataset.rewardName || '' : '',
-        rewardEffect: el ? el.dataset.rewardEffect || '' : ''
+        rewardEffect: el ? el.dataset.rewardEffect || '' : '',
+        dotCells: el ? el.querySelectorAll('.dot-cell').length : 0,
+        dots: el ? el.querySelectorAll('.dot').length : 0
       }))
     };
   }
@@ -10456,13 +10481,18 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const pairStart = titleHeroDiceCycleIndex >= 0 ? titleHeroDiceCycleIndex * 2 : -1;
     startHeroDice.forEach((el, i) => {
       if (!el) return;
-      clearRewardDieElementVisual(el);
-      el.classList.remove('title-reward-die');
       el.dataset.titleRewardPair = titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1);
       const die = pairStart >= 0 ? REWARD_DICE[pairStart + i] : null;
       if (die) {
-        applyRewardDieElementVisual(el, die);
+        const base = startHeroDieDefaults[i] || startHeroDieDefaults[0] || { className: 'start-die die', html: '' };
+        el.className = `${base.className} title-reward-die`;
+        renderRewardNudgeDie(el, die);
         el.classList.add('title-reward-die');
+      } else {
+        const base = startHeroDieDefaults[i] || { className: 'start-die die', html: '' };
+        clearRewardDieElementVisual(el);
+        el.className = base.className;
+        el.innerHTML = base.html;
       }
     });
     return titleHeroDiceSnapshot();

@@ -427,6 +427,8 @@ async function main() {
             rewardNames: dice.map(el => el.dataset.rewardName || ''),
             rewardEffects: dice.map(el => el.dataset.rewardEffect || ''),
             rewardSkinned: dice.map(el => el.classList.contains('reward-skinned')),
+            dotCells: dice.map(el => el.querySelectorAll('.dot-cell').length),
+            dots: dice.map(el => el.querySelectorAll('.dot').length),
             state: window.TrashDiceQA.titleHeroDiceState()
           };
         })(),
@@ -597,6 +599,8 @@ async function main() {
       const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
       assert(titleHeroDiceNames.join(' > ') === 'PLUME|TOXIC SPLAT > BUBBLEGUM|VOLT ZAP > TIE-DYE|SUNRISE > DIAMOND|PRISM > DEFAULT|DEFAULT > PLUME|TOXIC SPLAT', `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(titleHeroDiceCycle.slice(0, 4).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle.slice(0, 4).every(step => step.dice.every(die => die.dotCells === 9 && die.dots === 5)), `${viewport.name}: title reward dice should render with full in-game reward pip geometry ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle[4].dice.every(die => die.rewardSkinned === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[4])}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
         assert(initial.titleLayout.startCardToLegal >= 8, `${viewport.name}: mobile start card overlaps legal ${JSON.stringify(initial.titleLayout)}`);
