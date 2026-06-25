@@ -811,7 +811,7 @@ async function main() {
       })()`);
       assert(rewardCap.activeTier === 8 && rewardCap.activeName === 'PRISM' && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at PRISM ${JSON.stringify(rewardCap)}`);
       const rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
-      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|CHROME|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 8 && rewardConfig.map(item => item.name).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|HATCHLING|DIAMOND|PRISM', `${viewport.name}: reward die character lineup changed ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.map(item => item.minWins).join('|') === '1|2|4|7|11|16|24|35', `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
       assert(
         rewardConfig.find(item => item.name === 'PLUME').effect === 'featherRipple' &&
@@ -819,6 +819,7 @@ async function main() {
         rewardConfig.find(item => item.name === 'BUBBLEGUM').effect === 'bubblePop' &&
         rewardConfig.find(item => item.name === 'VOLT ZAP').effect === 'bolt' &&
         rewardConfig.find(item => item.name === 'TIE-DYE').effect === 'tieDye' &&
+        rewardConfig.find(item => item.name === 'HATCHLING').effect === 'hatchChick' &&
         rewardConfig.find(item => item.name === 'DIAMOND').effect === 'diamond',
         `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`
       );
@@ -838,6 +839,20 @@ async function main() {
       assert(playerRewardSlot.animationNames.includes('slotRewardTieDyeDrift'), `${viewport.name}: player's seated reward die should keep its live animation ${JSON.stringify(playerRewardSlot)}`);
       assert(diamondRewardSlot && diamondRewardSlot.rewardSkinned === true && diamondRewardSlot.tier === '7' && diamondRewardSlot.name === 'DIAMOND' && diamondRewardSlot.animationNames.includes('slotRewardDiamondSparkle'), `${viewport.name}: diamond seated reward die should sparkle ${JSON.stringify(diamondRewardSlot)}`);
       assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.tieDye.slots)}`);
+      const rewardSkinLadderFixtures = await evalValue(page, `(() => {
+        const milestones = [1, 2, 4, 7, 11, 16, 24, 35];
+        const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));
+        window.TrashDiceQA.setRewardWins(2);
+        return fixtures.map(fixture => ({
+          activeName: fixture.activePlayerDie ? fixture.activePlayerDie.name : '',
+          activeEffect: fixture.activePlayerDie ? fixture.activePlayerDie.effect : '',
+          playerDie: fixture.playerDie,
+          playerSlot: fixture.slots.find(slot => slot.player === 'p1')
+        }));
+      })()`);
+      assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === 'PLUME|TOXIC SPAT|BUBBLEGUM|VOLT ZAP|TIE-DYE|HATCHLING|DIAMOND|PRISM', `${viewport.name}: all reward ladder skins should activate in order ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.length > 0), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.find(item => item.activeName === 'HATCHLING').activeEffect === 'hatchChick' && rewardSkinLadderFixtures.find(item => item.activeName === 'HATCHLING').playerSlot.animationNames.includes('slotRewardHatchChick'), `${viewport.name}: hatchling reward skin should replace chrome and animate in the lid ${JSON.stringify(rewardSkinLadderFixtures)}`);
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(1700);
