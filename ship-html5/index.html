@@ -2402,22 +2402,23 @@ body.inline-game-over .roll-panel {
   position: relative;
   z-index: 4;
   max-width: 100%;
-  color: rgba(15,95,50,0.9);
+  color: #0d6c3b;
   font-family: 'Fredoka One', 'Arial Black', sans-serif;
-  font-size: clamp(0.58rem, 1.85vw, 0.78rem);
-  line-height: 1;
-  letter-spacing: 0.08em;
+  font-size: clamp(0.74rem, 2.08vw, 0.98rem);
+  line-height: 1.06;
+  letter-spacing: 0.045em;
   text-align: center;
   text-transform: uppercase;
   white-space: normal;
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.54),
-    1px 1px 0 rgba(255,210,32,0.35);
+    0 1px 0 rgba(255,255,255,0.72),
+    1px 1px 0 rgba(255,210,32,0.34),
+    0 2px 3px rgba(27,47,35,0.16);
 }
 .game-tagline strong {
   color: #e3271f;
   font-weight: 900;
-  -webkit-text-stroke: 0.28px rgba(88,0,0,0.24);
+  -webkit-text-stroke: 0.32px rgba(88,0,0,0.26);
   paint-order: stroke fill;
 }
 body.inline-game-over .game-tagline {
@@ -5886,7 +5887,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .game-tagline {
-    font-size: clamp(0.5rem, 1.45vh, 0.62rem);
+    font-size: clamp(0.62rem, 1.82vh, 0.78rem);
+    letter-spacing: 0.035em;
   }
 
   .roll-btn-label {
@@ -5950,12 +5952,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-panel {
     --roll-strip-die-size: clamp(56px, 17vw, 68px);
-    min-height: clamp(80px, 21.8vw, 92px);
+    min-height: clamp(86px, 22.8vw, 100px);
   }
 
   .game-tagline {
-    font-size: clamp(0.48rem, 2.5vw, 0.62rem);
-    letter-spacing: 0.06em;
+    font-size: clamp(0.66rem, 3.3vw, 0.82rem);
+    letter-spacing: 0.025em;
   }
 
   body.inline-game-over .roll-panel {
@@ -6179,7 +6181,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .roll-panel {
     --roll-strip-die-size: clamp(48px, 14.8vw, 58px);
     width: min(66%, 240px);
-    min-height: clamp(74px, 20vw, 84px);
+    min-height: clamp(78px, 21vw, 90px);
     margin-top: 0;
   }
 
@@ -6245,7 +6247,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-panel {
-    min-height: 70px;
+    min-height: 76px;
   }
 }
 
