@@ -1959,6 +1959,15 @@ async function main() {
       })()`, `${winner} round-win probe reward UI clears on Roll`);
     }
 
+    const cappedRoundWinsProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=capped`, viewports[0]);
+    await evalValue(cappedRoundWinsProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(cappedRoundWinsProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `capped round-win copy probe game start`);
+    await evalValue(cappedRoundWinsProbe, `window.TrashDiceQA.setRewardWins(35); true`);
+    const cappedRoundWins = await evalValue(cappedRoundWinsProbe, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
+    assert(cappedRoundWins.roundWinBurstVisible === true, `capped round-win copy probe: burst missing ${JSON.stringify(cappedRoundWins)}`);
+    assert(cappedRoundWins.roundWinBurstText.includes('ROUNDS WON: 36'), `capped round-win copy probe: should use ROUNDS WON label ${JSON.stringify(cappedRoundWins)}`);
+    assert(!cappedRoundWins.roundWinBurstText.includes('ROUND WINS'), `capped round-win copy probe: old ROUND WINS wording leaked ${JSON.stringify(cappedRoundWins)}`);
+
     for (const outcome of [
       { id: 'devWinBtn', winner: 'p1', label: 'win' },
       { id: 'devLoseBtn', winner: 'p2', label: 'lose' }
