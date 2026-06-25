@@ -758,6 +758,7 @@ async function main() {
         const shell = document.getElementById('rewardDieUnlock');
         const die = document.getElementById('rewardDie');
         const name = document.getElementById('rewardDieName');
+        const sub = document.getElementById('rewardDieSub');
         const playerDie = document.getElementById('p1Die');
         const r = die.getBoundingClientRect();
         return {
@@ -767,6 +768,7 @@ async function main() {
           tier: shell.dataset.tier || die.dataset.tier || '',
           effect: shell.dataset.effect || die.dataset.effect || '',
           name: name.textContent || '',
+          sub: sub ? sub.textContent || '' : '',
           playerSkin: {
             rewardSkinned: playerDie.classList.contains('reward-skinned'),
             tier: playerDie.dataset.rewardTier || '',
@@ -777,7 +779,7 @@ async function main() {
           progressState: window.TrashDiceQA.rewardDieState()
         };
       })()`);
-      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
+      assert(rewardReview.visible === true && rewardReview.tier === '1' && rewardReview.name === 'PLUME' && rewardReview.sub === 'SKIN UNLOCKED' && rewardReview.effect === 'featherRipple' && rewardReview.buttonText === 'D1', `${viewport.name}: reward review button did not preview first die ${JSON.stringify(rewardReview)}`);
       assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === '1' && rewardReview.playerSkin.name === 'PLUME' && rewardReview.playerSkin.effect === 'featherRipple', `${viewport.name}: reward review should skin the real player die ${JSON.stringify(rewardReview.playerSkin)}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
@@ -910,7 +912,8 @@ async function main() {
           const shell = document.getElementById('rewardDieUnlock');
           const die = document.getElementById('rewardDie');
           const name = document.getElementById('rewardDieName');
-          if (!shell || !die || !name) return { present: false };
+          const sub = document.getElementById('rewardDieSub');
+          if (!shell || !die || !name || !sub) return { present: false };
           const r = die.getBoundingClientRect();
           const shellStyle = getComputedStyle(shell);
           const dieStyle = getComputedStyle(die);
@@ -920,6 +923,7 @@ async function main() {
             tier: shell.dataset.tier || die.dataset.tier || '',
             effect: shell.dataset.effect || die.dataset.effect || '',
             name: name.textContent || '',
+            sub: sub.textContent || '',
             pipCount: die.querySelectorAll('.reward-die-pip-cell.is-on .reward-die-pip').length,
             pipOutline: shell.dataset.pipOutline || die.dataset.pipOutline || '',
             faceColor: dieStyle.getPropertyValue('--reward-face').trim(),
@@ -1575,7 +1579,9 @@ async function main() {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstText.includes('SKIN UNLOCKED'), `yellow round-win probe: reward burst should describe skin unlock ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieVisible === true && roundWinEarly.rewardDieTier === '1' && roundWinEarly.rewardDieName === 'PLUME', `yellow round-win probe: first player round win should reveal PLUME reward die ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.rewardDieSub === 'SKIN UNLOCKED', `yellow round-win probe: reward reveal should include skin unlocked subtitle ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - 180));

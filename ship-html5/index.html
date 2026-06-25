@@ -2014,13 +2014,33 @@ body.inline-game-over .roll-panel {
 
 .reward-die-scene {
   position: relative;
+  isolation: isolate;
   display: grid;
   justify-items: center;
-  gap: clamp(7px, 1.9vw, 12px);
+  gap: clamp(6px, 1.6vw, 10px);
+  padding: clamp(14px, 4vw, 24px) clamp(18px, 5vw, 32px) clamp(16px, 4.4vw, 28px);
   transform: translate3d(0, -7vh, 0);
 }
 
+.reward-die-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: clamp(16px, 4vw, 28px);
+  border: 2px solid rgba(255,244,163,0.88);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,242,56,0.2), transparent 52%),
+    linear-gradient(180deg, rgba(10,54,29,0.96), rgba(16,89,44,0.9));
+  box-shadow:
+    0 12px 0 rgba(6,53,29,0.5),
+    0 18px 32px rgba(0,0,0,0.42),
+    inset 0 0 0 3px rgba(255,255,255,0.12);
+}
+
 .reward-die-name {
+  position: relative;
+  z-index: 1;
   font-family: 'Fredoka One', system-ui, sans-serif;
   font-size: clamp(1.05rem, 5.4vw, 2.15rem);
   line-height: 0.95;
@@ -2033,11 +2053,37 @@ body.inline-game-over .roll-panel {
   transform: translate3d(0, 6px, 0) scale(0.92);
 }
 
-.reward-die-unlock.show .reward-die-name {
+.reward-die-sub {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.2em;
+  padding: 4px 11px 5px;
+  border-radius: 999px;
+  background: rgba(255,244,163,0.94);
+  color: #0b5c31;
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.78rem, 3.5vw, 1.16rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: none;
+  box-shadow:
+    0 3px 0 rgba(227,56,43,0.78),
+    0 8px 14px rgba(0,0,0,0.22);
+  opacity: 0;
+  transform: translate3d(0, 5px, 0) scale(0.94);
+}
+
+.reward-die-unlock.show .reward-die-name,
+.reward-die-unlock.show .reward-die-sub {
   animation: rewardNameFlash 1.05s cubic-bezier(.14,.86,.18,1) 0.08s both;
 }
 
 .reward-die-wrap {
+  position: relative;
+  z-index: 1;
   width: clamp(54px, 17vw, 94px);
   aspect-ratio: 1 / 1;
   filter: drop-shadow(0 14px 12px rgba(0,0,0,0.36));
@@ -2550,7 +2596,8 @@ body.inline-game-over .roll-panel {
   .slot-die.reward-skinned .slot-reward-effect,
   .slot-die.reward-skinned .slot-reward-pip,
   .round-win-burst.show,
-  .reward-die-unlock.show .reward-die-name {
+  .reward-die-unlock.show .reward-die-name,
+  .reward-die-unlock.show .reward-die-sub {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
   }
@@ -3166,15 +3213,27 @@ body.inline-game-loss .inline-result-banner {
 }
 
 .round-win-burst.show {
-  animation: roundWinBurstShell 1.75s cubic-bezier(.16,.92,.17,1) both;
+  animation: roundWinBurstShell 2.8s cubic-bezier(.16,.92,.17,1) both;
 }
 
 .round-win-burst-content {
   position: relative;
+  isolation: isolate;
   display: grid;
   justify-items: center;
   gap: clamp(4px, 1.5vw, 9px);
+  min-width: min(84vw, 360px);
   max-width: min(92vw, 680px);
+  padding: clamp(12px, 4vw, 28px) clamp(18px, 6vw, 42px) clamp(12px, 3.4vw, 24px);
+  border: 2px solid rgba(255,244,163,0.88);
+  border-radius: clamp(15px, 3.8vw, 26px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,242,56,0.25), transparent 52%),
+    linear-gradient(180deg, rgba(10,54,29,0.96), rgba(16,89,44,0.9));
+  box-shadow:
+    0 12px 0 rgba(6,53,29,0.5),
+    0 18px 32px rgba(0,0,0,0.42),
+    inset 0 0 0 3px rgba(255,255,255,0.12);
   text-align: center;
   filter: drop-shadow(0 12px 13px rgba(16,39,20,0.34));
 }
@@ -3196,29 +3255,33 @@ body.inline-game-loss .inline-result-banner {
 }
 
 .round-win-burst-sub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 1.1em;
+  padding: 5px 12px 6px;
+  border-radius: 999px;
+  background: rgba(255,244,163,0.94);
   font-family: 'Fredoka One', system-ui, sans-serif;
-  font-size: clamp(0.82rem, 3.8vw, 1.3rem);
+  font-size: clamp(0.86rem, 4.05vw, 1.34rem);
   line-height: 1;
-  color: #e93a2d;
+  color: #0b5c31;
   text-transform: uppercase;
-  text-shadow:
-    0 1.3px 0 #fff4a3,
-    0 4px 10px rgba(0,0,0,0.28);
+  text-shadow: none;
+  box-shadow:
+    0 3px 0 rgba(227,56,43,0.78),
+    0 8px 14px rgba(0,0,0,0.22);
 }
 
 .round-win-burst.has-reward .round-win-burst-sub {
-  color: #fff4a3;
-  text-shadow:
-    0 1.5px 0 #0b5c31,
-    0 4px 12px rgba(0,0,0,0.34);
+  color: #e93a2d;
 }
 
 @keyframes roundWinBurstShell {
   0%   { opacity: 0; transform: translate3d(0, -18vh, 0) scale(0.78) rotate(-3deg); }
-  14%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1.08) rotate(2deg); }
-  25%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(0.99) rotate(-1deg); }
-  72%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1) rotate(0deg); }
+  12%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1.08) rotate(2deg); }
+  22%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(0.99) rotate(-1deg); }
+  82%  { opacity: 1; transform: translate3d(0, -20vh, 0) scale(1) rotate(0deg); }
   100% { opacity: 0; transform: translate3d(0, -22vh, 0) scale(0.96) rotate(0deg); }
 }
 @keyframes flashY {
@@ -7900,6 +7963,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 <div class="reward-die-unlock" id="rewardDieUnlock" hidden aria-live="polite" aria-atomic="true">
   <div class="reward-die-scene">
     <div class="reward-die-name" id="rewardDieName">PLUME</div>
+    <div class="reward-die-sub" id="rewardDieSub">SKIN UNLOCKED</div>
     <div class="reward-die-wrap">
       <div class="reward-die effect-none" id="rewardDie" data-tier="0" data-effect="none" data-pip-outline="false" aria-hidden="true">
         <span class="reward-die-pip-cell" data-pip="tl"><span class="reward-die-pip"></span></span>
@@ -8237,8 +8301,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
-  const REWARD_DICE_UNLOCK_MS = 2800;
-  const ROUND_WIN_BURST_MS = 1750;
+  const REWARD_DICE_UNLOCK_MS = 4000;
+  const ROUND_WIN_BURST_MS = 2800;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const REWARD_DICE = Object.freeze([
     { tier: 1, minWins: 1, name: 'PLUME', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -9169,6 +9233,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const rewardDieUnlock = document.getElementById('rewardDieUnlock');
   const rewardDie = document.getElementById('rewardDie');
   const rewardDieName = document.getElementById('rewardDieName');
+  const rewardDieSub = document.getElementById('rewardDieSub');
   const roundWinBurst = document.getElementById('roundWinBurst');
   const roundWinBurstSub = document.getElementById('roundWinBurstSub');
   const p1TurnTag   = document.getElementById('p1TurnTag');
@@ -9390,10 +9455,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
     applyRewardDieStyle(die);
     if (rewardDieName) rewardDieName.textContent = die.name;
+    if (rewardDieSub) rewardDieSub.textContent = 'SKIN UNLOCKED';
     rewardDieUnlock.dataset.tier = String(die.tier);
     rewardDieUnlock.dataset.effect = die.effect || 'none';
     rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
-    rewardDieUnlock.setAttribute('aria-label', `${die.name} reward die unlocked at ${totalWins} player round wins`);
+    rewardDieUnlock.setAttribute('aria-label', `${die.name} skin unlocked at ${totalWins} player round wins`);
     rewardDieUnlock.hidden = false;
     rewardDieUnlock.classList.remove('show');
     void rewardDieUnlock.offsetWidth;
@@ -9439,9 +9505,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       roundWinBurst.removeAttribute('data-reward-name');
     }
     if (roundWinBurstSub) {
+      const totalWins = rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins;
       roundWinBurstSub.textContent = unlockedDie
-        ? `${unlockedDie.name} die unlocked`
-        : `${rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins} round wins`;
+        ? `${unlockedDie.name} SKIN UNLOCKED`
+        : `${totalWins} ROUND ${totalWins === 1 ? 'WIN' : 'WINS'}`;
     }
     void roundWinBurst.offsetWidth;
     requestAnimationFrame(() => {
@@ -14282,6 +14349,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             rewardDieVisible: !!(rewardDieUnlock && rewardDie && !rewardDieUnlock.hidden && rewardDieUnlock.classList.contains('show') && rewardStyle && rewardStyle.display !== 'none' && rewardRect && rewardRect.width >= 48 && rewardRect.height >= 48),
             rewardDieTier: rewardDieUnlock ? rewardDieUnlock.dataset.tier || '' : '',
             rewardDieName: rewardDieName ? rewardDieName.textContent || '' : '',
+            rewardDieSub: rewardDieSub ? rewardDieSub.textContent || '' : '',
             rewardDieState: getRewardDieState(),
             payoutComets: document.querySelectorAll('.player-payout-comet').length
           });
