@@ -1619,10 +1619,24 @@ async function main() {
       if (winner === 'p2') {
         assert(roundWinEarly.fullEvent === false && roundWinEarly.spillDuration === roundWinEarly.expectedCpuDuration, `green round-win probe: CPU round timing changed ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.titleFanfareActive === false, `green round-win probe: CPU round should not pulse the title logo ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.lidDance === false, `green round-win probe: CPU round should not pulse the lid payout panel ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.canDance === false, `green round-win probe: CPU round should not gain player-only can dance ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.payoutPanelActive === false && roundWinEarly.payoutInventoryActive === false && roundWinEarly.payoutComets === 0, `green round-win probe: CPU round should not gain player payout fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === false && roundWinEarly.rewardDieVisible === false && roundWinEarly.rewardDieState.totalWins === 0, `green round-win probe: CPU round should not trigger player reward fanfare ${JSON.stringify(roundWinEarly)}`);
+        await sleep(760);
+        roundWinProbeElapsedMs += 760;
+        const cpuPayoutMotion = await evalValue(roundWinProbe, `(() => {
+          const panel = document.getElementById('p2Inventory').closest('.player-panel');
+          return {
+            lidDance: document.getElementById('boardWrap').classList.contains('player-payout-lid-dance'),
+            panelTick: !!(panel && panel.classList.contains('payout-tick')),
+            poolTick: document.getElementById('p2Pool').classList.contains('payout-tick')
+          };
+        })()`);
+        assert(cpuPayoutMotion.lidDance === false && cpuPayoutMotion.panelTick === false && cpuPayoutMotion.poolTick === false, `green round-win probe: CPU payout panel/count pulse should stay quiet ${JSON.stringify({ roundWinEarly, cpuPayoutMotion })}`);
       } else {
         assert(roundWinEarly.fullEvent === true && roundWinEarly.payoutPanelActive === true && roundWinEarly.payoutInventoryActive === true, `yellow round-win probe: player payout fanfare missing ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.lidDance === true, `yellow round-win probe: player payout lid dance missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.titleFanfareActive === true, `yellow round-win probe: player round should still pulse the title logo ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstRewardTier === '1' && roundWinEarly.roundWinBurstRewardName === 'PLUME', `yellow round-win probe: first round win should attach PLUME reward to burst ${JSON.stringify(roundWinEarly)}`);

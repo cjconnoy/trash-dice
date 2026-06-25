@@ -13548,9 +13548,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       trashCan.style.setProperty('--payout-can-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.04s' : '0.92s');
       boardWrap.classList.add('player-payout-lid-dance');
       trashCan.classList.add('player-payout-can-dance');
-    } else {
-      boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.12s' : '1s');
-      boardWrap.classList.add('player-payout-lid-dance');
     }
 
     lidDice.forEach((die, i) => {
@@ -13725,8 +13722,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       pools[winner][die.color]++;
       renderPoolCounts();
       appendPoolDieVisual(winner, die);
-      pulsePoolCount(winner);
-      pulsePlayerPanel(winner);
+      if (isFullRoundWinEvent(winner)) {
+        pulsePoolCount(winner);
+        pulsePlayerPanel(winner);
+      }
     });
 
     // Reset the board only after the full bounty spill finishes.
