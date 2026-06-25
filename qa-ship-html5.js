@@ -1098,7 +1098,7 @@ async function main() {
       })()`);
       assert(mathPlayerLoss.passed === true, `${viewport.name}: mathematical player loss proof failed ${JSON.stringify(mathPlayerLoss)}`);
       assert(mathPlayerLossUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player loss reason missing ${JSON.stringify(mathPlayerLossUi)}`);
-      assert(mathPlayerLossUi.title === 'GAME OVER' && mathPlayerLossUi.sub === 'GREEN WINS', `${viewport.name}: player-loss banner should stay normal ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.title === 'GAME OVER' && mathPlayerLossUi.sub === 'CPU WINS', `${viewport.name}: player-loss banner should stay normal ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerLossUi.p1LoserReason === true, `${viewport.name}: yellow loser status should explain mathematical elimination ${JSON.stringify(mathPlayerLossUi)}`);
       assert(!mathPlayerLossUi.p2Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerLossUi.p2LoserReason === false, `${viewport.name}: winning green panel should not carry mathematical loser copy ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1StatusFits, `${viewport.name}: yellow loser status should fit in the viewport ${JSON.stringify(mathPlayerLossUi)}`);

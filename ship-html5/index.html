@@ -7735,7 +7735,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   const COLORS = ['yellow', 'green'];
   const COLOR_CLASS = { yellow: 'p1', green: 'p2' };
-  const PLAYER_NAME = { p1: 'Yellow', p2: 'Green' };
+  const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
   const TD_SHIP_VERSION = 'td-html5-p1-wip-20260604';
@@ -8545,7 +8545,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     rollBtn.disabled = false;
     clearDie('p1');
     syncUI();
-    setMsg('YELLOW PLAYER ROLL');
+    setMsg('PLAYER ROLL');
     syncHeroIdleState();
     scheduleP0Autoplay();
     return true;
@@ -9464,8 +9464,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p2StatusBar.classList.add('active');
     p1StatusBar.classList.remove('bench-praise', 'payout-praise');
     p2StatusBar.classList.remove('bench-praise', 'payout-praise');
-    if (p1StatusText) p1StatusText.textContent = values.p1 ? `YELLOW ${values.p1}` : 'YELLOW ROLL-OFF';
-    if (p2StatusText) p2StatusText.textContent = values.p2 ? `GREEN ${values.p2}` : 'GREEN ROLL-OFF';
+    if (p1StatusText) p1StatusText.textContent = values.p1 ? `PLAYER ${values.p1}` : 'PLAYER ROLL-OFF';
+    if (p2StatusText) p2StatusText.textContent = values.p2 ? `CPU ${values.p2}` : 'CPU ROLL-OFF';
     [['p1', values.p1], ['p2', values.p2]].forEach(([player, value]) => {
       if (value) {
         const stage = getDieStage(player);
@@ -9989,9 +9989,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const ui = getPlayerUi(player);
     if (!ui.statusText) return;
     if (ui.player === 'p1') {
-      ui.statusText.textContent = current === 'p1' ? 'YOUR TURN' : 'YELLOW PLAYER';
+      ui.statusText.textContent = current === 'p1' ? 'YOUR TURN' : 'PLAYER';
     } else {
-      ui.statusText.textContent = current === 'p2' ? 'GREEN ROLL' : 'GREEN PLAYER';
+      ui.statusText.textContent = current === 'p2' ? 'CPU ROLL' : 'CPU';
     }
   }
 
@@ -11399,7 +11399,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       inlineResultBanner.setAttribute('aria-hidden', 'false');
     }
     if (inlineResultTitle) inlineResultTitle.textContent = playerWon ? 'CONGRATULATIONS!' : 'GAME OVER';
-    if (inlineResultSub) inlineResultSub.textContent = playerWon ? '' : 'GREEN WINS';
+    if (inlineResultSub) inlineResultSub.textContent = playerWon ? '' : 'CPU WINS';
     if (boardWrap) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
       boardWrap.classList.add('inline-ending-lid-dance');
@@ -11550,7 +11550,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     p1StatusBar.classList.remove('bench-praise', 'payout-praise', 'loser-reason');
     p2StatusBar.classList.remove('bench-praise', 'payout-praise', 'loser-reason');
     p1StatusText.textContent = playerWon ? 'GAME WIN' : 'GAME OVER';
-    p2StatusText.textContent = playerWon ? 'GREEN PLAYER' : 'GREEN WINS';
+    p2StatusText.textContent = playerWon ? 'CPU' : 'CPU WINS';
     p1TurnDot.style.background = '#f5c800';
     p2TurnDot.style.background = '#1f9652';
     p1TurnTag.classList.remove('active');
@@ -11778,8 +11778,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     lockTerminalInteraction();
 
     overlayTitle.innerHTML = playerWon
-      ? '<span class="win-line">YELLOW PLAYER</span><span class="win-line">WINS!</span>'
-      : '<span class="win-line">GREEN PLAYER</span><span class="win-line">WINS!</span>';
+      ? '<span class="win-line">PLAYER</span><span class="win-line">WINS!</span>'
+      : '<span class="win-line">CPU</span><span class="win-line">WINS!</span>';
     overlaySub.textContent = 'ROLL, WIN, AVOID THE BIN!';
     overlayStats.textContent = '';
     playAgainBtn.textContent = 'PLAY AGAIN';
@@ -11833,10 +11833,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p2') ||
       (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p2');
     if (!p1StatusLocked && p1StatusText) {
-      p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'YELLOW PLAYER';
+      p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'PLAYER';
     }
     if (!p2StatusLocked && p2StatusText) {
-      p2StatusText.textContent = isP1 ? 'GREEN PLAYER' : 'GREEN ROLL';
+      p2StatusText.textContent = isP1 ? 'CPU' : 'CPU ROLL';
     }
     p1TurnDot.style.background = '#f5c800';
     p2TurnDot.style.background = '#1f9652';
@@ -12165,7 +12165,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       scheduleP0Autoplay();
     } else {
       clearP0Timer();
-      if (announce && gameStarted && current === 'p1') setMsg('YELLOW PLAYER ROLL');
+      if (announce && gameStarted && current === 'p1') setMsg('PLAYER ROLL');
     }
     updateP0ReviewControl();
     return p0Autoplay;
@@ -12187,7 +12187,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     clearRuntimeTimers();
     setP0Autoplay(false, false);
     init();
-    setMsg('YELLOW PLAYER ROLL');
+    setMsg('PLAYER ROLL');
     updateP0ReviewControl();
   }
 
@@ -12308,11 +12308,11 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         if (betaFirstRoll.active || betaFirstRoll.settling) {
           betaRenderFirstRoll('ROLL FOR FIRST');
         } else {
-          setMsg('YELLOW PLAYER STARTS');
+          setMsg('PLAYER STARTS');
           syncBetaTurnState('init');
         }
       } else {
-        setMsg('YELLOW PLAYER STARTS');
+        setMsg('PLAYER STARTS');
         rollBtn.disabled = false;
         syncHeroIdleState();
         scheduleP0Autoplay(1200);
@@ -12740,7 +12740,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (betaMultiplayerActive) {
         syncBetaTurnState('round-reset');
       } else {
-        setMsg('YELLOW PLAYER ROLL');
+        setMsg('PLAYER ROLL');
         rollBtn.disabled = false;
         syncHeroIdleState();
         scheduleP0Autoplay();
@@ -13237,7 +13237,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         });
         syncUI();
         rollBtn.disabled = true;
-        setMsg('GREEN PLAYER ROLL');
+        setMsg('CPU ROLL');
 
         return new Promise((resolve, reject) => {
           const runStart = performance.now();
@@ -13427,7 +13427,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       scheduleProgressionWatchdog('cpu-turn', CPU_RESPONSE_MS + ROLL_ANIMATION_MS + ROLL_REVEAL_HOLD_MS + 5200);
       runLater(() => { busy = false; doRoll(); }, CPU_RESPONSE_MS);
     } else {
-      setMsg('YELLOW PLAYER ROLL');
+      setMsg('PLAYER ROLL');
       rollBtn.disabled = false;
       busy = false;
       cancelProgressionWatchdog();
