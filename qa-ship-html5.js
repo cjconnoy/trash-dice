@@ -108,14 +108,14 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const REWARD_BASE_NAMES = ['PLUME', 'TOXIC SPLAT', 'BUBBLEGUM', 'VOLT ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM'];
+const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|4|7|11|16|24|35';
 const REWARD_EFFECTS_BY_NAME = {
-  'PLUME': 'featherRipple',
-  'TOXIC SPLAT': 'toxicSpat',
+  'FEATHERS': 'featherRipple',
+  'TOXIC': 'toxicSpat',
   'BUBBLEGUM': 'bubblePop',
-  'VOLT ZAP': 'bolt',
+  'ZAP': 'bolt',
   'TIE-DYE': 'tieDye',
   'SUNRISE': 'sunrise',
   'DIAMOND': 'diamond',
@@ -136,7 +136,7 @@ const REWARD_SLOT_ANIMATION_BY_EFFECT = {
   bigCompass: 'slotRewardCompassSpin',
   lethalChicken: 'slotRewardChickenHop'
 };
-const REWARD_OUTLINED_BASE_NAMES = ['PLUME', 'TIE-DYE', 'DIAMOND', 'PRISM'];
+const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM'];
 
 function rewardAtWins(config, wins) {
   return config.reduce((active, item) => wins >= item.minWins ? item : active, null);

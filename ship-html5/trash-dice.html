@@ -8790,7 +8790,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       <div class="terminal-reward-copy">
         <div class="terminal-reward-kicker" id="terminalRewardNudgeKicker">Keep playing</div>
         <div class="terminal-reward-line" id="terminalRewardNudgeLine">Win 1 round to unlock:</div>
-        <div class="terminal-reward-unlock" id="terminalRewardNudgeUnlock">PLUME DIE SKIN</div>
+        <div class="terminal-reward-unlock" id="terminalRewardNudgeUnlock">FEATHERS DIE SKIN</div>
       </div>
     </div>
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
@@ -8801,7 +8801,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
 <div class="reward-die-unlock" id="rewardDieUnlock" hidden aria-live="polite" aria-atomic="true">
   <div class="reward-die-scene">
-    <div class="reward-die-name" id="rewardDieName">PLUME</div>
+    <div class="reward-die-name" id="rewardDieName">FEATHERS</div>
     <div class="reward-die-sub" id="rewardDieSub">DIE SKIN UNLOCKED</div>
     <div class="reward-die-wrap">
       <div class="reward-die effect-none" id="rewardDie" data-tier="0" data-effect="none" data-pip-outline="false" aria-hidden="true">
@@ -8927,7 +8927,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   <div class="round-loss-reward-copy">
     <div class="round-loss-reward-kicker" id="roundLossRewardNudgeKicker">Keep rolling</div>
     <div class="round-loss-reward-line" id="roundLossRewardNudgeLine">Win 1 round to unlock:</div>
-    <div class="round-loss-reward-unlock" id="roundLossRewardNudgeUnlock">PLUME DIE SKIN</div>
+    <div class="round-loss-reward-unlock" id="roundLossRewardNudgeUnlock">FEATHERS DIE SKIN</div>
   </div>
 </div>
 <div class="overlay" id="overlay">
@@ -9160,10 +9160,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
-    { id: 'plume', tier: 1, minWins: 1, name: 'PLUME', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
-    { id: 'toxic-splat', tier: 2, minWins: 2, name: 'TOXIC SPLAT', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
+    { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
+    { id: 'toxic-splat', tier: 2, minWins: 2, name: 'TOXIC', faceColor: '#3DDB3D', pipColor: '#082B0B', effect: 'toxicSpat', pipOutline: false },
     { id: 'bubblegum', tier: 3, minWins: 4, name: 'BUBBLEGUM', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'bubblePop', pipOutline: false },
-    { id: 'volt-zap', tier: 4, minWins: 7, name: 'VOLT ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
+    { id: 'volt-zap', tier: 4, minWins: 7, name: 'ZAP', faceColor: '#1E7BFF', pipColor: '#FFFFFF', effect: 'bolt', pipOutline: false },
     { id: 'tie-dye', tier: 5, minWins: 11, name: 'TIE-DYE', faceColor: '#FF4FB0', pipColor: '#FFFFFF', effect: 'tieDye', pipOutline: true },
     { id: 'sunrise', tier: 6, minWins: 16, name: 'SUNRISE', faceColor: '#FFB24B', pipColor: '#243653', effect: 'sunrise', pipOutline: false },
     { id: 'diamond', tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
