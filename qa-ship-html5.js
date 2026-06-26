@@ -108,9 +108,9 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM'];
+const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
-const REWARD_MILESTONES = '1|2|4|7|11|16|24|35';
+const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|50|65';
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -120,6 +120,8 @@ const REWARD_EFFECTS_BY_NAME = {
   'SUNRISE': 'sunrise',
   'DIAMOND': 'diamond',
   'PRISM': 'colorCycle',
+  'CAMO': 'camo',
+  'LAVA': 'lava',
   'LETHAL CHICKEN': 'lethalChicken',
   'BIG DISCOVERIES': 'bigCompass'
 };
@@ -133,10 +135,12 @@ const REWARD_SLOT_ANIMATION_BY_EFFECT = {
   shineSweep: 'slotRewardShineSweep',
   diamond: 'slotRewardDiamondSparkle',
   colorCycle: 'slotRewardPrismCycle',
+  camo: 'slotRewardCamoDrift',
+  lava: 'slotRewardLavaGlow',
   bigCompass: 'slotRewardCompassSpin',
   lethalChicken: 'slotRewardChickenHop'
 };
-const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM'];
+const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA'];
 
 function rewardAtWins(config, wins) {
   return config.reduce((active, item) => wins >= item.minWins ? item : active, null);
@@ -996,7 +1000,7 @@ async function main() {
       const rewardSpecials = rewardConfig.filter(item => REWARD_SPECIAL_NAMES.includes(item.name));
       const rewardMissingBaseNames = REWARD_BASE_NAMES.filter(name => !rewardConfigNames.includes(name));
       assert(rewardCap.activeTier === rewardCapDie.tier && rewardCap.activeName === rewardCapDie.name && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at final active rung ${JSON.stringify({ rewardCapDie, rewardCap })}`);
-      assert(rewardConfig.length === 8 && new Set(rewardConfig.map(item => item.tier)).size === 8, `${viewport.name}: reward dice should stay at exactly eight rungs ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 10 && new Set(rewardConfig.map(item => item.tier)).size === 10, `${viewport.name}: reward dice should stay at exactly ten rungs ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.map(item => item.minWins).join('|') === REWARD_MILESTONES, `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfigNames.join('|') === REWARD_BASE_NAMES.join('|'), `${viewport.name}: active reward ladder should use the original base dice only ${JSON.stringify(rewardConfig)}`);
       assert(rewardSpecials.length === 0 && REWARD_SPECIAL_NAMES.every(name => !rewardConfigNames.includes(name)), `${viewport.name}: parked branded reward dice should stay out of the active game ${JSON.stringify(rewardConfig)}`);
@@ -1044,7 +1048,7 @@ async function main() {
       })()`);
       assert(rewardSkinGreenClassPips.computedDotBackground === rewardSkinGreenClassPips.expected, `${viewport.name}: reward-skinned player die with collected green class should keep reward pip color ${JSON.stringify(rewardSkinGreenClassPips)}`);
       const rewardSkinLadderFixtures = await evalValue(page, `(() => {
-        const milestones = ${JSON.stringify([1, 2, 4, 7, 11, 16, 24, 35])};
+        const milestones = ${JSON.stringify([1, 2, 4, 7, 11, 16, 24, 35, 50, 65])};
         const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));
         window.TrashDiceQA.setRewardWins(2);
         return fixtures.map(fixture => ({
@@ -1057,7 +1061,7 @@ async function main() {
       assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === rewardConfigNames.join('|'), `${viewport.name}: all reward ladder skins should activate in active order ${JSON.stringify({ rewardConfig, rewardSkinLadderFixtures })}`);
       assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.includes(rewardSlotAnimation(item.activeEffect))), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
       const liveRewardDieEdge = await evalValue(page, `(() => {
-        const fixture = window.TrashDiceQA.rewardSkinFixture(35);
+        const fixture = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify(rewardCapDie.minWins)});
         const stage = document.getElementById('p1DieStage');
         const die = document.getElementById('p1Die');
         if (stage) stage.classList.add('active');
@@ -1096,7 +1100,7 @@ async function main() {
         assert(liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep a softened live face treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
-      const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(35)`);
+      const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardCapDie.minWins)})`);
       if (viewport.mobile && viewport.width <= 720) {
         for (const travelState of [travellingRewardDieEdge.toSlot, travellingRewardDieEdge.toTrash]) {
           const radiusValue = parseFloat(travelState.borderRadius || '0');
