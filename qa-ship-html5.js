@@ -758,6 +758,7 @@ async function main() {
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
+        const panelStyle = getComputedStyle(panel);
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
@@ -780,6 +781,8 @@ async function main() {
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
+          panelCursor: panelStyle.cursor,
+          panelTouchAction: panelStyle.touchAction,
           poolCounts: Array.from(document.querySelectorAll('.pool-count')).map(el => {
             const style = getComputedStyle(el);
             const r = el.getBoundingClientRect();
@@ -841,6 +844,42 @@ async function main() {
         assert(activeLayout.quitButtonRect.top <= 32 && activeLayout.quitButtonRect.left <= 24, `${viewport.name}: active mobile quit button should stay in top-left escape position ${JSON.stringify(activeLayout)}`);
       }
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
+      assert(activeLayout.panelCursor === 'pointer', `${viewport.name}: roll panel should advertise tappable action surface ${JSON.stringify(activeLayout)}`);
+      const rollPanelHitPage = await openPage(`${baseUrl}?source=qa&qa=1&roll-panel-hit=tagline`, viewport);
+      await evalValue(rollPanelHitPage, `document.getElementById('startBtn').click(); true`);
+      await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${viewport.name} roll panel hit target game start`);
+      const rollPanelHitStart = await evalValue(rollPanelHitPage, `(() => {
+        const tagline = document.querySelector('.game-tagline');
+        const panel = document.querySelector('.roll-panel');
+        const roll = document.getElementById('rollBtn');
+        const state = window.TrashDiceQA.state();
+        const rollDisabledBefore = !!(roll && roll.disabled);
+        if (tagline) tagline.click();
+        return {
+          hadTagline: !!tagline,
+          hadPanel: !!panel,
+          rollDisabledBefore,
+          totalRollsBefore: state.totalRolls
+        };
+      })()`);
+      await waitEval(rollPanelHitPage, `window.TrashDiceQA.state().totalRolls > ${JSON.stringify(rollPanelHitStart.totalRollsBefore)}`, `${viewport.name} roll panel tagline click rolls`);
+      const rollPanelHit = await evalValue(rollPanelHitPage, `(() => {
+        const state = window.TrashDiceQA.state();
+        const panel = document.querySelector('.roll-panel');
+        const tagline = document.querySelector('.game-tagline');
+        return {
+          start: ${JSON.stringify(rollPanelHitStart)},
+          totalRolls: state.totalRolls,
+          busy: state.busy,
+          current: state.current,
+          rollDisabled: !!(document.getElementById('rollBtn') && document.getElementById('rollBtn').disabled),
+          taglineText: tagline ? tagline.textContent.trim() : '',
+          panelCursor: panel ? getComputedStyle(panel).cursor : '',
+          events: window.TrashDiceAnalyticsDebug ? window.TrashDiceAnalyticsDebug.log.map(item => item.eventName) : []
+        };
+      })()`);
+      assert(rollPanelHit.start.hadTagline === true && rollPanelHit.start.hadPanel === true && rollPanelHit.start.rollDisabledBefore === false && rollPanelHit.totalRolls === rollPanelHit.start.totalRollsBefore + 1 && rollPanelHit.events.includes('td_first_roll'), `${viewport.name}: tapping roll tagline should trigger exactly one valid roll ${JSON.stringify(rollPanelHit)}`);
+      await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
       }

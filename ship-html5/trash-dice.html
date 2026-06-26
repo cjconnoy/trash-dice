@@ -154,6 +154,7 @@ body {
   max-width: 100%;
   overflow: visible;
   isolation: isolate;
+  touch-action: manipulation;
 }
 .retail-logo-frame > picture {
   display: block;
@@ -1099,6 +1100,7 @@ body.player-roll-ready .roll-panel {
   animation: playerPanelRollPulse var(--roll-attract-duration) ease-in-out infinite;
   transform-origin: 50% 55%;
   will-change: transform, filter;
+  cursor: pointer;
 }
 body.inline-game-over .roll-panel {
   width: min(92%, 560px);
@@ -1107,6 +1109,7 @@ body.inline-game-over .roll-panel {
   animation: inlineGameOverPanelPulse 1.18s cubic-bezier(.16,.82,.18,1) infinite;
   transform-origin: 50% 55%;
   will-change: transform, filter;
+  cursor: pointer;
 }
 .player-panel.bench-celebrate {
   animation: benchPanelCelebrate 0.86s cubic-bezier(.12,.88,.16,1);
@@ -7682,6 +7685,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   box-shadow: none;
   overflow: visible;
   isolation: isolate;
+  touch-action: manipulation;
 }
 .start-die.title-reward-shell::before {
   content: '';
@@ -10177,6 +10181,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const p1DieStage  = document.getElementById('p1DieStage');
   const p2DieStage  = document.getElementById('p2DieStage');
   const rollBtn     = document.getElementById('rollBtn');
+  const rollPanel   = document.querySelector('.roll-panel');
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   function getDieStage(p) { return p === 'p1' ? p1DieStage : p2DieStage; }
   const msgEl       = document.getElementById('message');
@@ -14540,7 +14545,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     doRoll();
   }
 
+  function shouldActivateRollPanelTarget(target) {
+    if (!rollPanel || !target || !rollPanel.contains(target)) return false;
+    if (target.closest && target.closest('#rollBtn')) return false;
+    if (target.closest && target.closest('#terminalRewardNudge')) return false;
+    if (target.closest && target.closest('button,a,input,select,textarea,[role="button"]')) return false;
+    return true;
+  }
+
+  function handleRollPanelClick(event) {
+    if (event.defaultPrevented) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    if (!shouldActivateRollPanelTarget(event.target)) return;
+    event.preventDefault();
+    handleRollButtonClick();
+  }
+
   rollBtn.addEventListener('click', handleRollButtonClick);
+  if (rollPanel) rollPanel.addEventListener('click', handleRollPanelClick);
   playAgainBtn.addEventListener('click', () => {
     if (restartFromInlineGameOver('play_again_button')) return;
     trackPlayAgain('play_again_button');
