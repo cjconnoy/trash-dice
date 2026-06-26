@@ -1968,21 +1968,39 @@ async function main() {
         await sleep(1450);
         roundWinProbeElapsedMs += 1450;
         const delayedRewardDie = await evalValue(roundWinProbe, `(() => {
-          const shell = document.getElementById('rewardDieUnlock');
-          const die = document.getElementById('rewardDie');
-          const name = document.getElementById('rewardDieName');
-          const sub = document.getElementById('rewardDieSub');
-          const style = shell ? getComputedStyle(shell) : null;
-          const rect = die ? die.getBoundingClientRect() : null;
-          return {
-            visible: !!(shell && die && !shell.hidden && shell.classList.contains('show') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0 && rect && rect.width >= 48 && rect.height >= 48),
-            tier: shell ? shell.dataset.tier || '' : '',
-            name: name ? name.textContent || '' : '',
-            sub: sub ? sub.textContent || '' : ''
-          };
-        })()`);
+        const shell = document.getElementById('rewardDieUnlock');
+        const die = document.getElementById('rewardDie');
+        const name = document.getElementById('rewardDieName');
+        const sub = document.getElementById('rewardDieSub');
+        const scene = shell ? shell.querySelector('.reward-die-scene') : null;
+        const burstContent = document.querySelector('#roundWinBurst .round-win-burst-content');
+        const roll = document.getElementById('rollBtn');
+        const style = shell ? getComputedStyle(shell) : null;
+        const rect = die ? die.getBoundingClientRect() : null;
+        const sceneRect = scene ? scene.getBoundingClientRect() : null;
+        const burstRect = burstContent ? burstContent.getBoundingClientRect() : null;
+        const rollRect = roll ? roll.getBoundingClientRect() : null;
+        const toRect = r => r ? { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) } : null;
+        const hasGap = sceneRect && burstRect
+          ? (sceneRect.top >= burstRect.bottom + 4 || sceneRect.bottom <= burstRect.top - 4 || sceneRect.left >= burstRect.right + 4 || sceneRect.right <= burstRect.left - 4)
+          : false;
+        const clearsRoll = sceneRect && rollRect ? sceneRect.bottom <= rollRect.top - 4 : false;
+        return {
+          visible: !!(shell && die && !shell.hidden && shell.classList.contains('show') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0 && rect && rect.width >= 48 && rect.height >= 48),
+          tier: shell ? shell.dataset.tier || '' : '',
+          layout: shell ? shell.dataset.layout || '' : '',
+          name: name ? name.textContent || '' : '',
+          sub: sub ? sub.textContent || '' : '',
+          sceneRect: toRect(sceneRect),
+          burstRect: toRect(burstRect),
+          rollRect: toRect(rollRect),
+          hasGap,
+          clearsRoll
+        };
+      })()`);
         assert(delayedRewardDie.visible === true && delayedRewardDie.tier === String(rewardFirst.tier) && delayedRewardDie.name === rewardFirst.name, `yellow round-win probe: delayed first reward die reveal missing ${JSON.stringify({ rewardFirst, roundWinEarly, delayedRewardDie })}`);
         assert(delayedRewardDie.sub === 'DIE SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include die skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
+        assert(delayedRewardDie.layout === 'round-win-companion' && delayedRewardDie.hasGap === true && delayedRewardDie.clearsRoll === true, `yellow round-win probe: delayed reward reveal should dock between ROUND WINNER and Roll without overlap ${JSON.stringify(delayedRewardDie)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
       const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {
@@ -2021,9 +2039,12 @@ async function main() {
       assert(postRewardHoldState.current === 'p1' && postRewardHoldState.rollDisabled === false, `${winner} round-win probe roll not ready after reward hold ${JSON.stringify({ roundWinEarly, postRewardHoldState })}`);
       const rollGatedReward = await evalValue(roundWinProbe, `(() => {
         const burst = document.getElementById('roundWinBurst');
+        const burstContent = burst ? burst.querySelector('.round-win-burst-content') : null;
         const loss = document.getElementById('roundLossRewardNudge');
         const rewardShell = document.getElementById('rewardDieUnlock');
+        const rewardScene = rewardShell ? rewardShell.querySelector('.reward-die-scene') : null;
         const rewardDie = document.getElementById('rewardDie');
+        const roll = document.getElementById('rollBtn');
         const visible = (el) => {
           const style = el ? getComputedStyle(el) : null;
           return !!(el && !el.hidden && el.classList.contains('show') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0);
@@ -2032,15 +2053,25 @@ async function main() {
           const rect = el ? el.getBoundingClientRect() : null;
           return rect ? { width: Math.round(rect.width), height: Math.round(rect.height), left: Math.round(rect.left), right: Math.round(rect.right), top: Math.round(rect.top), bottom: Math.round(rect.bottom) } : null;
         };
+        const overlaps = (a, b) => !!(a && b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top);
+        const rewardSceneRect = toRect(rewardScene);
+        const burstContentRect = toRect(burstContent);
+        const rollRect = toRect(roll);
         return {
           burstVisible: visible(burst),
           burstText: burst ? burst.textContent.replace(/\\s+/g, ' ').trim() : '',
           burstRect: toRect(burst),
+          burstContentRect,
           lossVisible: visible(loss),
           lossText: loss ? loss.textContent.replace(/\\s+/g, ' ').trim() : '',
           lossRect: toRect(loss),
           rewardVisible: visible(rewardShell),
+          rewardLayout: rewardShell ? rewardShell.dataset.layout || '' : '',
           rewardRect: toRect(rewardDie),
+          rewardSceneRect,
+          rollRect,
+          rewardOverlapsBurst: overlaps(rewardSceneRect, burstContentRect),
+          rewardOverlapsRoll: overlaps(rewardSceneRect, rollRect),
           rewardName: (document.getElementById('rewardDieName') || {}).textContent || '',
           rewardSub: (document.getElementById('rewardDieSub') || {}).textContent || ''
         };
@@ -2053,6 +2084,7 @@ async function main() {
         assert(rollGatedReward.burstVisible === true && rollGatedReward.burstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should persist until Roll ${JSON.stringify(rollGatedReward)}`);
         assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === rewardFirst.name && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
         assert(rollGatedReward.rewardRect && rollGatedReward.rewardRect.width >= 140 && rollGatedReward.rewardRect.height >= 140, `yellow round-win probe: persistent unlock die should stay hero-sized ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rewardLayout === 'round-win-companion' && rollGatedReward.rewardOverlapsBurst === false && rollGatedReward.rewardOverlapsRoll === false, `yellow round-win probe: persistent unlock die should not cover ROUND WINNER text or Roll ${JSON.stringify(rollGatedReward)}`);
       }
       await evalValue(roundWinProbe, `document.getElementById('rollBtn').click(); true`);
       await waitEval(roundWinProbe, `(() => {

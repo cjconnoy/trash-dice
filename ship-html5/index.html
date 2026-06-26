@@ -2059,6 +2059,14 @@ body.inline-game-over .roll-panel {
   transform: translate3d(0, 0, 0) scale(1);
 }
 
+.reward-die-unlock.is-round-win-companion {
+  z-index: 165;
+  display: block;
+  padding: 0;
+  --reward-companion-scale: 0.72;
+  --reward-companion-top: 58vh;
+}
+
 .reward-die-scene {
   position: relative;
   isolation: isolate;
@@ -2067,6 +2075,14 @@ body.inline-game-over .roll-panel {
   gap: clamp(5px, 1.25vmin, 9px);
   padding: clamp(10px, 2.8vmin, 22px) clamp(14px, 3.8vmin, 30px) clamp(12px, 3vmin, 24px);
   transform: translate3d(0, clamp(8px, 6vh, 44px), 0);
+}
+
+.reward-die-unlock.is-round-win-companion .reward-die-scene {
+  position: absolute;
+  left: 50%;
+  top: var(--reward-companion-top);
+  transform: translate3d(-50%, 0, 0) scale(var(--reward-companion-scale));
+  transform-origin: 50% 0%;
 }
 
 .reward-die-scene::before {
@@ -10592,16 +10608,46 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function hideRewardDieUnlock() {
     if (rewardDieUnlock) {
-      rewardDieUnlock.classList.remove('show');
+      rewardDieUnlock.classList.remove('show', 'is-round-win-companion');
       rewardDieUnlock.hidden = true;
       rewardDieUnlock.removeAttribute('data-tier');
       rewardDieUnlock.removeAttribute('data-effect');
       rewardDieUnlock.removeAttribute('data-pip-outline');
+      rewardDieUnlock.removeAttribute('data-layout');
+      rewardDieUnlock.style.removeProperty('--reward-companion-scale');
+      rewardDieUnlock.style.removeProperty('--reward-companion-top');
     }
     if (rewardDieUnlockTimer) {
       cancelRuntimeTimer(rewardDieUnlockTimer);
       rewardDieUnlockTimer = null;
     }
+  }
+
+  function layoutRoundWinCompanionReward() {
+    if (!rewardDieUnlock) return;
+    const scene = rewardDieUnlock.querySelector('.reward-die-scene');
+    const burstContent = roundWinBurst ? roundWinBurst.querySelector('.round-win-burst-content') : null;
+    if (!scene) return;
+
+    const compactLandscape = window.matchMedia('(max-height: 460px) and (orientation: landscape)').matches;
+    const maxScale = compactLandscape ? 0.62 : 0.72;
+    const minScale = compactLandscape ? 0.46 : 0.54;
+    const gap = window.innerHeight < 600 ? 10 : 18;
+
+    rewardDieUnlock.style.setProperty('--reward-companion-scale', maxScale.toFixed(3));
+    rewardDieUnlock.style.setProperty('--reward-companion-top', '0px');
+
+    const sceneRect = scene.getBoundingClientRect();
+    const baseHeight = sceneRect.height / maxScale;
+    const burstRect = burstContent ? burstContent.getBoundingClientRect() : null;
+    const rollRect = rollBtn ? rollBtn.getBoundingClientRect() : null;
+    const top = Math.max(10, Math.round((burstRect ? burstRect.bottom : 0) + gap));
+    const bottomLimit = Math.round(rollRect ? rollRect.top - gap : window.innerHeight - gap);
+    const availableHeight = Math.max(0, bottomLimit - top);
+    const scale = Math.max(minScale, Math.min(maxScale, availableHeight / Math.max(1, baseHeight)));
+
+    rewardDieUnlock.style.setProperty('--reward-companion-scale', scale.toFixed(3));
+    rewardDieUnlock.style.setProperty('--reward-companion-top', `${top}px`);
   }
 
   function showRewardDieUnlock(die, totalWins, options = {}) {
@@ -10610,10 +10656,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       cancelRuntimeTimer(rewardDieUnlockTimer);
       rewardDieUnlockTimer = null;
     }
-    rewardDieUnlock.classList.remove('show');
+    rewardDieUnlock.classList.remove('show', 'is-round-win-companion');
     rewardDieUnlock.hidden = true;
+    rewardDieUnlock.removeAttribute('data-layout');
+    rewardDieUnlock.style.removeProperty('--reward-companion-scale');
+    rewardDieUnlock.style.removeProperty('--reward-companion-top');
 
     const delayMs = Math.max(0, Number(options.delayMs) || 0);
+    const roundWinCompanion = options.roundWinCompanion === true;
     const reveal = () => {
       rewardDieUnlockTimer = null;
       applyRewardDieStyle(die);
@@ -10622,11 +10672,19 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       rewardDieUnlock.dataset.tier = String(die.tier);
       rewardDieUnlock.dataset.effect = die.effect || 'none';
       rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+      rewardDieUnlock.classList.toggle('is-round-win-companion', roundWinCompanion);
+      if (roundWinCompanion) {
+        rewardDieUnlock.dataset.layout = 'round-win-companion';
+      } else {
+        rewardDieUnlock.removeAttribute('data-layout');
+      }
       rewardDieUnlock.setAttribute('aria-label', `${die.name} die skin unlocked at ${totalWins} player round wins`);
       rewardDieUnlock.hidden = false;
       rewardDieUnlock.classList.remove('show');
+      if (roundWinCompanion) layoutRoundWinCompanionReward();
       void rewardDieUnlock.offsetWidth;
       requestAnimationFrame(() => {
+        if (roundWinCompanion) layoutRoundWinCompanionReward();
         rewardDieUnlock.classList.add('show');
       });
     };
@@ -10732,7 +10790,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       beforeWins,
       totalWins: afterWins,
       activeDie: rewardDieSnapshot(afterTier),
-      unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins, { delayMs: REWARD_DICE_ROUND_UNLOCK_DELAY_MS }) : null
+      unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins, { delayMs: REWARD_DICE_ROUND_UNLOCK_DELAY_MS, roundWinCompanion: true }) : null
     };
   }
 
