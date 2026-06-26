@@ -9158,6 +9158,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
+  const REWARD_NUDGE_CLOSE_ROUNDS = 3;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
     { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -10417,18 +10418,25 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     const next = nextRewardDie(wins);
     if (next) {
       const roundsNeeded = Math.max(1, next.minWins - wins);
+      const closeEnough = roundsNeeded <= REWARD_NUDGE_CLOSE_ROUNDS;
       const roundText = `${roundsNeeded} ${roundsNeeded === 1 ? 'round' : 'rounds'}`;
       const moreText = wins > 0 ? `${roundsNeeded} more ${roundsNeeded === 1 ? 'round' : 'rounds'}` : roundText;
+      const line = closeEnough
+        ? `Win ${moreText} to unlock:`
+        : `ROUNDS WON: ${wins} / ${next.minWins}`;
       return {
         totalWins: wins,
         activeDie: rewardDieSnapshot(active),
         nextDie: rewardDieSnapshot(next),
         previewDie: next,
         previewKind: 'next',
+        copyMode: closeEnough ? 'close' : 'progress',
         roundsNeeded,
+        targetWins: next.minWins,
         terminalKicker: `NEXT SKIN: ${next.name}`,
         roundLossKicker: 'KEEP ROLLING',
-        line: `Win ${moreText} to unlock:`,
+        line,
+        burstLine: closeEnough ? `${line} ${next.name} DIE SKIN` : line,
         unlockLine: `${next.name} DIE SKIN`
       };
     }
@@ -10438,10 +10446,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       nextDie: null,
       previewDie: active,
       previewKind: 'current',
+      copyMode: 'capped',
       roundsNeeded: 0,
+      targetWins: wins,
       terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'DIE SKINS',
       roundLossKicker: active ? `${active.name} UNLOCKED` : 'KEEP ROLLING',
       line: active ? 'Keep rolling with:' : 'Keep playing to unlock:',
+      burstLine: `ROUNDS WON: ${wins}`,
       unlockLine: active ? `${active.name} DIE SKIN` : 'DIE SKINS'
     };
   }
@@ -10494,6 +10505,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     terminalRewardNudge.removeAttribute('data-preview');
     terminalRewardNudge.removeAttribute('data-next-name');
     terminalRewardNudge.removeAttribute('data-rounds-needed');
+    terminalRewardNudge.removeAttribute('data-target-wins');
+    terminalRewardNudge.removeAttribute('data-copy-mode');
   }
 
   function showTerminalRewardNudge() {
@@ -10506,6 +10519,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     terminalRewardNudge.dataset.preview = model.previewKind;
     terminalRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
     terminalRewardNudge.dataset.roundsNeeded = String(model.roundsNeeded);
+    terminalRewardNudge.dataset.targetWins = String(model.targetWins || '');
+    terminalRewardNudge.dataset.copyMode = model.copyMode || '';
     terminalRewardNudge.hidden = false;
     return model;
   }
@@ -10521,6 +10536,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundLossRewardNudge.removeAttribute('data-preview');
     roundLossRewardNudge.removeAttribute('data-next-name');
     roundLossRewardNudge.removeAttribute('data-rounds-needed');
+    roundLossRewardNudge.removeAttribute('data-target-wins');
+    roundLossRewardNudge.removeAttribute('data-copy-mode');
   }
 
   function showRoundLossRewardNudge() {
@@ -10534,6 +10551,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundLossRewardNudge.dataset.preview = model.previewKind;
     roundLossRewardNudge.dataset.nextName = model.nextDie ? model.nextDie.name : '';
     roundLossRewardNudge.dataset.roundsNeeded = String(model.roundsNeeded);
+    roundLossRewardNudge.dataset.targetWins = String(model.targetWins || '');
+    roundLossRewardNudge.dataset.copyMode = model.copyMode || '';
     roundLossRewardNudge.hidden = false;
     roundLossRewardNudge.classList.remove('show');
     void roundLossRewardNudge.offsetWidth;
@@ -10706,6 +10725,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       roundWinBurst.removeAttribute('data-preview-name');
       roundWinBurst.removeAttribute('data-preview-tier');
       roundWinBurst.removeAttribute('data-preview-effect');
+      roundWinBurst.removeAttribute('data-copy-mode');
+      roundWinBurst.removeAttribute('data-target-wins');
     }
     if (roundWinBurstDie) {
       roundWinBurstDie.hidden = true;
@@ -10754,12 +10775,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       roundWinBurst.removeAttribute('data-preview-tier');
       roundWinBurst.removeAttribute('data-preview-effect');
     }
+    roundWinBurst.dataset.copyMode = rewardModel.copyMode || '';
+    roundWinBurst.dataset.targetWins = String(rewardModel.targetWins || '');
     if (roundWinBurstSub) {
       const totalWins = rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins;
       roundWinBurstSub.textContent = unlockedDie
         ? `${unlockedDie.name} DIE SKIN UNLOCKED`
         : rewardModel.nextDie
-          ? `${rewardModel.line} ${rewardModel.unlockLine}`
+          ? rewardModel.burstLine
           : `ROUNDS WON: ${totalWins}`;
     }
     void roundWinBurst.offsetWidth;
@@ -16174,6 +16197,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             roundWinBurstPreviewName: roundWinBurst ? roundWinBurst.dataset.previewName || '' : '',
             roundWinBurstPreviewTier: roundWinBurst ? roundWinBurst.dataset.previewTier || '' : '',
             roundWinBurstPreviewEffect: roundWinBurst ? roundWinBurst.dataset.previewEffect || '' : '',
+            roundWinBurstCopyMode: roundWinBurst ? roundWinBurst.dataset.copyMode || '' : '',
+            roundWinBurstTargetWins: roundWinBurst ? roundWinBurst.dataset.targetWins || '' : '',
             roundWinBurstDieVisible: !!(roundWinBurstDie && !roundWinBurstDie.hidden && burstDieStyle && burstDieStyle.display !== 'none' && burstDieRect && burstDieRect.width >= 48 && burstDieRect.height >= 48),
             roundWinBurstDieName: roundWinBurstDie ? roundWinBurstDie.dataset.rewardName || '' : '',
             roundWinBurstDieEffect: roundWinBurstDie ? roundWinBurstDie.dataset.rewardEffect || '' : '',
@@ -16189,6 +16214,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             roundLossRewardNudgeText: roundLossRewardNudge ? roundLossRewardNudge.textContent.replace(/\s+/g, ' ').trim() : '',
             roundLossRewardNudgeNextName: roundLossRewardNudge ? roundLossRewardNudge.dataset.nextName || '' : '',
             roundLossRewardNudgeRoundsNeeded: roundLossRewardNudge ? roundLossRewardNudge.dataset.roundsNeeded || '' : '',
+            roundLossRewardNudgeTargetWins: roundLossRewardNudge ? roundLossRewardNudge.dataset.targetWins || '' : '',
+            roundLossRewardNudgeCopyMode: roundLossRewardNudge ? roundLossRewardNudge.dataset.copyMode || '' : '',
             roundLossRewardNudgePreview: roundLossRewardNudge ? roundLossRewardNudge.dataset.preview || '' : '',
             roundLossRewardNudgeFitsViewport: !!(roundLossNudgeRect && roundLossNudgeRect.left >= -1 && roundLossNudgeRect.right <= window.innerWidth + 1 && roundLossNudgeRect.top >= -1 && roundLossNudgeRect.bottom <= window.innerHeight + 1),
             roundLossRewardNudgeRect: roundLossNudgeRect ? { left: Math.round(roundLossNudgeRect.left), right: Math.round(roundLossNudgeRect.right), top: Math.round(roundLossNudgeRect.top), bottom: Math.round(roundLossNudgeRect.bottom), width: Math.round(roundLossNudgeRect.width), height: Math.round(roundLossNudgeRect.height) } : null,

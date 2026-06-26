@@ -1203,6 +1203,8 @@ async function main() {
             kicker: kicker.textContent || '',
             nextName: nudge.dataset.nextName || '',
             roundsNeeded: nudge.dataset.roundsNeeded || '',
+            targetWins: nudge.dataset.targetWins || '',
+            copyMode: nudge.dataset.copyMode || '',
             preview: nudge.dataset.preview || '',
             dieRewardSkinned: die.classList.contains('reward-skinned'),
             dieName: die.dataset.rewardName || '',
@@ -1247,7 +1249,7 @@ async function main() {
       assert(terminal.rewardDie.state.totalWins === 2 && terminal.rewardDie.state.activeTier === rewardAtTwo.tier && terminal.rewardDie.state.activeName === rewardAtTwo.name && terminal.rewardDie.state.nextDie && terminal.rewardDie.state.nextDie.name === rewardNextAfterTwo.name, `${viewport.name}: game win should preserve round-win reward state without double-counting ${JSON.stringify({ rewardAtTwo, rewardNextAfterTwo, state: terminal.rewardDie.state })}`);
       assert(terminal.terminalRewardNudge.present === true && terminal.terminalRewardNudge.visible === true, `${viewport.name}: terminal reward nudge missing ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterTwo.name}` && terminal.terminalRewardNudge.line === `Win ${rewardNextAfterTwo.minWins - 2} more rounds to unlock:` && terminal.terminalRewardNudge.unlockLine === `${rewardNextAfterTwo.name} DIE SKIN`, `${viewport.name}: terminal reward nudge copy wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
-      assert(terminal.terminalRewardNudge.nextName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.roundsNeeded === String(rewardNextAfterTwo.minWins - 2) && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
+      assert(terminal.terminalRewardNudge.nextName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.roundsNeeded === String(rewardNextAfterTwo.minWins - 2) && terminal.terminalRewardNudge.targetWins === String(rewardNextAfterTwo.minWins) && terminal.terminalRewardNudge.copyMode === 'close' && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.dieEffect === rewardNextAfterTwo.effect, `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.rect.height >= 54 && terminal.terminalRewardNudge.dieRect.width >= 52 && terminal.terminalRewardNudge.dieRect.height >= 52, `${viewport.name}: terminal reward nudge should stay enlarged ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true, `${viewport.name}: terminal reward nudge should fit above Play Again ${JSON.stringify(terminal.terminalRewardNudge)}`);
@@ -1392,6 +1394,8 @@ async function main() {
             unlockLine: nudgeUnlock ? nudgeUnlock.textContent || '' : '',
             nextName: nudge ? nudge.dataset.nextName || '' : '',
             roundsNeeded: nudge ? nudge.dataset.roundsNeeded || '' : '',
+            targetWins: nudge ? nudge.dataset.targetWins || '' : '',
+            copyMode: nudge ? nudge.dataset.copyMode || '' : '',
             preview: nudge ? nudge.dataset.preview || '' : '',
             dieRewardSkinned: !!(nudgeDie && nudgeDie.classList.contains('reward-skinned')),
             dieName: nudgeDie ? nudgeDie.dataset.rewardName || '' : '',
@@ -1423,8 +1427,8 @@ async function main() {
       assert(mathPlayerWinUi.rewardState.totalWins === 11 && mathPlayerWinUi.rewardState.activeName === rewardAtEleven.name, `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify({ rewardAtEleven, rewardState: mathPlayerWinUi.rewardState })}`);
       assert(mathPlayerWinUi.roundWins && mathPlayerWinUi.roundWins.p1 >= 1, `${viewport.name}: mathematical player win should count as a player round win ${JSON.stringify(mathPlayerWinUi.roundWins)}`);
       assert(mathPlayerWinUi.terminalRewardNudge.present === true && mathPlayerWinUi.terminalRewardNudge.visible === true, `${viewport.name}: mathematical player win terminal reward nudge missing ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `Win ${rewardNextAfterEleven.minWins - 11} more rounds to unlock:` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should advance past the unlocked tier-five skin ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `ROUNDS WON: 11 / ${rewardNextAfterEleven.minWins}` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should use lightweight progress copy when the next skin is not close ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'progress' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.title === 'GAME WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
@@ -2104,7 +2108,16 @@ async function main() {
     const lateSessionRoundLoss = await evalValue(lateSessionRoundLossProbe, `window.TrashDiceDebug.roundWinEventProbe('p2')`);
     assert(lateSessionRoundLoss.roundLossRewardNudgeVisible === true, `late-session round-loss nudge probe: player chase nudge should still show after multiple completed games ${JSON.stringify(lateSessionRoundLoss)}`);
     assert(lateSessionRoundLoss.roundLossRewardNudgeText.includes('KEEP ROLLING') && lateSessionRoundLoss.roundLossRewardNudgeText.includes('Win 1 more round to unlock:') && lateSessionRoundLoss.roundLossRewardNudgeText.includes(`${rewardNextAfterSix.name} DIE SKIN`), `late-session round-loss nudge probe: chase nudge copy wrong after multiple completed games ${JSON.stringify({ rewardNextAfterSix, lateSessionRoundLoss })}`);
-    assert(lateSessionRoundLoss.roundLossRewardNudgeNextName === rewardNextAfterSix.name && lateSessionRoundLoss.roundLossRewardNudgeRoundsNeeded === '1' && lateSessionRoundLoss.roundLossRewardNudgePreview === 'next', `late-session round-loss nudge probe: chase nudge metadata wrong after multiple completed games ${JSON.stringify({ rewardNextAfterSix, lateSessionRoundLoss })}`);
+    assert(lateSessionRoundLoss.roundLossRewardNudgeNextName === rewardNextAfterSix.name && lateSessionRoundLoss.roundLossRewardNudgeRoundsNeeded === '1' && lateSessionRoundLoss.roundLossRewardNudgeTargetWins === String(rewardNextAfterSix.minWins) && lateSessionRoundLoss.roundLossRewardNudgeCopyMode === 'close' && lateSessionRoundLoss.roundLossRewardNudgePreview === 'next', `late-session round-loss nudge probe: chase nudge metadata wrong after multiple completed games ${JSON.stringify({ rewardNextAfterSix, lateSessionRoundLoss })}`);
+
+    const progressRoundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=progress`, viewports[0]);
+    await evalValue(progressRoundWinProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(progressRoundWinProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `progress round-win copy probe game start`);
+    await evalValue(progressRoundWinProbe, `window.TrashDiceQA.setRewardWins(11); true`);
+    const progressRoundWin = await evalValue(progressRoundWinProbe, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
+    assert(progressRoundWin.roundWinBurstVisible === true, `progress round-win copy probe: burst missing ${JSON.stringify(progressRoundWin)}`);
+    assert(progressRoundWin.roundWinBurstText.includes(`ROUNDS WON: 12 / ${rewardNextAfterEleven.minWins}`) && !progressRoundWin.roundWinBurstText.includes('Win 4 more'), `progress round-win copy probe: distant chase should use progress copy, not X-more copy ${JSON.stringify({ rewardNextAfterEleven, progressRoundWin })}`);
+    assert(progressRoundWin.roundWinBurstCopyMode === 'progress' && progressRoundWin.roundWinBurstTargetWins === String(rewardNextAfterEleven.minWins), `progress round-win copy probe: progress metadata wrong ${JSON.stringify({ rewardNextAfterEleven, progressRoundWin })}`);
 
     const cappedRoundWinsProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=capped`, viewports[0]);
     await evalValue(cappedRoundWinsProbe, `document.getElementById('startBtn').click(); true`);
