@@ -7661,6 +7661,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   border-radius: 22%;
   box-shadow: none;
   overflow: visible;
+  isolation: isolate;
   transform: perspective(500px) rotateX(-10deg) rotateY(10deg);
   animation: startYellowStartled 9.8s linear infinite;
 }
@@ -7668,15 +7669,42 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   transform: perspective(500px) rotateX(-10deg) rotateY(-10deg);
   animation-name: startGreenStartled;
 }
-.start-die.title-reward-shell::before,
+.start-die.title-reward-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22%;
+  background: linear-gradient(135deg, rgba(8,61,29,0.92) 0%, rgba(3,33,15,0.9) 54%, rgba(0,0,0,0.68) 100%);
+  transform: translate(11px, 12px) skewY(4deg);
+  z-index: 0;
+  pointer-events: none;
+}
 .start-die.title-reward-shell::after {
-  content: none;
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: -18%;
+  bottom: -17%;
+  height: 24%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.4), rgba(0,0,0,0.17) 52%, transparent 74%);
+  filter: blur(0.8px);
+  z-index: 0;
+  pointer-events: none;
 }
 .start-die.title-reward-shell .title-reward-die {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   gap: 5%;
   padding: 17%;
+  box-shadow:
+    7px 8px 0 rgba(5,52,24,0.8),
+    13px 14px 0 rgba(0,0,0,0.32),
+    0 13px 22px rgba(0,0,0,0.42),
+    inset 2px 2px 0 rgba(255,255,255,0.18),
+    inset -10px -12px 16px rgba(0,0,0,0.22);
 }
 .start-die.title-reward-shell .title-reward-die .reward-die-pip {
   width: 62%;
@@ -10752,6 +10780,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       pair: titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1),
       dice: startHeroDice.map(el => {
         const style = el ? getComputedStyle(el) : null;
+        const sideStyle = el ? getComputedStyle(el, '::before') : null;
+        const rewardComponent = el ? el.querySelector('.reward-die.title-reward-die') : null;
+        const rewardStyle = rewardComponent ? getComputedStyle(rewardComponent) : null;
         return {
           rewardSkinned: !!(el && el.classList.contains('reward-skinned')),
           rewardTier: el ? el.dataset.rewardTier || '' : '',
@@ -10761,6 +10792,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           motionClass: el ? (el.classList.contains('title-reward-right') ? 'right' : (el.classList.contains('title-reward-left') ? 'left' : '')) : '',
           animationName: style ? style.animationName : '',
           animationDuration: style ? style.animationDuration : '',
+          sideContent: sideStyle ? sideStyle.content : '',
+          sideTransform: sideStyle ? sideStyle.transform : '',
+          faceBoxShadow: rewardStyle ? rewardStyle.boxShadow : '',
           dotCells: el ? el.querySelectorAll('.dot-cell, .reward-die-pip-cell').length : 0,
           dots: el ? el.querySelectorAll('.dot, .reward-die-pip-cell.is-on .reward-die-pip').length : 0
         };
