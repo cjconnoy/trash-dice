@@ -722,7 +722,8 @@ body.quit-return-open .audio-mute-btn {
   pointer-events: none;
 }
 
-.debug-p0-btn {
+.debug-p0-btn,
+.debug-p1-auto-btn {
   position: fixed;
   z-index: 144;
   display: none;
@@ -750,7 +751,14 @@ body.quit-return-open .audio-mute-btn {
   touch-action: manipulation;
 }
 
-body.debug-controls-enabled[data-game-started="true"] .debug-p0-btn {
+.debug-p1-auto-btn {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 122px);
+  min-width: 68px;
+  background: rgba(17,96,168,0.86);
+}
+
+body.debug-controls-enabled[data-game-started="true"] .debug-p0-btn,
+body.debug-controls-enabled[data-game-started="true"] .debug-p1-auto-btn {
   display: inline-flex;
 }
 
@@ -761,11 +769,19 @@ body.p0-mode .debug-p0-btn {
   color: #123d25;
 }
 
-.debug-p0-btn:active {
+body.debug-p1-auto .debug-p1-auto-btn {
+  background: rgba(245,200,0,0.92);
+  border-color: rgba(15,95,50,0.42);
+  color: #123d25;
+}
+
+.debug-p0-btn:active,
+.debug-p1-auto-btn:active {
   transform: translateY(1px);
 }
 
-body.quit-return-open .debug-p0-btn {
+body.quit-return-open .debug-p0-btn,
+body.quit-return-open .debug-p1-auto-btn {
   opacity: 0;
   pointer-events: none;
 }
@@ -854,6 +870,7 @@ body.reward-review-enabled[data-game-started="true"] .debug-reward-die-btn {
 }
 
 body.quit-return-open .debug-outcome-controls,
+body.quit-return-open .debug-p1-auto-btn,
 body.quit-return-open .debug-reward-die-btn {
   opacity: 0;
   pointer-events: none;
@@ -7166,6 +7183,15 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     padding-right: 0.38rem;
   }
 
+  .debug-p1-auto-btn {
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 174px);
+    min-width: 58px;
+    min-height: 30px;
+    padding-left: 0.36rem;
+    padding-right: 0.36rem;
+  }
+
   .debug-outcome-controls {
     flex-direction: row;
     right: calc(env(safe-area-inset-right, 0px) + 8px);
@@ -7591,6 +7617,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .debug-p0-btn {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 94px);
     min-width: 40px;
+    min-height: 28px;
+  }
+
+  .debug-p1-auto-btn {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
+    min-width: 54px;
     min-height: 28px;
   }
 
@@ -8738,6 +8770,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     <path d="M22 8l-5 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
   </svg>
 </button>
+<button class="debug-p1-auto-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay Player 1 turns" aria-pressed="false">P1 AUTO</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
@@ -9327,6 +9360,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
   const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
+  const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
@@ -9432,7 +9466,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   };
   let p0Autoplay = false;
   let p0ReviewMode = false;
+  let p1Autoplay = false;
   let p0Timer = null;
+  let p1AutoTimer = null;
   let titleRoundWinTimer = null;
   let titleRoundWinStageTimer = null;
   let benchCelebrateTimer = null;
@@ -9801,6 +9837,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     runtimeTimers.forEach(id => clearTimeout(id));
     runtimeTimers.clear();
     p0Timer = null;
+    p1AutoTimer = null;
     titleRoundWinTimer = null;
     titleRoundWinStageTimer = null;
     benchCelebrateTimer = null;
@@ -9818,9 +9855,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundWinnerStatusActive = false;
     roundWinnerStatusPlayer = 'p1';
     roundWinnerStatusText = 'WINNER';
-    if (!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== activePlayer) {
-      roundWinnerStatusSuppressChaseDie = false;
-    }
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
@@ -10483,6 +10517,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }));
   const p0ReviewToggle = document.getElementById('p0ReviewToggle');
   const devCheatBar = document.getElementById('devCheatBar');
+  const devP1AutoBtn = document.getElementById('devP1AutoBtn');
   const devP0Btn = document.getElementById('devP0Btn');
   const devRewardDieBtn = document.getElementById('devRewardDieBtn');
   const debugOutcomeControls = document.getElementById('debugOutcomeControls');
@@ -13631,6 +13666,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
+    p1Autoplay = false;
+    clearP1AutoplayTimer();
     roundResolutionState = null;
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
@@ -14017,8 +14054,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       !overlay.classList.contains('show') &&
       !isInlineGameOverActive();
     document.body.classList.toggle('player-roll-ready', readyForPlayerRoll);
-    if (readyForPlayerRoll) scheduleInventoryMischief();
-    else clearInventoryMischief();
+    if (readyForPlayerRoll) {
+      scheduleInventoryMischief();
+      scheduleP1Autoplay();
+    } else {
+      clearInventoryMischief();
+      if (!p1Autoplay || current !== 'p1' || busy || rollBtn.disabled) clearP1AutoplayTimer();
+    }
   }
 
   function setMsg(text, type) {
@@ -14030,7 +14072,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     document.body.classList.toggle('review-build', REVIEW_BUILD);
     document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
     document.body.classList.toggle('p0-mode', p0ReviewMode);
+    document.body.classList.toggle('debug-p1-auto', p1Autoplay);
     if (devCheatBar) devCheatBar.hidden = !DEV_CHEATS_ENABLED;
+    if (devP1AutoBtn) {
+      devP1AutoBtn.textContent = p1Autoplay ? 'P1 ON' : 'P1 AUTO';
+      devP1AutoBtn.setAttribute('aria-label', p1Autoplay ? 'Stop Player 1 autoplay' : 'Autoplay Player 1 turns');
+      devP1AutoBtn.setAttribute('aria-pressed', String(p1Autoplay));
+    }
     if (devP0Btn) {
       const p0Active = p0ReviewMode || p0Autoplay;
       devP0Btn.textContent = p0Active ? 'P1' : 'P-0';
@@ -14052,19 +14100,43 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
   }
 
+  function clearP1AutoplayTimer() {
+    if (p1AutoTimer) {
+      cancelRuntimeTimer(p1AutoTimer);
+      p1AutoTimer = null;
+    }
+  }
+
   function stopTerminalAutoplayState() {
     p0ReviewMode = false;
     p0Autoplay = false;
+    p1Autoplay = false;
     clearP0Timer();
-    document.body.classList.remove('p0-mode', 'debug-p0', 'player-roll-ready');
+    clearP1AutoplayTimer();
+    document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto', 'player-roll-ready');
     updateP0ReviewControl();
   }
 
   function canRunP0Autoplay() {
     return p0Autoplay &&
+      !p1Autoplay &&
       gameStarted &&
       !busy &&
       current === 'p1' &&
+      totalDice('p1') > 0 &&
+      !overlay.classList.contains('show') &&
+      !isInlineGameOverActive();
+  }
+
+  function canRunP1Autoplay() {
+    return p1Autoplay &&
+      !p0Autoplay &&
+      !p0ReviewMode &&
+      !betaMultiplayerActive &&
+      gameStarted &&
+      !busy &&
+      current === 'p1' &&
+      !rollBtn.disabled &&
       totalDice('p1') > 0 &&
       !overlay.classList.contains('show') &&
       !isInlineGameOverActive();
@@ -14078,6 +14150,15 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (!canRunP0Autoplay()) return;
       rollBtn.disabled = false;
       syncHeroIdleState();
+      doRoll();
+    }, delay);
+  }
+
+  function scheduleP1Autoplay(delay = P1_AUTOPLAY_MS) {
+    if (p1AutoTimer || !canRunP1Autoplay()) return;
+    p1AutoTimer = runLater(() => {
+      p1AutoTimer = null;
+      if (!canRunP1Autoplay()) return;
       doRoll();
     }, delay);
   }
@@ -14567,8 +14648,34 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return randomDieFace();
   }
 
+  function setP1Autoplay(enabled, announce = true) {
+    if (enabled && (overlay.classList.contains('show') || isInlineGameOverActive() || betaMultiplayerActive)) enabled = false;
+    if (enabled) {
+      p0ReviewMode = false;
+      p0Autoplay = false;
+      clearP0Timer();
+      document.body.classList.remove('p0-mode', 'debug-p0');
+    }
+    p1Autoplay = !!enabled;
+    document.body.classList.toggle('debug-p1-auto', p1Autoplay);
+    if (p1Autoplay) {
+      if (announce && gameStarted) setMsg('P1 AUTO');
+      scheduleP1Autoplay();
+    } else {
+      clearP1AutoplayTimer();
+      if (announce && gameStarted && current === 'p1' && !busy) setMsg('PLAYER ROLL');
+    }
+    updateP0ReviewControl();
+    return p1Autoplay;
+  }
+
+  function toggleDevP1Autoplay() {
+    return setP1Autoplay(!p1Autoplay);
+  }
+
   function setP0Autoplay(enabled, announce = true) {
     if (enabled && (overlay.classList.contains('show') || isInlineGameOverActive())) enabled = false;
+    if (enabled) setP1Autoplay(false, false);
     p0Autoplay = !!enabled;
     document.body.classList.toggle('debug-p0', p0Autoplay);
     if (p0Autoplay) {
@@ -14815,6 +14922,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   async function doRoll() {
     clearP0Timer();
+    clearP1AutoplayTimer();
     clearInventoryMischief();
     if (isInlineGameOverActive()) return;
     if (busy) return;
@@ -15249,10 +15357,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     stopTitleRoundWinFanfare();
     clearPlayerPayoutFanfare(false);
     clearP0Timer();
+    clearP1AutoplayTimer();
     p0Autoplay = false;
     p0ReviewMode = false;
+    p1Autoplay = false;
     updateP0ReviewControl();
-    document.body.classList.remove('player-roll-ready', 'p0-mode', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
+    document.body.classList.remove('player-roll-ready', 'p0-mode', 'debug-p1-auto', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
@@ -15272,6 +15382,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
+    p1Autoplay = false;
+    clearP1AutoplayTimer();
     updateP0ReviewControl();
     playerClutchMagnetUsedThisRound = true;
     pools = {
@@ -15741,6 +15853,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           current,
           p0Autoplay,
           p0ReviewMode,
+          p1Autoplay,
           postLossComebackRoundPending,
           postLossComebackRoundRolls,
           postLossComebackRoundConsumed,
@@ -15749,6 +15862,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
         p0Autoplay = false;
         p0ReviewMode = false;
+        p1Autoplay = false;
+        clearP1AutoplayTimer();
         round = 1;
         totalRolls = 0;
         roundWins = { p1: 0, p2: 0 };
@@ -15785,6 +15900,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         current = previous.current;
         p0Autoplay = previous.p0Autoplay;
         p0ReviewMode = previous.p0ReviewMode;
+        p1Autoplay = previous.p1Autoplay;
         postLossComebackRoundPending = previous.postLossComebackRoundPending;
         postLossComebackRoundRolls = previous.postLossComebackRoundRolls;
         postLossComebackRoundConsumed = previous.postLossComebackRoundConsumed;
@@ -15815,6 +15931,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           current,
           p0Autoplay,
           p0ReviewMode,
+          p1Autoplay,
           playerClutchMagnetUsedThisRound,
           enduranceAssistRolls,
           enduranceAssistUsedThisRound,
@@ -15841,6 +15958,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         current = config.player === 'p2' ? 'p2' : 'p1';
         p0Autoplay = false;
         p0ReviewMode = false;
+        p1Autoplay = false;
+        clearP1AutoplayTimer();
         playerClutchMagnetUsedThisRound = !!config.clutchUsed;
         enduranceAssistRolls = Math.max(0, Math.floor(config.uses || 0));
         enduranceAssistUsedThisRound = !!config.usedThisRound;
@@ -15869,6 +15988,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
         current = previous.current;
         p0Autoplay = previous.p0Autoplay;
         p0ReviewMode = previous.p0ReviewMode;
+        p1Autoplay = previous.p1Autoplay;
         playerClutchMagnetUsedThisRound = previous.playerClutchMagnetUsedThisRound;
         enduranceAssistRolls = previous.enduranceAssistRolls;
         enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
@@ -16014,6 +16134,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           roundWins: { ...roundWins },
           p0ReviewMode,
           p0Autoplay,
+          p1Autoplay,
           openingComebackAssistActive: isOpeningComebackAssistActive(),
           openingComebackAssistRolls,
           qaHooks: QA_HOOKS_ENABLED,
@@ -16068,6 +16189,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             playerToCpuHandoffMs: PLAYER_TO_CPU_HANDOFF_MS
           },
           p0ButtonVisible: !!devP0Btn && getComputedStyle(devP0Btn).display !== 'none',
+          p1AutoButtonVisible: !!devP1AutoBtn && getComputedStyle(devP1AutoBtn).display !== 'none',
           pools: pools ? JSON.parse(JSON.stringify(pools)) : null,
           diceTotals: qaDiceTotals(),
           trashed: { ...trashed },
@@ -16178,6 +16300,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       toggleDevP0Autoplay();
     });
   }
+  if (devP1AutoBtn) {
+    devP1AutoBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleDevP1Autoplay();
+    });
+  }
   if (devRewardDieBtn) {
     devRewardDieBtn.addEventListener('click', event => {
       event.preventDefault();
@@ -16211,6 +16340,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (!p0ReviewMode) return;
     if (p0ReviewToggle && event.target === p0ReviewToggle) return;
     if (devP0Btn && event.target === devP0Btn) return;
+    if (devP1AutoBtn && event.target === devP1AutoBtn) return;
     if (devRewardDieBtn && event.target === devRewardDieBtn) return;
     if (debugOutcomeControls && debugOutcomeControls.contains(event.target)) return;
     if (devCheatBar && devCheatBar.contains(event.target)) return;
@@ -16292,12 +16422,16 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       } else {
         toggleP0Review();
       }
-      return { p0ReviewMode, p0Autoplay, gameStarted, current, totalRolls };
+      return { p0ReviewMode, p0Autoplay, p1Autoplay, gameStarted, current, totalRolls };
+    },
+    p1Auto(enabled) {
+      return setP1Autoplay(typeof enabled === 'boolean' ? enabled : !p1Autoplay);
     },
     state() {
       return {
         p0ReviewMode,
         p0Autoplay,
+        p1Autoplay,
         reviewBuild: REVIEW_BUILD,
         mobileReviewDevice: MOBILE_REVIEW_DEVICE,
         audioState: Audio.state(),
@@ -16390,8 +16524,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       cancelProgressionWatchdog();
       p0Autoplay = false;
       p0ReviewMode = false;
+      p1Autoplay = false;
       clearP0Timer();
-      document.body.classList.remove('p0-mode', 'debug-p0');
+      clearP1AutoplayTimer();
+      document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto');
       updateP0ReviewControl();
       clearBenchCelebration(false);
       clearPlayerPayoutFanfare(false);

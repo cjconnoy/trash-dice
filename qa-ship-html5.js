@@ -396,6 +396,8 @@ async function main() {
         devControls: !!document.querySelector('#devCheatBar,#p0ReviewToggle,#debugBadge'),
         p0Button: !!document.getElementById('devP0Btn'),
         p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+        p1AutoButton: !!document.getElementById('devP1AutoBtn'),
+        p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
         rewardReviewButton: !!document.getElementById('devRewardDieBtn'),
         rewardReviewButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
         winButton: !!document.getElementById('devWinBtn'),
@@ -574,6 +576,8 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
       assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
+      assert(initial.p1AutoButton === true, `${viewport.name}: P1 AUTO debug button missing`);
+      assert(initial.p1AutoButtonHidden === true, `${viewport.name}: P1 AUTO debug button should hide on title screen`);
       assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
@@ -766,6 +770,7 @@ async function main() {
         const panel = document.querySelector('.roll-panel');
         const gameTagline = document.querySelector('.game-tagline');
         const p0Button = document.getElementById('devP0Btn');
+        const p1AutoButton = document.getElementById('devP1AutoBtn');
         const rewardButton = document.getElementById('devRewardDieBtn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
@@ -774,6 +779,7 @@ async function main() {
         const pr = panel.getBoundingClientRect();
         const tr = gameTagline ? gameTagline.getBoundingClientRect() : null;
         const br = p0Button.getBoundingClientRect();
+        const p1r = p1AutoButton.getBoundingClientRect();
         const rbr = rewardButton.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
@@ -790,14 +796,16 @@ async function main() {
             rect: { top: tr.top, bottom: tr.bottom, left: tr.left, right: tr.right, width: tr.width, height: tr.height }
           } : null,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
+          p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
+            (p1r.bottom <= qr.top - 4 || p1r.left >= qr.right + 4 || p1r.right <= qr.left - 4 || p1r.top >= qr.bottom + 4) &&
             (rbr.bottom <= qr.top - 4 || rbr.left >= qr.right + 4 || rbr.right <= qr.left - 4 || rbr.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
-          debugLowerRight: br.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -819,6 +827,7 @@ async function main() {
           rollRect: { top: rr.top, bottom: rr.bottom, left: rr.left, right: rr.right, width: rr.width, height: rr.height },
           panelRect: { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, width: pr.width, height: pr.height },
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
+          p1AutoButtonRect: { top: p1r.top, bottom: p1r.bottom, left: p1r.left, right: p1r.right, width: p1r.width, height: p1r.height },
           rewardButtonRect: { top: rbr.top, bottom: rbr.bottom, left: rbr.left, right: rbr.right, width: rbr.width, height: rbr.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
@@ -844,6 +853,7 @@ async function main() {
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.p1AutoButtonVisible, `${viewport.name}: P1 AUTO button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
@@ -1858,6 +1868,7 @@ async function main() {
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
       rewardButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       qaHooksPresent: !!window.TrashDiceQA,
@@ -1869,7 +1880,7 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
@@ -1878,12 +1889,13 @@ async function main() {
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
+      p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
       rewardButtonVisible: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display !== 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.rewardButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: only reward review button should show during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonHidden === true && publicActive.rewardButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: only reward review button should show during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
@@ -1930,6 +1942,64 @@ async function main() {
     assert(p0Off.ariaPressed === 'false', `P-0 probe: aria pressed not false ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0Active === false, `P-0 probe: autoplay did not stop ${JSON.stringify(p0Off)}`);
     assert(p0Off.p0ButtonVisible === true, `P-0 probe: button hidden after stop ${JSON.stringify(p0Off)}`);
+
+    const p1AutoProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
+    await evalValue(p1AutoProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(p1AutoProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'P1 auto probe game start');
+    const p1AutoOn = await evalValue(p1AutoProbe, `(() => {
+      const btn = document.getElementById('devP1AutoBtn');
+      const before = window.TrashDiceQA.state();
+      btn.click();
+      const qa = window.TrashDiceQA.state();
+      return {
+        before,
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        p1Autoplay: qa.p1Autoplay,
+        p0Autoplay: qa.p0Autoplay,
+        p0ReviewMode: qa.p0ReviewMode,
+        p1AutoButtonVisible: qa.p1AutoButtonVisible,
+        firstGameAssistActive: qa.firstGameAssist.active,
+        firstGameAssistUses: qa.firstGameAssist.uses,
+        bodyP1Auto: document.body.classList.contains('debug-p1-auto')
+      };
+    })()`);
+    assert(p1AutoOn.before.firstGameAssist.active === true, `P1 auto probe: first-game assists should be eligible before autoplay starts ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.buttonText === 'P1 ON' && p1AutoOn.ariaPressed === 'true', `P1 auto probe: button did not switch on ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.p1Autoplay === true && p1AutoOn.p0Autoplay === false && p1AutoOn.p0ReviewMode === false, `P1 auto probe: wrong autoplay mode after enabling ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.p1AutoButtonVisible === true && p1AutoOn.bodyP1Auto === true, `P1 auto probe: button/body state missing after enable ${JSON.stringify(p1AutoOn)}`);
+    await waitEval(p1AutoProbe, `window.TrashDiceQA.state().totalRolls >= 3`, 'P1 auto probe natural game rolls', 12000);
+    const p1AutoProgress = await evalValue(p1AutoProbe, `(() => {
+      const qa = window.TrashDiceQA.state();
+      return {
+        totalRolls: qa.totalRolls,
+        current: qa.current,
+        round: qa.round,
+        p1Autoplay: qa.p1Autoplay,
+        p0Autoplay: qa.p0Autoplay,
+        p0ReviewMode: qa.p0ReviewMode,
+        firstGameAssistActive: qa.firstGameAssist.active,
+        firstGameAssistUses: qa.firstGameAssist.uses,
+        firstGameAssistMaxUses: qa.firstGameAssist.maxUses,
+        inlineGameOver: !!(qa.inlineGameOver && qa.inlineGameOver.active),
+        message: (document.getElementById('message') || {}).textContent || ''
+      };
+    })()`);
+    assert(p1AutoProgress.totalRolls >= 3 && p1AutoProgress.p1Autoplay === true && p1AutoProgress.p0Autoplay === false && p1AutoProgress.p0ReviewMode === false, `P1 auto probe: natural P1-vs-CPU autoplay did not advance correctly ${JSON.stringify(p1AutoProgress)}`);
+    assert(p1AutoProgress.firstGameAssistActive === true || p1AutoProgress.firstGameAssistUses > 0, `P1 auto probe: P1 autoplay should preserve first-game assist eligibility/usage ${JSON.stringify(p1AutoProgress)}`);
+    const p1AutoOff = await evalValue(p1AutoProbe, `(() => {
+      const btn = document.getElementById('devP1AutoBtn');
+      btn.click();
+      const qa = window.TrashDiceQA.state();
+      return {
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        p1Autoplay: qa.p1Autoplay,
+        p0Autoplay: qa.p0Autoplay,
+        p1AutoButtonVisible: qa.p1AutoButtonVisible
+      };
+    })()`);
+    assert(p1AutoOff.buttonText === 'P1 AUTO' && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true, `P1 auto probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
 
     const openingGuardProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(openingGuardProbe, `document.getElementById('startBtn').click(); true`);
