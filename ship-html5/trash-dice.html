@@ -2060,6 +2060,7 @@ body.inline-game-over .roll-panel {
 }
 
 .reward-die-unlock {
+  --reward-unlock-scrim: rgba(0,0,0,0.34);
   position: fixed;
   inset: 0;
   z-index: 180;
@@ -2074,12 +2075,23 @@ body.inline-game-over .roll-panel {
     transform 0.22s cubic-bezier(.14,.82,.18,1);
 }
 
+.reward-die-unlock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(0,0,0,0.18), var(--reward-unlock-scrim) 68%);
+  pointer-events: none;
+}
+
 .reward-die-unlock.show {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
 }
 
 .reward-die-unlock.is-round-win-companion {
+  --reward-unlock-scrim: rgba(0,0,0,0.18);
   z-index: 165;
   display: block;
   padding: 0;
@@ -2089,6 +2101,7 @@ body.inline-game-over .roll-panel {
 
 .reward-die-scene {
   position: relative;
+  z-index: 1;
   isolation: isolate;
   display: grid;
   justify-items: center;
