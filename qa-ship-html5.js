@@ -1112,6 +1112,7 @@ async function main() {
           webkitMaskImage: style ? style.webkitMaskImage || '' : '',
           maskImage: style ? style.maskImage || '' : '',
           boxShadow: style ? style.boxShadow : '',
+          filter: style ? style.filter : '',
           beforeTransform: before ? before.transform : '',
           rect: rect ? { width: rect.width, height: rect.height } : null,
           seatedRewardStillSvg: !!slot,
@@ -1126,8 +1127,8 @@ async function main() {
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
         assert(liveRewardDieEdge.rewardSkinned === true && liveRewardDieEdge.effect === rewardCapDie.effect, `${viewport.name}: mobile live reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
         assert(radiusIsPercent || (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.2), `${viewport.name}: mobile live reward die needs a soft rounded edge ${JSON.stringify(liveRewardDieEdge)}`);
-        assert(liveRewardDieEdge.webkitMaskImage !== 'none' && liveRewardDieEdge.webkitMaskImage !== '', `${viewport.name}: mobile live reward die needs Safari mask rounding ${JSON.stringify(liveRewardDieEdge)}`);
-        assert(liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep a softened live face treatment ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
       const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardCapDie.minWins)})`);
@@ -1138,8 +1139,8 @@ async function main() {
           assert(travelState.rewardSkinned === true && travelState.effect === rewardCapDie.effect, `${viewport.name}: travelling reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, travellingRewardDieEdge })}`);
           assert(radiusIsPercent || (travelState.rect && radiusValue >= travelState.rect.width * 0.2), `${viewport.name}: travelling reward die needs a soft rounded edge ${JSON.stringify(travelState)}`);
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
-          assert(travelState.webkitMaskImage !== 'none' && travelState.webkitMaskImage !== '', `${viewport.name}: travelling reward die needs Safari mask rounding ${JSON.stringify(travelState)}`);
-          assert(travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should be composited inside the rounded face ${JSON.stringify(travelState)}`);
+          assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
+          assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.boxShadow.includes('9px 10px') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
         }
       }
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);

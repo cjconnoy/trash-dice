@@ -6608,22 +6608,35 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-die-stage .die.reward-skinned {
-    border-radius: 26%;
+    border-radius: 25%;
     background-clip: padding-box;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    overflow: hidden;
+    -webkit-mask-image: none;
+    mask-image: none;
+    filter: drop-shadow(0 14px 14px rgba(0,0,0,0.36));
     box-shadow:
-      6px 7px 0 var(--reward-edge),
-      11px 12px 0 rgba(0,0,0,0.24),
-      0 12px 20px rgba(0,0,0,0.42),
-      inset 0 0 0 2px rgba(255,255,255,0.22),
-      inset 9px 10px 18px rgba(255,255,255,0.1),
-      inset -15px -17px 22px rgba(0,0,0,0.24);
+      7px 8px 0 var(--reward-edge),
+      13px 14px 0 rgba(0,0,0,0.42),
+      0 18px 30px rgba(0,0,0,0.56),
+      inset 2px 2px 0 rgba(255,255,255,0.26),
+      inset 9px 10px 16px rgba(255,255,255,0.13),
+      inset -18px -20px 28px rgba(0,0,0,0.38);
   }
 
   .die.travelling-die.reward-skinned {
-    border-radius: 26%;
+    border-radius: 25%;
     background-clip: padding-box;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    overflow: hidden;
+    -webkit-mask-image: none;
+    mask-image: none;
+    filter: drop-shadow(0 9px 10px rgba(0,0,0,0.32));
+    box-shadow:
+      5px 6px 0 var(--reward-edge),
+      9px 10px 0 rgba(0,0,0,0.34),
+      0 12px 20px rgba(0,0,0,0.44),
+      inset 2px 2px 0 rgba(255,255,255,0.23),
+      inset 7px 8px 14px rgba(255,255,255,0.1),
+      inset -13px -15px 20px rgba(0,0,0,0.34);
   }
 
   .roll-die-stage .die.reward-skinned::before,
@@ -15846,6 +15859,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             webkitMaskImage: style.webkitMaskImage || '',
             maskImage: style.maskImage || '',
             backfaceVisibility: style.backfaceVisibility || '',
+            boxShadow: style.boxShadow || '',
+            filter: style.filter || '',
             beforeTransform: before ? before.transform : '',
             afterTransform: after ? after.transform : '',
             rect: { width: rect.width, height: rect.height }
