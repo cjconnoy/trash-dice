@@ -7830,14 +7830,22 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   overflow: visible;
   isolation: isolate;
   touch-action: manipulation;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.32));
 }
 .start-die.title-reward-shell::before {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: 22%;
-  background: linear-gradient(135deg, rgba(8,61,29,0.92) 0%, rgba(3,33,15,0.9) 54%, rgba(0,0,0,0.68) 100%);
-  transform: translate(11px, 12px) skewY(4deg);
+  inset: 2px -10px -12px 8px;
+  border-radius: 24%;
+  background:
+    linear-gradient(148deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 28%, rgba(0,0,0,0.22) 58%, rgba(0,0,0,0.56) 100%),
+    var(--reward-edge, rgba(5,52,24,0.84));
+  box-shadow:
+    4px 5px 0 rgba(0,0,0,0.24),
+    9px 11px 0 rgba(0,0,0,0.22),
+    0 12px 18px rgba(0,0,0,0.32);
+  opacity: 0.96;
+  transform: translate(5px, 7px) skewY(4deg);
   z-index: 0;
   pointer-events: none;
 }
@@ -7852,9 +7860,9 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   gap: 5%;
   padding: 17%;
   box-shadow:
-    7px 8px 0 rgba(5,52,24,0.8),
-    13px 14px 0 rgba(0,0,0,0.32),
-    0 13px 22px rgba(0,0,0,0.42),
+    8px 9px 0 var(--reward-edge),
+    15px 16px 0 rgba(0,0,0,0.36),
+    0 15px 24px rgba(0,0,0,0.45),
     inset 2px 2px 0 rgba(255,255,255,0.18),
     inset -10px -12px 16px rgba(0,0,0,0.22);
 }
@@ -11050,8 +11058,12 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           motionClass: el ? (el.classList.contains('title-reward-right') ? 'right' : (el.classList.contains('title-reward-left') ? 'left' : '')) : '',
           animationName: style ? style.animationName : '',
           animationDuration: style ? style.animationDuration : '',
+          shellFilter: style ? style.filter : '',
           sideContent: sideStyle ? sideStyle.content : '',
           sideTransform: sideStyle ? sideStyle.transform : '',
+          sideBoxShadow: sideStyle ? sideStyle.boxShadow : '',
+          sideBackground: sideStyle ? `${sideStyle.backgroundImage} ${sideStyle.backgroundColor}`.trim() : '',
+          sideOpacity: sideStyle ? sideStyle.opacity : '',
           afterContent: afterStyle ? afterStyle.content : '',
           faceBoxShadow: rewardStyle ? rewardStyle.boxShadow : '',
           dotCells: el ? el.querySelectorAll('.dot-cell, .reward-die-pip-cell').length : 0,
@@ -11070,6 +11082,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     el.dataset.rewardName = die.name;
     el.dataset.rewardEffect = die.effect || 'none';
     el.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
+    setRewardDieCssVars(el, die);
     el.innerHTML = '<div class="reward-die title-reward-die" aria-hidden="true"></div>';
     const rewardComponent = el.querySelector('.title-reward-die');
     if (rewardComponent) {
