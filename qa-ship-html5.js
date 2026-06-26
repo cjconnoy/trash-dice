@@ -2206,7 +2206,12 @@ async function main() {
         const rewardSceneRect = toRect(rewardScene);
         const burstContentRect = toRect(burstContent);
         const rollRect = toRect(roll);
+        const rewardShellStyle = rewardShell ? getComputedStyle(rewardShell) : null;
+        const rewardScrimStyle = rewardShell ? getComputedStyle(rewardShell, '::before') : null;
+        const rewardScrimBottom = rewardScrimStyle ? Math.round(parseFloat(rewardScrimStyle.bottom || '0')) : null;
+        const rewardScrimClearTop = rewardScrimBottom !== null ? Math.round(window.innerHeight - rewardScrimBottom) : null;
         return {
+          viewportHeight: Math.round(window.innerHeight),
           burstVisible: visible(burst),
           burstText: burst ? burst.textContent.replace(/\\s+/g, ' ').trim() : '',
           burstRect: toRect(burst),
@@ -2218,6 +2223,9 @@ async function main() {
           rewardLayout: rewardShell ? rewardShell.dataset.layout || '' : '',
           rewardRect: toRect(rewardDie),
           rewardSceneRect,
+          rewardScrimVar: rewardShellStyle ? rewardShellStyle.getPropertyValue('--reward-unlock-scrim').trim() : '',
+          rewardScrimBottom,
+          rewardScrimClearTop,
           rollRect,
           rewardOverlapsBurst: overlaps(rewardSceneRect, burstContentRect),
           rewardOverlapsRoll: overlaps(rewardSceneRect, rollRect),
@@ -2234,6 +2242,8 @@ async function main() {
         assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === rewardFirst.name && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
         assert(rollGatedReward.rewardRect && rollGatedReward.rewardRect.width >= 140 && rollGatedReward.rewardRect.height >= 140, `yellow round-win probe: persistent unlock die should stay hero-sized ${JSON.stringify(rollGatedReward)}`);
         assert(rollGatedReward.rewardLayout === 'round-win-companion' && rollGatedReward.rewardOverlapsBurst === false && rollGatedReward.rewardOverlapsRoll === false, `yellow round-win probe: persistent unlock die should not cover ROUND WINNER text or Roll ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rewardScrimVar.includes('0.56'), `yellow round-win probe: reward unlock scrim should be meaningfully dimmer ${JSON.stringify(rollGatedReward)}`);
+        assert(rollGatedReward.rollRect && rollGatedReward.rewardScrimClearTop !== null && rollGatedReward.rewardScrimClearTop <= rollGatedReward.rollRect.top - 4, `yellow round-win probe: reward unlock scrim should stop above Roll ${JSON.stringify(rollGatedReward)}`);
       }
       await evalValue(roundWinProbe, `document.getElementById('rollBtn').click(); true`);
       await waitEval(roundWinProbe, `(() => {
