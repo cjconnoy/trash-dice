@@ -1010,9 +1010,10 @@ async function main() {
       assert(firstGameAssist.resetState.completedGames === 0 && firstGameAssist.resetState.firstGameAssist.active === true && firstGameAssist.resetState.firstRoundGuard.active === true && firstGameAssist.resetState.firstGameMiracle.rolls === 0, `${viewport.name}: first-game assist QA reset failed ${JSON.stringify(firstGameAssist.resetState.firstGameAssist)}`);
       const postLossComeback = await evalValue(page, `window.TrashDiceQA.postLossComebackProbe()`);
       assert(postLossComeback.activeBefore.pending === true && postLossComeback.activeBefore.active === true, `${viewport.name}: post-loss comeback round should arm for next round-one game ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.takenFaces.includes(postLossComeback.cpuIntroSample) && !postLossComeback.openSlots.includes(postLossComeback.cpuIntroSample), `${viewport.name}: post-loss comeback should let CPU visibly land an intro die ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.playerSamples.length > 0 && postLossComeback.playerSamples.every(face => postLossComeback.openSlots.includes(face)), `${viewport.name}: post-loss comeback should force player first-round hits ${JSON.stringify(postLossComeback)}`);
-      assert(postLossComeback.cpuSamples.length > 0 && postLossComeback.cpuSamples.every(face => postLossComeback.takenFaces.includes(face)), `${viewport.name}: post-loss comeback should force CPU first-round misses after player places ${JSON.stringify(postLossComeback)}`);
-      assert(postLossComeback.activeAfterSamples.pending === true && postLossComeback.activeAfterSamples.rolls === postLossComeback.playerSamples.length + postLossComeback.cpuSamples.length, `${viewport.name}: post-loss comeback should stay active through the protected first round ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.cpuSamples.length > 0 && postLossComeback.cpuSamples.some(face => postLossComeback.openSlots.includes(face)) && postLossComeback.cpuSamples.some(face => postLossComeback.takenFaces.includes(face)), `${viewport.name}: post-loss comeback CPU brake should be soft after visible placement ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.activeAfterSamples.pending === true && postLossComeback.activeAfterSamples.rolls >= postLossComeback.playerSamples.length + 1, `${viewport.name}: post-loss comeback should stay active through the protected first round and record assisted rolls ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.consumed.pending === false && postLossComeback.consumed.consumed === true && postLossComeback.consumed.last && postLossComeback.consumed.last.winner === 'p1', `${viewport.name}: post-loss comeback should consume after the protected round completes ${JSON.stringify(postLossComeback)}`);
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
@@ -1509,6 +1510,18 @@ async function main() {
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player win`);
+
+      const cpuEmptyPlaceWin = await evalValue(page, `window.TrashDiceQA.cpuEmptyRewardCreditProof('place', 0)`);
+      assert(cpuEmptyPlaceWin.inlineGameOver && cpuEmptyPlaceWin.inlineGameOver.playerWon === true && cpuEmptyPlaceWin.inlineGameOver.sourceReason === 'place-empty', `${viewport.name}: CPU-empty place win should end as player win ${JSON.stringify(cpuEmptyPlaceWin)}`);
+      assert(cpuEmptyPlaceWin.inlineGameOver.finalRewardRoundCredited === true && cpuEmptyPlaceWin.roundWins.p1 === 1 && cpuEmptyPlaceWin.after.totalWins === 1, `${viewport.name}: CPU-empty place win should count toward reward skins exactly once ${JSON.stringify(cpuEmptyPlaceWin)}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after CPU-empty place win`);
+
+      const cpuEmptyTrashWin = await evalValue(page, `window.TrashDiceQA.cpuEmptyRewardCreditProof('trash', 10)`);
+      assert(cpuEmptyTrashWin.inlineGameOver && cpuEmptyTrashWin.inlineGameOver.playerWon === true && cpuEmptyTrashWin.inlineGameOver.sourceReason === 'trash-empty', `${viewport.name}: CPU-empty trash win should end as player win ${JSON.stringify(cpuEmptyTrashWin)}`);
+      assert(cpuEmptyTrashWin.inlineGameOver.finalRewardRoundCredited === true && cpuEmptyTrashWin.roundWins.p1 === 1 && cpuEmptyTrashWin.after.totalWins === 11 && cpuEmptyTrashWin.after.activeName === rewardAtEleven.name, `${viewport.name}: CPU-empty trash win should unlock/count reward tier at threshold ${JSON.stringify({ rewardAtEleven, cpuEmptyTrashWin })}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after CPU-empty trash win`);
 
       const mathPlayerLoss = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p2', 16, 1, 0, 'p1')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player loss complete`);
