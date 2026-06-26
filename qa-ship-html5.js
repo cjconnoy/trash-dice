@@ -158,6 +158,22 @@ function rewardSlotAnimation(effect) {
   return REWARD_SLOT_ANIMATION_BY_EFFECT[effect] || '';
 }
 
+function hasNonZeroAnimationDuration(slot) {
+  return (slot.animationDurations || []).some(value =>
+    String(value || '').split(',').some(part => parseFloat(part) > 0)
+  );
+}
+
+function hasVisibleSeatedRewardAnimation(item) {
+  const slot = item.playerSlot || item;
+  return !!slot &&
+    slot.rewardSkinned === true &&
+    Array.isArray(slot.animationNames) &&
+    slot.animationNames.includes(rewardSlotAnimation(item.activeEffect || slot.effect)) &&
+    Number(slot.animatedElementCount || 0) >= 2 &&
+    hasNonZeroAnimationDuration(slot);
+}
+
 async function main() {
   if (!fs.existsSync(path.join(shipDir, 'index.html'))) {
     throw new Error(`missing ship build: ${path.join(shipDir, 'index.html')}`);
@@ -1021,7 +1037,7 @@ async function main() {
       assert(rewardSkinFixture.outlined.playerDie.rewardSkinned === true && rewardSkinFixture.outlined.playerDie.tier === String(outlinedConfig.tier) && rewardSkinFixture.outlined.playerDie.name === outlinedConfig.name, `${viewport.name}: earned reward skin should apply to the real player die ${JSON.stringify(rewardSkinFixture.outlined)}`);
       assert(rewardSkinFixture.outlined.cpuDie.rewardSkinned === false && rewardSkinFixture.outlined.cpuDie.tier === '', `${viewport.name}: reward skin should not apply to the CPU die ${JSON.stringify(rewardSkinFixture.outlined.cpuDie)}`);
       assert(playerRewardSlot && playerRewardSlot.rewardSkinned === true && playerRewardSlot.tier === String(outlinedConfig.tier) && playerRewardSlot.name === outlinedConfig.name && playerRewardSlot.pipOutline === String(!!outlinedConfig.pipOutline), `${viewport.name}: earned reward skin should apply to the player's seated lid die ${JSON.stringify(rewardSkinFixture.outlined.slots)}`);
-      assert(animatedRewardSlot && animatedRewardSlot.rewardSkinned === true && animatedRewardSlot.tier === String(animatedConfig.tier) && animatedRewardSlot.name === animatedConfig.name && animatedRewardSlot.animationNames.includes(rewardSlotAnimation(animatedConfig.effect)), `${viewport.name}: animated seated reward die should keep its live animation ${JSON.stringify({ animatedConfig, animatedRewardSlot })}`);
+      assert(animatedRewardSlot && animatedRewardSlot.tier === String(animatedConfig.tier) && animatedRewardSlot.name === animatedConfig.name && hasVisibleSeatedRewardAnimation(animatedRewardSlot), `${viewport.name}: animated seated reward die should keep visible multi-element live animation ${JSON.stringify({ animatedConfig, animatedRewardSlot })}`);
       assert(cpuRewardSlot && cpuRewardSlot.rewardSkinned === false && cpuRewardSlot.tier === '', `${viewport.name}: reward skin should not apply to the CPU seated lid die ${JSON.stringify(rewardSkinFixture.outlined.slots)}`);
       const rewardSkinGreenClassPips = await evalValue(page, `(() => {
         window.TrashDiceQA.rewardSkinFixture(2);
@@ -1059,7 +1075,7 @@ async function main() {
         }));
       })()`);
       assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === rewardConfigNames.join('|'), `${viewport.name}: all reward ladder skins should activate in active order ${JSON.stringify({ rewardConfig, rewardSkinLadderFixtures })}`);
-      assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && item.playerSlot && item.playerSlot.rewardSkinned === true && item.playerSlot.animationNames.includes(rewardSlotAnimation(item.activeEffect))), `${viewport.name}: every reward skin should animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && hasVisibleSeatedRewardAnimation(item)), `${viewport.name}: every reward skin should visibly animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
       const liveRewardDieEdge = await evalValue(page, `(() => {
         const fixture = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify(rewardCapDie.minWins)});
         const stage = document.getElementById('p1DieStage');
