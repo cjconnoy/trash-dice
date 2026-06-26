@@ -9446,6 +9446,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   let roundWinnerStatusActive = false;
   let roundWinnerStatusPlayer = 'p1';
   let roundWinnerStatusText = 'WINNER';
+  let roundWinnerStatusSuppressChaseDie = false;
   let lastPlayerHitPraise = null;
   let playerClutchMagnetUsedThisRound = false;
   let enduranceAssistRolls = 0;
@@ -9812,10 +9813,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     playerPayoutFanfareActive = false;
     playerPayoutFanfarePlayer = 'p1';
     playerPayoutFanfareText = 'PAYDAY!';
+    roundWinnerStatusSuppressChaseDie = false;
     roundWinnerStatusTimer = null;
     roundWinnerStatusActive = false;
     roundWinnerStatusPlayer = 'p1';
     roundWinnerStatusText = 'WINNER';
+    if (!playerPayoutFanfareActive || playerPayoutFanfarePlayer !== activePlayer) {
+      roundWinnerStatusSuppressChaseDie = false;
+    }
     inventoryMischiefTimer = null;
     inventoryMischiefRun++;
     progressionWatchdogTimer = null;
@@ -10717,6 +10722,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 
   function updatePlayerStatusChaseDie() {
+    if (roundWinnerStatusSuppressChaseDie) {
+      hidePlayerStatusChaseDie();
+      return null;
+    }
     const payoutWinner =
       playerPayoutFanfareActive &&
       playerPayoutFanfarePlayer === 'p1' &&
@@ -12194,6 +12203,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundWinnerStatusActive = false;
     roundWinnerStatusPlayer = 'p1';
     roundWinnerStatusText = 'WINNER';
+    roundWinnerStatusSuppressChaseDie = false;
     ['p1', 'p2'].forEach(player => {
       const ui = getPlayerUi(player);
       if (ui.statusBar) {
@@ -12207,13 +12217,14 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     updatePlayerStatusChaseDie();
   }
 
-  function startRoundWinnerStatus(player = 'p1', duration = 1800, label = 'WINNER') {
+  function startRoundWinnerStatus(player = 'p1', duration = 1800, label = 'WINNER', options = {}) {
     const ui = getPlayerUi(player);
     if (!ui.statusBar || !ui.statusText) return;
     clearRoundWinnerStatus(false);
     roundWinnerStatusActive = true;
     roundWinnerStatusPlayer = ui.player;
     roundWinnerStatusText = label || 'WINNER';
+    roundWinnerStatusSuppressChaseDie = options && options.suppressChaseDie === true;
     applyRoundWinnerStatus();
     if (duration > 0) {
       roundWinnerStatusTimer = runLater(() => {
@@ -15152,7 +15163,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     Audio.roundWonFanfare(fanfareDuration);
     if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
     const winnerStatusDuration = spillDuration + 260;
-    startRoundWinnerStatus(winner, winnerStatusDuration);
+    startRoundWinnerStatus(winner, winnerStatusDuration, 'WINNER', {
+      suppressChaseDie: !!(rewardProgress && rewardProgress.unlockedDie)
+    });
     if (winner === 'p1') showRoundWinBurst(winner, rewardProgress);
     else showRoundLossRewardNudge();
 
@@ -16445,6 +16458,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             roundWinnerStatusActive,
             roundWinnerStatusPlayer,
             roundWinnerStatusText,
+            roundWinnerStatusSuppressChaseDie,
             roundWinnerStatusLarge: !!(ui.statusBar && ui.statusBar.classList.contains('round-winner-praise')),
             payoutStatusFontSize: statusStyle ? statusStyle.fontSize : '',
             payoutStatusRect: statusRect ? { width: statusRect.width, height: statusRect.height } : null,
