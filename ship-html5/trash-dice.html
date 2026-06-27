@@ -3101,6 +3101,12 @@ body.inline-game-over .roll-panel {
   68% { transform: perspective(520px) rotateX(-7deg) rotateY(10deg) translate3d(-2px,0,0) rotateZ(-1.2deg) scale(1.008); filter: saturate(1.05) contrast(1.04); }
 }
 
+@keyframes rewardCamoHeroDepthTilt {
+  0%, 100% { transform: perspective(520px) rotateX(-8deg) rotateY(12deg) translate3d(-1px,1px,0) rotateZ(-1deg); }
+  34% { transform: perspective(520px) rotateX(-9deg) rotateY(14deg) translate3d(2px,-2px,0) rotateZ(1.5deg) scale(1.016); }
+  68% { transform: perspective(520px) rotateX(-7deg) rotateY(10deg) translate3d(-2px,0,0) rotateZ(-1.2deg) scale(1.008); }
+}
+
 @keyframes rewardCamoSheenShift {
   0%, 100% { opacity: 0.48; transform: translate3d(-6px,2px,0) rotate(-4deg) scale(0.96); }
   44% { opacity: 0.78; transform: translate3d(7px,-3px,0) rotate(3deg) scale(1.08); }
@@ -3266,6 +3272,7 @@ body.inline-game-over .roll-panel {
 @media (prefers-reduced-motion: reduce) {
   .reward-die-unlock.show .reward-die-wrap,
   .reward-die-unlock.show .reward-die,
+  .start-die.title-reward-shell .title-reward-die-depth.effect-camo,
   .start-die.title-reward-shell .title-reward-die.effect-camo,
   .reward-die.effect-colorCycle,
   .reward-die.effect-glowPulse .reward-die-pip-cell.is-on .reward-die-pip,
@@ -8232,21 +8239,47 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 .start-die.title-reward-shell::after {
   content: none;
 }
+.start-die.title-reward-shell .title-reward-die-depth {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  border-radius: 22%;
+  filter:
+    drop-shadow(8px 9px 0 var(--reward-edge))
+    drop-shadow(7px 7px 0 rgba(0,0,0,0.3))
+    drop-shadow(0 14px 18px rgba(0,0,0,0.34));
+  transform: translateZ(0);
+  transform-origin: 50% 58%;
+  pointer-events: none;
+}
+.start-die.title-reward-shell .title-reward-die-depth.effect-camo {
+  animation: rewardCamoHeroDepthTilt 1.22s ease-in-out infinite;
+}
 .start-die.title-reward-shell .title-reward-die {
   position: relative;
   z-index: 2;
   width: 100%;
   height: 100%;
+  border-radius: 22%;
   gap: 5%;
   padding: 17%;
+  overflow: hidden;
+  contain: paint;
+  background-clip: padding-box;
+  -webkit-clip-path: inset(0 round 22%);
+  clip-path: inset(0 round 22%);
+  backface-visibility: hidden;
   box-shadow:
-    8px 9px 0 var(--reward-edge),
-    15px 16px 0 rgba(0,0,0,0.36),
-    0 15px 24px rgba(0,0,0,0.45),
     inset 2px 2px 0 rgba(255,255,255,0.18),
     inset -10px -12px 16px rgba(0,0,0,0.22);
+  transform: translateZ(0);
+  transform-origin: 50% 58%;
   -webkit-mask-image: none;
   mask-image: none;
+}
+.start-die.title-reward-shell .title-reward-die.effect-camo {
+  animation: none;
 }
 .start-die.title-reward-shell .title-reward-die .reward-die-pip {
   width: 62%;
@@ -8324,13 +8357,11 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     opacity: 1;
   }
 
-  .start-die.title-reward-shell .title-reward-die {
-    box-shadow:
-      7px 8px 0 var(--reward-edge),
-      13px 14px 0 rgba(0,0,0,0.38),
-      0 16px 24px rgba(0,0,0,0.48),
-      inset 2px 2px 0 rgba(255,255,255,0.18),
-      inset -10px -12px 16px rgba(0,0,0,0.22);
+  .start-die.title-reward-shell .title-reward-die-depth {
+    filter:
+      drop-shadow(7px 8px 0 var(--reward-edge))
+      drop-shadow(6px 6px 0 rgba(0,0,0,0.34))
+      drop-shadow(0 15px 18px rgba(0,0,0,0.38));
   }
 }
 .start-tagline {
@@ -11612,6 +11643,8 @@ body.inline-game-over .roll-panel {
         const style = el ? getComputedStyle(el) : null;
         const sideStyle = el ? getComputedStyle(el, '::before') : null;
         const afterStyle = el ? getComputedStyle(el, '::after') : null;
+        const depthShell = el ? el.querySelector('.title-reward-die-depth') : null;
+        const depthStyle = depthShell ? getComputedStyle(depthShell) : null;
         const rewardComponent = el ? el.querySelector('.reward-die.title-reward-die') : null;
         const rewardStyle = rewardComponent ? getComputedStyle(rewardComponent) : null;
         return {
@@ -11631,9 +11664,15 @@ body.inline-game-over .roll-panel {
           sideBackground: sideStyle ? `${sideStyle.backgroundImage} ${sideStyle.backgroundColor}`.trim() : '',
           sideOpacity: sideStyle ? sideStyle.opacity : '',
           afterContent: afterStyle ? afterStyle.content : '',
+          depthFilter: depthStyle ? depthStyle.filter : '',
+          depthAnimationName: depthStyle ? depthStyle.animationName : '',
+          depthTransform: depthStyle ? depthStyle.transform : '',
           faceBoxShadow: rewardStyle ? rewardStyle.boxShadow : '',
+          faceBorderRadius: rewardStyle ? rewardStyle.borderRadius : '',
+          faceClipPath: rewardStyle ? (rewardStyle.webkitClipPath || rewardStyle.clipPath || '') : '',
           faceMaskImage: rewardStyle ? (rewardStyle.webkitMaskImage || rewardStyle.maskImage || '') : '',
           faceOverflow: rewardStyle ? rewardStyle.overflow : '',
+          faceTransform: rewardStyle ? rewardStyle.transform : '',
           dotCells: el ? el.querySelectorAll('.dot-cell, .reward-die-pip-cell').length : 0,
           dots: el ? el.querySelectorAll('.dot, .reward-die-pip-cell.is-on .reward-die-pip').length : 0
         };
@@ -11651,7 +11690,9 @@ body.inline-game-over .roll-panel {
     el.dataset.rewardEffect = die.effect || 'none';
     el.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
     setRewardDieCssVars(el, die);
-    el.innerHTML = '<div class="reward-die title-reward-die" aria-hidden="true"></div>';
+    const rewardEffect = String(die.effect || 'none').replace(/[^a-zA-Z0-9_-]/g, '');
+    const rewardEffectClass = rewardEffect && rewardEffect !== 'none' ? ` effect-${rewardEffect}` : '';
+    el.innerHTML = `<div class="title-reward-die-depth${rewardEffectClass}" aria-hidden="true"><div class="reward-die title-reward-die"></div></div>`;
     const rewardComponent = el.querySelector('.title-reward-die');
     if (rewardComponent) {
       rewardComponent.innerHTML = rewardDieComponentMarkup();
