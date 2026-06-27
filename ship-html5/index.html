@@ -6929,28 +6929,32 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .roll-die-stage:has(.die.reward-skinned)::after {
     content: '';
     position: absolute;
-    inset: 7% -5% -8% 10%;
+    inset: 13% 7% 4% 15%;
     z-index: 1;
-    border-radius: 24%;
+    border-radius: 22%;
     pointer-events: none;
     opacity: 0;
-    transform: translate3d(4px, 6px, 0) skewY(4deg);
+    transform: translate3d(3px, 5px, 0) skewY(3deg) scale(0.86);
     background:
       linear-gradient(145deg,
-        rgba(255,255,255,0.15) 0%,
-        rgba(255,255,255,0.05) 28%,
-        rgba(0,0,0,0.2) 58%,
-        rgba(0,0,0,0.48) 100%),
+        rgba(255,255,255,0.1) 0%,
+        rgba(255,255,255,0.03) 28%,
+        rgba(0,0,0,0.12) 62%,
+        rgba(0,0,0,0.24) 100%),
       var(--roll-reward-depth-edge, rgba(6,54,27,0.76));
     box-shadow:
-      4px 5px 0 rgba(0,0,0,0.22),
-      8px 10px 0 rgba(0,0,0,0.18),
-      0 12px 18px rgba(0,0,0,0.3);
+      3px 4px 0 rgba(0,0,0,0.16),
+      0 8px 12px rgba(0,0,0,0.18);
     transition: opacity 0.08s ease;
   }
 
   .roll-die-stage.active:has(.die.reward-skinned)::after {
-    opacity: 0.82;
+    opacity: 0.38;
+  }
+
+  .roll-die-stage.active:has(.die.reward-skinned.rolling)::after {
+    opacity: 0.16;
+    transform: translate3d(2px, 4px, 0) skewY(3deg) scale(0.72);
   }
 
   .roll-die-stage .die.reward-skinned.rolling {
