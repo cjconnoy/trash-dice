@@ -8489,28 +8489,100 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   animation-delay: 0.42s;
 }
 .start-die.title-reward-shell {
+  --title-reward-edge: rgba(10,76,112,0.78);
+  --title-reward-edge-mid: rgba(5,56,86,0.86);
+  --title-reward-edge-dark: rgba(3,32,52,0.92);
+  --title-reward-edge-hi: rgba(255,255,255,0.18);
+  --title-reward-glow: rgba(255,246,150,0.2);
   background: transparent;
   border-radius: 22%;
   box-shadow: none;
   overflow: visible;
   isolation: isolate;
   touch-action: manipulation;
-  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.32));
+  filter: drop-shadow(0 8px 9px rgba(0,0,0,0.28));
+}
+.start-die.title-reward-shell[data-reward-effect="featherRipple"] {
+  --title-reward-edge: #148fa5;
+  --title-reward-edge-mid: #0a6779;
+  --title-reward-edge-dark: #043642;
+  --title-reward-glow: rgba(44,190,214,0.28);
+}
+.start-die.title-reward-shell[data-reward-effect="toxicSpat"] {
+  --title-reward-edge: #1b8e2e;
+  --title-reward-edge-mid: #0e641f;
+  --title-reward-edge-dark: #063514;
+  --title-reward-glow: rgba(61,219,61,0.3);
+}
+.start-die.title-reward-shell[data-reward-effect="bubblePop"] {
+  --title-reward-edge: #cf2b83;
+  --title-reward-edge-mid: #982064;
+  --title-reward-edge-dark: #53113e;
+  --title-reward-glow: rgba(255,79,176,0.28);
+}
+.start-die.title-reward-shell[data-reward-effect="bolt"] {
+  --title-reward-edge: #165ac5;
+  --title-reward-edge-mid: #0d3f8e;
+  --title-reward-edge-dark: #08214f;
+  --title-reward-glow: rgba(30,123,255,0.3);
+}
+.start-die.title-reward-shell[data-reward-effect="tieDye"] {
+  --title-reward-edge: #b333bd;
+  --title-reward-edge-mid: #692f9d;
+  --title-reward-edge-dark: #2c245f;
+  --title-reward-edge-hi: rgba(255,244,106,0.24);
+  --title-reward-glow: rgba(255,79,176,0.28);
+}
+.start-die.title-reward-shell[data-reward-effect="sunrise"] {
+  --title-reward-edge: #d98032;
+  --title-reward-edge-mid: #a65337;
+  --title-reward-edge-dark: #243653;
+  --title-reward-edge-hi: rgba(255,246,154,0.26);
+  --title-reward-glow: rgba(255,178,75,0.28);
+}
+.start-die.title-reward-shell[data-reward-effect="diamond"] {
+  --title-reward-edge: #79bfd2;
+  --title-reward-edge-mid: #3c7895;
+  --title-reward-edge-dark: #1d415d;
+  --title-reward-edge-hi: rgba(255,255,255,0.34);
+  --title-reward-glow: rgba(105,226,255,0.32);
+}
+.start-die.title-reward-shell[data-reward-effect="colorCycle"] {
+  --title-reward-edge: #7b4ddd;
+  --title-reward-edge-mid: #3a68b8;
+  --title-reward-edge-dark: #251f62;
+  --title-reward-edge-hi: rgba(255,243,105,0.26);
+  --title-reward-glow: rgba(132,220,255,0.28);
+}
+.start-die.title-reward-shell[data-reward-effect="camo"] {
+  --title-reward-edge: #476d25;
+  --title-reward-edge-mid: #24552c;
+  --title-reward-edge-dark: #092617;
+  --title-reward-edge-hi: rgba(193,173,61,0.2);
+  --title-reward-glow: rgba(78,165,54,0.24);
+}
+.start-die.title-reward-shell[data-reward-effect="lava"] {
+  --title-reward-edge: #9d3312;
+  --title-reward-edge-mid: #64200f;
+  --title-reward-edge-dark: #21100a;
+  --title-reward-edge-hi: rgba(255,118,25,0.24);
+  --title-reward-glow: rgba(255,103,16,0.28);
 }
 .start-die.title-reward-shell::before {
   content: '';
   position: absolute;
-  inset: 2px -10px -12px 8px;
+  inset: 10% -5% -7% 15%;
   border-radius: 24%;
   background:
-    linear-gradient(148deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 28%, rgba(0,0,0,0.22) 58%, rgba(0,0,0,0.56) 100%),
-    var(--reward-edge, rgba(5,52,24,0.84));
+    radial-gradient(ellipse at 26% 18%, var(--title-reward-edge-hi), transparent 42%),
+    linear-gradient(148deg, var(--title-reward-edge) 0%, var(--title-reward-edge-mid) 48%, var(--title-reward-edge-dark) 100%);
   box-shadow:
-    4px 5px 0 rgba(0,0,0,0.24),
-    9px 11px 0 rgba(0,0,0,0.22),
-    0 12px 18px rgba(0,0,0,0.32);
-  opacity: 0.96;
-  transform: translate(5px, 7px) skewY(4deg);
+    2px 3px 0 var(--title-reward-edge-dark),
+    5px 6px 0 rgba(0,0,0,0.18),
+    0 0 18px var(--title-reward-glow),
+    0 9px 14px rgba(0,0,0,0.26);
+  opacity: 0.88;
+  transform: translate(3px, 4px) skewY(2.5deg) scale(0.94);
   z-index: 0;
   pointer-events: none;
 }
@@ -8523,12 +8595,29 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   width: 100%;
   height: 100%;
   border-radius: 22%;
+  isolation: isolate;
   filter:
-    drop-shadow(8px 9px 0 var(--reward-edge))
-    drop-shadow(7px 7px 0 rgba(0,0,0,0.3))
-    drop-shadow(0 14px 18px rgba(0,0,0,0.34));
-  transform: translateZ(0);
+    drop-shadow(3px 4px 0 var(--title-reward-edge))
+    drop-shadow(5px 6px 0 var(--title-reward-edge-dark))
+    drop-shadow(0 9px 12px rgba(0,0,0,0.27));
+  transform: translate3d(0, -2px, 0);
   transform-origin: 50% 58%;
+  pointer-events: none;
+}
+.start-die.title-reward-shell .title-reward-die-depth::before {
+  content: '';
+  position: absolute;
+  inset: 9% -4% -6% 13%;
+  z-index: 0;
+  border-radius: 24%;
+  background:
+    linear-gradient(145deg, var(--title-reward-edge-hi), transparent 28%),
+    linear-gradient(150deg, var(--title-reward-edge) 0%, var(--title-reward-edge-mid) 54%, var(--title-reward-edge-dark) 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.16),
+    2px 3px 0 rgba(0,0,0,0.18);
+  opacity: 0.9;
+  transform: translate(2px, 3px) skewY(2.5deg);
   pointer-events: none;
 }
 .start-die.title-reward-shell .title-reward-die-depth.effect-camo {
@@ -8550,6 +8639,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   backface-visibility: hidden;
   box-shadow:
     inset 2px 2px 0 rgba(255,255,255,0.18),
+    inset -7px -9px 0 rgba(0,0,0,0.08),
     inset -10px -12px 16px rgba(0,0,0,0.22);
   transform: translateZ(0);
   transform-origin: 50% 58%;
@@ -8627,19 +8717,25 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .start-die.title-reward-shell::before {
-    inset: 3px -13px -15px 9px;
+    inset: 10% -6% -8% 15%;
     box-shadow:
-      5px 6px 0 rgba(0,0,0,0.28),
-      10px 12px 0 rgba(0,0,0,0.24),
-      0 14px 20px rgba(0,0,0,0.36);
-    opacity: 1;
+      2px 3px 0 var(--title-reward-edge-dark),
+      5px 6px 0 rgba(0,0,0,0.2),
+      0 0 18px var(--title-reward-glow),
+      0 10px 15px rgba(0,0,0,0.3);
+    opacity: 0.9;
   }
 
   .start-die.title-reward-shell .title-reward-die-depth {
     filter:
-      drop-shadow(7px 8px 0 var(--reward-edge))
-      drop-shadow(6px 6px 0 rgba(0,0,0,0.34))
-      drop-shadow(0 15px 18px rgba(0,0,0,0.38));
+      drop-shadow(3px 4px 0 var(--title-reward-edge))
+      drop-shadow(5px 6px 0 var(--title-reward-edge-dark))
+      drop-shadow(0 11px 14px rgba(0,0,0,0.34));
+  }
+
+  .start-die.title-reward-shell .title-reward-die-depth::before {
+    inset: 9% -5% -7% 13%;
+    transform: translate(2px, 3px) skewY(2.5deg);
   }
 }
 .start-tagline {
@@ -11935,6 +12031,7 @@ body.inline-game-over .roll-panel {
         const afterStyle = el ? getComputedStyle(el, '::after') : null;
         const depthShell = el ? el.querySelector('.title-reward-die-depth') : null;
         const depthStyle = depthShell ? getComputedStyle(depthShell) : null;
+        const depthSideStyle = depthShell ? getComputedStyle(depthShell, '::before') : null;
         const rewardComponent = el ? el.querySelector('.reward-die.title-reward-die') : null;
         const rewardStyle = rewardComponent ? getComputedStyle(rewardComponent) : null;
         return {
@@ -11953,10 +12050,18 @@ body.inline-game-over .roll-panel {
           sideBoxShadow: sideStyle ? sideStyle.boxShadow : '',
           sideBackground: sideStyle ? `${sideStyle.backgroundImage} ${sideStyle.backgroundColor}`.trim() : '',
           sideOpacity: sideStyle ? sideStyle.opacity : '',
+          titleDepthEdge: style ? style.getPropertyValue('--title-reward-edge').trim() : '',
+          titleDepthMid: style ? style.getPropertyValue('--title-reward-edge-mid').trim() : '',
+          titleDepthDark: style ? style.getPropertyValue('--title-reward-edge-dark').trim() : '',
           afterContent: afterStyle ? afterStyle.content : '',
           depthFilter: depthStyle ? depthStyle.filter : '',
           depthAnimationName: depthStyle ? depthStyle.animationName : '',
           depthTransform: depthStyle ? depthStyle.transform : '',
+          depthSideContent: depthSideStyle ? depthSideStyle.content : '',
+          depthSideBackground: depthSideStyle ? `${depthSideStyle.backgroundImage} ${depthSideStyle.backgroundColor}`.trim() : '',
+          depthSideBoxShadow: depthSideStyle ? depthSideStyle.boxShadow : '',
+          depthSideOpacity: depthSideStyle ? depthSideStyle.opacity : '',
+          depthSideTransform: depthSideStyle ? depthSideStyle.transform : '',
           faceBoxShadow: rewardStyle ? rewardStyle.boxShadow : '',
           faceBorderRadius: rewardStyle ? rewardStyle.borderRadius : '',
           faceClipPath: rewardStyle ? (rewardStyle.webkitClipPath || rewardStyle.clipPath || '') : '',
