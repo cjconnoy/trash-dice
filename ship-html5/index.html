@@ -15569,6 +15569,10 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     return spillDuration;
   }
 
+  function roundWinnerLabel(player) {
+    return player === 'p2' ? 'CPU WINNER' : 'WINNER';
+  }
+
   function showClaimBadge(winner, lidDice, spillDuration = 1450) {
     const pileEl = winner === 'p1' ? p1Pile : p2Pile;
     const r = pileEl.getBoundingClientRect();
@@ -15578,7 +15582,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     badge.className = 'claim-badge ' + winner;
     main.className = 'claim-main';
     sub.className = 'claim-sub';
-    main.textContent = `WINNER +${lidDice.length}`;
+    main.textContent = `${roundWinnerLabel(winner)} +${lidDice.length}`;
     sub.textContent = winner === 'p1' ? 'DICE TO YELLOW PILE' : 'DICE TO GREEN PILE';
     badge.appendChild(main);
     badge.appendChild(sub);
@@ -15655,7 +15659,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     Audio.roundWonFanfare(fanfareDuration);
     if (isFullRoundWinEvent(winner)) startPlayerPayoutFanfare(winner, spillDuration + 420);
     const winnerStatusDuration = spillDuration + 260;
-    startRoundWinnerStatus(winner, winnerStatusDuration, 'WINNER', {
+    startRoundWinnerStatus(winner, winnerStatusDuration, roundWinnerLabel(winner), {
       suppressChaseDie: !!(rewardProgress && rewardProgress.unlockedDie)
     });
     if (winner === 'p1') showRoundWinBurst(winner, rewardProgress);
@@ -17031,6 +17035,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           const rewardRect = rewardDie ? rewardDie.getBoundingClientRect() : null;
           const roundLossNudgeStyle = roundLossRewardNudge ? getComputedStyle(roundLossRewardNudge) : null;
           const roundLossNudgeRect = roundLossRewardNudge ? roundLossRewardNudge.getBoundingClientRect() : null;
+          const claimBadgeMain = document.querySelector('.claim-badge.' + forcedWinner + ' .claim-main');
           resolve({
             winner: forcedWinner,
             multiplayerActive: betaMultiplayerActive,
@@ -17056,6 +17061,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             payoutStatusFontSize: statusStyle ? statusStyle.fontSize : '',
             payoutStatusRect: statusRect ? { width: statusRect.width, height: statusRect.height } : null,
             payoutStatusText: ui.statusText ? ui.statusText.textContent : '',
+            claimBadgeText: claimBadgeMain ? claimBadgeMain.textContent.trim() : '',
             statusChaseDieVisible: !!(p1StatusChaseDie && p1StatusBar && p1StatusBar.classList.contains('has-chase-die') && !p1StatusChaseDie.hidden && statusChaseStyle && statusChaseStyle.display !== 'none' && statusChaseRect && statusChaseRect.width >= 28 && statusChaseRect.height >= 28),
             statusChaseDieName: p1StatusChaseDie ? p1StatusChaseDie.dataset.rewardName || '' : '',
             statusChaseDieEffect: p1StatusChaseDie ? p1StatusChaseDie.dataset.rewardEffect || '' : '',

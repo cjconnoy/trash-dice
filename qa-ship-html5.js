@@ -2119,9 +2119,11 @@ async function main() {
       const roundWinEarly = await evalValue(roundWinProbe, `window.TrashDiceDebug.roundWinEventProbe(${JSON.stringify(winner)})`);
       let roundWinProbeElapsedMs = 180;
       const fontSize = parseFloat(roundWinEarly.payoutStatusFontSize || '0');
+      const expectedRoundWinnerLabel = winner === 'p2' ? 'CPU WINNER' : 'WINNER';
       assert(roundWinEarly.winner === winner, `${winner} round-win probe: wrong winner ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.payoutStatusActive === true && roundWinEarly.roundWinnerStatusActive === true, `${winner} round-win probe: winner status inactive ${JSON.stringify(roundWinEarly)}`);
-      assert(roundWinEarly.roundWinnerStatusPlayer === winner && roundWinEarly.roundWinnerStatusText === 'WINNER' && roundWinEarly.payoutStatusText === 'WINNER', `${winner} round-win probe: winner status text missing ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.roundWinnerStatusPlayer === winner && roundWinEarly.roundWinnerStatusText === expectedRoundWinnerLabel && roundWinEarly.payoutStatusText === expectedRoundWinnerLabel, `${winner} round-win probe: winner status text missing ${JSON.stringify(roundWinEarly)}`);
+      assert(roundWinEarly.claimBadgeText === `${expectedRoundWinnerLabel} +6`, `${winner} round-win probe: claim badge text wrong ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.roundWinnerStatusLarge === true && fontSize >= 36, `${winner} round-win probe: winner status is not large enough ${JSON.stringify(roundWinEarly)}`);
       assert(roundWinEarly.winnerStatusDuration === roundWinEarly.spillDuration + 260, `${winner} round-win probe: winner status duration should track round resolution without extending it ${JSON.stringify(roundWinEarly)}`);
       if (winner === 'p2') {
@@ -2212,7 +2214,7 @@ async function main() {
           fontSize: style ? style.fontSize : ''
         };
       })()`);
-      assert(roundWinAfterFanfare.statusText === 'WINNER' && roundWinAfterFanfare.payoutStatusActive === true && roundWinAfterFanfare.roundWinnerStatusLarge === true, `${winner} round-win probe: winner status disappeared before fanfare window ended ${JSON.stringify({ roundWinEarly, roundWinAfterFanfare })}`);
+      assert(roundWinAfterFanfare.statusText === expectedRoundWinnerLabel && roundWinAfterFanfare.payoutStatusActive === true && roundWinAfterFanfare.roundWinnerStatusLarge === true, `${winner} round-win probe: winner status disappeared before fanfare window ended ${JSON.stringify({ roundWinEarly, roundWinAfterFanfare })}`);
       await sleep(3600);
       const postRewardHoldState = await evalValue(roundWinProbe, `(() => {
         const state = window.TrashDiceQA.state();
