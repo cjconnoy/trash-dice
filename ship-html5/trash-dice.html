@@ -6865,6 +6865,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-die-stage {
     right: clamp(0.48rem, 1.8vw, 0.76rem);
+    isolation: isolate;
+    overflow: visible;
   }
 
   .inventory-cluster .roll-die-stage {
@@ -6914,6 +6916,33 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
       inset 2px 2px 0 rgba(255,255,255,0.26),
       inset 9px 10px 16px rgba(255,255,255,0.13),
       inset -18px -20px 28px rgba(0,0,0,0.38);
+  }
+
+  .roll-die-stage:has(.die.reward-skinned)::after {
+    content: '';
+    position: absolute;
+    inset: 7% -5% -8% 10%;
+    z-index: 1;
+    border-radius: 24%;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(4px, 6px, 0) skewY(4deg);
+    background:
+      linear-gradient(145deg,
+        rgba(255,255,255,0.15) 0%,
+        rgba(255,255,255,0.05) 28%,
+        rgba(0,0,0,0.2) 58%,
+        rgba(0,0,0,0.48) 100%),
+      var(--roll-reward-depth-edge, rgba(6,54,27,0.76));
+    box-shadow:
+      4px 5px 0 rgba(0,0,0,0.22),
+      8px 10px 0 rgba(0,0,0,0.18),
+      0 12px 18px rgba(0,0,0,0.3);
+    transition: opacity 0.08s ease;
+  }
+
+  .roll-die-stage.active:has(.die.reward-skinned)::after {
+    opacity: 0.82;
   }
 
   .roll-die-stage .die.reward-skinned.rolling {
@@ -11088,6 +11117,15 @@ body.inline-game-over .roll-panel {
     el.style.setProperty('--reward-glow', effect === 'lava' ? 'rgba(255,103,16,0.44)' : (effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)'));
   }
 
+  function rewardDieEdgeColor(die) {
+    if (!die) return 'rgba(6,54,27,0.76)';
+    const effect = die.effect || '';
+    if (effect === 'lava') return 'rgba(255,93,16,0.42)';
+    if (effect === 'camo') return 'rgba(10,43,17,0.44)';
+    if (['diamond', 'colorCycle', 'shineSweep'].includes(effect)) return 'rgba(32,32,32,0.28)';
+    return 'rgba(0,0,0,0.24)';
+  }
+
   function applyRewardDieElementVisual(el, die) {
     clearRewardDieElementVisual(el);
     if (!el || !die) return false;
@@ -11111,8 +11149,18 @@ body.inline-game-over .roll-panel {
   }
 
   function refreshPlayerRewardSkin(repaintSlots = false) {
-    applyPlayerRewardSkin(p1Die, 'p1');
-    applyPlayerRewardSkin(p2Die, 'p2');
+    const p1RewardDie = getPlayerRewardDie('p1');
+    const p2RewardDie = getPlayerRewardDie('p2');
+    applyRewardDieElementVisual(p1Die, p1RewardDie);
+    applyRewardDieElementVisual(p2Die, p2RewardDie);
+    if (p1DieStage) {
+      if (p1RewardDie) p1DieStage.style.setProperty('--roll-reward-depth-edge', rewardDieEdgeColor(p1RewardDie));
+      else p1DieStage.style.removeProperty('--roll-reward-depth-edge');
+    }
+    if (p2DieStage) {
+      if (p2RewardDie) p2DieStage.style.setProperty('--roll-reward-depth-edge', rewardDieEdgeColor(p2RewardDie));
+      else p2DieStage.style.removeProperty('--roll-reward-depth-edge');
+    }
     if (repaintSlots && Array.isArray(board)) {
       board.forEach((die, i) => {
         if (die && slotDiceEls[i]) paintSlot(i, die);

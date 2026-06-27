@@ -1121,6 +1121,7 @@ async function main() {
         }
         const style = die ? getComputedStyle(die) : null;
         const before = die ? getComputedStyle(die, '::before') : null;
+        const stageDepth = stage ? getComputedStyle(stage, '::after') : null;
         const rect = die ? die.getBoundingClientRect() : null;
         const slot = document.querySelector('.slot-die.reward-skinned');
         const result = {
@@ -1139,6 +1140,11 @@ async function main() {
           boxShadow: style ? style.boxShadow : '',
           filter: style ? style.filter : '',
           beforeTransform: before ? before.transform : '',
+          stageDepthContent: stageDepth ? stageDepth.content : '',
+          stageDepthOpacity: stageDepth ? stageDepth.opacity : '',
+          stageDepthBoxShadow: stageDepth ? stageDepth.boxShadow : '',
+          stageDepthTransform: stageDepth ? stageDepth.transform : '',
+          stageDepthBackground: stageDepth ? [stageDepth.backgroundImage, stageDepth.backgroundColor].join(' ').trim() : '',
           spin,
           rect: rect ? { width: rect.width, height: rect.height } : null,
           seatedRewardStillSvg: !!slot,
@@ -1161,6 +1167,7 @@ async function main() {
         assert(/round/i.test(liveRewardDieEdge.clipPath || liveRewardDieEdge.webkitClipPath || '') && /round/i.test(liveRewardDieEdge.spin.clipPath || liveRewardDieEdge.spin.webkitClipPath || ''), `${viewport.name}: mobile reward hero die should use a hard rounded clip to prevent square compositing during spin ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.stageDepthContent !== 'none' && Number.parseFloat(liveRewardDieEdge.stageDepthOpacity || '0') >= 0.75 && liveRewardDieEdge.stageDepthBoxShadow.includes('rgba') && liveRewardDieEdge.stageDepthTransform !== 'none', `${viewport.name}: mobile live reward die should draw a separate 3D backing behind the clipped reward face ${JSON.stringify(liveRewardDieEdge)}`);
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
       const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardCapDie.minWins)})`);
