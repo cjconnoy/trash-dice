@@ -2213,6 +2213,8 @@ async function main() {
         const sceneRect = scene ? scene.getBoundingClientRect() : null;
         const burstRect = burstContent ? burstContent.getBoundingClientRect() : null;
         const rollRect = roll ? roll.getBoundingClientRect() : null;
+        const scrimStyle = shell ? getComputedStyle(shell, '::before') : null;
+        const scrimMask = scrimStyle ? (scrimStyle.webkitMaskImage || scrimStyle.maskImage || '') : '';
         const toRect = r => r ? { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) } : null;
         const hasGap = sceneRect && burstRect
           ? (sceneRect.top >= burstRect.bottom + 4 || sceneRect.bottom <= burstRect.top - 4 || sceneRect.left >= burstRect.right + 4 || sceneRect.right <= burstRect.left - 4)
@@ -2228,12 +2230,15 @@ async function main() {
           burstRect: toRect(burstRect),
           rollRect: toRect(rollRect),
           hasGap,
-          clearsRoll
+          clearsRoll,
+          scrimMaskImage: scrimMask,
+          scrimMaskRepeat: scrimStyle ? (scrimStyle.webkitMaskRepeat || scrimStyle.maskRepeat || '') : ''
         };
       })()`);
         assert(delayedRewardDie.visible === true && delayedRewardDie.tier === String(rewardFirst.tier) && delayedRewardDie.name === rewardFirst.name, `yellow round-win probe: delayed first reward die reveal missing ${JSON.stringify({ rewardFirst, roundWinEarly, delayedRewardDie })}`);
         assert(delayedRewardDie.sub === 'DIE SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include die skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
         assert(delayedRewardDie.layout === 'round-win-companion' && delayedRewardDie.hasGap === true && delayedRewardDie.clearsRoll === true, `yellow round-win probe: delayed reward reveal should dock between ROUND WINNER and Roll without overlap ${JSON.stringify(delayedRewardDie)}`);
+        assert(/gradient/i.test(delayedRewardDie.scrimMaskImage || '') && delayedRewardDie.scrimMaskRepeat === 'no-repeat', `yellow round-win probe: reward scrim should feather out before the Roll area ${JSON.stringify(delayedRewardDie)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
       const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {

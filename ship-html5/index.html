@@ -2102,6 +2102,7 @@ body.inline-game-over .roll-panel {
 
 .reward-die-unlock.is-round-win-companion {
   --reward-unlock-scrim: rgba(0,0,0,0.56);
+  --reward-roll-feather: clamp(34px, 7dvh, 72px);
   z-index: 165;
   display: block;
   padding: 0;
@@ -2111,6 +2112,10 @@ body.inline-game-over .roll-panel {
 
 .reward-die-unlock.is-round-win-companion::before {
   bottom: var(--reward-roll-clear-bottom);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - var(--reward-roll-feather)), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - var(--reward-roll-feather)), transparent 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .reward-die-scene {
