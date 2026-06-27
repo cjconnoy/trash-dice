@@ -406,6 +406,8 @@ async function main() {
         p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
         rewardReviewButton: !!document.getElementById('devRewardDieBtn'),
         rewardReviewButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
+        discoButton: !!document.getElementById('devDiscoBtn'),
+        discoButtonHidden: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display === 'none' : false,
         winButton: !!document.getElementById('devWinBtn'),
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
@@ -586,6 +588,8 @@ async function main() {
       assert(initial.p1AutoButtonHidden === true, `${viewport.name}: P1 AUTO debug button should hide on title screen`);
       assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
+      assert(initial.discoButton === true, `${viewport.name}: DISCO debug button missing`);
+      assert(initial.discoButtonHidden === true, `${viewport.name}: DISCO debug button should hide on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
@@ -786,6 +790,7 @@ async function main() {
         const p0Button = document.getElementById('devP0Btn');
         const p1AutoButton = document.getElementById('devP1AutoBtn');
         const rewardButton = document.getElementById('devRewardDieBtn');
+        const discoButton = document.getElementById('devDiscoBtn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
         const badge = document.querySelector('.milestone-badge');
@@ -795,6 +800,7 @@ async function main() {
         const br = p0Button.getBoundingClientRect();
         const p1r = p1AutoButton.getBoundingClientRect();
         const rbr = rewardButton.getBoundingClientRect();
+        const dr = discoButton.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
@@ -812,14 +818,17 @@ async function main() {
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
+          discoButtonVisible: getComputedStyle(discoButton).display !== 'none' && dr.width > 42 && dr.height > 24 && dr.right <= window.innerWidth + 1 && dr.top >= -1,
+          discoClearsRewardButton: dr.right <= rbr.left - 3 || dr.bottom <= rbr.top - 3 || dr.top >= rbr.bottom + 3,
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
             (p1r.bottom <= qr.top - 4 || p1r.left >= qr.right + 4 || p1r.right <= qr.left - 4 || p1r.top >= qr.bottom + 4) &&
             (rbr.bottom <= qr.top - 4 || rbr.left >= qr.right + 4 || rbr.right <= qr.left - 4 || rbr.top >= qr.bottom + 4) &&
+            (dr.bottom <= qr.top - 4 || dr.left >= qr.right + 4 || dr.right <= qr.left - 4 || dr.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
-          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && dr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && dr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -843,6 +852,7 @@ async function main() {
           p0ButtonRect: { top: br.top, bottom: br.bottom, left: br.left, right: br.right, width: br.width, height: br.height },
           p1AutoButtonRect: { top: p1r.top, bottom: p1r.bottom, left: p1r.left, right: p1r.right, width: p1r.width, height: p1r.height },
           rewardButtonRect: { top: rbr.top, bottom: rbr.bottom, left: rbr.left, right: rbr.right, width: rbr.width, height: rbr.height },
+          discoButtonRect: { top: dr.top, bottom: dr.bottom, left: dr.left, right: dr.right, width: dr.width, height: dr.height },
           outcomeButtonsRect: { top: or.top, bottom: or.bottom, left: or.left, right: or.right, width: or.width, height: or.height },
           quitButtonRect: { top: qr.top, bottom: qr.bottom, left: qr.left, right: qr.right, width: qr.width, height: qr.height },
           badgeRect: gr ? { top: gr.top, bottom: gr.bottom, left: gr.left, right: gr.right, width: gr.width, height: gr.height } : null,
@@ -869,6 +879,8 @@ async function main() {
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible, `${viewport.name}: P1 AUTO button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
@@ -996,6 +1008,40 @@ async function main() {
       }
       assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === String(rewardFirst.tier) && rewardReview.playerSkin.name === rewardFirst.name && rewardReview.playerSkin.effect === rewardFirst.effect, `${viewport.name}: reward review should skin the real player die ${JSON.stringify({ rewardFirst, playerSkin: rewardReview.playerSkin })}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
+
+      await evalValue(page, `document.getElementById('devDiscoBtn').click(); true`);
+      await waitEval(page, `document.body.classList.contains('vip-disco-party') && window.TrashDiceQA.rewardDieState().activeName === 'DISCO BALL'`, `${viewport.name} DISCO debug button activates VIP party`);
+      const discoDebug = await evalValue(page, `(() => {
+        const btn = document.getElementById('devDiscoBtn');
+        const rewardBtn = document.getElementById('devRewardDieBtn');
+        const playerDie = document.getElementById('p1Die');
+        const shell = document.getElementById('rewardDieUnlock');
+        const bodyAfter = getComputedStyle(document.body, '::after');
+        return {
+          buttonVisible: getComputedStyle(btn).display !== 'none',
+          pressed: btn.getAttribute('aria-pressed'),
+          label: btn.getAttribute('aria-label'),
+          rewardButtonText: rewardBtn ? rewardBtn.textContent.trim() : '',
+          rewardButtonLabel: rewardBtn ? rewardBtn.getAttribute('aria-label') : '',
+          rewardUnlockHidden: !shell || shell.hidden || !shell.classList.contains('show'),
+          state: window.TrashDiceQA.rewardDieState(),
+          bodyVip: document.body.classList.contains('vip-disco-party'),
+          bodyVipDataset: document.body.dataset.vipDiscoParty || '',
+          discoOverlayAnimation: bodyAfter.animationName || '',
+          discoOverlayPointerEvents: bodyAfter.pointerEvents || '',
+          playerSkin: {
+            rewardSkinned: playerDie.classList.contains('reward-skinned'),
+            tier: playerDie.dataset.rewardTier || '',
+            name: playerDie.dataset.rewardName || '',
+            effect: playerDie.dataset.rewardEffect || ''
+          }
+        };
+      })()`);
+      assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'VIP disco party active', `${viewport.name}: DISCO button active state wrong ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: DISCO debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoDebug.discoOverlayPointerEvents === 'none', `${viewport.name}: DISCO debug button should activate non-blocking party lighting ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
+      assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
         const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, sampleCount: 96 });
@@ -2048,6 +2094,7 @@ async function main() {
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
       rewardButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
+      discoButtonHidden: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display === 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       qaHooksPresent: !!window.TrashDiceQA,
       guidanceVisible: (() => {
@@ -2058,7 +2105,7 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
@@ -2069,11 +2116,12 @@ async function main() {
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonVisible: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display !== 'none' : false,
       rewardButtonVisible: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display !== 'none' : false,
+      discoButtonVisible: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display !== 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.rewardButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: P1 AUTO and reward review should show during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: P1 AUTO and reward review should show during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);

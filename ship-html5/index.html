@@ -834,7 +834,8 @@ body.debug-controls-enabled[data-game-started="true"] .debug-outcome-controls {
   transform: translateY(1px);
 }
 
-.debug-reward-die-btn {
+.debug-reward-die-btn,
+.debug-disco-btn {
   position: fixed;
   z-index: 144;
   display: none;
@@ -861,17 +862,43 @@ body.debug-controls-enabled[data-game-started="true"] .debug-outcome-controls {
   touch-action: manipulation;
 }
 
-body.reward-review-enabled[data-game-started="true"] .debug-reward-die-btn {
+.debug-disco-btn {
+  right: calc(env(safe-area-inset-right, 0px) + 66px);
+  min-width: 58px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,0.28), transparent 42%),
+    linear-gradient(180deg, rgba(10,113,126,0.94), rgba(32,64,126,0.94));
+  border-color: rgba(124,232,255,0.58);
+  color: #fff6ad;
+  box-shadow:
+    0 5px 14px rgba(15,40,24,0.2),
+    0 0 13px rgba(124,232,255,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+body.vip-disco-party .debug-disco-btn,
+.debug-disco-btn[aria-pressed="true"] {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,0.34), transparent 42%),
+    linear-gradient(180deg, rgba(255,244,80,0.94), rgba(255,70,201,0.9));
+  border-color: rgba(255,255,255,0.68);
+  color: #123d25;
+}
+
+body.reward-review-enabled[data-game-started="true"] .debug-reward-die-btn,
+body.reward-review-enabled[data-game-started="true"] .debug-disco-btn {
   display: inline-flex;
 }
 
-.debug-reward-die-btn:active {
+.debug-reward-die-btn:active,
+.debug-disco-btn:active {
   transform: translateY(1px);
 }
 
 body.quit-return-open .debug-outcome-controls,
 body.quit-return-open .debug-p1-auto-btn,
-body.quit-return-open .debug-reward-die-btn {
+body.quit-return-open .debug-reward-die-btn,
+body.quit-return-open .debug-disco-btn {
   opacity: 0;
   pointer-events: none;
 }
@@ -8042,13 +8069,19 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     padding-right: 0.32rem;
   }
 
-  .debug-reward-die-btn {
+  .debug-reward-die-btn,
+  .debug-disco-btn {
     right: calc(env(safe-area-inset-right, 0px) + 8px);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 142px);
     min-width: 44px;
     min-height: 28px;
     padding-left: 0.34rem;
     padding-right: 0.34rem;
+  }
+
+  .debug-disco-btn {
+    right: calc(env(safe-area-inset-right, 0px) + 58px);
+    min-width: 52px;
   }
 }
 
@@ -8471,10 +8504,16 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-height: 24px;
   }
 
-  .debug-reward-die-btn {
+  .debug-reward-die-btn,
+  .debug-disco-btn {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 122px);
     min-width: 40px;
     min-height: 26px;
+  }
+
+  .debug-disco-btn {
+    right: calc(env(safe-area-inset-right, 0px) + 58px);
+    min-width: 48px;
   }
 }
 
@@ -9821,6 +9860,7 @@ body.inline-game-over .roll-panel {
 </button>
 <button class="debug-p1-auto-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay Player 1 turns" aria-pressed="false">P1 AUTO</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
+<button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate VIP disco reward die" aria-pressed="false">DISCO</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
@@ -11604,6 +11644,7 @@ body.inline-game-over .roll-panel {
   const devP1AutoBtn = document.getElementById('devP1AutoBtn');
   const devP0Btn = document.getElementById('devP0Btn');
   const devRewardDieBtn = document.getElementById('devRewardDieBtn');
+  const devDiscoBtn = document.getElementById('devDiscoBtn');
   const debugOutcomeControls = document.getElementById('debugOutcomeControls');
   const devWinBtn = document.getElementById('devWinBtn');
   const devLoseBtn = document.getElementById('devLoseBtn');
@@ -11633,6 +11674,7 @@ body.inline-game-over .roll-panel {
     } catch (_) {
     }
     refreshVipDiscoPartyState();
+    updateDevDiscoButtonState();
     return rewardDieWins;
   }
 
@@ -11778,6 +11820,7 @@ body.inline-game-over .roll-panel {
       devRewardDieBtn.setAttribute('aria-label', 'Preview reward die variants');
       devRewardDieBtn.title = 'Preview reward die variants';
     }
+    updateDevDiscoButtonState();
     refreshPlayerRewardSkin(true);
   }
 
@@ -12289,6 +12332,38 @@ body.inline-game-over .roll-panel {
     refreshPlayerRewardSkin(true);
     showRewardDieUnlock(die, die.minWins);
     return rewardDieSnapshot(die);
+  }
+
+  function updateDevDiscoButtonState() {
+    if (!devDiscoBtn) return;
+    const active = isVipDiscoUnlocked();
+    devDiscoBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    devDiscoBtn.title = active ? 'VIP disco party active' : 'Activate VIP disco reward die';
+    devDiscoBtn.setAttribute('aria-label', active ? 'VIP disco party active' : 'Activate VIP disco reward die');
+  }
+
+  function activateDebugDiscoParty() {
+    const discoDie = REWARD_DICE.find(die => die.effect === 'discoBall') || REWARD_DICE[REWARD_DICE.length - 1];
+    if (!discoDie) return null;
+    rewardDiePreviewOverride = null;
+    rewardDieReviewIndex = REWARD_DICE.indexOf(discoDie);
+    if (devRewardDieBtn) {
+      devRewardDieBtn.textContent = `D${discoDie.tier}`;
+      devRewardDieBtn.setAttribute('aria-label', `Preview ${discoDie.name} reward die`);
+      devRewardDieBtn.title = discoDie.name;
+    }
+    writeRewardDieWins(Math.max(rewardDieWins, discoDie.minWins));
+    hideRewardDieUnlock();
+    hideRoundWinBurst();
+    hideTerminalRewardNudge();
+    hideRoundLossRewardNudge();
+    refreshPlayerRewardSkin(true);
+    renderPoolCounts();
+    updatePoolVisual('p1');
+    renderCanLoad();
+    syncHeroIdleState();
+    updateDevDiscoButtonState();
+    return getRewardDieState();
   }
 
   let slotEls  = [];  // SVG slot elements
@@ -15274,12 +15349,14 @@ body.inline-game-over .roll-panel {
   // ── UI SYNC ──────────────────────────────────────────────────
   function syncUI() {
     renderPoolCounts();
+    updateDevDiscoButtonState();
     if (isInlineGameOverActive()) {
       updatePoolVisual('p1');
       updatePoolVisual('p2');
       renderCanLoad();
       applyMathematicalLoserStatus(inlineGameOverState.playerWon);
       syncHeroIdleState();
+      updateDevDiscoButtonState();
       return;
     }
     p1TurnTag.classList.toggle('active', current === 'p1');
@@ -15326,6 +15403,7 @@ body.inline-game-over .roll-panel {
     refreshPlayerRewardSkin(false);
     renderCanLoad();
     syncHeroIdleState();
+    updateDevDiscoButtonState();
   }
 
   function syncHeroIdleState() {
@@ -17071,6 +17149,9 @@ body.inline-game-over .roll-panel {
       cycleRewardDieReview() {
         return cycleRewardDieReview();
       },
+      activateDiscoParty() {
+        return activateDebugDiscoParty();
+      },
       setCompletedGames(count = 0) {
         writeCompletedGameCount(count);
         firstGameAssistUses = 0;
@@ -17680,6 +17761,13 @@ body.inline-game-over .roll-panel {
       cycleRewardDieReview();
     });
   }
+  if (devDiscoBtn) {
+    devDiscoBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      activateDebugDiscoParty();
+    });
+  }
   if (devWinBtn) {
     devWinBtn.addEventListener('click', event => {
       event.preventDefault();
@@ -17708,6 +17796,7 @@ body.inline-game-over .roll-panel {
     if (devP0Btn && event.target === devP0Btn) return;
     if (devP1AutoBtn && event.target === devP1AutoBtn) return;
     if (devRewardDieBtn && event.target === devRewardDieBtn) return;
+    if (devDiscoBtn && event.target === devDiscoBtn) return;
     if (debugOutcomeControls && debugOutcomeControls.contains(event.target)) return;
     if (devCheatBar && devCheatBar.contains(event.target)) return;
     event.preventDefault();
