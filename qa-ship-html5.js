@@ -1095,7 +1095,24 @@ async function main() {
         const stage = document.getElementById('p1DieStage');
         const die = document.getElementById('p1Die');
         if (stage) stage.classList.add('active');
-        if (die) die.classList.add('roll-resolved');
+        let spin = null;
+        if (die) {
+          die.classList.add('rolling');
+          const spinStyle = getComputedStyle(die);
+          const spinRect = die.getBoundingClientRect();
+          spin = {
+            className: die.className,
+            animationName: spinStyle.animationName,
+            borderRadius: spinStyle.borderTopLeftRadius,
+            overflow: spinStyle.overflow,
+            webkitMaskImage: spinStyle.webkitMaskImage || '',
+            maskImage: spinStyle.maskImage || '',
+            boxShadow: spinStyle.boxShadow,
+            rect: spinRect ? { width: spinRect.width, height: spinRect.height } : null
+          };
+          die.classList.remove('rolling');
+          die.classList.add('roll-resolved');
+        }
         const style = die ? getComputedStyle(die) : null;
         const before = die ? getComputedStyle(die, '::before') : null;
         const rect = die ? die.getBoundingClientRect() : null;
@@ -1114,6 +1131,7 @@ async function main() {
           boxShadow: style ? style.boxShadow : '',
           filter: style ? style.filter : '',
           beforeTransform: before ? before.transform : '',
+          spin,
           rect: rect ? { width: rect.width, height: rect.height } : null,
           seatedRewardStillSvg: !!slot,
           seatedRewardEffect: slot ? slot.dataset.rewardEffect || '' : ''
@@ -1122,11 +1140,16 @@ async function main() {
         window.TrashDiceQA.setRewardWins(2);
         return result;
       })()`);
+      assert(liveRewardDieEdge.spin && /rewardDieRoll/.test(liveRewardDieEdge.spin.animationName || ''), `${viewport.name}: reward hero spin should use reward-specific shape-preserving animation ${JSON.stringify(liveRewardDieEdge)}`);
       if (viewport.mobile && viewport.width <= 720) {
         const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
+        const spinRadiusValue = parseFloat((liveRewardDieEdge.spin && liveRewardDieEdge.spin.borderRadius) || '0');
+        const spinRadiusIsPercent = String((liveRewardDieEdge.spin && liveRewardDieEdge.spin.borderRadius) || '').includes('%');
         assert(liveRewardDieEdge.rewardSkinned === true && liveRewardDieEdge.effect === rewardCapDie.effect, `${viewport.name}: mobile live reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
-        assert(radiusIsPercent || (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.2), `${viewport.name}: mobile live reward die needs a soft rounded edge ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(radiusIsPercent ? radiusValue >= 21 && radiusValue <= 23 : (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.21 && radiusValue <= liveRewardDieEdge.rect.width * 0.23), `${viewport.name}: mobile live reward die should match the default die corner shape ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(spinRadiusIsPercent ? spinRadiusValue >= 21 && spinRadiusValue <= 23 : (liveRewardDieEdge.spin.rect && spinRadiusValue >= liveRewardDieEdge.spin.rect.width * 0.21 && spinRadiusValue <= liveRewardDieEdge.spin.rect.width * 0.23), `${viewport.name}: mobile reward hero spin should keep the default die silhouette ${JSON.stringify(liveRewardDieEdge.spin)}`);
+        assert(liveRewardDieEdge.spin.animationName === 'rewardDieRollMobile', `${viewport.name}: mobile reward hero spin should avoid the generic squashing roll keyframes ${JSON.stringify(liveRewardDieEdge.spin)}`);
         assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
@@ -1137,7 +1160,7 @@ async function main() {
           const radiusValue = parseFloat(travelState.borderRadius || '0');
           const radiusIsPercent = String(travelState.borderRadius || '').includes('%');
           assert(travelState.rewardSkinned === true && travelState.effect === rewardCapDie.effect, `${viewport.name}: travelling reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, travellingRewardDieEdge })}`);
-          assert(radiusIsPercent || (travelState.rect && radiusValue >= travelState.rect.width * 0.2), `${viewport.name}: travelling reward die needs a soft rounded edge ${JSON.stringify(travelState)}`);
+          assert(radiusIsPercent ? radiusValue >= 21 && radiusValue <= 23 : (travelState.rect && radiusValue >= travelState.rect.width * 0.21 && radiusValue <= travelState.rect.width * 0.23), `${viewport.name}: travelling reward die should match the default die corner shape ${JSON.stringify(travelState)}`);
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
           assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.boxShadow.includes('9px 10px') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);

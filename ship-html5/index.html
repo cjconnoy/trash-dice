@@ -1961,6 +1961,9 @@ body.inline-game-over .roll-panel {
   animation: dieRoll 0.85s cubic-bezier(.16,.74,.25,1) both;
   transform-origin: 50% 50%;
 }
+.die.reward-skinned.rolling {
+  animation-name: rewardDieRoll;
+}
 .die.roll-resolved {
   animation: dieResolvePulse 0.42s cubic-bezier(.18,.9,.22,1) both;
   transform-origin: 50% 50%;
@@ -3347,6 +3350,56 @@ body.inline-game-over .roll-panel {
     box-shadow: 8px 8px 0 0 rgba(0,0,0,0.42), 14px 14px 0 0 rgba(0,0,0,0.32), 0 12px 30px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.16);
   }
 }
+@keyframes rewardDieRoll {
+  0% {
+    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) scale(1);
+    box-shadow:
+      7px 8px 0 var(--reward-edge),
+      13px 14px 0 rgba(0,0,0,0.42),
+      0 18px 30px rgba(0,0,0,0.56),
+      inset 2px 2px 0 rgba(255,255,255,0.26),
+      inset 9px 10px 16px rgba(255,255,255,0.13),
+      inset -18px -20px 28px rgba(0,0,0,0.38);
+  }
+  12% {
+    transform: perspective(540px) rotateX(18deg) rotateY(-24deg) rotateZ(135deg) scale(1.04);
+    box-shadow:
+      6px 10px 0 var(--reward-edge),
+      12px 18px 0 rgba(0,0,0,0.34),
+      0 18px 30px rgba(0,0,0,0.5),
+      inset 2px 2px 0 rgba(255,255,255,0.24),
+      inset 8px 9px 16px rgba(255,255,255,0.11),
+      inset -16px -18px 26px rgba(0,0,0,0.36);
+  }
+  24% {
+    transform: perspective(540px) rotateX(-26deg) rotateY(30deg) rotateZ(285deg) scale(0.99);
+  }
+  38% {
+    transform: perspective(540px) rotateX(24deg) rotateY(-18deg) rotateZ(475deg) scale(1.04);
+  }
+  52% {
+    transform: perspective(540px) rotateX(-18deg) rotateY(28deg) rotateZ(650deg) scale(1);
+  }
+  66% {
+    transform: perspective(540px) rotateX(16deg) rotateY(-22deg) rotateZ(810deg) scale(1.03);
+  }
+  82% {
+    transform: perspective(540px) rotateX(-12deg) rotateY(16deg) rotateZ(1015deg) scale(1.01);
+  }
+  92% {
+    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(1072deg) scale(1.04);
+  }
+  100% {
+    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(1080deg) scale(1);
+    box-shadow:
+      7px 8px 0 var(--reward-edge),
+      13px 14px 0 rgba(0,0,0,0.42),
+      0 18px 30px rgba(0,0,0,0.56),
+      inset 2px 2px 0 rgba(255,255,255,0.26),
+      inset 9px 10px 16px rgba(255,255,255,0.13),
+      inset -18px -20px 28px rgba(0,0,0,0.38);
+  }
+}
 @keyframes dieRollMobile {
   0% {
     transform: translate3d(0,0,0) rotate(0deg) scale(1);
@@ -3468,6 +3521,29 @@ body.inline-game-over .roll-panel {
 .die.reward-skinned.p1 .dot,
 .die.reward-skinned.p2 .dot {
   background: var(--reward-pip);
+}
+@keyframes rewardDieRollMobile {
+  0% {
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
+  }
+  16% {
+    transform: translate3d(0,-2px,0) rotate(210deg) scale(1.018);
+  }
+  32% {
+    transform: translate3d(0,-1px,0) rotate(420deg) scale(1.008);
+  }
+  50% {
+    transform: translate3d(0,-2px,0) rotate(660deg) scale(1.014);
+  }
+  68% {
+    transform: translate3d(0,-1px,0) rotate(900deg) scale(1.006);
+  }
+  86% {
+    transform: translate3d(0,0,0) rotate(1110deg) scale(1.012);
+  }
+  100% {
+    transform: translate3d(0,0,0) rotate(1200deg) scale(1);
+  }
 }
 /* ── ROLL BUTTON ── */
 .roll-btn {
@@ -4813,6 +4889,10 @@ body.tablet-effects-lite .roll-die-stage .die.rolling {
   animation-duration: 0.64s;
   animation-timing-function: cubic-bezier(.18,.84,.16,1);
 }
+body.tablet-effects-lite .roll-die-stage .die.reward-skinned.rolling,
+body.mobile-roll-smoothing .roll-die-stage .die.reward-skinned.rolling {
+  animation-name: rewardDieRollMobile;
+}
 body.tablet-effects-lite .roll-die-stage .die.roll-resolved {
   animation: none !important;
 }
@@ -4948,6 +5028,12 @@ body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.ipad
     2px 3px 0 0 rgba(0,0,0,0.24),
     0 4px 6px rgba(0,0,0,0.18),
     inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.rolling,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.ipad-rolling,
+body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.rolling,
+body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.ipad-rolling {
+  animation-name: rewardDieRollMobile;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
   animation: none !important;
@@ -6608,7 +6694,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .roll-die-stage .die.reward-skinned {
-    border-radius: 25%;
+    border-radius: 22%;
     background-clip: padding-box;
     overflow: hidden;
     -webkit-mask-image: none;
@@ -6623,8 +6709,12 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
       inset -18px -20px 28px rgba(0,0,0,0.38);
   }
 
+  .roll-die-stage .die.reward-skinned.rolling {
+    animation-name: rewardDieRollMobile;
+  }
+
   .die.travelling-die.reward-skinned {
-    border-radius: 25%;
+    border-radius: 22%;
     background-clip: padding-box;
     overflow: hidden;
     -webkit-mask-image: none;
