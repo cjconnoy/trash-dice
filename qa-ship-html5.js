@@ -142,7 +142,7 @@ const REWARD_SLOT_ANIMATION_BY_EFFECT = {
   bigCompass: 'slotRewardCompassSpin',
   lethalChicken: 'slotRewardChickenHop'
 };
-const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO BALL'];
+const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA'];
 
 function rewardAtWins(config, wins) {
   return config.reduce((active, item) => wins >= item.minWins ? item : active, null);
@@ -664,6 +664,9 @@ async function main() {
       rewardNextAfterSix = nextRewardAtWins(rewardConfig, 6);
       rewardAtEleven = rewardAtMinWins(rewardConfig, 11);
       rewardNextAfterEleven = nextRewardAtWins(rewardConfig, 11);
+      const rewardDiamond = rewardConfig.find(item => item.name === 'DIAMOND');
+      const rewardDisco = rewardConfig.find(item => item.name === 'DISCO BALL');
+      assert(rewardDiamond && rewardDisco && rewardDisco.effect === 'discoBall' && rewardDisco.faceColor !== rewardDiamond.faceColor && rewardDisco.pipColor !== rewardDiamond.pipColor && rewardDisco.pipOutline === false && rewardDiamond.pipOutline === true, `${viewport.name}: DISCO BALL should not reuse DIAMOND's pale crystal visual config ${JSON.stringify({ rewardDiamond, rewardDisco })}`);
       const muteToggle = await evalValue(page, `(() => {
         const btn = document.getElementById('audioMuteBtn');
         btn.click();
@@ -1016,6 +1019,7 @@ async function main() {
         const rewardBtn = document.getElementById('devRewardDieBtn');
         const playerDie = document.getElementById('p1Die');
         const shell = document.getElementById('rewardDieUnlock');
+        const bodyBefore = getComputedStyle(document.body, '::before');
         const bodyAfter = getComputedStyle(document.body, '::after');
         return {
           buttonVisible: getComputedStyle(btn).display !== 'none',
@@ -1027,8 +1031,13 @@ async function main() {
           state: window.TrashDiceQA.rewardDieState(),
           bodyVip: document.body.classList.contains('vip-disco-party'),
           bodyVipDataset: document.body.dataset.vipDiscoParty || '',
+          discoVenueWashOpacity: bodyBefore.opacity || '',
+          discoVenueWashZIndex: bodyBefore.zIndex || '',
           discoOverlayAnimation: bodyAfter.animationName || '',
+          discoOverlayOpacity: bodyAfter.opacity || '',
           discoOverlayPointerEvents: bodyAfter.pointerEvents || '',
+          discoOverlayZIndex: bodyAfter.zIndex || '',
+          discoOverlayBlend: bodyAfter.mixBlendMode || '',
           playerSkin: {
             rewardSkinned: playerDie.classList.contains('reward-skinned'),
             tier: playerDie.dataset.rewardTier || '',
@@ -1039,7 +1048,7 @@ async function main() {
       })()`);
       assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'VIP disco party active', `${viewport.name}: DISCO button active state wrong ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: DISCO debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoDebug.discoOverlayPointerEvents === 'none', `${viewport.name}: DISCO debug button should activate non-blocking party lighting ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(discoDebug.discoOverlayZIndex) >= 80 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none', `${viewport.name}: DISCO debug button should activate visible non-blocking party lighting ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
@@ -1694,7 +1703,9 @@ async function main() {
           bodyVip: document.body.classList.contains('vip-disco-party'),
           bodyVipDataset: document.body.dataset.vipDiscoParty || '',
           discoOverlayAnimation: bodyAfter.animationName || '',
+          discoOverlayOpacity: bodyAfter.opacity || '',
           discoOverlayPointerEvents: bodyAfter.pointerEvents || '',
+          discoOverlayZIndex: bodyAfter.zIndex || '',
           chip: {
             visible: !!(chip && !chip.hidden && getComputedStyle(chip).display !== 'none'),
             text: chipText ? chipText.textContent.replace(/\\s+/g, ' ').trim() : '',
@@ -1715,7 +1726,7 @@ async function main() {
       })()`);
       assert(vipDiscoWin.passed === true && vipDiscoWin.inlineGameOver.rewardDie && vipDiscoWin.inlineGameOver.rewardDie.totalWins === 100, `${viewport.name}: VIP disco win proof failed ${JSON.stringify(vipDiscoWin)}`);
       assert(vipDiscoUi.rewardState.totalWins === 100 && vipDiscoUi.rewardState.activeName === 'DISCO BALL' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true, `${viewport.name}: VIP disco reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
-      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be active and non-blocking ${JSON.stringify(vipDiscoUi)}`);
+      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(vipDiscoUi.discoOverlayZIndex) >= 80 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be visible and non-blocking ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '100' && /ROUND WINS\s*x100/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('VIP-ONLY DISCO PARTY'), `${viewport.name}: VIP game-win chip should wind up to x100 and show the party badge ${JSON.stringify(vipDiscoUi.chip)}`);
       assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO BALL' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO BALL DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped disco skin ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);

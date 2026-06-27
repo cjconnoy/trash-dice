@@ -2704,12 +2704,16 @@ body.inline-game-over .roll-panel {
 
 .reward-die.effect-discoBall,
 .die.reward-skinned.effect-discoBall {
-  --reward-edge: rgba(60,70,105,0.42);
-  --reward-glow: rgba(116,230,255,0.36);
+  --reward-edge: rgba(22,27,55,0.64);
+  --reward-glow: rgba(255,70,201,0.46);
   background:
-    radial-gradient(circle at 28% 18%, rgba(255,255,255,0.94), rgba(255,255,255,0.3) 19%, transparent 40%),
-    radial-gradient(circle at 70% 75%, rgba(255,83,205,0.24), transparent 30%),
-    linear-gradient(146deg, #f7ffff 0%, #b8d9ee 34%, #f5fbff 51%, #6f88bd 100%);
+    radial-gradient(circle at 23% 18%, rgba(255,255,255,0.96) 0 10%, transparent 18%),
+    radial-gradient(circle at 77% 27%, rgba(86,231,255,0.82) 0 6%, transparent 15%),
+    radial-gradient(circle at 31% 72%, rgba(255,70,201,0.72) 0 6%, transparent 16%),
+    radial-gradient(circle at 70% 76%, rgba(255,244,80,0.68) 0 5%, transparent 15%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.0) 0 13%, rgba(18,27,58,0.32) 13% 15%, rgba(255,255,255,0.0) 15% 26%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.0) 0 13%, rgba(18,27,58,0.34) 13% 15%, rgba(255,255,255,0.0) 15% 26%),
+    conic-gradient(from -24deg at 50% 50%, #ffffff 0deg, #77829c 42deg, #e9f8ff 78deg, #2d345f 116deg, #ff4fc7 148deg, #ccd5e2 184deg, #56e7ff 222deg, #38406b 264deg, #fff16a 304deg, #ffffff 360deg);
 }
 
 .reward-die.effect-discoBall::before,
@@ -2720,13 +2724,13 @@ body.inline-game-over .roll-panel {
   z-index: 1;
   border-radius: 30%;
   background:
-    linear-gradient(90deg, transparent 0 47%, rgba(36,55,98,0.35) 48% 52%, transparent 53% 100%),
-    linear-gradient(0deg, transparent 0 47%, rgba(36,55,98,0.32) 48% 52%, transparent 53% 100%),
-    repeating-linear-gradient(28deg, rgba(255,255,255,0.58) 0 5px, rgba(137,184,225,0.34) 6px 10px, rgba(41,58,103,0.2) 11px 13px),
-    repeating-linear-gradient(118deg, transparent 0 9px, rgba(255,255,255,0.48) 10px 13px, transparent 14px 20px),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.24), transparent 58%);
+    linear-gradient(90deg, transparent 0 47%, rgba(13,20,48,0.62) 48% 52%, transparent 53% 100%),
+    linear-gradient(0deg, transparent 0 47%, rgba(13,20,48,0.58) 48% 52%, transparent 53% 100%),
+    repeating-linear-gradient(32deg, rgba(255,255,255,0.74) 0 5px, rgba(164,176,196,0.46) 6px 10px, rgba(27,35,70,0.36) 11px 14px),
+    repeating-linear-gradient(122deg, transparent 0 9px, rgba(255,255,255,0.6) 10px 13px, transparent 14px 20px),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18), rgba(18,24,52,0.28) 62%, transparent 66%);
   mix-blend-mode: normal;
-  opacity: 0.9;
+  opacity: 0.96;
   transform-origin: 50% 50%;
   animation: rewardDiscoFacetShift 1.22s linear infinite;
 }
@@ -2738,13 +2742,15 @@ body.inline-game-over .roll-panel {
   z-index: 3;
   border-radius: 30%;
   background:
-    radial-gradient(circle at 23% 22%, rgba(255,255,255,0.98) 0 5%, transparent 6%),
-    radial-gradient(circle at 72% 28%, rgba(88,231,255,0.86) 0 4.8%, transparent 6%),
-    radial-gradient(circle at 52% 68%, rgba(255,244,80,0.7) 0 4.5%, transparent 6%),
-    linear-gradient(112deg, transparent 0 18%, rgba(255,255,255,0.9) 34%, rgba(255,83,205,0.24) 46%, transparent 64%);
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.82)) drop-shadow(0 0 14px rgba(88,231,255,0.46));
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,1) 0 5%, transparent 6%),
+    radial-gradient(circle at 74% 22%, rgba(88,231,255,0.98) 0 5%, transparent 6%),
+    radial-gradient(circle at 32% 76%, rgba(255,70,201,0.92) 0 4.5%, transparent 6%),
+    radial-gradient(circle at 66% 66%, rgba(255,244,80,0.86) 0 4.2%, transparent 6%),
+    linear-gradient(112deg, transparent 0 18%, rgba(255,255,255,0.92) 34%, rgba(255,83,205,0.42) 46%, transparent 64%),
+    linear-gradient(18deg, transparent 0 42%, rgba(88,231,255,0.54) 48%, transparent 57%);
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.82)) drop-shadow(0 0 16px rgba(255,70,201,0.54));
   mix-blend-mode: screen;
-  opacity: 0.82;
+  opacity: 0.94;
   animation: rewardDiscoSparkle 0.82s ease-in-out infinite;
 }
 
@@ -2755,7 +2761,11 @@ body.inline-game-over .roll-panel {
 
 .reward-die.effect-discoBall .reward-die-pip-cell.is-on .reward-die-pip,
 .die.reward-skinned.effect-discoBall .dot {
-  filter: drop-shadow(0 0 4px rgba(255,255,255,0.78));
+  background: #151b34;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 0 4px rgba(88,231,255,0.48);
+  filter: drop-shadow(0 0 4px rgba(255,70,201,0.44));
 }
 
 .start-die.title-reward-shell .title-reward-die.effect-discoBall {
@@ -3762,29 +3772,49 @@ body.inline-game-over::before {
     radial-gradient(circle at 50% 40%, rgba(13,52,29,0.28), rgba(0,0,0,0.5) 68%),
     rgba(0,0,0,0.28);
 }
+body.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(26,10,54,0.16), transparent 42%),
+    linear-gradient(180deg, rgba(5,6,20,0.26), rgba(4,11,20,0.16) 48%, rgba(16,10,35,0.24));
+  opacity: 1;
+}
 body.vip-disco-party[data-game-started="true"]::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 34;
+  z-index: 91;
   pointer-events: none;
   background:
-    radial-gradient(circle at 14% 22%, rgba(255,70,201,0.24) 0 7%, transparent 18%),
-    radial-gradient(circle at 82% 18%, rgba(80,231,255,0.22) 0 8%, transparent 20%),
-    radial-gradient(circle at 72% 78%, rgba(255,239,80,0.18) 0 7%, transparent 21%),
-    linear-gradient(120deg, rgba(8,12,32,0.16), rgba(17,69,51,0.08) 48%, rgba(12,14,38,0.18));
+    linear-gradient(64deg, transparent 0 24%, rgba(255,60,203,0.3) 32%, rgba(255,60,203,0.12) 39%, transparent 48%),
+    linear-gradient(116deg, transparent 0 16%, rgba(77,231,255,0.28) 26%, rgba(77,231,255,0.1) 35%, transparent 46%),
+    linear-gradient(146deg, transparent 0 54%, rgba(255,241,65,0.24) 64%, rgba(255,241,65,0.1) 72%, transparent 82%),
+    radial-gradient(circle at 13% 22%, rgba(255,70,201,0.54) 0 8%, transparent 22%),
+    radial-gradient(circle at 84% 18%, rgba(80,231,255,0.5) 0 9%, transparent 23%),
+    radial-gradient(circle at 72% 78%, rgba(255,239,80,0.38) 0 8%, transparent 24%),
+    radial-gradient(circle at 32% 74%, rgba(107,255,106,0.28) 0 7%, transparent 22%);
   mix-blend-mode: screen;
-  opacity: 0.56;
-  animation: vipDiscoPartySweep 3.4s linear infinite;
+  opacity: 0.88;
+  animation: vipDiscoPartySweep 2.8s linear infinite;
 }
 body.vip-disco-party.inline-game-over::after {
-  opacity: 0.26;
+  z-index: 91;
+  opacity: 0.36;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"]::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]::after,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
   animation-duration: 7.2s;
-  opacity: 0.32;
+  opacity: 0.52;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before {
+  opacity: 0.72;
 }
 .terminal-reward-nudge[hidden],
 .round-loss-reward-nudge[hidden] {
@@ -4581,9 +4611,26 @@ body.inline-game-over.inline-game-win .inline-result-chip {
     inset 0 0 0 1px rgba(255,255,255,0.24);
 }
 @keyframes vipDiscoPartySweep {
-  0% { background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%; filter: hue-rotate(0deg) saturate(1.08); }
-  50% { background-position: 44% 18%, 62% 34%, 26% 64%, 100% 100%; filter: hue-rotate(42deg) saturate(1.26); }
-  100% { background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%; filter: hue-rotate(0deg) saturate(1.08); }
+  0% {
+    transform: translate3d(-2.5%, -1%, 0) rotate(-1.5deg) scale(1.04);
+    background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%, 100% 0%, 74% 100%, 28% 78%;
+    filter: hue-rotate(0deg) saturate(1.28) brightness(1.05);
+  }
+  34% {
+    transform: translate3d(2%, 1.4%, 0) rotate(1.8deg) scale(1.06);
+    background-position: 36% 12%, 72% 28%, 24% 64%, 44% 18%, 68% 34%, 30% 68%, 82% 46%;
+    filter: hue-rotate(38deg) saturate(1.55) brightness(1.18);
+  }
+  68% {
+    transform: translate3d(-1%, 1%, 0) rotate(-1deg) scale(1.05);
+    background-position: 68% 8%, 34% 22%, 58% 76%, 78% 40%, 20% 36%, 86% 72%, 18% 58%;
+    filter: hue-rotate(-22deg) saturate(1.42) brightness(1.12);
+  }
+  100% {
+    transform: translate3d(-2.5%, -1%, 0) rotate(-1.5deg) scale(1.04);
+    background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%, 100% 0%, 74% 100%, 28% 78%;
+    filter: hue-rotate(0deg) saturate(1.28) brightness(1.05);
+  }
 }
 @keyframes inlineRoundWinsTick {
   0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
@@ -8827,11 +8874,11 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   --title-reward-glow: rgba(255,103,16,0.28);
 }
 .start-die.title-reward-shell[data-reward-effect="discoBall"] {
-  --title-reward-edge: #94dff0;
-  --title-reward-edge-mid: #5b7ab1;
-  --title-reward-edge-dark: #22345d;
-  --title-reward-edge-hi: rgba(255,255,255,0.42);
-  --title-reward-glow: rgba(124,232,255,0.34);
+  --title-reward-edge: #58d8f0;
+  --title-reward-edge-mid: #6c367e;
+  --title-reward-edge-dark: #151b38;
+  --title-reward-edge-hi: rgba(255,244,80,0.36);
+  --title-reward-glow: rgba(255,70,201,0.38);
 }
 .start-die.title-reward-shell::before {
   content: '';
@@ -10472,7 +10519,7 @@ body.inline-game-over .roll-panel {
     { id: 'prism', tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true },
     { id: 'camo', tier: 9, minWins: 50, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
     { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true },
-    { id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'discoBall', pipOutline: true, vip: true }
+    { id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true }
   ]);
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
@@ -11235,11 +11282,11 @@ body.inline-game-over .roll-panel {
       fill: rewardDieFaceColor(die),
       hi: 'rgba(255,255,255,0.42)',
       low: 'rgba(0,0,0,0.28)',
-      stroke: lavaEdge ? 'rgba(255,109,18,0.72)' : (camoEdge ? 'rgba(17,56,22,0.74)' : (discoEdge ? 'rgba(84,120,154,0.82)' : (coolEdge ? 'rgba(47,57,63,0.72)' : 'rgba(41,36,24,0.58)'))),
+      stroke: lavaEdge ? 'rgba(255,109,18,0.72)' : (camoEdge ? 'rgba(17,56,22,0.74)' : (discoEdge ? 'rgba(25,31,64,0.88)' : (coolEdge ? 'rgba(47,57,63,0.72)' : 'rgba(41,36,24,0.58)'))),
       label: die.pipColor,
-      side: lavaEdge ? 'rgba(104,29,8,0.7)' : (camoEdge ? 'rgba(17,47,19,0.68)' : (discoEdge ? 'rgba(31,48,76,0.72)' : (coolEdge ? 'rgba(54,62,69,0.72)' : 'rgba(47,31,18,0.42)'))),
-      pipStroke: die.pipOutline ? 'rgba(0,0,0,0.72)' : 'none',
-      pipStrokeWidth: die.pipOutline ? '1.05' : '0'
+      side: lavaEdge ? 'rgba(104,29,8,0.7)' : (camoEdge ? 'rgba(17,47,19,0.68)' : (discoEdge ? 'rgba(16,22,52,0.82)' : (coolEdge ? 'rgba(54,62,69,0.72)' : 'rgba(47,31,18,0.42)'))),
+      pipStroke: discoEdge ? 'rgba(255,255,255,0.42)' : (die.pipOutline ? 'rgba(0,0,0,0.72)' : 'none'),
+      pipStrokeWidth: discoEdge ? '0.45' : (die.pipOutline ? '1.05' : '0')
     };
   }
 
@@ -11383,7 +11430,25 @@ body.inline-game-over .roll-panel {
       return;
     }
     if (effect === 'discoBall') {
-      g.appendChild(make('rect', { class: 'slot-reward-effect', x: f(-size * 0.5), y: f(-size * 0.5), width: f(size), height: f(size), rx: '5.8', fill: 'rgba(214,245,255,0.68)' }));
+      g.appendChild(make('rect', { class: 'slot-reward-effect', x: f(-size * 0.5), y: f(-size * 0.5), width: f(size), height: f(size), rx: '5.8', fill: 'rgba(214,219,230,0.82)' }));
+      [
+        [-0.29, -0.29, '#ffffff', 0.18],
+        [0.12, -0.3, '#56e7ff', 0.16],
+        [0.33, 0.04, '#ff46c9', 0.15],
+        [-0.16, 0.24, '#fff050', 0.15],
+        [0.22, 0.32, '#232a57', 0.17]
+      ].forEach(([x, y, fill, scale]) => {
+        g.appendChild(make('rect', {
+          class: 'slot-reward-effect',
+          x: f((x - scale * 0.5) * size),
+          y: f((y - scale * 0.5) * size),
+          width: f(scale * size),
+          height: f(scale * size),
+          rx: '1.6',
+          fill,
+          opacity: fill === '#232a57' ? '0.72' : '0.86'
+        }));
+      });
       [
         ['M', -0.48, -0.18, 0.48, -0.18],
         ['M', -0.48, 0.14, 0.48, 0.14],
@@ -11394,8 +11459,8 @@ body.inline-game-over .roll-panel {
         g.appendChild(make('path', {
           class: 'slot-reward-effect',
           d: `M${f(x1 * size)} ${f(y1 * size)} L${f(x2 * size)} ${f(y2 * size)}`,
-          stroke: index === 4 ? 'rgba(255,255,255,0.78)' : 'rgba(38,62,105,0.36)',
-          'stroke-width': index === 4 ? '1.45' : '1.15',
+          stroke: index === 4 ? 'rgba(255,255,255,0.86)' : 'rgba(18,26,58,0.5)',
+          'stroke-width': index === 4 ? '1.55' : '1.2',
           'stroke-linecap': 'round',
           fill: 'none'
         }));
