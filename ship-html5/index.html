@@ -2675,6 +2675,66 @@ body.inline-game-over .roll-panel {
   animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 1.45s linear infinite;
 }
 
+.reward-die.effect-discoBall,
+.die.reward-skinned.effect-discoBall {
+  --reward-edge: rgba(60,70,105,0.42);
+  --reward-glow: rgba(116,230,255,0.36);
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255,255,255,0.94), rgba(255,255,255,0.3) 19%, transparent 40%),
+    radial-gradient(circle at 70% 75%, rgba(255,83,205,0.24), transparent 30%),
+    linear-gradient(146deg, #f7ffff 0%, #b8d9ee 34%, #f5fbff 51%, #6f88bd 100%);
+}
+
+.reward-die.effect-discoBall::before,
+.die.reward-skinned.effect-discoBall::before {
+  content: '';
+  position: absolute;
+  inset: -14%;
+  z-index: 1;
+  border-radius: 30%;
+  background:
+    linear-gradient(90deg, transparent 0 47%, rgba(36,55,98,0.35) 48% 52%, transparent 53% 100%),
+    linear-gradient(0deg, transparent 0 47%, rgba(36,55,98,0.32) 48% 52%, transparent 53% 100%),
+    repeating-linear-gradient(28deg, rgba(255,255,255,0.58) 0 5px, rgba(137,184,225,0.34) 6px 10px, rgba(41,58,103,0.2) 11px 13px),
+    repeating-linear-gradient(118deg, transparent 0 9px, rgba(255,255,255,0.48) 10px 13px, transparent 14px 20px),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.24), transparent 58%);
+  mix-blend-mode: normal;
+  opacity: 0.9;
+  transform-origin: 50% 50%;
+  animation: rewardDiscoFacetShift 1.22s linear infinite;
+}
+
+.reward-die.effect-discoBall::after,
+.die.reward-skinned.effect-discoBall::after {
+  inset: -12%;
+  height: auto;
+  z-index: 3;
+  border-radius: 30%;
+  background:
+    radial-gradient(circle at 23% 22%, rgba(255,255,255,0.98) 0 5%, transparent 6%),
+    radial-gradient(circle at 72% 28%, rgba(88,231,255,0.86) 0 4.8%, transparent 6%),
+    radial-gradient(circle at 52% 68%, rgba(255,244,80,0.7) 0 4.5%, transparent 6%),
+    linear-gradient(112deg, transparent 0 18%, rgba(255,255,255,0.9) 34%, rgba(255,83,205,0.24) 46%, transparent 64%);
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.82)) drop-shadow(0 0 14px rgba(88,231,255,0.46));
+  mix-blend-mode: screen;
+  opacity: 0.82;
+  animation: rewardDiscoSparkle 0.82s ease-in-out infinite;
+}
+
+.reward-die.effect-discoBall .reward-die-pip-cell,
+.die.reward-skinned.effect-discoBall .dot-cell {
+  z-index: 4;
+}
+
+.reward-die.effect-discoBall .reward-die-pip-cell.is-on .reward-die-pip,
+.die.reward-skinned.effect-discoBall .dot {
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.78));
+}
+
+.start-die.title-reward-shell .title-reward-die.effect-discoBall {
+  animation: rewardDiscoHeroTilt 1.18s ease-in-out infinite;
+}
+
 .reward-die.effect-camo,
 .die.reward-skinned.effect-camo {
   --reward-edge: rgba(10,43,17,0.44);
@@ -2936,6 +2996,16 @@ body.inline-game-over .roll-panel {
   animation: slotRewardPrismCycle 1.45s linear infinite;
 }
 
+.slot-die.reward-skinned.effect-discoBall .slot-reward-effect {
+  animation: slotRewardDiscoMirror 1.04s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.slot-die.reward-skinned.effect-discoBall .slot-reward-pip {
+  animation: slotRewardDiscoPipGlow 0.84s ease-in-out infinite;
+}
+
 .slot-die.reward-skinned.effect-camo .slot-reward-effect {
   animation: slotRewardCamoDrift 1.18s ease-in-out infinite;
   transform-box: fill-box;
@@ -3097,6 +3167,25 @@ body.inline-game-over .roll-panel {
   70% { transform: translateX(28%) rotate(-8deg); opacity: 0.58; }
 }
 
+@keyframes rewardDiscoFacetShift {
+  0% { transform: rotate(0deg) scale(1.08); filter: hue-rotate(0deg) brightness(1.04); }
+  50% { filter: hue-rotate(28deg) brightness(1.22); }
+  100% { transform: rotate(360deg) scale(1.08); filter: hue-rotate(0deg) brightness(1.04); }
+}
+
+@keyframes rewardDiscoSparkle {
+  0%, 100% { opacity: 0.46; transform: translate3d(-5px,2px,0) rotate(-7deg) scale(0.94); }
+  22% { opacity: 1; transform: translate3d(3px,-3px,0) rotate(6deg) scale(1.08); }
+  48% { opacity: 0.68; transform: translate3d(8px,1px,0) rotate(-2deg) scale(1.02); }
+  72% { opacity: 0.96; transform: translate3d(-2px,-4px,0) rotate(4deg) scale(1.1); }
+}
+
+@keyframes rewardDiscoHeroTilt {
+  0%, 100% { transform: perspective(520px) rotateX(-8deg) rotateY(12deg) rotateZ(-1deg); filter: saturate(1.04) brightness(1); }
+  34% { transform: perspective(520px) rotateX(-9deg) rotateY(15deg) rotateZ(2deg) translate3d(2px,-2px,0) scale(1.018); filter: saturate(1.14) brightness(1.08); }
+  68% { transform: perspective(520px) rotateX(-7deg) rotateY(9deg) rotateZ(-2deg) translate3d(-2px,1px,0) scale(1.008); filter: saturate(1.08) brightness(1.03); }
+}
+
 @keyframes rewardCamoDrift {
   0%, 100% { transform: translate3d(-3px,2px,0) rotate(-2deg) scale(1.03); filter: saturate(1.22) contrast(1.16) brightness(1.02); }
   32% { transform: translate3d(4px,-4px,0) rotate(3deg) scale(1.12); filter: saturate(1.52) contrast(1.34) brightness(1.12); }
@@ -3218,6 +3307,18 @@ body.inline-game-over .roll-panel {
   100% { filter: hue-rotate(360deg) saturate(1.35) contrast(1.08); opacity: 0.72; transform: scale(1); }
 }
 
+@keyframes slotRewardDiscoMirror {
+  0% { opacity: 0.66; filter: hue-rotate(0deg) brightness(1); transform: rotate(0deg) scale(1); }
+  42% { opacity: 1; filter: hue-rotate(22deg) brightness(1.28); transform: rotate(8deg) scale(1.09); }
+  74% { opacity: 0.86; filter: hue-rotate(-16deg) brightness(1.12); transform: rotate(-6deg) scale(1.04); }
+  100% { opacity: 0.66; filter: hue-rotate(0deg) brightness(1); transform: rotate(0deg) scale(1); }
+}
+
+@keyframes slotRewardDiscoPipGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255,255,255,0)); transform: scale(1); }
+  46% { filter: drop-shadow(0 0 4px rgba(255,255,255,0.88)); transform: scale(1.1); }
+}
+
 @keyframes slotRewardCamoDrift {
   0%, 100% { opacity: 0.76; transform: translate3d(-1.6px,1.2px,0) rotate(-7deg) scale(1.03); filter: saturate(1.16) contrast(1.08); }
   36% { opacity: 1; transform: translate3d(2.2px,-2px,0) rotate(10deg) scale(1.18); filter: saturate(1.5) contrast(1.24) brightness(1.12); }
@@ -3278,10 +3379,13 @@ body.inline-game-over .roll-panel {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body.vip-disco-party[data-game-started="true"]::after,
+  .inline-result-chip.is-winding .inline-result-chip-count,
   .reward-die-unlock.show .reward-die-wrap,
   .reward-die-unlock.show .reward-die,
   .start-die.title-reward-shell .title-reward-die-depth.effect-camo,
   .start-die.title-reward-shell .title-reward-die.effect-camo,
+  .start-die.title-reward-shell .title-reward-die.effect-discoBall,
   .reward-die.effect-colorCycle,
   .reward-die.effect-glowPulse .reward-die-pip-cell.is-on .reward-die-pip,
   .reward-die.effect-toxicSpat .reward-die-pip-cell.is-on .reward-die-pip,
@@ -3306,6 +3410,8 @@ body.inline-game-over .roll-panel {
   .reward-die.effect-camo::after,
   .reward-die.effect-lava::before,
   .reward-die.effect-lava::after,
+  .reward-die.effect-discoBall::before,
+  .reward-die.effect-discoBall::after,
   .die.reward-skinned.effect-featherRipple::before,
   .die.reward-skinned.effect-shineSweep::after,
   .die.reward-skinned.effect-tieDye::before,
@@ -3326,6 +3432,8 @@ body.inline-game-over .roll-panel {
   .die.reward-skinned.effect-camo::after,
   .die.reward-skinned.effect-lava::before,
   .die.reward-skinned.effect-lava::after,
+  .die.reward-skinned.effect-discoBall::before,
+  .die.reward-skinned.effect-discoBall::after,
   .slot-die.reward-skinned .slot-reward-effect,
   .slot-die.reward-skinned .slot-reward-pip,
   .round-win-burst.show,
@@ -3626,6 +3734,30 @@ body.inline-game-over::before {
   background:
     radial-gradient(circle at 50% 40%, rgba(13,52,29,0.28), rgba(0,0,0,0.5) 68%),
     rgba(0,0,0,0.28);
+}
+body.vip-disco-party[data-game-started="true"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 34;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 22%, rgba(255,70,201,0.24) 0 7%, transparent 18%),
+    radial-gradient(circle at 82% 18%, rgba(80,231,255,0.22) 0 8%, transparent 20%),
+    radial-gradient(circle at 72% 78%, rgba(255,239,80,0.18) 0 7%, transparent 21%),
+    linear-gradient(120deg, rgba(8,12,32,0.16), rgba(17,69,51,0.08) 48%, rgba(12,14,38,0.18));
+  mix-blend-mode: screen;
+  opacity: 0.56;
+  animation: vipDiscoPartySweep 3.4s linear infinite;
+}
+body.vip-disco-party.inline-game-over::after {
+  opacity: 0.26;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"]::after,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]::after,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
+  animation-duration: 7.2s;
+  opacity: 0.32;
 }
 .terminal-reward-nudge[hidden],
 .round-loss-reward-nudge[hidden] {
@@ -4342,6 +4474,93 @@ body.inline-game-over.inline-game-win .inline-result-chip {
   border-radius: 999px;
   background: rgba(255,244,163,0.86);
   box-shadow: 0 -6px 0 rgba(255,244,163,0.35);
+}
+.inline-result-chip-text {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.22em 0.42em;
+  min-width: 0;
+}
+.inline-result-chip-label {
+  opacity: 0.9;
+}
+.inline-result-chip-count {
+  color: #ffffff;
+  font-size: 1.18em;
+  text-shadow:
+    0 2px 0 rgba(5,48,26,0.82),
+    0 0 8px rgba(255,244,163,0.42);
+}
+.inline-result-chip.is-winding .inline-result-chip-count {
+  animation: inlineRoundWinsTick 0.18s steps(2, end) infinite;
+}
+.inline-result-chip.is-vip {
+  border-color: rgba(124,232,255,0.94);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,0.32), transparent 45%),
+    radial-gradient(circle at 82% 100%, rgba(255,70,201,0.24), transparent 42%),
+    linear-gradient(180deg, rgba(6,73,68,0.92), rgba(10,41,71,0.94));
+  box-shadow:
+    0 3px 0 rgba(15,45,80,0.54),
+    0 9px 18px rgba(0,0,0,0.2),
+    0 0 18px rgba(124,232,255,0.34),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.inline-result-chip.is-vip .inline-result-chip-icon {
+  width: clamp(20px, 5.2vw, 30px);
+  height: clamp(20px, 5.2vw, 30px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,1) 0 12%, transparent 15%),
+    repeating-conic-gradient(from 0deg, #f7ffff 0 12deg, #8edfff 13deg 24deg, #f95fd0 25deg 34deg, #fff46a 35deg 46deg, #f7ffff 47deg 58deg);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.62),
+    2px 2px 0 rgba(0,0,0,0.26),
+    0 0 10px rgba(124,232,255,0.5);
+}
+.inline-result-chip.is-vip .inline-result-chip-icon::before {
+  left: 50%;
+  top: -31%;
+  width: 58%;
+  height: 32%;
+  border: 2px solid rgba(255,255,255,0.82);
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+.inline-result-chip.is-vip .inline-result-chip-icon::after {
+  left: 12%;
+  right: 12%;
+  bottom: 48%;
+  height: 2px;
+  background: rgba(12,39,72,0.42);
+  box-shadow:
+    0 6px 0 rgba(12,39,72,0.32),
+    8px -3px 0 rgba(255,255,255,0.44),
+    -5px 3px 0 rgba(255,255,255,0.42);
+}
+.inline-result-chip-vip {
+  align-self: center;
+  padding: 0.18em 0.52em 0.22em;
+  border-radius: 999px;
+  background: rgba(255,244,163,0.96);
+  color: #0a3f58;
+  font-size: 0.7em;
+  text-shadow: none;
+  box-shadow:
+    0 2px 0 rgba(255,70,201,0.52),
+    inset 0 0 0 1px rgba(255,255,255,0.24);
+}
+@keyframes vipDiscoPartySweep {
+  0% { background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%; filter: hue-rotate(0deg) saturate(1.08); }
+  50% { background-position: 44% 18%, 62% 34%, 26% 64%, 100% 100%; filter: hue-rotate(42deg) saturate(1.26); }
+  100% { background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%; filter: hue-rotate(0deg) saturate(1.08); }
+}
+@keyframes inlineRoundWinsTick {
+  0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
+  50% { transform: translateY(-1px) scale(1.08); filter: brightness(1.22); }
 }
 @keyframes terminalWinStamp {
   0% {
@@ -8568,6 +8787,13 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   --title-reward-edge-hi: rgba(255,118,25,0.24);
   --title-reward-glow: rgba(255,103,16,0.28);
 }
+.start-die.title-reward-shell[data-reward-effect="discoBall"] {
+  --title-reward-edge: #94dff0;
+  --title-reward-edge-mid: #5b7ab1;
+  --title-reward-edge-dark: #22345d;
+  --title-reward-edge-hi: rgba(255,255,255,0.42);
+  --title-reward-glow: rgba(124,232,255,0.34);
+}
 .start-die.title-reward-shell::before {
   content: '';
   position: absolute;
@@ -10191,6 +10417,7 @@ body.inline-game-over .roll-panel {
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
+  const REWARD_DICE_SESSION_STORAGE_KEY = 'trashDiceSessionRewardWinsV1';
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const REWARD_NUDGE_CLOSE_ROUNDS = 3;
   const REWARD_DIE_DISPLAY_VALUE = 5;
@@ -10204,7 +10431,8 @@ body.inline-game-over .roll-panel {
     { id: 'diamond', tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
     { id: 'prism', tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true },
     { id: 'camo', tier: 9, minWins: 50, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
-    { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true }
+    { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true },
+    { id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'discoBall', pipOutline: true, vip: true }
   ]);
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
@@ -10325,6 +10553,7 @@ body.inline-game-over .roll-panel {
   let inlineGameOverState = null;
   let inlineGameOverTimer = null;
   let inlineWinAccentTimer = null;
+  let inlineRoundWinsWindupTimer = null;
   let rewardDieWins = readRewardDieWins();
   let rewardDieUnlockTimer = null;
   let roundWinBurstTimer = null;
@@ -10671,6 +10900,7 @@ body.inline-game-over .roll-panel {
     benchCelebrateTimer = null;
     terminalDiceCelebrateTimer = null;
     terminalDiceCelebrateRun++;
+    inlineRoundWinsWindupTimer = null;
     rewardDieUnlockTimer = null;
     roundWinBurstTimer = null;
     roundLossRewardNudgeTimer = null;
@@ -10957,16 +11187,17 @@ body.inline-game-over .roll-panel {
 
   function rewardSlotColors(die) {
     const effect = die.effect || '';
-    const coolEdge = ['diamond', 'colorCycle', 'shineSweep'].includes(effect);
+    const coolEdge = ['diamond', 'colorCycle', 'shineSweep', 'discoBall'].includes(effect);
     const camoEdge = effect === 'camo';
     const lavaEdge = effect === 'lava';
+    const discoEdge = effect === 'discoBall';
     return {
       fill: rewardDieFaceColor(die),
       hi: 'rgba(255,255,255,0.42)',
       low: 'rgba(0,0,0,0.28)',
-      stroke: lavaEdge ? 'rgba(255,109,18,0.72)' : (camoEdge ? 'rgba(17,56,22,0.74)' : (coolEdge ? 'rgba(47,57,63,0.72)' : 'rgba(41,36,24,0.58)')),
+      stroke: lavaEdge ? 'rgba(255,109,18,0.72)' : (camoEdge ? 'rgba(17,56,22,0.74)' : (discoEdge ? 'rgba(84,120,154,0.82)' : (coolEdge ? 'rgba(47,57,63,0.72)' : 'rgba(41,36,24,0.58)'))),
       label: die.pipColor,
-      side: lavaEdge ? 'rgba(104,29,8,0.7)' : (camoEdge ? 'rgba(17,47,19,0.68)' : (coolEdge ? 'rgba(54,62,69,0.72)' : 'rgba(47,31,18,0.42)')),
+      side: lavaEdge ? 'rgba(104,29,8,0.7)' : (camoEdge ? 'rgba(17,47,19,0.68)' : (discoEdge ? 'rgba(31,48,76,0.72)' : (coolEdge ? 'rgba(54,62,69,0.72)' : 'rgba(47,31,18,0.42)'))),
       pipStroke: die.pipOutline ? 'rgba(0,0,0,0.72)' : 'none',
       pipStrokeWidth: die.pipOutline ? '1.05' : '0'
     };
@@ -11109,6 +11340,29 @@ body.inline-game-over .roll-panel {
       g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(-size * 0.5)} ${f(-size * 0.5)} L${f(size * 0.5)} ${f(-size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`, fill: 'rgba(246,75,255,0.7)' }));
       g.appendChild(make('path', { class: 'slot-reward-effect', d: `M${f(size * 0.5)} ${f(-size * 0.5)} L${f(size * 0.5)} ${f(size * 0.5)} L${f(-size * 0.5)} ${f(size * 0.5)} Z`, fill: 'rgba(38,214,255,0.65)' }));
       g.appendChild(make('circle', { class: 'slot-reward-effect', cx: '0', cy: '0', r: f(size * 0.36), fill: 'rgba(255,243,105,0.42)' }));
+      return;
+    }
+    if (effect === 'discoBall') {
+      g.appendChild(make('rect', { class: 'slot-reward-effect', x: f(-size * 0.5), y: f(-size * 0.5), width: f(size), height: f(size), rx: '5.8', fill: 'rgba(214,245,255,0.68)' }));
+      [
+        ['M', -0.48, -0.18, 0.48, -0.18],
+        ['M', -0.48, 0.14, 0.48, 0.14],
+        ['M', -0.18, -0.48, -0.18, 0.48],
+        ['M', 0.16, -0.48, 0.16, 0.48],
+        ['M', -0.46, 0.46, 0.46, -0.46]
+      ].forEach(([, x1, y1, x2, y2], index) => {
+        g.appendChild(make('path', {
+          class: 'slot-reward-effect',
+          d: `M${f(x1 * size)} ${f(y1 * size)} L${f(x2 * size)} ${f(y2 * size)}`,
+          stroke: index === 4 ? 'rgba(255,255,255,0.78)' : 'rgba(38,62,105,0.36)',
+          'stroke-width': index === 4 ? '1.45' : '1.15',
+          'stroke-linecap': 'round',
+          fill: 'none'
+        }));
+      });
+      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: f(-size * 0.26), cy: f(-size * 0.26), r: f(size * 0.1), fill: 'rgba(255,255,255,0.92)' }));
+      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: f(size * 0.27), cy: f(-size * 0.08), r: f(size * 0.09), fill: 'rgba(94,231,255,0.82)' }));
+      g.appendChild(make('circle', { class: 'slot-reward-effect', cx: f(size * 0.02), cy: f(size * 0.28), r: f(size * 0.08), fill: 'rgba(255,244,80,0.72)' }));
       return;
     }
     if (effect === 'camo') {
@@ -11364,12 +11618,21 @@ body.inline-game-over .roll-panel {
       window.localStorage.removeItem(REWARD_DICE_STORAGE_KEY);
     } catch (_) {
     }
+    try {
+      return normalizeRewardWins(window.sessionStorage.getItem(REWARD_DICE_SESSION_STORAGE_KEY));
+    } catch (_) {
+    }
     return 0;
   }
 
   function writeRewardDieWins(totalWins) {
     const normalized = normalizeRewardWins(totalWins);
     rewardDieWins = normalized;
+    try {
+      window.sessionStorage.setItem(REWARD_DICE_SESSION_STORAGE_KEY, String(normalized));
+    } catch (_) {
+    }
+    refreshVipDiscoPartyState();
     return rewardDieWins;
   }
 
@@ -11387,6 +11650,22 @@ body.inline-game-over .roll-panel {
     return REWARD_DICE.find(die => wins < die.minWins) || null;
   }
 
+  function isVipDiscoUnlocked(totalWins = rewardDieWins) {
+    const active = activeRewardDie(totalWins);
+    return !!(active && active.effect === 'discoBall');
+  }
+
+  function refreshVipDiscoPartyState() {
+    const vipActive = isVipDiscoUnlocked();
+    document.body.classList.toggle('vip-disco-party', vipActive);
+    if (vipActive) {
+      document.body.dataset.vipDiscoParty = 'true';
+    } else {
+      delete document.body.dataset.vipDiscoParty;
+    }
+    return vipActive;
+  }
+
   function rewardDieSnapshot(die) {
     return die ? {
       id: die.id || '',
@@ -11397,6 +11676,7 @@ body.inline-game-over .roll-panel {
       pipColor: die.pipColor,
       effect: die.effect,
       pipOutline: !!die.pipOutline,
+      vip: !!die.vip,
       replacementFor: die.replacementFor || '',
       sessionVariant: !!die.sessionVariant
     } : null;
@@ -11433,8 +11713,8 @@ body.inline-game-over .roll-panel {
     el.style.setProperty('--reward-face', rewardDieFaceColor(die));
     el.style.setProperty('--reward-pip', die.pipColor);
     el.style.setProperty('--reward-pip-outline', die.pipOutline ? 'rgba(0,0,0,0.72)' : 'transparent');
-    el.style.setProperty('--reward-edge', effect === 'lava' ? 'rgba(255,93,16,0.42)' : (effect === 'camo' ? 'rgba(10,43,17,0.44)' : (['diamond', 'colorCycle', 'shineSweep'].includes(effect) ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)')));
-    el.style.setProperty('--reward-glow', effect === 'lava' ? 'rgba(255,103,16,0.44)' : (effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)'));
+    el.style.setProperty('--reward-edge', effect === 'lava' ? 'rgba(255,93,16,0.42)' : (effect === 'camo' ? 'rgba(10,43,17,0.44)' : (effect === 'discoBall' ? 'rgba(60,70,105,0.42)' : (['diamond', 'colorCycle', 'shineSweep'].includes(effect) ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)'))));
+    el.style.setProperty('--reward-glow', effect === 'lava' ? 'rgba(255,103,16,0.44)' : (effect === 'discoBall' ? 'rgba(116,230,255,0.36)' : (effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)')));
   }
 
   function rewardDieEdgeColor(die) {
@@ -11442,6 +11722,7 @@ body.inline-game-over .roll-panel {
     const effect = die.effect || '';
     if (effect === 'lava') return 'rgba(255,93,16,0.42)';
     if (effect === 'camo') return 'rgba(10,43,17,0.44)';
+    if (effect === 'discoBall') return 'rgba(60,70,105,0.42)';
     if (['diamond', 'colorCycle', 'shineSweep'].includes(effect)) return 'rgba(32,32,32,0.28)';
     return 'rgba(0,0,0,0.24)';
   }
@@ -11469,6 +11750,7 @@ body.inline-game-over .roll-panel {
   }
 
   function refreshPlayerRewardSkin(repaintSlots = false) {
+    refreshVipDiscoPartyState();
     const p1RewardDie = getPlayerRewardDie('p1');
     const p2RewardDie = getPlayerRewardDie('p2');
     applyRewardDieElementVisual(p1Die, p1RewardDie);
@@ -11865,7 +12147,7 @@ body.inline-game-over .roll-panel {
       rewardDieUnlockTimer = null;
       applyRewardDieStyle(die);
       if (rewardDieName) rewardDieName.textContent = die.name;
-      if (rewardDieSub) rewardDieSub.textContent = 'DIE SKIN UNLOCKED';
+      if (rewardDieSub) rewardDieSub.textContent = die.effect === 'discoBall' ? 'VIP-ONLY DISCO PARTY' : 'DIE SKIN UNLOCKED';
       rewardDieUnlock.dataset.tier = String(die.tier);
       rewardDieUnlock.dataset.effect = die.effect || 'none';
       rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
@@ -14475,7 +14757,50 @@ body.inline-game-over .roll-panel {
     rollBtn.classList.toggle('inline-play-again', !!enabled);
   }
 
+  function clearInlineRoundWinsWindupTimer() {
+    if (inlineRoundWinsWindupTimer) {
+      cancelRuntimeTimer(inlineRoundWinsWindupTimer);
+      inlineRoundWinsWindupTimer = null;
+    }
+  }
+
+  function setInlineRoundWinsChip(currentWins, totalWins, vipActive = false) {
+    if (!inlineResultChip || !inlineResultChipText) return;
+    const finalWins = Math.max(1, normalizeRewardWins(totalWins));
+    const displayWins = clamp(Math.floor(Number(currentWins) || 1), 1, finalWins);
+    inlineResultChip.dataset.roundWins = String(finalWins);
+    inlineResultChip.classList.toggle('is-vip', !!vipActive);
+    inlineResultChipText.innerHTML = `
+      <span class="inline-result-chip-label">ROUND WINS</span>
+      <span class="inline-result-chip-count">x${displayWins}</span>
+      ${vipActive ? '<span class="inline-result-chip-vip">VIP-ONLY DISCO PARTY</span>' : ''}
+    `;
+  }
+
+  function startInlineRoundWinsWindup(totalWins) {
+    clearInlineRoundWinsWindupTimer();
+    if (!inlineResultChip || !inlineResultChipText) return;
+    const finalWins = Math.max(1, normalizeRewardWins(totalWins));
+    const vipActive = isVipDiscoUnlocked(finalWins);
+    const tickMs = finalWins >= 80 ? 9 : (finalWins >= 24 ? 18 : 44);
+    const step = finalWins >= 80 ? Math.ceil(finalWins / 50) : Math.max(1, Math.ceil(finalWins / 140));
+    let currentWins = 0;
+    inlineResultChip.classList.add('is-winding');
+    const tick = () => {
+      currentWins = currentWins <= 0 ? 1 : Math.min(finalWins, currentWins + step);
+      setInlineRoundWinsChip(currentWins, finalWins, vipActive);
+      if (currentWins < finalWins) {
+        inlineRoundWinsWindupTimer = runLater(tick, tickMs);
+      } else {
+        inlineRoundWinsWindupTimer = null;
+        inlineResultChip.classList.remove('is-winding');
+      }
+    };
+    tick();
+  }
+
   function clearInlineEndingVisuals() {
+    clearInlineRoundWinsWindupTimer();
     if (inlineResultBanner) {
       inlineResultBanner.setAttribute('aria-hidden', 'true');
       inlineResultBanner.classList.remove('win', 'loss');
@@ -14485,6 +14810,8 @@ body.inline-game-over .roll-panel {
     if (inlineResultChip) {
       inlineResultChip.hidden = true;
       inlineResultChip.setAttribute('aria-hidden', 'true');
+      inlineResultChip.classList.remove('is-winding', 'is-vip');
+      inlineResultChip.removeAttribute('data-round-wins');
     }
     if (inlineResultChipText) inlineResultChipText.textContent = '';
     if (trashCan) {
@@ -14508,7 +14835,7 @@ body.inline-game-over .roll-panel {
     });
   }
 
-  function startInlineEndingVisuals(playerWon) {
+  function startInlineEndingVisuals(playerWon, rewardState = null) {
     clearInlineEndingVisuals();
     if (inlineResultBanner) {
       inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
@@ -14520,8 +14847,13 @@ body.inline-game-over .roll-panel {
       inlineResultChip.hidden = !playerWon;
       inlineResultChip.setAttribute('aria-hidden', playerWon ? 'false' : 'true');
     }
-    if (inlineResultChipText) {
-      inlineResultChipText.textContent = playerWon ? `${totalDice('p1')} DICE SECURED` : '';
+    if (playerWon) {
+      const rewardWins = rewardState && Number.isFinite(Number(rewardState.totalWins))
+        ? rewardState.totalWins
+        : getRewardDieState().totalWins;
+      startInlineRoundWinsWindup(rewardWins);
+    } else if (inlineResultChipText) {
+      inlineResultChipText.textContent = '';
     }
     if (boardWrap) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
@@ -14685,7 +15017,7 @@ body.inline-game-over .roll-panel {
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
     clearRollGatedRewardUi();
-    startInlineEndingVisuals(playerWon);
+    startInlineEndingVisuals(playerWon, inlineGameOverState.rewardDie);
     showTerminalRewardNudge();
     updatePwaInstallHint();
 

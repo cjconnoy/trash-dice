@@ -108,9 +108,9 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA'];
+const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO BALL'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
-const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|50|65';
+const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|50|65|100';
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -122,6 +122,7 @@ const REWARD_EFFECTS_BY_NAME = {
   'PRISM': 'colorCycle',
   'CAMO': 'camo',
   'LAVA': 'lava',
+  'DISCO BALL': 'discoBall',
   'LETHAL CHICKEN': 'lethalChicken',
   'BIG DISCOVERIES': 'bigCompass'
 };
@@ -137,10 +138,11 @@ const REWARD_SLOT_ANIMATION_BY_EFFECT = {
   colorCycle: 'slotRewardPrismCycle',
   camo: 'slotRewardCamoDrift',
   lava: 'slotRewardLavaGlow',
+  discoBall: 'slotRewardDiscoMirror',
   bigCompass: 'slotRewardCompassSpin',
   lethalChicken: 'slotRewardChickenHop'
 };
-const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA'];
+const REWARD_OUTLINED_BASE_NAMES = ['FEATHERS', 'TIE-DYE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO BALL'];
 
 function rewardAtWins(config, wins) {
   return config.reduce((active, item) => wins >= item.minWins ? item : active, null);
@@ -648,7 +650,7 @@ async function main() {
       rewardConfigNames = rewardConfig.map(item => item.name);
       rewardPairCount = Math.ceil(rewardConfig.length / 2);
       rewardPairNames = Array.from({ length: rewardPairCount }, (_, i) =>
-        rewardConfig.slice(i * 2, i * 2 + 2).map(item => item ? item.name : 'DEFAULT').join('|')
+        [rewardConfig[i * 2], rewardConfig[i * 2 + 1]].map(item => item ? item.name : 'DEFAULT').join('|')
       );
       rewardFirst = rewardConfig[0];
       rewardSecond = rewardConfig[1];
@@ -700,15 +702,20 @@ async function main() {
         return Array.from({ length: pairCount + 2 }, () => window.TrashDiceQA.advanceTitleHeroDiceCycle());
       })()`);
       const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
+      const titleRewardCycleSteps = titleHeroDiceCycle.slice(0, rewardPairCount);
+      const titleExpectedRewardDie = (stepIndex, dieIndex) => rewardConfig[stepIndex * 2 + dieIndex] || null;
+      const everyTitleRewardDie = predicate => titleRewardCycleSteps.every((step, stepIndex) =>
+        step.dice.every((die, dieIndex) => predicate(die, titleExpectedRewardDie(stepIndex, dieIndex), stepIndex, dieIndex))
+      );
       assert(titleHeroDiceNames.join(' > ') === [...rewardPairNames, 'DEFAULT|DEFAULT', rewardPairNames[0]].join(' > '), `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify({ rewardConfig, titleHeroDiceCycle })}`);
-      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.rewardSkinned === true && die.rewardTier && die.rewardEffect)), `${viewport.name}: title reward dice cycle should apply reward visuals ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.usesRewardDieComponent === true)), `${viewport.name}: title reward dice should use the same reward-die component as the in-game unlock UI ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice[0].motionSlot === 'left' && step.dice[0].animationName === 'startYellowStartled' && step.dice[1].motionSlot === 'right' && step.dice[1].animationName === 'startGreenStartled'), `${viewport.name}: title reward dice should share the default left/right idle and can-bite jump animations ${JSON.stringify(titleHeroDiceCycle)}`);
-      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.shellFilter.includes('drop-shadow') && die.depthFilter.includes('drop-shadow') && die.sideContent !== 'none' && die.sideTransform !== 'none' && die.sideBoxShadow.includes('rgba') && die.titleDepthEdge && die.titleDepthMid && die.titleDepthDark && die.depthSideContent !== 'none' && die.depthSideBackground.includes('gradient') && die.depthSideBoxShadow.includes('rgba') && Number.parseFloat(die.depthSideOpacity || '0') >= 0.9 && die.depthSideTransform !== 'none' && die.faceBoxShadow.includes('inset') && die.afterContent === 'none')), `${viewport.name}: title reward dice should keep a color-coordinated 3D side/backing depth without the floating shadow smear ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(everyTitleRewardDie((die, expected) => expected ? (die.rewardSkinned === true && die.rewardTier === String(expected.tier) && die.rewardEffect === expected.effect) : (die.rewardSkinned === false && die.rewardTier === '' && die.rewardEffect === '')), `${viewport.name}: title reward dice cycle should apply reward visuals and restore the odd final partner to default ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(everyTitleRewardDie((die, expected) => expected ? die.usesRewardDieComponent === true : die.usesRewardDieComponent === false), `${viewport.name}: title reward dice should use the in-game reward component only for configured reward dice ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleRewardCycleSteps.every(step => step.dice[0].motionSlot === 'left' && step.dice[0].animationName === 'startYellowStartled' && step.dice[1].motionSlot === 'right' && step.dice[1].animationName === 'startGreenStartled'), `${viewport.name}: title reward dice should share the default left/right idle and can-bite jump animations ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(everyTitleRewardDie((die, expected) => !expected || (die.shellFilter.includes('drop-shadow') && die.depthFilter.includes('drop-shadow') && die.sideContent !== 'none' && die.sideTransform !== 'none' && die.sideBoxShadow.includes('rgba') && die.titleDepthEdge && die.titleDepthMid && die.titleDepthDark && die.depthSideContent !== 'none' && die.depthSideBackground.includes('gradient') && die.depthSideBoxShadow.includes('rgba') && Number.parseFloat(die.depthSideOpacity || '0') >= 0.9 && die.depthSideTransform !== 'none' && die.faceBoxShadow.includes('inset') && die.afterContent === 'none')), `${viewport.name}: title reward dice should keep a color-coordinated 3D side/backing depth without the floating shadow smear ${JSON.stringify(titleHeroDiceCycle)}`);
       if (viewport.mobile && viewport.width <= 720) {
-        assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.faceOverflow === 'hidden' && die.faceClipPath && die.faceClipPath !== 'none' && die.faceBorderRadius !== '0px')), `${viewport.name}: mobile title reward dice should hard-clip the skin face while preserving external 3D backing/shadow ${JSON.stringify(titleHeroDiceCycle)}`);
+        assert(everyTitleRewardDie((die, expected) => !expected || (die.faceOverflow === 'hidden' && die.faceClipPath && die.faceClipPath !== 'none' && die.faceBorderRadius !== '0px')), `${viewport.name}: mobile title reward dice should hard-clip the skin face while preserving external 3D backing/shadow ${JSON.stringify(titleHeroDiceCycle)}`);
       }
-      assert(titleHeroDiceCycle.slice(0, rewardPairCount).every(step => step.dice.every(die => die.dotCells === 9 && die.dots === 5)), `${viewport.name}: title reward dice should render with full in-game reward pip geometry ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(everyTitleRewardDie((die, expected) => die.dotCells === 9 && (expected ? die.dots === 5 : die.dots >= 1)), `${viewport.name}: title reward dice should render reward pips while preserving default geometry for an odd final partner ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(titleHeroDiceCycle[rewardPairCount].dice.every(die => die.rewardSkinned === false && die.usesRewardDieComponent === false && die.dotCells === 9), `${viewport.name}: title hero dice should restore default geometry after reward pairs ${JSON.stringify(titleHeroDiceCycle[rewardPairCount])}`);
       if (viewport.mobile) {
         assert(initial.titleLayout.presenterToTitle >= 8, `${viewport.name}: mobile presenter overlaps Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
@@ -1034,9 +1041,9 @@ async function main() {
       const rewardSpecials = rewardConfig.filter(item => REWARD_SPECIAL_NAMES.includes(item.name));
       const rewardMissingBaseNames = REWARD_BASE_NAMES.filter(name => !rewardConfigNames.includes(name));
       assert(rewardCap.activeTier === rewardCapDie.tier && rewardCap.activeName === rewardCapDie.name && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at final active rung ${JSON.stringify({ rewardCapDie, rewardCap })}`);
-      assert(rewardConfig.length === 10 && new Set(rewardConfig.map(item => item.tier)).size === 10, `${viewport.name}: reward dice should stay at exactly ten rungs ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 11 && new Set(rewardConfig.map(item => item.tier)).size === 11, `${viewport.name}: reward dice should expose the base ten plus VIP disco rung ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.map(item => item.minWins).join('|') === REWARD_MILESTONES, `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
-      assert(rewardConfigNames.join('|') === REWARD_BASE_NAMES.join('|'), `${viewport.name}: active reward ladder should use the original base dice only ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfigNames.join('|') === REWARD_BASE_NAMES.join('|'), `${viewport.name}: active reward ladder should use the expected base and VIP dice ${JSON.stringify(rewardConfig)}`);
       assert(rewardSpecials.length === 0 && REWARD_SPECIAL_NAMES.every(name => !rewardConfigNames.includes(name)), `${viewport.name}: parked branded reward dice should stay out of the active game ${JSON.stringify(rewardConfig)}`);
       assert(rewardMissingBaseNames.length === 0 && rewardConfig.every(item => item.sessionVariant === false && item.replacementFor === ''), `${viewport.name}: reward ladder should not replace base rungs while branded dice are parked ${JSON.stringify({ rewardConfig, rewardMissingBaseNames, rewardSpecials })}`);
       assert(rewardConfig.every(item => REWARD_EFFECTS_BY_NAME[item.name] === item.effect), `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
@@ -1082,7 +1089,7 @@ async function main() {
       })()`);
       assert(rewardSkinGreenClassPips.computedDotBackground === rewardSkinGreenClassPips.expected, `${viewport.name}: reward-skinned player die with collected green class should keep reward pip color ${JSON.stringify(rewardSkinGreenClassPips)}`);
       const rewardSkinLadderFixtures = await evalValue(page, `(() => {
-        const milestones = ${JSON.stringify([1, 2, 4, 7, 11, 16, 24, 35, 50, 65])};
+        const milestones = ${JSON.stringify(rewardConfig.map(item => item.minWins))};
         const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));
         window.TrashDiceQA.setRewardWins(2);
         return fixtures.map(fixture => ({
@@ -1399,7 +1406,7 @@ async function main() {
       assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
       assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === "CPU CAN'T COME BACK", `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.outcomeCard.animationName.includes('terminalWinStamp') && terminal.outcomeCard.subAnimationName.includes('terminalWinSubPop') && terminal.outcomeCard.edgeAnimationName.includes('terminalWinEdgeFlash') && terminal.outcomeCard.sparkAnimationName.includes('terminalWinDiceSpark'), `${viewport.name}: game-win outcome card should use the slam, subline pop, edge flash, and dice sparkle beats ${JSON.stringify(terminal.outcomeCard)}`);
-      assert(terminal.outcomeCard.chip.visible === true && /DICE SECURED$/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include a small dice-secured chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
+      assert(terminal.outcomeCard.chip.visible === true && /ROUND WINS\s*x2/.test(terminal.outcomeCard.chip.text) && !terminal.outcomeCard.chip.text.includes('DICE SECURED') && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include the session round-wins wind-up chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
       assert(terminal.outcomeCard.fitsViewport === true && terminal.outcomeCard.clearsPlayAgain === true, `${viewport.name}: game-win outcome card should fit above Keep Playing ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.roundWinBurst.present === true && terminal.roundWinBurst.visible === false, `${viewport.name}: game-win card should not stack on top of the round-win burst ${JSON.stringify(terminal.roundWinBurst)}`);
       assert(terminal.winnerPanel === true && terminal.winnerPile === true && terminal.winnerPraise === true, `${viewport.name}: player game-win should reuse the round-win lower panel celebration ${JSON.stringify(terminal)}`);
@@ -1612,7 +1619,7 @@ async function main() {
       assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `ROUNDS WON: 11 / ${rewardNextAfterEleven.minWins}` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should use lightweight progress copy when the next skin is not close ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'progress' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === "CPU CAN'T COME BACK" && mathPlayerWinUi.chip.visible === true && /DICE SECURED$/.test(mathPlayerWinUi.chip.text), `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === "CPU CAN'T COME BACK" && mathPlayerWinUi.chip.visible === true && /ROUND WINS\s*x11/.test(mathPlayerWinUi.chip.text) && !mathPlayerWinUi.chip.text.includes('DICE SECURED'), `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
@@ -1621,6 +1628,53 @@ async function main() {
 
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player win`);
+
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(99); true`);
+      const vipDiscoWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} VIP disco player win complete`);
+      await sleep(1450);
+      const vipDiscoUi = await evalValue(page, `(() => {
+        const chip = document.getElementById('inlineResultChip');
+        const chipText = document.getElementById('inlineResultChipText');
+        const nudge = document.getElementById('terminalRewardNudge');
+        const nudgeKicker = document.getElementById('terminalRewardNudgeKicker');
+        const nudgeLine = document.getElementById('terminalRewardNudgeLine');
+        const nudgeUnlock = document.getElementById('terminalRewardNudgeUnlock');
+        const rewardShell = document.getElementById('rewardDieUnlock');
+        const bodyAfter = getComputedStyle(document.body, '::after');
+        return {
+          state: window.TrashDiceQA.state().inlineGameOver,
+          rewardState: window.TrashDiceQA.rewardDieState(),
+          bodyVip: document.body.classList.contains('vip-disco-party'),
+          bodyVipDataset: document.body.dataset.vipDiscoParty || '',
+          discoOverlayAnimation: bodyAfter.animationName || '',
+          discoOverlayPointerEvents: bodyAfter.pointerEvents || '',
+          chip: {
+            visible: !!(chip && !chip.hidden && getComputedStyle(chip).display !== 'none'),
+            text: chipText ? chipText.textContent.replace(/\\s+/g, ' ').trim() : '',
+            vipClass: !!(chip && chip.classList.contains('is-vip')),
+            winding: !!(chip && chip.classList.contains('is-winding')),
+            roundWins: chip ? chip.dataset.roundWins || '' : ''
+          },
+          rewardUnlockVisible: !!(rewardShell && !rewardShell.hidden && rewardShell.classList.contains('show')),
+          terminalRewardNudge: {
+            present: !!nudge,
+            visible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none'),
+            kicker: nudgeKicker ? nudgeKicker.textContent || '' : '',
+            line: nudgeLine ? nudgeLine.textContent || '' : '',
+            unlockLine: nudgeUnlock ? nudgeUnlock.textContent || '' : '',
+            copyMode: nudge ? nudge.dataset.copyMode || '' : ''
+          }
+        };
+      })()`);
+      assert(vipDiscoWin.passed === true && vipDiscoWin.inlineGameOver.rewardDie && vipDiscoWin.inlineGameOver.rewardDie.totalWins === 100, `${viewport.name}: VIP disco win proof failed ${JSON.stringify(vipDiscoWin)}`);
+      assert(vipDiscoUi.rewardState.totalWins === 100 && vipDiscoUi.rewardState.activeName === 'DISCO BALL' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true, `${viewport.name}: VIP disco reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
+      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be active and non-blocking ${JSON.stringify(vipDiscoUi)}`);
+      assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '100' && /ROUND WINS\s*x100/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('VIP-ONLY DISCO PARTY'), `${viewport.name}: VIP game-win chip should wind up to x100 and show the party badge ${JSON.stringify(vipDiscoUi.chip)}`);
+      assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
+      assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO BALL' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO BALL DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped disco skin ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after VIP disco win`);
 
       const cpuEmptyPlaceWin = await evalValue(page, `window.TrashDiceQA.cpuEmptyRewardCreditProof('place', 0)`);
       assert(cpuEmptyPlaceWin.inlineGameOver && cpuEmptyPlaceWin.inlineGameOver.playerWon === true && cpuEmptyPlaceWin.inlineGameOver.sourceReason === 'place-empty', `${viewport.name}: CPU-empty place win should end as player win ${JSON.stringify(cpuEmptyPlaceWin)}`);
