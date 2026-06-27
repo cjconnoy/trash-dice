@@ -1208,6 +1208,9 @@ body.inline-game-over .roll-panel {
   width: clamp(16px, 3.5vw, 21px);
   height: clamp(16px, 3.5vw, 21px);
 }
+.status-bar.round-winner-praise .turn-dot {
+  display: none;
+}
 .status-chase-die[hidden] {
   display: none !important;
 }
@@ -11339,21 +11342,8 @@ body.inline-game-over .roll-panel {
   }
 
   function updatePlayerStatusChaseDie() {
-    if (roundWinnerStatusSuppressChaseDie) {
-      hidePlayerStatusChaseDie();
-      return null;
-    }
-    const payoutWinner =
-      playerPayoutFanfareActive &&
-      playerPayoutFanfarePlayer === 'p1' &&
-      String(playerPayoutFanfareText || '').toUpperCase() === 'WINNER';
-    const roundWinner =
-      roundWinnerStatusActive &&
-      roundWinnerStatusPlayer === 'p1' &&
-      String(roundWinnerStatusText || '').toUpperCase() === 'WINNER';
-    return payoutWinner || roundWinner
-      ? showPlayerStatusChaseDie()
-      : (hidePlayerStatusChaseDie(), null);
+    hidePlayerStatusChaseDie();
+    return null;
   }
 
   function hideTerminalRewardNudge() {
