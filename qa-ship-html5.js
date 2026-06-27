@@ -358,21 +358,25 @@ async function main() {
       })()`);
       assert(shortBeforeScroll.bodyOverflowX === 'hidden' && shortBeforeScroll.bodyOverflowY === 'auto', `${viewport.name}: desktop short viewport should allow vertical-only overflow ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.htmlOverflowY === 'hidden', `${viewport.name}: document root should not create a second vertical scroll surface ${JSON.stringify(shortBeforeScroll)}`);
-      assert(shortBeforeScroll.bodyScrollHeight > shortBeforeScroll.viewportHeight, `${viewport.name}: short viewport should expose scrollable height when content exceeds the window ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.horizontalFits === true, `${viewport.name}: desktop short viewport should not create horizontal overflow ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.playAgain.text.includes('KEEP PLAYING!'), `${viewport.name}: short viewport Keep Playing CTA missing ${JSON.stringify(shortBeforeScroll)}`);
-      await evalValue(page, `document.body.scrollTo(0, document.body.scrollHeight); true`);
-      await sleep(160);
-      const shortAfterScroll = await evalValue(page, `(() => {
-        const btn = document.getElementById('rollBtn');
-        const r = btn.getBoundingClientRect();
-        return {
-          scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
-          playAgain: { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height), visible: r.top >= -1 && r.bottom <= window.innerHeight + 1, text: btn.textContent || '' }
-        };
-      })()`);
-      assert(shortAfterScroll.scrollTop > 0, `${viewport.name}: short desktop viewport did not scroll vertically ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
-      assert(shortAfterScroll.playAgain.visible === true, `${viewport.name}: Play Again should be reachable after desktop short-viewport scroll ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
+      let shortAfterScroll = { scrollTop: shortBeforeScroll.scrollTop, playAgain: shortBeforeScroll.playAgain };
+      if (shortBeforeScroll.bodyScrollHeight > shortBeforeScroll.viewportHeight + 1) {
+        await evalValue(page, `document.body.scrollTo(0, document.body.scrollHeight); true`);
+        await sleep(160);
+        shortAfterScroll = await evalValue(page, `(() => {
+          const btn = document.getElementById('rollBtn');
+          const r = btn.getBoundingClientRect();
+          return {
+            scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
+            playAgain: { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height), visible: r.top >= -1 && r.bottom <= window.innerHeight + 1, text: btn.textContent || '' }
+          };
+        })()`);
+        assert(shortAfterScroll.scrollTop > 0, `${viewport.name}: short desktop viewport did not scroll vertically ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
+        assert(shortAfterScroll.playAgain.visible === true, `${viewport.name}: Play Again should be reachable after desktop short-viewport scroll ${JSON.stringify({ shortBeforeScroll, shortAfterScroll })}`);
+      } else {
+        assert(shortBeforeScroll.playAgain.visible === true, `${viewport.name}: Play Again should be visible without scroll when docked reward UI fits ${JSON.stringify(shortBeforeScroll)}`);
+      }
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after short-scroll Play Again`);
       const shortRestart = await evalValue(page, `(() => ({
@@ -1311,12 +1315,18 @@ async function main() {
           const unlock = document.getElementById('terminalRewardNudgeUnlock');
           const kicker = document.getElementById('terminalRewardNudgeKicker');
           const btn = document.getElementById('rollBtn');
+          const panel = document.getElementById('p1Inventory') ? document.getElementById('p1Inventory').closest('.player-panel') : null;
           if (!nudge || !die || !line || !unlock || !kicker || !btn) return { present: false };
           const r = nudge.getBoundingClientRect();
           const dieRect = die.getBoundingClientRect();
           const dieStyle = getComputedStyle(die);
           const style = getComputedStyle(nudge);
           const btnRect = btn.getBoundingClientRect();
+          const panelRect = panel ? panel.getBoundingClientRect() : null;
+          const overlaps = (a, b) => !!(a && b && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
+          const centerDeltaY = panelRect
+            ? Math.abs((r.top + r.bottom) / 2 - (panelRect.top + panelRect.bottom) / 2)
+            : Infinity;
           return {
             present: true,
             visible: !nudge.hidden && style.display !== 'none' && r.width >= 120 && r.height >= 28,
@@ -1333,9 +1343,13 @@ async function main() {
             dieName: die.dataset.rewardName || '',
             dieEffect: die.dataset.rewardEffect || '',
             diePipColor: dieStyle.getPropertyValue('--reward-pip').trim(),
-            rect: { width: Math.round(r.width), height: Math.round(r.height), top: Math.round(r.top), bottom: Math.round(r.bottom) },
+            layout: nudge.dataset.layout || '',
+            rect: { left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), height: Math.round(r.height), top: Math.round(r.top), bottom: Math.round(r.bottom) },
+            playerPanelRect: panelRect ? { left: Math.round(panelRect.left), right: Math.round(panelRect.right), width: Math.round(panelRect.width), height: Math.round(panelRect.height), top: Math.round(panelRect.top), bottom: Math.round(panelRect.bottom) } : null,
             dieRect: { width: Math.round(dieRect.width), height: Math.round(dieRect.height) },
             abovePlayAgain: r.bottom <= btnRect.top + 2,
+            overlapsPlayAgain: overlaps(r, btnRect),
+            dockedToPlayerPanel: !!(panelRect && r.left >= panelRect.left - 18 && r.right <= panelRect.right + 18 && centerDeltaY <= Math.max(18, panelRect.height * 0.42)),
             fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1
           };
         })(),
@@ -1373,7 +1387,7 @@ async function main() {
       assert(terminal.terminalRewardNudge.nextName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.roundsNeeded === String(rewardNextAfterTwo.minWins - 2) && terminal.terminalRewardNudge.targetWins === String(rewardNextAfterTwo.minWins) && terminal.terminalRewardNudge.copyMode === 'close' && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.dieEffect === rewardNextAfterTwo.effect, `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.rect.height >= 54 && terminal.terminalRewardNudge.dieRect.width >= 44 && terminal.terminalRewardNudge.dieRect.height >= 44, `${viewport.name}: terminal reward nudge should stay legible without becoming a competing outcome banner ${JSON.stringify(terminal.terminalRewardNudge)}`);
-      assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true, `${viewport.name}: terminal reward nudge should fit above Play Again ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true && terminal.terminalRewardNudge.layout === 'player-panel-dock' && terminal.terminalRewardNudge.overlapsPlayAgain === false && terminal.terminalRewardNudge.dockedToPlayerPanel === true, `${viewport.name}: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(terminal.terminalRewardNudge)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminal.activeAnimationCount <= 8, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
       }
@@ -2138,6 +2152,7 @@ async function main() {
         assert(roundWinEarly.roundLossRewardNudgeText.includes('KEEP ROLLING') && roundWinEarly.roundLossRewardNudgeText.includes('Win 1 round to unlock:') && roundWinEarly.roundLossRewardNudgeText.includes(`${rewardFirst.name} DIE SKIN`), `green round-win probe: player round-loss reward nudge copy wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundLossRewardNudgeNextName === rewardFirst.name && roundWinEarly.roundLossRewardNudgeRoundsNeeded === '1' && roundWinEarly.roundLossRewardNudgePreview === 'next', `green round-win probe: player round-loss reward nudge milestone metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundLossRewardNudgeFitsViewport === true, `green round-win probe: player round-loss reward nudge should fit viewport ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundLossRewardNudgeLayout === 'player-panel-dock' && roundWinEarly.roundLossRewardNudgeOverlapsRoll === false && roundWinEarly.roundLossRewardNudgeDockedToPlayerPanel === true, `green round-win probe: KEEP ROLLING should dock to the player pile panel without covering Roll ${JSON.stringify(roundWinEarly)}`);
         await sleep(760);
         roundWinProbeElapsedMs += 760;
         const cpuPayoutMotion = await evalValue(roundWinProbe, `(() => {
@@ -2345,16 +2360,40 @@ async function main() {
       await waitEval(outcomeProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${outcome.label} probe wrap-up`);
       const outcomeState = await evalValue(outcomeProbe, `(() => {
         const state = window.TrashDiceQA.state();
+        const roll = document.getElementById('rollBtn');
+        const nudge = document.getElementById('terminalRewardNudge');
+        const panel = document.getElementById('p1Inventory') ? document.getElementById('p1Inventory').closest('.player-panel') : null;
+        const toRect = el => {
+          const r = el ? el.getBoundingClientRect() : null;
+          return r ? { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) } : null;
+        };
+        const rollRectRaw = roll ? roll.getBoundingClientRect() : null;
+        const nudgeRectRaw = nudge ? nudge.getBoundingClientRect() : null;
+        const panelRectRaw = panel ? panel.getBoundingClientRect() : null;
+        const overlaps = (a, b) => !!(a && b && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
+        const centerDeltaY = panelRectRaw && nudgeRectRaw
+          ? Math.abs((nudgeRectRaw.top + nudgeRectRaw.bottom) / 2 - (panelRectRaw.top + panelRectRaw.bottom) / 2)
+          : Infinity;
         return {
           winner: state.inlineGameOver && state.inlineGameOver.winner,
           active: state.inlineGameOver && state.inlineGameOver.active,
-          rollButtonText: (document.getElementById('rollBtn') || {}).textContent || '',
+          rollButtonText: (roll || {}).textContent || '',
+          terminalRewardNudge: {
+            visible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none' && nudgeRectRaw && nudgeRectRaw.width >= 120 && nudgeRectRaw.height >= 28),
+            layout: nudge ? nudge.dataset.layout || '' : '',
+            overlapsRoll: overlaps(nudgeRectRaw, rollRectRaw),
+            dockedToPlayerPanel: !!(nudgeRectRaw && panelRectRaw && nudgeRectRaw.left >= panelRectRaw.left - 18 && nudgeRectRaw.right <= panelRectRaw.right + 18 && centerDeltaY <= Math.max(18, panelRectRaw.height * 0.42)),
+            rect: toRect(nudge),
+            rollRect: toRect(roll),
+            playerPanelRect: toRect(panel)
+          },
           outcomeVisible: getComputedStyle(document.getElementById('debugOutcomeControls')).display !== 'none'
         };
       })()`);
       assert(outcomeState.active === true, `${outcome.label} probe: wrap-up not active ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.rollButtonText.includes('KEEP PLAYING!'), `${outcome.label} probe: keep-playing CTA missing ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.terminalRewardNudge.visible === true && outcomeState.terminalRewardNudge.layout === 'player-panel-dock' && outcomeState.terminalRewardNudge.overlapsRoll === false && outcomeState.terminalRewardNudge.dockedToPlayerPanel === true, `${outcome.label} probe: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
     }
 

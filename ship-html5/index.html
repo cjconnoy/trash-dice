@@ -3799,15 +3799,15 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
 @keyframes roundLossRewardNudgePop {
   0% {
     opacity: 0;
-    transform: translate3d(-50%, 20px, 0) scale(0.92);
+    transform: translate3d(-50%, calc(-50% + 20px), 0) scale(0.92);
   }
   42% {
     opacity: 1;
-    transform: translate3d(-50%, 0, 0) scale(1.035);
+    transform: translate3d(-50%, -50%, 0) scale(1.035);
   }
   100% {
     opacity: 1;
-    transform: translate3d(-50%, 0, 0) scale(1);
+    transform: translate3d(-50%, -50%, 0) scale(1);
   }
 }
 .roll-btn-label {
@@ -9112,6 +9112,66 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   }
 }
 
+.round-loss-reward-nudge[data-layout="player-panel-dock"],
+body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
+  position: absolute;
+  left: var(--player-nudge-left, 50%);
+  top: var(--player-nudge-top, calc(100dvh - 11rem));
+  bottom: auto;
+  z-index: 171;
+  box-sizing: border-box;
+  width: var(--player-nudge-width, min(calc(100vw - 20px), 700px));
+  max-width: calc(100vw - 20px);
+  min-height: var(--player-nudge-min-height, 0px);
+  margin: 0;
+  padding: clamp(0.5rem, 1.6vw, 0.78rem) clamp(0.72rem, 2.6vw, 1.08rem);
+  border-radius: 10px;
+}
+
+.round-loss-reward-nudge[data-layout="player-panel-dock"] {
+  transform: translate3d(-50%, calc(-50% + 18px), 0) scale(0.96);
+}
+
+body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.round-loss-reward-nudge[data-layout="player-panel-dock"] .reward-nudge-die,
+body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] .reward-nudge-die {
+  flex-basis: clamp(46px, 8vw, 72px);
+  width: clamp(46px, 8vw, 72px);
+  height: clamp(46px, 8vw, 72px);
+  padding: clamp(6px, 1.25vw, 10px);
+}
+
+body.inline-game-over .roll-panel {
+  width: min(75%, 345px);
+  max-width: 345px;
+  min-height: clamp(92px, 18vw, 124px);
+}
+
+@media (max-width: 720px) {
+  body.inline-game-over .roll-panel {
+    width: min(calc(100% - 1.5rem), 27rem);
+    max-width: calc(100vw - 1.5rem);
+    min-height: clamp(86px, 22vw, 102px);
+  }
+}
+
+@media (max-width: 720px) and (max-height: 700px) {
+  body.inline-game-over .roll-panel {
+    min-height: clamp(86px, 22.8vw, 100px);
+  }
+}
+
+@media (min-width: 721px) and (max-height: 800px) {
+  body.inline-game-over .roll-panel {
+    width: min(54%, 360px);
+    max-width: 360px;
+    min-height: 82px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -11095,6 +11155,59 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (die) applyRewardDieElementVisual(el, die);
   }
 
+  function clearPlayerPanelRewardDock(el) {
+    if (!el) return;
+    el.removeAttribute('data-layout');
+    el.style.removeProperty('--player-nudge-left');
+    el.style.removeProperty('--player-nudge-top');
+    el.style.removeProperty('--player-nudge-width');
+    el.style.removeProperty('--player-nudge-min-height');
+  }
+
+  function dockRewardNudgeToPlayerPanel(el) {
+    const panel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
+    if (!el || !panel) return null;
+    const panelRect = panel.getBoundingClientRect();
+    if (!panelRect.width || !panelRect.height) return null;
+
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || panelRect.right;
+    const scrollX = window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const maxWidth = Math.max(0, viewportWidth - 20);
+    const minWidth = Math.min(220, maxWidth);
+    const inset = panelRect.width >= 520 ? 18 : 12;
+    const width = clamp(panelRect.width - inset, minWidth, maxWidth);
+    const minHeight = Math.max(58, Math.round(panelRect.height - 16));
+    let left = panelRect.left + scrollX + panelRect.width / 2;
+    let top = panelRect.top + scrollY + panelRect.height / 2;
+    left = clamp(left, scrollX + width / 2 + 10, scrollX + viewportWidth - width / 2 - 10);
+
+    el.dataset.layout = 'player-panel-dock';
+    el.style.setProperty('--player-nudge-left', `${Math.round(left)}px`);
+    el.style.setProperty('--player-nudge-width', `${Math.round(width)}px`);
+    el.style.setProperty('--player-nudge-min-height', `${minHeight}px`);
+    el.style.setProperty('--player-nudge-top', `${Math.round(top)}px`);
+
+    const nudgeRect = el.getBoundingClientRect();
+    const rollRect = rollPanel ? rollPanel.getBoundingClientRect() : null;
+    const rollClearance = 8;
+    if (rollRect && nudgeRect.width && nudgeRect.height && nudgeRect.bottom > rollRect.top - rollClearance && nudgeRect.top < rollRect.bottom + rollClearance) {
+      top -= nudgeRect.bottom - (rollRect.top - rollClearance);
+    }
+    el.style.setProperty('--player-nudge-top', `${Math.round(top)}px`);
+
+    return {
+      panelRect,
+      width,
+      top
+    };
+  }
+
+  function refreshDockedRewardNudges() {
+    if (terminalRewardNudge && !terminalRewardNudge.hidden) dockRewardNudgeToPlayerPanel(terminalRewardNudge);
+    if (roundLossRewardNudge && !roundLossRewardNudge.hidden) dockRewardNudgeToPlayerPanel(roundLossRewardNudge);
+  }
+
   function hidePlayerStatusChaseDie() {
     if (p1StatusBar) p1StatusBar.classList.remove('has-chase-die');
     if (!p1StatusChaseDie) return;
@@ -11136,6 +11249,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
   function hideTerminalRewardNudge() {
     if (!terminalRewardNudge) return;
     terminalRewardNudge.hidden = true;
+    clearPlayerPanelRewardDock(terminalRewardNudge);
     terminalRewardNudge.removeAttribute('data-preview');
     terminalRewardNudge.removeAttribute('data-next-name');
     terminalRewardNudge.removeAttribute('data-rounds-needed');
@@ -11145,6 +11259,9 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
 
   function showTerminalRewardNudge() {
     if (!terminalRewardNudge) return null;
+    if (terminalRewardNudge.parentElement !== document.body) {
+      document.body.appendChild(terminalRewardNudge);
+    }
     const model = rewardNudgeModel();
     if (terminalRewardNudgeKicker) terminalRewardNudgeKicker.textContent = model.terminalKicker;
     if (terminalRewardNudgeLine) terminalRewardNudgeLine.textContent = model.line;
@@ -11156,6 +11273,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     terminalRewardNudge.dataset.targetWins = String(model.targetWins || '');
     terminalRewardNudge.dataset.copyMode = model.copyMode || '';
     terminalRewardNudge.hidden = false;
+    dockRewardNudgeToPlayerPanel(terminalRewardNudge);
     return model;
   }
 
@@ -11167,6 +11285,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (!roundLossRewardNudge) return;
     roundLossRewardNudge.classList.remove('show');
     roundLossRewardNudge.hidden = true;
+    clearPlayerPanelRewardDock(roundLossRewardNudge);
     roundLossRewardNudge.removeAttribute('data-preview');
     roundLossRewardNudge.removeAttribute('data-next-name');
     roundLossRewardNudge.removeAttribute('data-rounds-needed');
@@ -11189,6 +11308,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     roundLossRewardNudge.dataset.copyMode = model.copyMode || '';
     roundLossRewardNudge.hidden = false;
     roundLossRewardNudge.classList.remove('show');
+    dockRewardNudgeToPlayerPanel(roundLossRewardNudge);
     void roundLossRewardNudge.offsetWidth;
     requestAnimationFrame(() => {
       roundLossRewardNudge.classList.add('show');
@@ -17035,6 +17155,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
           const rewardRect = rewardDie ? rewardDie.getBoundingClientRect() : null;
           const roundLossNudgeStyle = roundLossRewardNudge ? getComputedStyle(roundLossRewardNudge) : null;
           const roundLossNudgeRect = roundLossRewardNudge ? roundLossRewardNudge.getBoundingClientRect() : null;
+          const playerPanel = p1Inventory ? p1Inventory.closest('.player-panel') : null;
+          const playerPanelRect = playerPanel ? playerPanel.getBoundingClientRect() : null;
+          const rollRect = rollBtn ? rollBtn.getBoundingClientRect() : null;
+          const overlaps = (a, b) => !!(a && b && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
+          const nudgePanelCenterDeltaY = roundLossNudgeRect && playerPanelRect
+            ? Math.abs((roundLossNudgeRect.top + roundLossNudgeRect.bottom) / 2 - (playerPanelRect.top + playerPanelRect.bottom) / 2)
+            : Infinity;
           const claimBadgeMain = document.querySelector('.claim-badge.' + forcedWinner + ' .claim-main');
           resolve({
             winner: forcedWinner,
@@ -17095,8 +17222,13 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             roundLossRewardNudgeTargetWins: roundLossRewardNudge ? roundLossRewardNudge.dataset.targetWins || '' : '',
             roundLossRewardNudgeCopyMode: roundLossRewardNudge ? roundLossRewardNudge.dataset.copyMode || '' : '',
             roundLossRewardNudgePreview: roundLossRewardNudge ? roundLossRewardNudge.dataset.preview || '' : '',
+            roundLossRewardNudgeLayout: roundLossRewardNudge ? roundLossRewardNudge.dataset.layout || '' : '',
             roundLossRewardNudgeFitsViewport: !!(roundLossNudgeRect && roundLossNudgeRect.left >= -1 && roundLossNudgeRect.right <= window.innerWidth + 1 && roundLossNudgeRect.top >= -1 && roundLossNudgeRect.bottom <= window.innerHeight + 1),
+            roundLossRewardNudgeOverlapsRoll: overlaps(roundLossNudgeRect, rollRect),
+            roundLossRewardNudgeDockedToPlayerPanel: !!(roundLossNudgeRect && playerPanelRect && roundLossNudgeRect.left >= playerPanelRect.left - 18 && roundLossNudgeRect.right <= playerPanelRect.right + 18 && nudgePanelCenterDeltaY <= Math.max(18, playerPanelRect.height * 0.42)),
             roundLossRewardNudgeRect: roundLossNudgeRect ? { left: Math.round(roundLossNudgeRect.left), right: Math.round(roundLossNudgeRect.right), top: Math.round(roundLossNudgeRect.top), bottom: Math.round(roundLossNudgeRect.bottom), width: Math.round(roundLossNudgeRect.width), height: Math.round(roundLossNudgeRect.height) } : null,
+            roundLossRewardPlayerPanelRect: playerPanelRect ? { left: Math.round(playerPanelRect.left), right: Math.round(playerPanelRect.right), top: Math.round(playerPanelRect.top), bottom: Math.round(playerPanelRect.bottom), width: Math.round(playerPanelRect.width), height: Math.round(playerPanelRect.height) } : null,
+            roundLossRewardRollRect: rollRect ? { left: Math.round(rollRect.left), right: Math.round(rollRect.right), top: Math.round(rollRect.top), bottom: Math.round(rollRect.bottom), width: Math.round(rollRect.width), height: Math.round(rollRect.height) } : null,
             rollDisabled: !!rollBtn.disabled,
             payoutComets: document.querySelectorAll('.player-payout-comet').length
           });
@@ -17185,6 +17317,7 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
       if (rewardDieUnlock && !rewardDieUnlock.hidden && rewardDieUnlock.classList.contains('is-round-win-companion')) {
         layoutRoundWinCompanionReward();
       }
+      refreshDockedRewardNudges();
     });
   });
   window.addEventListener('orientationchange', () => {
