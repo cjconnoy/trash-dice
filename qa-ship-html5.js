@@ -1262,16 +1262,33 @@ async function main() {
           const card = document.getElementById('inlineResultBanner');
           const title = document.getElementById('inlineResultTitle');
           const sub = document.getElementById('inlineResultSub');
+          const chip = document.getElementById('inlineResultChip');
+          const chipText = document.getElementById('inlineResultChipText');
           const btn = document.getElementById('rollBtn');
-          if (!card || !title || !sub || !btn) return { present: false };
+          if (!card || !title || !sub || !chip || !chipText || !btn) return { present: false };
           const r = card.getBoundingClientRect();
           const br = btn.getBoundingClientRect();
           const style = getComputedStyle(card);
+          const subStyle = getComputedStyle(sub);
+          const chipStyle = getComputedStyle(chip);
+          const chipRect = chip.getBoundingClientRect();
+          const edgeStyle = getComputedStyle(card, '::before');
+          const sparkStyle = getComputedStyle(card, '::after');
           return {
             present: true,
             visible: style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.9 && r.width >= 240 && r.height >= 120,
             title: title.textContent.replace(/\s+/g, ' ').trim(),
             sub: sub.textContent.replace(/\s+/g, ' ').trim(),
+            animationName: style.animationName,
+            subAnimationName: subStyle.animationName,
+            edgeAnimationName: edgeStyle.animationName,
+            sparkAnimationName: sparkStyle.animationName,
+            chip: {
+              visible: !chip.hidden && chipStyle.display !== 'none' && chipRect.width >= 90 && chipRect.height >= 22,
+              text: chipText.textContent.replace(/\s+/g, ' ').trim(),
+              animationName: chipStyle.animationName,
+              rect: { left: Math.round(chipRect.left), right: Math.round(chipRect.right), top: Math.round(chipRect.top), bottom: Math.round(chipRect.bottom), width: Math.round(chipRect.width), height: Math.round(chipRect.height) }
+            },
             fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1,
             clearsPlayAgain: r.bottom <= br.top + 2,
             rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) },
@@ -1380,7 +1397,9 @@ async function main() {
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
       assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
-      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'GAME WINNER!' && terminal.outcomeCard.sub === 'PLAYER WINS', `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === "CPU CAN'T COME BACK", `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.animationName.includes('terminalWinStamp') && terminal.outcomeCard.subAnimationName.includes('terminalWinSubPop') && terminal.outcomeCard.edgeAnimationName.includes('terminalWinEdgeFlash') && terminal.outcomeCard.sparkAnimationName.includes('terminalWinDiceSpark'), `${viewport.name}: game-win outcome card should use the slam, subline pop, edge flash, and dice sparkle beats ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.chip.visible === true && /DICE SECURED$/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include a small dice-secured chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
       assert(terminal.outcomeCard.fitsViewport === true && terminal.outcomeCard.clearsPlayAgain === true, `${viewport.name}: game-win outcome card should fit above Keep Playing ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.roundWinBurst.present === true && terminal.roundWinBurst.visible === false, `${viewport.name}: game-win card should not stack on top of the round-win burst ${JSON.stringify(terminal.roundWinBurst)}`);
       assert(terminal.winnerPanel === true && terminal.winnerPile === true && terminal.winnerPraise === true, `${viewport.name}: player game-win should reuse the round-win lower panel celebration ${JSON.stringify(terminal)}`);
@@ -1507,6 +1526,8 @@ async function main() {
       const mathPlayerWinUi = await evalValue(page, `(() => {
         const title = (document.getElementById('inlineResultTitle') || {}).textContent || '';
         const sub = (document.getElementById('inlineResultSub') || {}).textContent || '';
+        const chip = document.getElementById('inlineResultChip');
+        const chipText = document.getElementById('inlineResultChipText');
         const p1Status = document.getElementById('p1StatusBar');
         const p2Status = document.getElementById('p2StatusBar');
         const p1Rect = p1Status ? p1Status.getBoundingClientRect() : null;
@@ -1529,6 +1550,10 @@ async function main() {
           roundWins: window.TrashDiceQA.state().roundWins,
           title,
           sub,
+          chip: {
+            visible: !!(chip && !chip.hidden && getComputedStyle(chip).display !== 'none'),
+            text: chipText ? chipText.textContent || '' : ''
+          },
           p1Text: (document.getElementById('p1StatusText') || {}).textContent || '',
           p2Text: (document.getElementById('p2StatusText') || {}).textContent || '',
           p1LoserReason: !!(p1Status && p1Status.classList.contains('loser-reason')),
@@ -1587,7 +1612,7 @@ async function main() {
       assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `ROUNDS WON: 11 / ${rewardNextAfterEleven.minWins}` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should use lightweight progress copy when the next skin is not close ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'progress' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.title === 'GAME WINNER!' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === "CPU CAN'T COME BACK" && mathPlayerWinUi.chip.visible === true && /DICE SECURED$/.test(mathPlayerWinUi.chip.text), `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
