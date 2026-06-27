@@ -1315,6 +1315,18 @@ async function main() {
             rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }
           };
         })(),
+        roundWinBurst: (() => {
+          const burst = document.getElementById('roundWinBurst');
+          if (!burst) return { present: false };
+          const r = burst.getBoundingClientRect();
+          const style = getComputedStyle(burst);
+          return {
+            present: true,
+            visible: !burst.hidden && burst.classList.contains('show') && style.display !== 'none' && parseFloat(style.opacity || '0') > 0.1 && r.width > 0 && r.height > 0,
+            text: burst.textContent.replace(/\s+/g, ' ').trim(),
+            rect: { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) }
+          };
+        })(),
         terminalRewardNudge: (() => {
           const nudge = document.getElementById('terminalRewardNudge');
           const die = document.getElementById('terminalRewardNudgeDie');
@@ -1366,11 +1378,12 @@ async function main() {
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
       assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
-      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'FINAL WINNER' && terminal.outcomeCard.sub === 'PLAYER WINS', `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'GAME WINNER!' && terminal.outcomeCard.sub === 'PLAYER WINS', `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.outcomeCard.fitsViewport === true && terminal.outcomeCard.clearsPlayAgain === true, `${viewport.name}: game-win outcome card should fit above Keep Playing ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.roundWinBurst.present === true && terminal.roundWinBurst.visible === false, `${viewport.name}: game-win card should not stack on top of the round-win burst ${JSON.stringify(terminal.roundWinBurst)}`);
       assert(terminal.winnerPanel === true && terminal.winnerPile === true && terminal.winnerPraise === true, `${viewport.name}: player game-win should reuse the round-win lower panel celebration ${JSON.stringify(terminal)}`);
       assert(terminal.winnerStatusLarge === true && parseFloat(terminal.winnerStatusFontSize || '0') >= 14, `${viewport.name}: game-win lower status should read as a final winner badge ${JSON.stringify(terminal)}`);
-      assert(terminal.winnerLabel === 'FINAL WINNER', `${viewport.name}: game-win lower status should use final winner copy ${JSON.stringify(terminal)}`);
+      assert(terminal.winnerLabel === 'GAME WINNER!', `${viewport.name}: game-win lower status should use game winner copy ${JSON.stringify(terminal)}`);
       assert(terminal.winnerStatusChaseDie.present === true && terminal.winnerStatusChaseDie.visible === false, `${viewport.name}: game-win chase die belongs in the reward nudge, not the lower status pill ${JSON.stringify({ rewardNextAfterTwo, winnerStatusChaseDie: terminal.winnerStatusChaseDie })}`);
       assert(terminal.winnerCount === true, `${viewport.name}: game-win should pulse the player count as part of the final round-win family ${JSON.stringify(terminal)}`);
       assert(terminal.trashedStamp.present === true && terminal.trashedStamp.text === 'TRASHED!' && terminal.trashedStamp.visible === false, `${viewport.name}: TRASHED stamp should stay hidden on the ordered game-win screen ${JSON.stringify(terminal.trashedStamp)}`);
@@ -1423,7 +1436,7 @@ async function main() {
       assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerPanel === true, `${viewport.name}: lower winner panel fanfare should persist during sustained game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.winnerStatusLarge === true, `${viewport.name}: large lower winner status should persist during game-win loop ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.winnerLabel === 'FINAL WINNER', `${viewport.name}: final winner label did not persist ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.winnerLabel === 'GAME WINNER!', `${viewport.name}: game winner label did not persist ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.trashedVisible === false, `${viewport.name}: TRASHED stamp should stay hidden through game-win loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.rewardVisible === false, `${viewport.name}: reward unlock should clear before sustained win loop ${JSON.stringify(terminalLoop)}`);
@@ -1572,7 +1585,7 @@ async function main() {
       assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `ROUNDS WON: 11 / ${rewardNextAfterEleven.minWins}` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should use lightweight progress copy when the next skin is not close ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'progress' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.title === 'FINAL WINNER' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'GAME WINNER!' && mathPlayerWinUi.sub === 'PLAYER WINS', `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);

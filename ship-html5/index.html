@@ -12806,7 +12806,7 @@ body.inline-game-over .roll-panel {
     if (ui.statusBar) {
       const praiseText = String(playerPayoutFanfareText).toUpperCase();
       ui.statusBar.classList.add('payout-praise');
-      ui.statusBar.classList.toggle('round-winner-praise', praiseText === 'WINNER' || praiseText === 'FINAL WINNER');
+      ui.statusBar.classList.toggle('round-winner-praise', praiseText === 'WINNER' || praiseText === 'GAME WINNER!');
     }
     updatePlayerStatusChaseDie();
     if (ui.poolEl) ui.poolEl.classList.add('payout-jackpot');
@@ -14183,7 +14183,7 @@ body.inline-game-over .roll-panel {
       inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
       inlineResultBanner.setAttribute('aria-hidden', 'false');
     }
-    setInlineResultTitle(playerWon ? ['FINAL', 'WINNER'] : ['GAME', 'OVER']);
+    setInlineResultTitle(playerWon ? ['GAME', 'WINNER!'] : ['GAME', 'OVER']);
     if (inlineResultSub) inlineResultSub.textContent = playerWon ? 'PLAYER WINS' : 'CPU WINS';
     if (boardWrap) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
@@ -14346,6 +14346,7 @@ body.inline-game-over .roll-panel {
     document.body.classList.add('inline-game-over');
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
+    clearRollGatedRewardUi();
     startInlineEndingVisuals(playerWon);
     showTerminalRewardNudge();
     updatePwaInstallHint();
@@ -14371,7 +14372,7 @@ body.inline-game-over .roll-panel {
 
     if (playerWon) {
       const winnerFanfareDuration = roundSpillDurationForWinner('p1', clamp(totalDice('p1'), 6, 18));
-      startPlayerPayoutFanfare('p1', 0, 'FINAL WINNER');
+      startPlayerPayoutFanfare('p1', 0, 'GAME WINNER!');
       triggerTitleRoundWinFanfare(winnerFanfareDuration, true);
       startTerminalDiceCelebration('p1', runId);
       triggerLidWinPulse();
@@ -14628,7 +14629,8 @@ body.inline-game-over .roll-panel {
       if (payoutUi.inventory) payoutUi.inventory.classList.add('has-status');
       if (payoutUi.statusBar) {
         payoutUi.statusBar.classList.add('active', 'payout-praise');
-        payoutUi.statusBar.classList.toggle('round-winner-praise', String(playerPayoutFanfareText).toUpperCase() === 'WINNER');
+        const payoutPraiseText = String(playerPayoutFanfareText).toUpperCase();
+        payoutUi.statusBar.classList.toggle('round-winner-praise', payoutPraiseText === 'WINNER' || payoutPraiseText === 'GAME WINNER!');
       }
       if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
