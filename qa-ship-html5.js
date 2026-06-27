@@ -808,6 +808,7 @@ async function main() {
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
         const panelStyle = getComputedStyle(panel);
+        const clears = (a, b, gap = 4) => a.bottom <= b.top - gap || a.left >= b.right + gap || a.right <= b.left - gap || a.top >= b.bottom + gap;
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
@@ -823,6 +824,8 @@ async function main() {
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           discoButtonVisible: getComputedStyle(discoButton).display !== 'none' && dr.width > 42 && dr.height > 24 && dr.right <= window.innerWidth + 1 && dr.top >= -1,
           discoClearsRewardButton: dr.right <= rbr.left - 3 || dr.bottom <= rbr.top - 3 || dr.top >= rbr.bottom + 3,
+          discoClearsRoll: clears(dr, rr, 6),
+          discoClearsRollPanel: clears(dr, pr, 6),
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
@@ -884,6 +887,7 @@ async function main() {
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoClearsRoll && activeLayout.discoClearsRollPanel, `${viewport.name}: DISCO debug button overlaps Roll action area ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
