@@ -6864,6 +6864,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     border-radius: 22%;
     background-clip: padding-box;
     overflow: hidden;
+    -webkit-clip-path: inset(0 round 22%);
+    clip-path: inset(0 round 22%);
     -webkit-mask-image: none;
     mask-image: none;
     filter: drop-shadow(0 14px 14px rgba(0,0,0,0.36));
@@ -6884,6 +6886,8 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     border-radius: 22%;
     background-clip: padding-box;
     overflow: hidden;
+    -webkit-clip-path: inset(0 round 22%);
+    clip-path: inset(0 round 22%);
     -webkit-mask-image: none;
     mask-image: none;
     filter: drop-shadow(0 9px 10px rgba(0,0,0,0.32));
@@ -16122,6 +16126,8 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
             effect: clone.dataset.rewardEffect || '',
             borderRadius: style.borderTopLeftRadius,
             backgroundClip: style.backgroundClip,
+            clipPath: style.clipPath || '',
+            webkitClipPath: style.webkitClipPath || '',
             overflow: style.overflow,
             webkitMaskImage: style.webkitMaskImage || '',
             maskImage: style.maskImage || '',

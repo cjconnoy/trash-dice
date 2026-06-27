@@ -1104,6 +1104,8 @@ async function main() {
             className: die.className,
             animationName: spinStyle.animationName,
             borderRadius: spinStyle.borderTopLeftRadius,
+            clipPath: spinStyle.clipPath || '',
+            webkitClipPath: spinStyle.webkitClipPath || '',
             overflow: spinStyle.overflow,
             webkitMaskImage: spinStyle.webkitMaskImage || '',
             maskImage: spinStyle.maskImage || '',
@@ -1125,6 +1127,8 @@ async function main() {
           effect: die ? die.dataset.rewardEffect || '' : '',
           borderRadius: style ? style.borderTopLeftRadius : '',
           backgroundClip: style ? style.backgroundClip : '',
+          clipPath: style ? style.clipPath || '' : '',
+          webkitClipPath: style ? style.webkitClipPath || '' : '',
           overflow: style ? style.overflow : '',
           webkitMaskImage: style ? style.webkitMaskImage || '' : '',
           maskImage: style ? style.maskImage || '' : '',
@@ -1150,6 +1154,7 @@ async function main() {
         assert(radiusIsPercent ? radiusValue >= 21 && radiusValue <= 23 : (liveRewardDieEdge.rect && radiusValue >= liveRewardDieEdge.rect.width * 0.21 && radiusValue <= liveRewardDieEdge.rect.width * 0.23), `${viewport.name}: mobile live reward die should match the default die corner shape ${JSON.stringify(liveRewardDieEdge)}`);
         assert(spinRadiusIsPercent ? spinRadiusValue >= 21 && spinRadiusValue <= 23 : (liveRewardDieEdge.spin.rect && spinRadiusValue >= liveRewardDieEdge.spin.rect.width * 0.21 && spinRadiusValue <= liveRewardDieEdge.spin.rect.width * 0.23), `${viewport.name}: mobile reward hero spin should keep the default die silhouette ${JSON.stringify(liveRewardDieEdge.spin)}`);
         assert(liveRewardDieEdge.spin.animationName === 'rewardDieRollMobile', `${viewport.name}: mobile reward hero spin should avoid the generic squashing roll keyframes ${JSON.stringify(liveRewardDieEdge.spin)}`);
+        assert(/round/i.test(liveRewardDieEdge.clipPath || liveRewardDieEdge.webkitClipPath || '') && /round/i.test(liveRewardDieEdge.spin.clipPath || liveRewardDieEdge.spin.webkitClipPath || ''), `${viewport.name}: mobile reward hero die should use a hard rounded clip to prevent square compositing during spin ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
       }
@@ -1161,6 +1166,7 @@ async function main() {
           const radiusIsPercent = String(travelState.borderRadius || '').includes('%');
           assert(travelState.rewardSkinned === true && travelState.effect === rewardCapDie.effect, `${viewport.name}: travelling reward die probe did not activate cap skin ${JSON.stringify({ rewardCapDie, travellingRewardDieEdge })}`);
           assert(radiusIsPercent ? radiusValue >= 21 && radiusValue <= 23 : (travelState.rect && radiusValue >= travelState.rect.width * 0.21 && radiusValue <= travelState.rect.width * 0.23), `${viewport.name}: travelling reward die should match the default die corner shape ${JSON.stringify(travelState)}`);
+          assert(/round/i.test(travelState.clipPath || travelState.webkitClipPath || ''), `${viewport.name}: travelling reward die should use the same hard rounded clip as the live hero die ${JSON.stringify(travelState)}`);
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
           assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.boxShadow.includes('9px 10px') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
