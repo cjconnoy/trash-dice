@@ -1067,6 +1067,7 @@ body.orientation-blocked > *:not(.orientation-lock-screen) {
 }
 
 .game-area {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1120,6 +1121,7 @@ body.player-roll-ready .roll-panel {
   cursor: pointer;
 }
 body.inline-game-over .roll-panel {
+  z-index: 150;
   width: min(92%, 560px);
   max-width: 560px;
   min-height: clamp(116px, 16vw, 166px);
@@ -3600,6 +3602,16 @@ body.inline-game-over .roll-panel {
 body.inline-game-over .game-tagline {
   display: none;
 }
+body.inline-game-over::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 142;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(13,52,29,0.28), rgba(0,0,0,0.5) 68%),
+    rgba(0,0,0,0.28);
+}
 .terminal-reward-nudge[hidden],
 .round-loss-reward-nudge[hidden] {
   display: none !important;
@@ -3627,7 +3639,34 @@ body.inline-game-over .game-tagline {
   pointer-events: none;
 }
 body.inline-game-over .terminal-reward-nudge {
-  margin-bottom: clamp(0.22rem, 1vw, 0.42rem);
+  width: min(100%, 620px);
+  gap: clamp(0.46rem, 1.75vw, 0.72rem);
+  margin-bottom: clamp(0.42rem, 1.4vw, 0.64rem);
+  padding: clamp(0.46rem, 1.65vw, 0.7rem) clamp(0.64rem, 2.65vw, 1rem);
+  border-radius: clamp(12px, 2.7vw, 18px);
+  box-shadow:
+    0 4px 0 rgba(5,50,27,0.5),
+    0 12px 24px rgba(0,0,0,0.24),
+    0 0 18px rgba(245,200,0,0.24),
+    inset 0 0 0 1px rgba(255,255,255,0.14);
+}
+body.inline-game-over .terminal-reward-kicker {
+  font-size: clamp(0.78rem, 2.15vw, 1.02rem);
+}
+body.inline-game-over .terminal-reward-line {
+  font-size: clamp(0.8rem, 2.24vw, 1.06rem);
+}
+body.inline-game-over .terminal-reward-unlock {
+  font-size: clamp(1.02rem, 3.35vw, 1.42rem);
+}
+body.inline-game-over .terminal-reward-copy {
+  gap: 0.06rem;
+}
+body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
+  flex-basis: clamp(46px, 10.6vw, 66px);
+  width: clamp(46px, 10.6vw, 66px);
+  height: clamp(46px, 10.6vw, 66px);
+  padding: clamp(6px, 1.45vw, 9px);
 }
 .terminal-reward-copy {
   min-width: 0;
@@ -3884,6 +3923,10 @@ body.inline-game-over.inline-game-win .green-panel .trashed-stamp {
 body.inline-game-over.inline-game-win .green-panel .status-bar {
   z-index: 14;
 }
+body.inline-game-over .trashed-stamp {
+  display: none !important;
+  animation: none !important;
+}
 @media (min-width: 721px) and (max-height: 800px) {
   .trashed-stamp {
     top: 53%;
@@ -4059,6 +4102,130 @@ body.inline-game-loss .inline-result-banner {
   }
   body.inline-game-win .inline-result-title {
     font-size: clamp(1.72rem, 7.8vw, 2.62rem);
+  }
+}
+body.inline-game-over {
+  --terminal-outcome-border: rgba(255,244,163,0.88);
+  --terminal-outcome-edge: rgba(6,53,29,0.5);
+  --terminal-outcome-glow: rgba(245,200,0,0.34);
+  --terminal-outcome-card: linear-gradient(180deg, rgba(10,54,29,0.97), rgba(16,89,44,0.92));
+  --terminal-outcome-title-shadow: #e1382b;
+  --terminal-outcome-sub-color: #0b5c31;
+}
+body.inline-game-loss {
+  --terminal-outcome-border: rgba(255,143,82,0.92);
+  --terminal-outcome-edge: rgba(88,39,12,0.48);
+  --terminal-outcome-glow: rgba(255,143,82,0.3);
+  --terminal-outcome-card: linear-gradient(180deg, rgba(18,73,42,0.97), rgba(6,47,28,0.94));
+  --terminal-outcome-title-shadow: #a74918;
+  --terminal-outcome-sub-color: #7b280a;
+}
+body.inline-game-over .inline-result-banner {
+  position: fixed;
+  left: 50%;
+  top: clamp(238px, 42dvh, 470px);
+  z-index: 172;
+  width: min(calc(100vw - 28px), 760px);
+  min-width: 0;
+  padding: clamp(13px, 3.4vw, 26px) clamp(18px, 5.2vw, 42px) clamp(13px, 3.2vw, 24px);
+  border: 2px solid var(--terminal-outcome-border);
+  border-radius: clamp(15px, 3.8vw, 26px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,242,56,0.25), transparent 52%),
+    var(--terminal-outcome-card);
+  box-shadow:
+    0 12px 0 var(--terminal-outcome-edge),
+    0 20px 38px rgba(0,0,0,0.42),
+    0 0 30px var(--terminal-outcome-glow),
+    inset 0 0 0 3px rgba(255,255,255,0.12);
+  gap: clamp(6px, 1.6vw, 11px);
+  contain: none;
+  overflow: visible;
+  transform: translate3d(-50%, -50%, 0) rotate(-1.2deg) scale(0.94);
+  filter: drop-shadow(0 12px 13px rgba(16,39,20,0.34));
+}
+body.inline-game-over .inline-result-title {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  max-width: min(92vw, 690px);
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(2.2rem, 8.4vw, 5.45rem);
+  line-height: 0.82;
+  color: #fff238;
+  text-transform: uppercase;
+  white-space: normal;
+  text-shadow:
+    0 2px 0 #0b5c31,
+    0 5px 0 var(--terminal-outcome-title-shadow),
+    0 12px 18px rgba(0,0,0,0.34);
+  transform: none;
+}
+body.inline-game-over .inline-result-title span {
+  display: block;
+}
+body.inline-game-over .inline-result-sub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(88vw, 620px);
+  min-height: 1.08em;
+  margin: 0;
+  padding: clamp(7px, 2vw, 12px) clamp(14px, 4vw, 23px) clamp(8px, 2.1vw, 13px);
+  border-radius: clamp(13px, 3.2vw, 20px);
+  background: rgba(255,244,163,0.94);
+  color: var(--terminal-outcome-sub-color);
+  font-family: 'Fredoka One', system-ui, sans-serif;
+  font-size: clamp(0.98rem, 4.2vw, 1.72rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: none;
+  box-shadow:
+    0 3px 0 rgba(227,56,43,0.78),
+    0 8px 14px rgba(0,0,0,0.22);
+}
+body.inline-game-over .status-bar.round-winner-praise {
+  min-width: clamp(8.8rem, 34vw, 12rem);
+  padding: 0.26rem 0.74rem 0.22rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  line-height: 1;
+}
+body.inline-game-over .status-bar.round-winner-praise.has-chase-die {
+  min-width: clamp(10rem, 42vw, 13.6rem);
+}
+@media (max-width: 768px) {
+  body.inline-game-over .inline-result-banner {
+    top: clamp(220px, 39dvh, 356px);
+    width: calc(100vw - 28px);
+    padding: clamp(12px, 3.6vw, 18px) clamp(16px, 5.4vw, 28px) clamp(12px, 3.8vw, 18px);
+  }
+  body.inline-game-over .inline-result-title {
+    font-size: clamp(2.18rem, 11.5vw, 3.55rem);
+  }
+  body.inline-game-over .inline-result-sub {
+    font-size: clamp(0.94rem, 4.8vw, 1.42rem);
+  }
+}
+@media (max-width: 480px) and (max-height: 700px) {
+  body.inline-game-over .inline-result-banner {
+    top: clamp(196px, 36dvh, 304px);
+    width: calc(100vw - 22px);
+  }
+  body.inline-game-over .inline-result-title {
+    font-size: clamp(1.9rem, 10.6vw, 3rem);
+  }
+  body.inline-game-over .terminal-reward-nudge {
+    gap: 0.42rem;
+    padding: 0.42rem 0.56rem 0.46rem;
+  }
+  body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 6px;
   }
 }
 .roll-btn:disabled {
@@ -13764,13 +13931,24 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     }
   }
 
+  function setInlineResultTitle(words) {
+    if (!inlineResultTitle) return;
+    inlineResultTitle.textContent = '';
+    words.forEach((word, idx) => {
+      if (idx > 0) inlineResultTitle.appendChild(document.createTextNode(' '));
+      const span = document.createElement('span');
+      span.textContent = word;
+      inlineResultTitle.appendChild(span);
+    });
+  }
+
   function startInlineEndingVisuals(playerWon) {
     clearInlineEndingVisuals();
     if (inlineResultBanner) {
       inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
       inlineResultBanner.setAttribute('aria-hidden', 'false');
     }
-    if (inlineResultTitle) inlineResultTitle.textContent = playerWon ? 'GAME WINNER' : 'GAME OVER';
+    setInlineResultTitle(playerWon ? ['GAME', 'WINNER'] : ['GAME', 'OVER']);
     if (inlineResultSub) inlineResultSub.textContent = playerWon ? 'PLAYER WINS' : 'CPU WINS';
     if (boardWrap) {
       boardWrap.style.setProperty('--payout-lid-dance-rate', MOBILE_ROLL_SMOOTHING ? '1.18s' : '1.04s');
@@ -13958,7 +14136,6 @@ body.fast-preview.terminal-screen-active .overlay.player-win-mega .play-again-bt
     if (playerWon) {
       const winnerFanfareDuration = roundSpillDurationForWinner('p1', clamp(totalDice('p1'), 6, 18));
       triggerTitleRoundWinFanfare(winnerFanfareDuration, true);
-      startPlayerPayoutFanfare('p1', 0, 'WINNER');
       startTerminalDiceCelebration('p1', runId);
       triggerLidWinPulse();
       Audio.megaWinFanfare();
