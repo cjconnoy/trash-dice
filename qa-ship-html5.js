@@ -1025,6 +1025,7 @@ async function main() {
         const shell = document.getElementById('rewardDieUnlock');
         const bodyBefore = getComputedStyle(document.body, '::before');
         const bodyAfter = getComputedStyle(document.body, '::after');
+        const playerDieStyle = getComputedStyle(playerDie);
         return {
           buttonVisible: getComputedStyle(btn).display !== 'none',
           pressed: btn.getAttribute('aria-pressed'),
@@ -1042,6 +1043,9 @@ async function main() {
           discoOverlayPointerEvents: bodyAfter.pointerEvents || '',
           discoOverlayZIndex: bodyAfter.zIndex || '',
           discoOverlayBlend: bodyAfter.mixBlendMode || '',
+          discoOverlayBackground: bodyAfter.backgroundImage || '',
+          discoOverlayFilter: bodyAfter.filter || '',
+          playerDieBoxShadow: playerDieStyle.boxShadow || '',
           playerSkin: {
             rewardSkinned: playerDie.classList.contains('reward-skinned'),
             tier: playerDie.dataset.rewardTier || '',
@@ -1052,7 +1056,11 @@ async function main() {
       })()`);
       assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'VIP disco party active', `${viewport.name}: DISCO button active state wrong ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: DISCO debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(discoDebug.discoOverlayZIndex) >= 80 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none', `${viewport.name}: DISCO debug button should activate visible non-blocking party lighting ${JSON.stringify(discoDebug)}`);
+      const discoOverlayConics = (discoDebug.discoOverlayBackground.match(/conic-gradient/g) || []).length;
+      const discoOverlayRadials = (discoDebug.discoOverlayBackground.match(/radial-gradient/g) || []).length;
+      const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(discoDebug.discoOverlayZIndex) >= 80 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 8 && discoOverlayLinears >= 4 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible multi-spot party lighting ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears })}`);
+      assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
