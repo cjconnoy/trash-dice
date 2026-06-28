@@ -408,6 +408,7 @@ async function main() {
         rewardReviewButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
         discoButton: !!document.getElementById('devDiscoBtn'),
         discoButtonHidden: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display === 'none' : false,
+        cosmicSkyHidden: document.querySelector('.vip-cosmic-sky') ? getComputedStyle(document.querySelector('.vip-cosmic-sky')).display === 'none' : false,
         winButton: !!document.getElementById('devWinBtn'),
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
@@ -590,6 +591,7 @@ async function main() {
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
       assert(initial.discoButton === true, `${viewport.name}: DISCO debug button missing`);
       assert(initial.discoButtonHidden === true, `${viewport.name}: DISCO debug button should hide on title screen`);
+      assert(initial.cosmicSkyHidden === true, `${viewport.name}: VIP cosmic ambience should stay hidden on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
@@ -1028,8 +1030,12 @@ async function main() {
         const rewardBtn = document.getElementById('devRewardDieBtn');
         const playerDie = document.getElementById('p1Die');
         const shell = document.getElementById('rewardDieUnlock');
+        const cosmic = document.querySelector('.vip-cosmic-sky');
         const bodyBefore = getComputedStyle(document.body, '::before');
         const bodyAfter = getComputedStyle(document.body, '::after');
+        const cosmicStyle = cosmic ? getComputedStyle(cosmic) : null;
+        const cosmicBefore = cosmic ? getComputedStyle(cosmic, '::before') : null;
+        const cosmicAfter = cosmic ? getComputedStyle(cosmic, '::after') : null;
         const playerDieStyle = getComputedStyle(playerDie);
         return {
           buttonVisible: getComputedStyle(btn).display !== 'none',
@@ -1052,6 +1058,19 @@ async function main() {
           discoOverlayBlend: bodyAfter.mixBlendMode || '',
           discoOverlayBackground: bodyAfter.backgroundImage || '',
           discoOverlayFilter: bodyAfter.filter || '',
+          cosmicSky: cosmic ? {
+            display: cosmicStyle.display || '',
+            opacity: cosmicStyle.opacity || '',
+            zIndex: cosmicStyle.zIndex || '',
+            pointerEvents: cosmicStyle.pointerEvents || '',
+            animationName: cosmicStyle.animationName || '',
+            animationDuration: cosmicStyle.animationDuration || '',
+            beforeBackground: cosmicBefore.backgroundImage || '',
+            beforeAnimationName: cosmicBefore.animationName || '',
+            afterBackground: cosmicAfter.backgroundImage || '',
+            afterAnimationName: cosmicAfter.animationName || '',
+            afterAnimationDuration: cosmicAfter.animationDuration || ''
+          } : null,
           playerDieBoxShadow: playerDieStyle.boxShadow || '',
           playerSkin: {
             rewardSkinned: playerDie.classList.contains('reward-skinned'),
@@ -1068,9 +1087,12 @@ async function main() {
       const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
       const discoVenueRadials = (discoDebug.discoVenueWashBackground.match(/radial-gradient/g) || []).length;
       const discoVenueLinears = (discoDebug.discoVenueWashBackground.match(/linear-gradient/g) || []).length;
+      const cosmicBeforeRadials = discoDebug.cosmicSky ? (discoDebug.cosmicSky.beforeBackground.match(/radial-gradient/g) || []).length : 0;
+      const cosmicAfterLinears = discoDebug.cosmicSky ? (discoDebug.cosmicSky.afterBackground.match(/linear-gradient/g) || []).length : 0;
       const discoOverlayDuration = parseFloat(discoDebug.discoOverlayAnimationDuration || '0');
       const discoOverlayOldAnchors = /at\s+80%\s+60%|at\s+16%\s+72%/i.test(discoDebug.discoOverlayBackground);
       assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoOverlayDuration >= 10 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 12 && discoOverlayLinears >= 8 && discoVenueRadials >= 8 && discoVenueLinears >= 3 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible low-layer multi-spot party lighting with grounded, slow-moving ribbons ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
+      assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && Number(discoDebug.cosmicSky.zIndex) <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.5 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName.includes('vipCosmicStarDrift') && discoDebug.cosmicSky.beforeAnimationName.includes('vipCosmicTwinkle') && discoDebug.cosmicSky.afterAnimationName.includes('vipCosmicShootingStar') && cosmicBeforeRadials >= 7 && cosmicAfterLinears >= 1, `${viewport.name}: VIP future reward background should add low-layer cosmic twinkle and shooting-star ambience ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);

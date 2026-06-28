@@ -3469,6 +3469,9 @@ body.inline-game-over .roll-panel {
 
 @media (prefers-reduced-motion: reduce) {
   body.vip-disco-party[data-game-started="true"]::after,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
   body.inline-game-over .terminal-reward-nudge,
   body.inline-game-over .terminal-reward-nudge::before,
   body.inline-game-over .terminal-reward-nudge::after,
@@ -3948,9 +3951,83 @@ body.vip-disco-party[data-game-started="true"]::after {
   will-change: transform, background-position, filter;
   animation: vipDiscoPartySweep 14s linear infinite;
 }
+.vip-cosmic-sky {
+  display: none;
+  position: fixed;
+  inset: -6%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: saturate(1.18) brightness(1.05);
+  transform: translate3d(0, 0, 0);
+}
+body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
+  display: block;
+  opacity: 0.78;
+  animation: vipCosmicStarDrift 34s ease-in-out infinite;
+}
+.vip-cosmic-sky::before,
+.vip-cosmic-sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.vip-cosmic-sky::before {
+  background:
+    radial-gradient(ellipse at 58% 52%, rgba(255,255,255,0.18) 0 8%, rgba(168,224,255,0.12) 19%, transparent 42%),
+    radial-gradient(ellipse at 45% 47%, rgba(255,176,244,0.12) 0 7%, transparent 36%),
+    radial-gradient(circle, rgba(255,255,255,0.9) 0 0.8px, transparent 1.7px),
+    radial-gradient(circle, rgba(172,245,255,0.8) 0 1px, transparent 2.1px),
+    radial-gradient(circle, rgba(255,235,132,0.72) 0 0.9px, transparent 2px),
+    radial-gradient(circle, rgba(255,114,224,0.58) 0 1.15px, transparent 2.4px),
+    radial-gradient(circle, rgba(255,255,255,0.5) 0 1.4px, transparent 3px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    113px 97px,
+    157px 131px,
+    199px 149px,
+    241px 181px,
+    331px 257px;
+  background-position:
+    0 0,
+    0 0,
+    8px 18px,
+    31px 6px,
+    67px 43px,
+    12px 88px,
+    96px 32px;
+  opacity: 0.76;
+  animation: vipCosmicTwinkle 7.8s ease-in-out infinite;
+}
+.vip-cosmic-sky::after {
+  left: -36%;
+  top: 13%;
+  right: auto;
+  bottom: auto;
+  width: min(42vw, 560px);
+  height: 4px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 13%, rgba(171,247,255,0.38) 42%, rgba(255,255,255,1) 68%, rgba(120,244,255,0.92) 84%, transparent 100%);
+  box-shadow:
+    0 0 14px rgba(255,255,255,0.8),
+    0 0 32px rgba(90,235,255,0.5),
+    0 0 54px rgba(255,116,229,0.24);
+  opacity: 0;
+  transform: rotate(-17deg) translate3d(-28vw, -8vh, 0);
+  transform-origin: 100% 50%;
+  animation: vipCosmicShootingStar 13.5s ease-in-out infinite;
+}
 body.vip-disco-party.inline-game-over::after {
   z-index: 1;
   opacity: 0.52;
+}
+body.vip-disco-party.inline-game-over .vip-cosmic-sky {
+  opacity: 0.42;
 }
 body.vip-disco-party[data-game-started="true"] .game-area {
   z-index: 2;
@@ -3964,6 +4041,23 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
   animation-duration: 18s;
   filter: saturate(1.42) contrast(1.08) brightness(1.04);
   opacity: 0.7;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
+  opacity: 0.58;
+  animation-duration: 42s;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before {
+  animation-duration: 10.5s;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after {
+  animation-duration: 18s;
+  opacity: 0;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
@@ -5032,6 +5126,76 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
       43% 55%,
       91% 76%;
     filter: hue-rotate(0deg) saturate(1.72) contrast(1.1) brightness(1.09);
+  }
+}
+@keyframes vipCosmicStarDrift {
+  0%, 100% {
+    transform: translate3d(-0.35%, -0.2%, 0) scale(1.01);
+    filter: saturate(1.14) brightness(1.03);
+  }
+  45% {
+    transform: translate3d(0.42%, -0.34%, 0) scale(1.015);
+    filter: saturate(1.25) brightness(1.08);
+  }
+  72% {
+    transform: translate3d(0.15%, 0.28%, 0) scale(1.012);
+    filter: saturate(1.18) brightness(1.05);
+  }
+}
+@keyframes vipCosmicTwinkle {
+  0%, 100% {
+    opacity: 0.58;
+    filter: brightness(0.94);
+    background-position:
+      0 0,
+      0 0,
+      8px 18px,
+      31px 6px,
+      67px 43px,
+      12px 88px,
+      96px 32px;
+  }
+  38% {
+    opacity: 0.86;
+    filter: brightness(1.18);
+    background-position:
+      0 0,
+      0 0,
+      14px 23px,
+      38px 10px,
+      74px 48px,
+      17px 94px,
+      102px 37px;
+  }
+  67% {
+    opacity: 0.7;
+    filter: brightness(1.04);
+    background-position:
+      0 0,
+      0 0,
+      11px 20px,
+      34px 8px,
+      70px 45px,
+      15px 91px,
+      99px 34px;
+  }
+}
+@keyframes vipCosmicShootingStar {
+  0%, 52%, 100% {
+    opacity: 0;
+    transform: rotate(-17deg) translate3d(-28vw, -8vh, 0);
+  }
+  56% {
+    opacity: 0.92;
+    transform: rotate(-17deg) translate3d(-14vw, -3vh, 0);
+  }
+  66% {
+    opacity: 0.76;
+    transform: rotate(-17deg) translate3d(78vw, 24vh, 0);
+  }
+  76% {
+    opacity: 0;
+    transform: rotate(-17deg) translate3d(164vw, 54vh, 0);
   }
 }
 @keyframes inlineRoundWinsTick {
@@ -10427,6 +10591,7 @@ body.inline-game-over .roll-panel {
 </style>
 </head>
 <body>
+<div class="vip-cosmic-sky" aria-hidden="true"></div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
 <button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Sound on">
   <svg class="audio-mute-icon audio-mute-icon-on" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
