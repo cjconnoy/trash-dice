@@ -252,11 +252,98 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
   })`;
 }
 
+function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, intervalMs = 40) {
+  return `new Promise(resolve => {
+    const samples = [];
+    const startedAt = performance.now();
+    const read = () => {
+      const die = document.getElementById('p1Die');
+      const stage = document.getElementById('p1DieStage');
+      if (!die || !stage) return { elapsed: Math.round(performance.now() - startedAt), present: false };
+      const style = getComputedStyle(die);
+      const rect = die.getBoundingClientRect();
+      const active = stage.classList.contains('active') && die.className.includes('rolling');
+      const animations = die.getAnimations().map(animation => {
+        const keyframes = animation.effect && animation.effect.getKeyframes ? animation.effect.getKeyframes() : [];
+        return {
+          name: animation.animationName || '',
+          currentTime: Number(animation.currentTime || 0),
+          duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null,
+          transforms: keyframes.map(keyframe => keyframe.transform || '').filter(Boolean)
+        };
+      });
+      const rollAnimation = animations.find(animation => /^rewardDieRoll/.test(animation.name));
+      return {
+        elapsed: Math.round(performance.now() - startedAt),
+        present: true,
+        className: die.className,
+        stageClass: stage.className,
+        rewardSkinned: die.classList.contains('reward-skinned'),
+        effect: die.dataset.rewardEffect || '',
+        active,
+        visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.55 && rect.width >= 40 && rect.height >= 40,
+        transform: style.transform || '',
+        animationName: style.animationName || '',
+        animationDuration: style.animationDuration || '',
+        animations,
+        rollAnimationCurrentTime: rollAnimation ? rollAnimation.currentTime : null,
+        rollKeyframeTransforms: rollAnimation ? rollAnimation.transforms : [],
+        rect: { width: rect.width, height: rect.height }
+      };
+    };
+    const finish = reason => {
+      const activeSamples = samples.filter(sample => sample.active);
+      const transformSamples = Array.from(new Set(activeSamples.map(sample => sample.transform).filter(transform => transform && transform !== 'none')));
+      const animationNames = Array.from(new Set(activeSamples.flatMap(sample => [sample.animationName].concat(sample.animations.map(animation => animation.name))).filter(Boolean)));
+      const rollAnimationTimeSamples = activeSamples.map(sample => Number(sample.rollAnimationCurrentTime || 0)).filter(value => Number.isFinite(value));
+      const rollAnimationCurrentTimeDelta = rollAnimationTimeSamples.length
+        ? Math.max(...rollAnimationTimeSamples) - Math.min(...rollAnimationTimeSamples)
+        : 0;
+      const rollKeyframeTransforms = Array.from(new Set(activeSamples.flatMap(sample => sample.rollKeyframeTransforms || []).filter(Boolean)));
+      resolve({
+        reason,
+        activeSamples: activeSamples.length,
+        visibleSamples: samples.filter(sample => sample.visible).length,
+        uniqueTransformCount: transformSamples.length,
+        transformSamples: transformSamples.slice(0, 8),
+        animationNames,
+        rollAnimationCurrentTimeDelta,
+        rollKeyframeTransformCount: rollKeyframeTransforms.length,
+        rollKeyframeTransforms: rollKeyframeTransforms.slice(0, 8),
+        firstActive: activeSamples[0] || null,
+        lastActive: activeSamples[activeSamples.length - 1] || null,
+        samples: samples.slice(-12),
+        state: window.TrashDiceQA.state()
+      });
+    };
+    const tick = () => {
+      const sample = read();
+      samples.push(sample);
+      const activeTransforms = Array.from(new Set(samples.filter(item => item.active).map(item => item.transform).filter(transform => transform && transform !== 'none')));
+      const activeRollTimes = samples.filter(item => item.active).map(item => Number(item.rollAnimationCurrentTime || 0)).filter(value => Number.isFinite(value));
+      const rollTimeDelta = activeRollTimes.length ? Math.max(...activeRollTimes) - Math.min(...activeRollTimes) : 0;
+      if ((activeTransforms.length >= 2 || rollTimeDelta >= 80) && performance.now() - startedAt >= 80) {
+        finish('body-transform-changed');
+        return;
+      }
+      if (performance.now() - startedAt >= ${Number(maxMs) || 980}) {
+        finish('timeout');
+        return;
+      }
+      window.setTimeout(tick, ${Number(intervalMs) || 40});
+    };
+    window.TrashDiceQA.rewardSkinFixture(${Number(totalWins) || 35});
+    window.TrashDiceQA.queueRolls([${Number(rollValue) || 3}]);
+    document.getElementById('rollBtn').click();
+    tick();
+  })`;
+}
+
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|42|47|50';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.2';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.3';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.3';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -437,6 +524,7 @@ async function main() {
     let rewardNextAfterSix = null;
     let rewardAtEleven = null;
     let rewardNextAfterEleven = null;
+    let rewardPrism = null;
 
     for (const viewport of orientationLockedViewports) {
       const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
@@ -843,8 +931,10 @@ async function main() {
       rewardNextAfterSix = nextRewardAtWins(rewardConfig, 6);
       rewardAtEleven = rewardAtMinWins(rewardConfig, 11);
       rewardNextAfterEleven = nextRewardAtWins(rewardConfig, 11);
+      rewardPrism = rewardConfig.find(item => item.name === 'PRISM');
       const rewardDiamond = rewardConfig.find(item => item.name === 'DIAMOND');
       const rewardCosmic = rewardConfig.find(item => item.name === 'COSMIC');
+      assert(rewardPrism && rewardPrism.minWins === 35 && rewardPrism.effect === 'colorCycle', `${viewport.name}: PRISM reward config missing or changed ${JSON.stringify({ rewardPrism, rewardConfig })}`);
       assert(rewardDiamond && rewardCosmic && rewardCosmic.effect === 'discoBall' && rewardCosmic.faceColor !== rewardDiamond.faceColor && rewardCosmic.pipColor !== rewardDiamond.pipColor && rewardCosmic.pipOutline === false && rewardDiamond.pipOutline === true, `${viewport.name}: COSMIC should not reuse DIAMOND's pale crystal visual config ${JSON.stringify({ rewardDiamond, rewardCosmic })}`);
       const cosmicProgression = await evalValue(page, `(() => {
         const snap = wins => {
@@ -1411,6 +1501,11 @@ async function main() {
       })()`);
       assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === rewardConfigNames.join('|'), `${viewport.name}: all reward ladder skins should activate in active order ${JSON.stringify({ rewardConfig, rewardSkinLadderFixtures })}`);
       assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && hasVisibleSeatedRewardAnimation(item)), `${viewport.name}: every reward skin should visibly animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
+      const prismHeroSpin = await evalValue(page, rewardHeroBodySpinProbeScript(rewardPrism.minWins, 3, viewport.mobile ? 900 : 1100, viewport.mobile ? 32 : 40));
+      const expectedPrismHeroRollAnimation = viewport.mobile ? 'rewardDieRollMobile' : 'rewardDieRoll';
+      assert(prismHeroSpin.firstActive && prismHeroSpin.firstActive.rewardSkinned === true && prismHeroSpin.firstActive.effect === rewardPrism.effect, `${viewport.name}: PRISM hero roll probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, prismHeroSpin })}`);
+      assert(prismHeroSpin.animationNames.includes(expectedPrismHeroRollAnimation), `${viewport.name}: PRISM hero die should use the platform reward roll animation, not only the prism pip/face cycle ${JSON.stringify({ expectedPrismHeroRollAnimation, prismHeroSpin })}`);
+      assert(prismHeroSpin.activeSamples >= 2 && prismHeroSpin.rollKeyframeTransformCount >= 2 && (prismHeroSpin.uniqueTransformCount >= 2 || prismHeroSpin.rollAnimationCurrentTimeDelta >= 40), `${viewport.name}: PRISM reward hero die body should visibly spin during roll ${JSON.stringify(prismHeroSpin)}`);
       const liveRewardDieEdge = await evalValue(page, `(() => {
         const fixture = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify(rewardCapDie.minWins)});
         const stage = document.getElementById('p1DieStage');
@@ -2230,6 +2325,9 @@ async function main() {
     assert((productionIpadRollVisual.visible === true && productionIpadRollVisual.stageClass.includes('active')) || productionIpadRollStarted.active === true, `production-like iPad hero die is not visibly rolling ${JSON.stringify(productionIpadRollVisual)}`);
     assert((productionIpadRollVisual.className.includes('ipad-rolling') || productionIpadRollStarted.className.includes('ipad-rolling')) && (productionIpadRollVisual.stageClass.includes('active') || productionIpadRollStarted.stageClass.includes('active')), `production-like iPad hero die roll class is missing ${JSON.stringify(productionIpadRollVisual)}`);
     assert((productionIpadRollVisual.rect.width >= 380 && productionIpadRollVisual.rect.width <= 460 && productionIpadRollVisual.dotRect && productionIpadRollVisual.dotRect.width >= 58) || (productionIpadRollStarted.stageCssWidth >= 300 && productionIpadRollStarted.dotCssMaxWidth >= 58), `production-like iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(productionIpadRollVisual)}`);
+    const productionIpadPrismSpin = await evalValue(productionIpad, rewardHeroBodySpinProbeScript(rewardPrism.minWins, 4, 760, 24));
+    assert(productionIpadPrismSpin.firstActive && productionIpadPrismSpin.firstActive.rewardSkinned === true && productionIpadPrismSpin.firstActive.effect === rewardPrism.effect, `production-like iPad PRISM hero roll probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, productionIpadPrismSpin })}`);
+    assert(productionIpadPrismSpin.animationNames.includes('rewardDieRollMobile') && productionIpadPrismSpin.activeSamples >= 2 && productionIpadPrismSpin.rollKeyframeTransformCount >= 2 && (productionIpadPrismSpin.uniqueTransformCount >= 2 || productionIpadPrismSpin.rollAnimationCurrentTimeDelta >= 40), `production-like iPad PRISM reward hero die body should visibly spin during roll ${JSON.stringify(productionIpadPrismSpin)}`);
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
