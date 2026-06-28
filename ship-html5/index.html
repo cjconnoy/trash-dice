@@ -11202,6 +11202,8 @@ body.inline-game-over .roll-panel {
   const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
+  const AUTO_CONTINUE_NEXT_GAME_RESTART_MS = FAST_PREVIEW_ENABLED ? 1200 : 6200;
+  const AUTO_CONTINUE_WIN_RESTART_EXTRA_MS = FAST_PREVIEW_ENABLED ? 300 : 900;
   const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_SESSION_STORAGE_KEY = 'trashDiceSessionRewardWinsV1';
@@ -11587,6 +11589,7 @@ body.inline-game-over .roll-panel {
       referrer_present: !!document.referrer,
       close_attempted: true
     }));
+    if (p1Autoplay) setP1Autoplay(false, false);
     flushAnalyticsQueue();
 
     if (window.__tdForceQuitFallback) {
@@ -15830,6 +15833,25 @@ body.inline-game-over .roll-panel {
     return !!inlineGameOverState && inlineGameOverState.active && inlineGameOverState.runId === runId;
   }
 
+  function isAutoContinueModeActive() {
+    return p1Autoplay && !p0Autoplay && !p0ReviewMode && !betaMultiplayerActive;
+  }
+
+  function autoContinueRestartDelay(playerWon) {
+    return AUTO_CONTINUE_NEXT_GAME_RESTART_MS + (playerWon ? AUTO_CONTINUE_WIN_RESTART_EXTRA_MS : 0);
+  }
+
+  function cancelInlineAutoContinueRestart() {
+    if (inlineGameOverTimer) {
+      cancelRuntimeTimer(inlineGameOverTimer);
+      inlineGameOverTimer = null;
+    }
+    if (inlineGameOverState && inlineGameOverState.autoContinue) {
+      inlineGameOverState.autoRestartMs = null;
+      inlineGameOverState.autoContinue = false;
+    }
+  }
+
   function enterInlineGameOver(winner, options = {}) {
     const finalWinner = winner === 'p2' ? 'p2' : 'p1';
     if (isInlineGameOverActive()) return inlineGameOverState;
@@ -15840,9 +15862,10 @@ body.inline-game-over .roll-panel {
     const sourceReason = options && options.sourceReason ? String(options.sourceReason) : '';
     const finalRewardRoundAlreadyRecorded = !!(options && options.finalRewardRoundAlreadyRecorded);
     const shouldCreditFinalRewardRound = playerWon && !!(options && options.creditFinalRewardRound) && !finalRewardRoundAlreadyRecorded;
+    const autoContinueWasActive = isAutoContinueModeActive();
     clearRuntimeTimers();
     cancelProgressionWatchdog();
-    stopTerminalAutoplayState();
+    stopTerminalAutoplayState({ preserveP1Autoplay: autoContinueWasActive });
     clearTerminalState();
     clearVictoryEffects();
     clearBenchCelebration(false);
@@ -15854,7 +15877,7 @@ body.inline-game-over .roll-panel {
     forcedRolls = [];
     p0Autoplay = false;
     p0ReviewMode = false;
-    p1Autoplay = false;
+    if (!autoContinueWasActive) p1Autoplay = false;
     clearP1AutoplayTimer();
     roundResolutionState = null;
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
@@ -15877,7 +15900,8 @@ body.inline-game-over .roll-panel {
       sourceReason,
       finalRewardRoundAlreadyRecorded,
       finalRewardRoundCredited: false,
-      autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS || null,
+      autoRestartMs: autoContinueWasActive ? autoContinueRestartDelay(playerWon) : (INLINE_GAME_OVER_AUTO_RESTART_MS || null),
+      autoContinue: autoContinueWasActive,
       autoRestartPausedForPwa: false
     };
     let finalRewardProgress = null;
@@ -15965,7 +15989,8 @@ body.inline-game-over .roll-panel {
       inlineGameOverTimer = runLater(() => {
         if (!isCurrentInlineGameOverRun(runId)) return;
         inlineGameOverTimer = null;
-        init();
+        if (inlineGameOverState.autoContinue && !isAutoContinueModeActive()) return;
+        restartFromInlineGameOver(inlineGameOverState.autoContinue ? 'auto_watch' : 'auto_restart');
       }, inlineGameOverState.autoRestartMs);
     }
 
@@ -16301,13 +16326,15 @@ body.inline-game-over .roll-panel {
     }
   }
 
-  function stopTerminalAutoplayState() {
+  function stopTerminalAutoplayState(options = {}) {
+    const preserveP1Autoplay = !!options.preserveP1Autoplay && p1Autoplay && !betaMultiplayerActive;
     p0ReviewMode = false;
     p0Autoplay = false;
-    p1Autoplay = false;
+    if (!preserveP1Autoplay) p1Autoplay = false;
     clearP0Timer();
     clearP1AutoplayTimer();
-    document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto', 'auto-play-active', 'player-roll-ready');
+    document.body.classList.remove('p0-mode', 'debug-p0', 'player-roll-ready');
+    if (!preserveP1Autoplay) document.body.classList.remove('debug-p1-auto', 'auto-play-active');
     updateP0ReviewControl();
   }
 
@@ -16881,6 +16908,7 @@ body.inline-game-over .roll-panel {
       scheduleP1Autoplay();
     } else {
       clearP1AutoplayTimer();
+      cancelInlineAutoContinueRestart();
       if (announce && gameStarted && current === 'p1' && !busy) setMsg('PLAYER ROLL');
     }
     updateP0ReviewControl();
@@ -18956,6 +18984,7 @@ body.inline-game-over .roll-panel {
           current,
           round,
           totalRolls,
+          gameStarted,
           roundWins: { ...roundWins },
           p0ReviewMode,
           p0Autoplay,

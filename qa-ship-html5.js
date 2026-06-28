@@ -2323,6 +2323,49 @@ async function main() {
     })()`);
     assert(p1AutoProgress.totalRolls >= 3 && p1AutoProgress.p1Autoplay === true && p1AutoProgress.p0Autoplay === false && p1AutoProgress.p0ReviewMode === false, `AUTO probe: natural player-vs-CPU autoplay did not advance correctly ${JSON.stringify(p1AutoProgress)}`);
     assert(p1AutoProgress.firstGameAssistActive === true || p1AutoProgress.firstGameAssistUses > 0, `AUTO probe: autoplay should preserve first-game assist eligibility/usage ${JSON.stringify(p1AutoProgress)}`);
+    const p1AutoTerminal = await evalValue(p1AutoProbe, `(() => {
+      const before = window.TrashDiceQA.state();
+      window.TrashDiceDebug.win();
+      const qa = window.TrashDiceQA.state();
+      const btn = document.getElementById('devP1AutoBtn');
+      return {
+        before,
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        p1Autoplay: qa.p1Autoplay,
+        p0Autoplay: qa.p0Autoplay,
+        p0ReviewMode: qa.p0ReviewMode,
+        inlineGameOver: qa.inlineGameOver,
+        completedGames: qa.completedGames,
+        bodyAutoActive: document.body.classList.contains('auto-play-active')
+      };
+    })()`);
+    assert(p1AutoTerminal.p1Autoplay === true && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: terminal screen should preserve AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.buttonText === 'AUTO ON' && p1AutoTerminal.ariaPressed === 'true' && p1AutoTerminal.bodyAutoActive === true, `AUTO probe: terminal screen should keep AUTO armed visually ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === true && p1AutoTerminal.inlineGameOver.autoRestartMs > 0, `AUTO probe: terminal screen did not arm auto-continue restart ${JSON.stringify(p1AutoTerminal)}`);
+    await waitEval(p1AutoProbe, `(() => {
+      const qa = window.TrashDiceQA.state();
+      return qa.gameStarted === true && qa.p1Autoplay === true && !qa.inlineGameOver && qa.totalRolls >= 1;
+    })()`, 'AUTO probe auto-continue next game', 9000);
+    const p1AutoAfterContinue = await evalValue(p1AutoProbe, `(() => {
+      const qa = window.TrashDiceQA.state();
+      const btn = document.getElementById('devP1AutoBtn');
+      return {
+        totalRolls: qa.totalRolls,
+        current: qa.current,
+        round: qa.round,
+        p1Autoplay: qa.p1Autoplay,
+        p0Autoplay: qa.p0Autoplay,
+        p0ReviewMode: qa.p0ReviewMode,
+        inlineGameOver: !!(qa.inlineGameOver && qa.inlineGameOver.active),
+        completedGames: qa.completedGames,
+        buttonText: btn.textContent.trim(),
+        ariaPressed: btn.getAttribute('aria-pressed'),
+        bodyAutoActive: document.body.classList.contains('auto-play-active')
+      };
+    })()`);
+    assert(p1AutoAfterContinue.p1Autoplay === true && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: auto-continue did not restart cleanly ${JSON.stringify(p1AutoAfterContinue)}`);
+    assert(p1AutoAfterContinue.totalRolls >= 1 && p1AutoAfterContinue.buttonText === 'AUTO ON' && p1AutoAfterContinue.ariaPressed === 'true' && p1AutoAfterContinue.bodyAutoActive === true, `AUTO probe: autoplay did not resume after auto-continue restart ${JSON.stringify(p1AutoAfterContinue)}`);
     const p1AutoOff = await evalValue(p1AutoProbe, `(() => {
       const btn = document.getElementById('devP1AutoBtn');
       btn.click();
