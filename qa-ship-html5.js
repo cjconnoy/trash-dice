@@ -2585,6 +2585,7 @@ async function main() {
         };
       })()`);
       assert(postRewardHoldState.current === 'p1' && postRewardHoldState.rollDisabled === false, `${winner} round-win probe roll not ready after reward hold ${JSON.stringify({ roundWinEarly, postRewardHoldState })}`);
+      assert(postRewardHoldState.burstHidden === true && postRewardHoldState.lossHidden === true && postRewardHoldState.rewardHidden === true, `${winner} round-win probe result UI should quietly clear when the next round is ready ${JSON.stringify({ roundWinEarly, postRewardHoldState })}`);
       const rollGatedReward = await evalValue(roundWinProbe, `(() => {
         const burst = document.getElementById('roundWinBurst');
         const burstContent = burst ? burst.querySelector('.round-win-burst-content') : null;
@@ -2632,18 +2633,7 @@ async function main() {
           rewardSub: (document.getElementById('rewardDieSub') || {}).textContent || ''
         };
       })()`);
-      if (winner === 'p2') {
-        assert(rollGatedReward.lossVisible === true, `green round-win probe: round-loss reward nudge should persist until Roll ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.lossText.includes('Win 1 round to unlock:') && rollGatedReward.lossText.includes(`${rewardFirst.name} DIE SKIN`), `green round-win probe: persistent loss reward nudge copy wrong ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
-        assert(rollGatedReward.lossRect && rollGatedReward.lossRect.height >= 64 && rollGatedReward.lossRect.left >= -1 && rollGatedReward.lossRect.right <= viewports[0].width + 1, `green round-win probe: persistent loss reward nudge should stay enlarged and in viewport ${JSON.stringify(rollGatedReward)}`);
-      } else {
-        assert(rollGatedReward.burstVisible === true && rollGatedReward.burstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should persist until Roll ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.rewardVisible === true && rollGatedReward.rewardName === rewardFirst.name && rollGatedReward.rewardSub === 'DIE SKIN UNLOCKED', `yellow round-win probe: unlocked die should persist until Roll ${JSON.stringify({ rewardFirst, rollGatedReward })}`);
-        assert(rollGatedReward.rewardRect && rollGatedReward.rewardRect.width >= 140 && rollGatedReward.rewardRect.height >= 140, `yellow round-win probe: persistent unlock die should stay hero-sized ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.rewardLayout === 'round-win-companion' && rollGatedReward.rewardOverlapsBurst === false && rollGatedReward.rewardOverlapsRoll === false, `yellow round-win probe: persistent unlock die should not cover ROUND WINNER text or Roll ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.rewardScrimVar.includes('0.56'), `yellow round-win probe: reward unlock scrim should be meaningfully dimmer ${JSON.stringify(rollGatedReward)}`);
-        assert(rollGatedReward.rollRect && rollGatedReward.rewardScrimClearTop !== null && rollGatedReward.rewardScrimClearTop <= rollGatedReward.rollRect.top - 4, `yellow round-win probe: reward unlock scrim should stop above Roll ${JSON.stringify(rollGatedReward)}`);
-      }
+      assert(rollGatedReward.lossVisible === false && rollGatedReward.burstVisible === false && rollGatedReward.rewardVisible === false, `${winner} round-win probe: result/chase UI should not persist until Roll after quiet auto-advance ${JSON.stringify(rollGatedReward)}`);
       await evalValue(roundWinProbe, `document.getElementById('rollBtn').click(); true`);
       await waitEval(roundWinProbe, `(() => {
         const burst = document.getElementById('roundWinBurst');
@@ -2716,6 +2706,8 @@ async function main() {
         return {
           winner: state.inlineGameOver && state.inlineGameOver.winner,
           active: state.inlineGameOver && state.inlineGameOver.active,
+          autoRestartMs: state.inlineGameOver && state.inlineGameOver.autoRestartMs,
+          autoContinue: state.inlineGameOver && state.inlineGameOver.autoContinue,
           rollButtonText: (roll || {}).textContent || '',
           terminalRewardNudge: {
             visible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none' && nudgeRectRaw && nudgeRectRaw.width >= 120 && nudgeRectRaw.height >= 28),
@@ -2738,6 +2730,7 @@ async function main() {
       })()`);
       assert(outcomeState.active === true, `${outcome.label} probe: wrap-up not active ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.autoContinue === false && outcomeState.autoRestartMs >= 3000 && outcomeState.autoRestartMs <= 5000, `${outcome.label} probe: wrap-up should quietly auto-advance after a short result beat ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.rollButtonText.includes('KEEP PLAYING!'), `${outcome.label} probe: keep-playing CTA missing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.terminalRewardNudge.visible === true && outcomeState.terminalRewardNudge.layout === 'player-panel-dock' && outcomeState.terminalRewardNudge.overlapsRoll === false && outcomeState.terminalRewardNudge.dockedToPlayerPanel === true, `${outcome.label} probe: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.terminalRewardNudge.animationName.includes('terminalRewardDockedAttract') && outcomeState.terminalRewardNudge.beforeAnimationName.includes('terminalRewardAttractSweep'), `${outcome.label} probe: terminal reward nudge should be the animated attract-mode element ${JSON.stringify(outcomeState)}`);
@@ -2745,6 +2738,17 @@ async function main() {
         assert(outcomeState.outcomeCard.visible === true && outcomeState.outcomeCard.animationName === 'none' && outcomeState.outcomeCard.rect.width <= 660, `${outcome.label} probe: GAME OVER outcome panel should be static and smaller than the reward chase ${JSON.stringify(outcomeState)}`);
       }
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
+      await waitEval(outcomeProbe, `(() => {
+        const state = window.TrashDiceQA.state();
+        return !state.inlineGameOver && state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
+      })()`, `${outcome.label} probe quiet auto-advance`, 7000);
+      const outcomeAutoAdvance = await evalValue(outcomeProbe, `(() => ({
+        state: window.TrashDiceQA.state(),
+        rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      }))()`);
+      assert(outcomeAutoAdvance.rollText.includes('ROLL') && !outcomeAutoAdvance.state.inlineGameOver && outcomeAutoAdvance.state.gameStarted === true, `${outcome.label} probe: quiet auto-advance did not leave the next game ready ${JSON.stringify(outcomeAutoAdvance)}`);
+      assert(outcomeAutoAdvance.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_game_continue') && outcomeAutoAdvance.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_game_continue'), `${outcome.label} probe: quiet auto-advance analytics missing ${JSON.stringify(outcomeAutoAdvance.events)}`);
     }
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));

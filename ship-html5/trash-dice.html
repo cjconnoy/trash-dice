@@ -11202,9 +11202,8 @@ body.inline-game-over .roll-panel {
   const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
-  const AUTO_CONTINUE_NEXT_GAME_RESTART_MS = FAST_PREVIEW_ENABLED ? 1200 : 6200;
-  const AUTO_CONTINUE_WIN_RESTART_EXTRA_MS = FAST_PREVIEW_ENABLED ? 300 : 900;
-  const INLINE_GAME_OVER_AUTO_RESTART_MS = 0;
+  const GAME_RESULT_LOSS_AUTO_ADVANCE_MS = 4000;
+  const GAME_RESULT_WIN_AUTO_ADVANCE_MS = 5000;
   const REWARD_DICE_STORAGE_KEY = 'trashDiceRewardWinsV1';
   const REWARD_DICE_SESSION_STORAGE_KEY = 'trashDiceSessionRewardWinsV1';
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
@@ -11590,6 +11589,7 @@ body.inline-game-over .roll-panel {
       close_attempted: true
     }));
     if (p1Autoplay) setP1Autoplay(false, false);
+    cancelInlineGameOverAutoAdvance();
     flushAnalyticsQueue();
 
     if (window.__tdForceQuitFallback) {
@@ -15837,16 +15837,16 @@ body.inline-game-over .roll-panel {
     return p1Autoplay && !p0Autoplay && !p0ReviewMode && !betaMultiplayerActive;
   }
 
-  function autoContinueRestartDelay(playerWon) {
-    return AUTO_CONTINUE_NEXT_GAME_RESTART_MS + (playerWon ? AUTO_CONTINUE_WIN_RESTART_EXTRA_MS : 0);
+  function gameResultAutoAdvanceDelay(playerWon) {
+    return playerWon ? GAME_RESULT_WIN_AUTO_ADVANCE_MS : GAME_RESULT_LOSS_AUTO_ADVANCE_MS;
   }
 
-  function cancelInlineAutoContinueRestart() {
+  function cancelInlineGameOverAutoAdvance() {
     if (inlineGameOverTimer) {
       cancelRuntimeTimer(inlineGameOverTimer);
       inlineGameOverTimer = null;
     }
-    if (inlineGameOverState && inlineGameOverState.autoContinue) {
+    if (inlineGameOverState) {
       inlineGameOverState.autoRestartMs = null;
       inlineGameOverState.autoContinue = false;
     }
@@ -15900,7 +15900,7 @@ body.inline-game-over .roll-panel {
       sourceReason,
       finalRewardRoundAlreadyRecorded,
       finalRewardRoundCredited: false,
-      autoRestartMs: autoContinueWasActive ? autoContinueRestartDelay(playerWon) : (INLINE_GAME_OVER_AUTO_RESTART_MS || null),
+      autoRestartMs: gameResultAutoAdvanceDelay(playerWon),
       autoContinue: autoContinueWasActive,
       autoRestartPausedForPwa: false
     };
@@ -15990,7 +15990,7 @@ body.inline-game-over .roll-panel {
         if (!isCurrentInlineGameOverRun(runId)) return;
         inlineGameOverTimer = null;
         if (inlineGameOverState.autoContinue && !isAutoContinueModeActive()) return;
-        restartFromInlineGameOver(inlineGameOverState.autoContinue ? 'auto_watch' : 'auto_restart');
+        restartFromInlineGameOver(inlineGameOverState.autoContinue ? 'auto_watch' : 'auto_game_continue');
       }, inlineGameOverState.autoRestartMs);
     }
 
@@ -16908,7 +16908,7 @@ body.inline-game-over .roll-panel {
       scheduleP1Autoplay();
     } else {
       clearP1AutoplayTimer();
-      cancelInlineAutoContinueRestart();
+      cancelInlineGameOverAutoAdvance();
       if (announce && gameStarted && current === 'p1' && !busy) setMsg('PLAYER ROLL');
     }
     updateP0ReviewControl();
@@ -17575,6 +17575,9 @@ body.inline-game-over .roll-panel {
 
       current = 'p1';
       clearDie(null);
+      hideRoundWinBurst();
+      hideRewardDieUnlock();
+      hideRoundLossRewardNudge();
       clearRoundWinnerStatus(false);
       clearPlayerPayoutFanfare(false);
       syncUI();
@@ -17686,7 +17689,7 @@ body.inline-game-over .roll-panel {
     const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
     if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) init();
     gameOver(forcedWinner);
-    return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: INLINE_GAME_OVER_AUTO_RESTART_MS };
+    return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: gameResultAutoAdvanceDelay(forcedWinner === 'p1') };
   }
 
   function resetToGameStart() {
