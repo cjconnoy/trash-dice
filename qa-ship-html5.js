@@ -2018,13 +2018,19 @@ async function main() {
       window.setTimeout(() => {
         const die = document.getElementById('p1Die');
         const stage = document.getElementById('p1DieStage');
+        const dot = die.querySelector('.dot');
         const rect = die.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const dotRect = dot ? dot.getBoundingClientRect() : null;
         const style = getComputedStyle(die);
         resolve({
           className: die.className,
           stageClass: stage.className,
           visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
           rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top },
+          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top },
+          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
           animations: die.getAnimations().map(animation => animation.animationName || ''),
           message: document.getElementById('message').textContent.trim()
         });
@@ -2032,6 +2038,7 @@ async function main() {
     })`);
     assert(productionIpadRollVisual.visible === true, `production-like iPad hero die is not visibly rolling ${JSON.stringify(productionIpadRollVisual)}`);
     assert(productionIpadRollVisual.className.includes('ipad-rolling') && productionIpadRollVisual.stageClass.includes('active'), `production-like iPad hero die roll class is missing ${JSON.stringify(productionIpadRollVisual)}`);
+    assert(productionIpadRollVisual.rect.width >= 380 && productionIpadRollVisual.rect.width <= 460 && productionIpadRollVisual.dotRect && productionIpadRollVisual.dotRect.width >= 58, `production-like iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(productionIpadRollVisual)}`);
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
@@ -2127,6 +2134,36 @@ async function main() {
     })()`);
     assert(tallIpadTitleInitial.state.deviceProfile.isIpad === true && tallIpadTitleInitial.state.tabletEffectsLite === false, `tall iPad probe should reproduce the non-tablet-effects title path ${JSON.stringify(tallIpadTitleInitial)}`);
     assert(tallIpadTitleInitial.bodyClasses.includes('ipad-title-can-hidden') && tallIpadTitleInitial.canDisplay === 'none' && tallIpadTitleInitial.canVisible === false, `tall iPad title can should not appear beside the start card ${JSON.stringify(tallIpadTitleInitial)}`);
+    await evalValue(tallIpadTitle, `document.getElementById('startBtn').click(); true`);
+    await waitEval(tallIpadTitle, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'tall iPad game start');
+    const tallIpadRollVisual = await evalValue(tallIpadTitle, `new Promise(resolve => {
+      window.TrashDiceQA.queueRolls([5]);
+      document.getElementById('rollBtn').click();
+      window.setTimeout(() => {
+        const die = document.getElementById('p1Die');
+        const stage = document.getElementById('p1DieStage');
+        const dot = die.querySelector('.dot');
+        const rect = die.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const dotRect = dot ? dot.getBoundingClientRect() : null;
+        const style = getComputedStyle(die);
+        resolve({
+          state: window.TrashDiceQA.state(),
+          bodyClasses: document.body.className,
+          className: die.className,
+          stageClass: stage.className,
+          visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
+          rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom },
+          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          animations: die.getAnimations().map(animation => animation.animationName || '')
+        });
+      }, 180);
+    })`);
+    assert(tallIpadRollVisual.visible === true && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadRollVisual.rect.width >= 380 && tallIpadRollVisual.rect.width <= 480 && tallIpadRollVisual.dotRect && tallIpadRollVisual.dotRect.width >= 58, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadRollVisual.rect.left >= -20 && tallIpadRollVisual.rect.right <= tallIpadRollVisual.viewport.width + 20 && tallIpadRollVisual.rect.top >= -20 && tallIpadRollVisual.rect.bottom <= tallIpadRollVisual.viewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
 
     const legacyIpadViewport = {
       ...productionIpadViewport,
@@ -2206,12 +2243,19 @@ async function main() {
       window.setTimeout(() => {
         const die = document.getElementById('p1Die');
         const stage = document.getElementById('p1DieStage');
+        const dot = die.querySelector('.dot');
         const rect = die.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const dotRect = dot ? dot.getBoundingClientRect() : null;
         const style = getComputedStyle(die);
         resolve({
           className: die.className,
           stageClass: stage.className,
           visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
+          rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom },
+          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
           animations: die.getAnimations().map(animation => ({
             name: animation.animationName || '',
             duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
@@ -2221,6 +2265,7 @@ async function main() {
     })`);
     assert(legacyIpadRollVisual.visible === true, `legacy iPad hero die should remain visible during snap-roll ${JSON.stringify(legacyIpadRollVisual)}`);
     assert(legacyIpadRollVisual.className.includes('ipad-rolling') && legacyIpadRollVisual.animations.some(animation => animation.name === 'dieRollLegacyIpad'), `legacy iPad roll animation should use snap-roll profile ${JSON.stringify(legacyIpadRollVisual)}`);
+    assert(legacyIpadRollVisual.rect.width >= 380 && legacyIpadRollVisual.rect.width <= 460 && legacyIpadRollVisual.dotRect && legacyIpadRollVisual.dotRect.width >= 58, `legacy iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(legacyIpadRollVisual)}`);
 
     const legacyIpadHandoff = await evalValue(legacyIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(legacyIpadHandoff.expectedHandoffMs <= 130, `legacy iPad CPU handoff constant is too slow ${JSON.stringify(legacyIpadHandoff)}`);

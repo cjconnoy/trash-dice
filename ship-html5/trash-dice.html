@@ -6427,6 +6427,25 @@ body.legacy-ipad-performance[data-game-started="true"].player-roll-ready .trash-
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage.active {
   animation: none !important;
 }
+body[data-device-profile="ipad"][data-game-started="true"] .inventory-cluster .roll-die-stage,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .inventory-cluster .roll-die-stage {
+  --roll-stage-size: clamp(276px, 32vw, 300px);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .inventory-cluster .roll-die-stage,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .inventory-cluster .roll-die-stage {
+  --roll-stage-size: clamp(334px, 48.5vw, 372px);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die {
+  padding: clamp(24px, 7.2vw, 39px);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .dot,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .dot,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .dot {
+  max-width: clamp(60px, 15vw, 87px);
+  max-height: clamp(60px, 15vw, 87px);
+}
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.rolling,
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ipad-rolling {
   animation: dieRollIpadLite 0.52s cubic-bezier(.18,.84,.16,1) both;
