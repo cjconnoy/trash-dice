@@ -1275,9 +1275,13 @@ async function main() {
       }
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
-      await sleep(650);
+      await sleep(760);
       const terminalWindup = await evalValue(page, `window.TrashDiceQA.roundWinsWindupState()`);
-      assert(terminalWindup.present === true && terminalWindup.visible === true && terminalWindup.label === 'ROUNDS WON:' && terminalWindup.count === 'x1' && terminalWindup.finalWins === 2 && terminalWindup.currentWins === 1 && terminalWindup.complete === false && terminalWindup.startWins === 1 && terminalWindup.firstTickDelayMs >= 800 && terminalWindup.className.includes('is-winding'), `${viewport.name}: game-win round counter should visibly hold at x1 before winding up ${JSON.stringify(terminalWindup)}`);
+      const expectedWindupFirstTickDelay = viewport.mobile ? 1200 : 800;
+      assert(terminalWindup.present === true && terminalWindup.visible === true && terminalWindup.label === 'ROUNDS WON:' && terminalWindup.count === 'x1' && terminalWindup.finalWins === 2 && terminalWindup.currentWins === 1 && terminalWindup.complete === false && terminalWindup.startWins === 1 && terminalWindup.firstTickDelayMs >= expectedWindupFirstTickDelay && terminalWindup.className.includes('is-winding'), `${viewport.name}: game-win round counter should visibly hold at x1 before winding up ${JSON.stringify(terminalWindup)}`);
+      if (viewport.mobile) {
+        assert(terminalWindup.opacity >= 0.85 && terminalWindup.countAnimationName.includes('inlineRoundWinsTick') && terminalWindup.haloAnimationName.includes('inlineRoundWinsChipHalo'), `${viewport.name}: mobile/tablet round counter should visibly hold and shimmer before ticking ${JSON.stringify(terminalWindup)}`);
+      }
       await sleep(1700);
       const terminal = await evalValue(page, `(() => ({
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),

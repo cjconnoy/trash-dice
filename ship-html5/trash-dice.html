@@ -4710,6 +4710,10 @@ body.inline-game-over.inline-game-win .inline-result-chip {
   transform: translate3d(0, 8px, 0) scale(0.88);
   animation: terminalWinSubPop 0.42s cubic-bezier(.13,.9,.15,1.18) 0.52s both;
 }
+body.mobile-roll-smoothing.inline-game-over.inline-game-win .inline-result-chip,
+body.tablet-effects-lite.inline-game-over.inline-game-win .inline-result-chip {
+  animation-delay: 0.26s;
+}
 body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
   filter: saturate(1.18) brightness(1.08);
 }
@@ -15394,7 +15398,7 @@ body.inline-game-over .roll-panel {
     if (!inlineResultChip || !inlineResultChipText) return;
     const finalWins = Math.max(1, normalizeRewardWins(totalWins));
     const vipActive = isVipDiscoUnlocked(finalWins);
-    const firstTickDelayMs = 940;
+    const firstTickDelayMs = MOBILE_ROLL_SMOOTHING ? 1280 : 940;
     const maxTicks = finalWins <= 18 ? finalWins : (finalWins <= 60 ? 24 : 32);
     const step = Math.max(1, Math.ceil((finalWins - 1) / Math.max(1, maxTicks - 1)));
     const plannedTicks = Math.max(0, Math.ceil((finalWins - 1) / step));
@@ -17632,6 +17636,8 @@ body.inline-game-over .roll-panel {
         const count = inlineResultChip.querySelector('.inline-result-chip-count');
         const rect = inlineResultChip.getBoundingClientRect();
         const style = getComputedStyle(inlineResultChip);
+        const countStyle = count ? getComputedStyle(count) : null;
+        const haloStyle = getComputedStyle(inlineResultChip, '::before');
         return {
           present: true,
           hidden: !!inlineResultChip.hidden,
@@ -17648,7 +17654,11 @@ body.inline-game-over .roll-panel {
           firstTickDelayMs: Number(inlineResultChip.dataset.windupFirstTickDelayMs || 0),
           tickMs: Number(inlineResultChip.dataset.windupTickMs || 0),
           className: inlineResultChip.className,
-          countMinWidth: count ? getComputedStyle(count).minWidth : ''
+          opacity: Number.parseFloat(style.opacity || '0'),
+          animationName: style.animationName || '',
+          countAnimationName: countStyle ? countStyle.animationName || '' : '',
+          haloAnimationName: haloStyle ? haloStyle.animationName || '' : '',
+          countMinWidth: countStyle ? countStyle.minWidth : ''
         };
       },
       titleHeroDiceState() {
