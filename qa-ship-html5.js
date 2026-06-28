@@ -255,9 +255,11 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|42|47|50';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.2';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
+const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
+const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -1517,7 +1519,7 @@ async function main() {
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} game complete`);
       await sleep(760);
       const terminalWindup = await evalValue(page, `window.TrashDiceQA.roundWinsWindupState()`);
-      const expectedWindupFirstTickDelay = viewport.mobile ? 1200 : 800;
+      const expectedWindupFirstTickDelay = viewport.mobile ? GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS.mobile : GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS.desktop;
       assert(terminalWindup.present === true && terminalWindup.visible === true && terminalWindup.label === 'ROUNDS WON:' && terminalWindup.count === 'x1' && terminalWindup.finalWins === 2 && terminalWindup.currentWins === 1 && terminalWindup.complete === false && terminalWindup.startWins === 1 && terminalWindup.firstTickDelayMs >= expectedWindupFirstTickDelay && terminalWindup.className.includes('is-winding'), `${viewport.name}: game-win round counter should visibly hold at x1 before winding up ${JSON.stringify(terminalWindup)}`);
       if (viewport.mobile) {
         assert(terminalWindup.opacity >= 0.85 && terminalWindup.countAnimationName.includes('inlineRoundWinsTick') && terminalWindup.haloAnimationName.includes('inlineRoundWinsChipHalo'), `${viewport.name}: mobile/tablet round counter should visibly hold and shimmer before ticking ${JSON.stringify(terminalWindup)}`);
@@ -1771,7 +1773,7 @@ async function main() {
       assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === '' && terminal.outcomeCard.subHidden === true && terminal.outcomeCard.subDisplay === 'none', `${viewport.name}: game-win outcome card should remove the CPU cannot come back subline ${JSON.stringify(terminal.outcomeCard)}`);
       assert(/245,\s*200,\s*0|255,\s*248,\s*171|229,\s*173,\s*0/.test(terminal.outcomeCard.backgroundImage) && /11,\s*92,\s*49|8,\s*99,\s*53/.test(terminal.outcomeCard.titleColor), `${viewport.name}: game-win outcome card should use the inverted prize color treatment ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.outcomeCard.animationName.includes('terminalWinStamp') && terminal.outcomeCard.edgeAnimationName.includes('terminalWinEdgeFlash') && terminal.outcomeCard.sparkAnimationName.includes('terminalWinDiceSpark'), `${viewport.name}: game-win outcome card should use the slam, edge flash, and dice sparkle beats ${JSON.stringify(terminal.outcomeCard)}`);
-      assert(terminal.outcomeCard.chip.visible === true && terminal.outcomeCard.chip.label === 'ROUNDS WON:' && terminal.outcomeCard.chip.count === 'x2' && /ROUNDS WON:\s*x2/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.windupComplete === true && terminal.outcomeCard.chip.windupTicks >= 1 && terminal.outcomeCard.chip.roundWins === 2 && terminal.outcomeCard.chip.windupCurrent === 2 && terminal.outcomeCard.chip.firstTickDelayMs >= 800 && terminal.outcomeCard.chip.tickMs >= 42 && parseFloat(terminal.outcomeCard.chip.fontSize || '0') >= (viewport.mobile ? 16 : 28) && parseFloat(terminal.outcomeCard.chip.countFontSize || '0') >= (viewport.mobile ? 26 : 44) && !terminal.outcomeCard.chip.text.includes('DICE SECURED') && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include the larger session round-wins arcade wind-up chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
+      assert(terminal.outcomeCard.chip.visible === true && terminal.outcomeCard.chip.label === 'ROUNDS WON:' && terminal.outcomeCard.chip.count === 'x2' && /ROUNDS WON:\s*x2/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.windupComplete === true && terminal.outcomeCard.chip.windupTicks >= 1 && terminal.outcomeCard.chip.roundWins === 2 && terminal.outcomeCard.chip.windupCurrent === 2 && terminal.outcomeCard.chip.firstTickDelayMs >= expectedWindupFirstTickDelay && terminal.outcomeCard.chip.tickMs >= (viewport.mobile ? GAME_WIN_ROUND_WINS_TICK_MIN_MS.mobile : GAME_WIN_ROUND_WINS_TICK_MIN_MS.desktop) && parseFloat(terminal.outcomeCard.chip.fontSize || '0') >= (viewport.mobile ? 16 : 28) && parseFloat(terminal.outcomeCard.chip.countFontSize || '0') >= (viewport.mobile ? 26 : 44) && !terminal.outcomeCard.chip.text.includes('DICE SECURED') && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include the larger session round-wins arcade wind-up chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
       assert(terminal.outcomeCard.fitsViewport === true && terminal.outcomeCard.clearsPlayAgain === true, `${viewport.name}: game-win outcome card should fit above Keep Playing ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.roundWinBurst.present === true && terminal.roundWinBurst.visible === false, `${viewport.name}: game-win card should not stack on top of the round-win burst ${JSON.stringify(terminal.roundWinBurst)}`);
       assert(terminal.winnerPanel === true && terminal.winnerPile === true && terminal.winnerPraise === true, `${viewport.name}: player game-win should reuse the round-win lower panel celebration ${JSON.stringify(terminal)}`);
