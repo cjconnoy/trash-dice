@@ -4587,6 +4587,7 @@ body.inline-game-over.inline-game-win .inline-result-sub {
   display: none !important;
 }
 .inline-result-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4609,14 +4610,33 @@ body.inline-game-over.inline-game-win .inline-result-sub {
     0 3px 0 rgba(6,53,29,0.52),
     0 9px 16px rgba(0,0,0,0.18),
     inset 0 0 0 1px rgba(255,255,255,0.12);
+  isolation: isolate;
+}
+.inline-result-chip::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  z-index: -1;
+  border: 2px solid rgba(255,242,56,0.78);
+  border-radius: inherit;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
 }
 body.inline-game-over.inline-game-win .inline-result-chip {
   opacity: 0;
   transform: translate3d(0, 8px, 0) scale(0.88);
   animation: terminalWinSubPop 0.42s cubic-bezier(.13,.9,.15,1.18) 0.52s both;
 }
+body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
+  filter: saturate(1.18) brightness(1.08);
+}
+.inline-result-chip.is-winding::before {
+  animation: inlineRoundWinsChipHalo 0.38s steps(2, end) infinite;
+}
 .inline-result-chip-icon {
   position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   width: clamp(19px, 5vw, 28px);
   height: clamp(18px, 4.8vw, 26px);
@@ -4652,6 +4672,8 @@ body.inline-game-over.inline-game-win .inline-result-chip {
   box-shadow: 0 -6px 0 rgba(255,244,163,0.35);
 }
 .inline-result-chip-text {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
@@ -4660,17 +4682,27 @@ body.inline-game-over.inline-game-win .inline-result-chip {
   min-width: 0;
 }
 .inline-result-chip-label {
+  color: #fff4a3;
   opacity: 0.9;
 }
 .inline-result-chip-count {
+  display: inline-block;
+  min-width: calc(var(--round-wins-count-ch, 3) * 1ch);
   color: #ffffff;
-  font-size: 1.18em;
+  font-size: 1.34em;
+  text-align: left;
   text-shadow:
     0 2px 0 rgba(5,48,26,0.82),
     0 0 8px rgba(255,244,163,0.42);
 }
 .inline-result-chip.is-winding .inline-result-chip-count {
   animation: inlineRoundWinsTick 0.18s steps(2, end) infinite;
+}
+.inline-result-chip.is-tick-pop .inline-result-chip-count {
+  animation: inlineRoundWinsNumberPop 0.16s cubic-bezier(.15,.92,.16,1.26) both;
+}
+.inline-result-chip.is-complete .inline-result-chip-count {
+  animation: inlineRoundWinsFinalPop 0.34s cubic-bezier(.13,.86,.16,1.18) both;
 }
 .inline-result-chip.is-vip {
   border-color: rgba(124,232,255,0.94);
@@ -4814,6 +4846,28 @@ body.inline-game-over.inline-game-win .inline-result-chip {
 @keyframes inlineRoundWinsTick {
   0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
   50% { transform: translateY(-1px) scale(1.08); filter: brightness(1.22); }
+}
+@keyframes inlineRoundWinsChipHalo {
+  0%, 100% {
+    opacity: 0.16;
+    transform: scale(0.94);
+    box-shadow: 0 0 0 0 rgba(255,242,56,0.2);
+  }
+  50% {
+    opacity: 0.74;
+    transform: scale(1.04);
+    box-shadow: 0 0 18px 3px rgba(255,242,56,0.36);
+  }
+}
+@keyframes inlineRoundWinsNumberPop {
+  0% { transform: translateY(2px) scale(0.92); filter: brightness(1); }
+  58% { transform: translateY(-2px) scale(1.18); filter: brightness(1.36); }
+  100% { transform: translateY(0) scale(1); filter: brightness(1.08); }
+}
+@keyframes inlineRoundWinsFinalPop {
+  0% { transform: translateY(0) scale(1); filter: brightness(1.05); }
+  45% { transform: translateY(-3px) scale(1.24); filter: brightness(1.45); }
+  100% { transform: translateY(0) scale(1); filter: brightness(1); }
 }
 @keyframes terminalWinStamp {
   0% {
@@ -15096,10 +15150,12 @@ body.inline-game-over .roll-panel {
     if (!inlineResultChip || !inlineResultChipText) return;
     const finalWins = Math.max(1, normalizeRewardWins(totalWins));
     const displayWins = clamp(Math.floor(Number(currentWins) || 1), 1, finalWins);
+    inlineResultChip.style.setProperty('--round-wins-count-ch', String(Math.max(3, String(finalWins).length + 1)));
     inlineResultChip.dataset.roundWins = String(finalWins);
+    inlineResultChip.dataset.windupCurrent = String(displayWins);
     inlineResultChip.classList.toggle('is-vip', !!vipActive);
     inlineResultChipText.innerHTML = `
-      <span class="inline-result-chip-label">ROUND WINS</span>
+      <span class="inline-result-chip-label">ROUNDS WON:</span>
       <span class="inline-result-chip-count">x${displayWins}</span>
       ${vipActive ? '<span class="inline-result-chip-vip">VIP-ONLY DISCO PARTY</span>' : ''}
     `;
@@ -15110,21 +15166,50 @@ body.inline-game-over .roll-panel {
     if (!inlineResultChip || !inlineResultChipText) return;
     const finalWins = Math.max(1, normalizeRewardWins(totalWins));
     const vipActive = isVipDiscoUnlocked(finalWins);
-    const tickMs = finalWins >= 80 ? 9 : (finalWins >= 24 ? 18 : 44);
-    const step = finalWins >= 80 ? Math.ceil(finalWins / 50) : Math.max(1, Math.ceil(finalWins / 140));
-    let currentWins = 0;
+    const firstTickDelayMs = 940;
+    const maxTicks = finalWins <= 18 ? finalWins : (finalWins <= 60 ? 24 : 32);
+    const step = Math.max(1, Math.ceil((finalWins - 1) / Math.max(1, maxTicks - 1)));
+    const plannedTicks = Math.max(0, Math.ceil((finalWins - 1) / step));
+    const windupMs = clamp(320 + finalWins * 38, 380, finalWins >= 80 ? 980 : 1120);
+    const tickMs = plannedTicks > 0 ? clamp(Math.round(windupMs / plannedTicks), finalWins >= 60 ? 28 : 42, 420) : 0;
+    let currentWins = 1;
+    let tickCount = 0;
+    inlineResultChip.classList.remove('is-complete', 'is-tick-pop');
     inlineResultChip.classList.add('is-winding');
+    inlineResultChip.dataset.windupComplete = 'false';
+    inlineResultChip.dataset.windupStart = '1';
+    inlineResultChip.dataset.windupTicks = '0';
+    inlineResultChip.dataset.windupStep = String(step);
+    inlineResultChip.dataset.windupFirstTickDelayMs = String(firstTickDelayMs);
+    inlineResultChip.dataset.windupTickMs = String(tickMs);
+    setInlineRoundWinsChip(currentWins, finalWins, vipActive);
+    const finish = () => {
+      setInlineRoundWinsChip(finalWins, finalWins, vipActive);
+      inlineResultChip.dataset.windupComplete = 'true';
+      inlineResultChip.dataset.windupTicks = String(tickCount);
+      inlineResultChip.classList.remove('is-winding', 'is-tick-pop');
+      inlineResultChip.classList.add('is-complete');
+      inlineRoundWinsWindupTimer = null;
+    };
+    if (plannedTicks <= 0) {
+      inlineRoundWinsWindupTimer = runLater(finish, firstTickDelayMs);
+      return;
+    }
     const tick = () => {
-      currentWins = currentWins <= 0 ? 1 : Math.min(finalWins, currentWins + step);
+      currentWins = Math.min(finalWins, currentWins + step);
+      tickCount++;
       setInlineRoundWinsChip(currentWins, finalWins, vipActive);
+      inlineResultChip.dataset.windupTicks = String(tickCount);
+      inlineResultChip.classList.remove('is-tick-pop');
+      void inlineResultChip.offsetWidth;
+      inlineResultChip.classList.add('is-tick-pop');
       if (currentWins < finalWins) {
         inlineRoundWinsWindupTimer = runLater(tick, tickMs);
       } else {
-        inlineRoundWinsWindupTimer = null;
-        inlineResultChip.classList.remove('is-winding');
+        finish();
       }
     };
-    tick();
+    inlineRoundWinsWindupTimer = runLater(tick, firstTickDelayMs);
   }
 
   function clearInlineEndingVisuals() {
@@ -15138,8 +15223,16 @@ body.inline-game-over .roll-panel {
     if (inlineResultChip) {
       inlineResultChip.hidden = true;
       inlineResultChip.setAttribute('aria-hidden', 'true');
-      inlineResultChip.classList.remove('is-winding', 'is-vip');
+      inlineResultChip.classList.remove('is-winding', 'is-tick-pop', 'is-complete', 'is-vip');
       inlineResultChip.removeAttribute('data-round-wins');
+      inlineResultChip.removeAttribute('data-windup-current');
+      inlineResultChip.removeAttribute('data-windup-complete');
+      inlineResultChip.removeAttribute('data-windup-start');
+      inlineResultChip.removeAttribute('data-windup-ticks');
+      inlineResultChip.removeAttribute('data-windup-step');
+      inlineResultChip.removeAttribute('data-windup-first-tick-delay-ms');
+      inlineResultChip.removeAttribute('data-windup-tick-ms');
+      inlineResultChip.style.removeProperty('--round-wins-count-ch');
     }
     if (inlineResultChipText) inlineResultChipText.textContent = '';
     if (trashCan) {
@@ -17285,6 +17378,31 @@ body.inline-game-over .roll-panel {
       },
       rewardDieState() {
         return getRewardDieState();
+      },
+      roundWinsWindupState() {
+        if (!inlineResultChip || !inlineResultChipText) return { present: false };
+        const label = inlineResultChip.querySelector('.inline-result-chip-label');
+        const count = inlineResultChip.querySelector('.inline-result-chip-count');
+        const rect = inlineResultChip.getBoundingClientRect();
+        const style = getComputedStyle(inlineResultChip);
+        return {
+          present: true,
+          hidden: !!inlineResultChip.hidden,
+          visible: !inlineResultChip.hidden && style.display !== 'none' && rect.width >= 90 && rect.height >= 22,
+          text: inlineResultChipText.textContent.replace(/\s+/g, ' ').trim(),
+          label: label ? label.textContent.replace(/\s+/g, ' ').trim() : '',
+          count: count ? count.textContent.replace(/\s+/g, ' ').trim() : '',
+          finalWins: Number(inlineResultChip.dataset.roundWins || 0),
+          currentWins: Number(inlineResultChip.dataset.windupCurrent || 0),
+          complete: inlineResultChip.dataset.windupComplete === 'true',
+          startWins: Number(inlineResultChip.dataset.windupStart || 0),
+          tickCount: Number(inlineResultChip.dataset.windupTicks || 0),
+          step: Number(inlineResultChip.dataset.windupStep || 0),
+          firstTickDelayMs: Number(inlineResultChip.dataset.windupFirstTickDelayMs || 0),
+          tickMs: Number(inlineResultChip.dataset.windupTickMs || 0),
+          className: inlineResultChip.className,
+          countMinWidth: count ? getComputedStyle(count).minWidth : ''
+        };
       },
       titleHeroDiceState() {
         return titleHeroDiceSnapshot();
