@@ -1153,9 +1153,9 @@ body.inline-game-over .roll-panel {
   width: min(92%, 560px);
   max-width: 560px;
   min-height: clamp(116px, 16vw, 166px);
-  animation: inlineGameOverPanelPulse 1.18s cubic-bezier(.16,.82,.18,1) infinite;
+  animation: none;
   transform-origin: 50% 55%;
-  will-change: transform, filter;
+  will-change: auto;
   cursor: pointer;
 }
 .player-panel.bench-celebrate {
@@ -3469,6 +3469,11 @@ body.inline-game-over .roll-panel {
 
 @media (prefers-reduced-motion: reduce) {
   body.vip-disco-party[data-game-started="true"]::after,
+  body.inline-game-over .terminal-reward-nudge,
+  body.inline-game-over .terminal-reward-nudge::before,
+  body.inline-game-over .terminal-reward-nudge::after,
+  body.inline-game-over .terminal-reward-unlock,
+  body.inline-game-over .terminal-reward-nudge .reward-nudge-die,
   .inline-result-chip.is-winding .inline-result-chip-count,
   .roll-die-stage.active:has(.die.reward-skinned.effect-discoBall)::before,
   .reward-die-unlock.show .reward-die-wrap,
@@ -3941,6 +3946,7 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]:not(.inli
 }
 .terminal-reward-nudge {
   position: relative;
+  isolation: isolate;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -3960,36 +3966,84 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]:not(.inli
   color: #fff27a;
   text-align: left;
   pointer-events: none;
+  overflow: hidden;
 }
 body.inline-game-over .terminal-reward-nudge {
-  width: min(100%, 620px);
-  gap: clamp(0.46rem, 1.75vw, 0.72rem);
-  margin-bottom: clamp(0.42rem, 1.4vw, 0.64rem);
-  padding: clamp(0.46rem, 1.65vw, 0.7rem) clamp(0.64rem, 2.65vw, 1rem);
-  border-radius: clamp(12px, 2.7vw, 18px);
+  width: min(100%, 700px);
+  gap: clamp(0.62rem, 2.15vw, 0.98rem);
+  margin-bottom: clamp(0.46rem, 1.5vw, 0.72rem);
+  padding: clamp(0.62rem, 2.05vw, 0.96rem) clamp(0.86rem, 3vw, 1.32rem);
+  border-width: 3px;
+  border-color: rgba(255,244,163,0.94);
+  border-radius: clamp(14px, 3.2vw, 22px);
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(255,255,255,0.42), transparent 43%),
+    radial-gradient(circle at 88% 88%, rgba(245,200,0,0.22), transparent 45%),
+    linear-gradient(180deg, rgba(22,122,62,0.98), rgba(6,58,30,0.95));
   box-shadow:
-    0 4px 0 rgba(5,50,27,0.5),
-    0 12px 24px rgba(0,0,0,0.24),
-    0 0 18px rgba(245,200,0,0.24),
-    inset 0 0 0 1px rgba(255,255,255,0.14);
+    0 7px 0 rgba(5,50,27,0.58),
+    0 16px 29px rgba(0,0,0,0.3),
+    0 0 25px rgba(245,200,0,0.42),
+    0 0 52px rgba(255,39,26,0.12),
+    inset 0 0 0 2px rgba(255,255,255,0.16);
+  animation: terminalRewardAttractGlow 0.82s steps(2, end) infinite;
+  transform-origin: 50% 52%;
+  will-change: transform, filter, box-shadow;
+}
+body.inline-game-over .terminal-reward-nudge::before,
+body.inline-game-over .terminal-reward-nudge::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+body.inline-game-over .terminal-reward-nudge::before {
+  z-index: 0;
+  inset: -58% -28%;
+  background:
+    linear-gradient(105deg, transparent 0 38%, rgba(255,255,255,0.42) 45%, rgba(255,242,56,0.34) 50%, transparent 58% 100%);
+  mix-blend-mode: screen;
+  transform: translateX(-58%) skewX(-17deg);
+  animation: terminalRewardAttractSweep 1.02s cubic-bezier(.2,.8,.18,1) infinite;
+}
+body.inline-game-over .terminal-reward-nudge::after {
+  z-index: 2;
+  inset: 3px;
+  border: 2px solid rgba(255,242,56,0.62);
+  border-radius: inherit;
+  box-shadow:
+    0 0 18px rgba(255,242,56,0.34),
+    inset 0 0 18px rgba(255,242,56,0.14);
+  opacity: 0.7;
+  animation: terminalRewardAttractRim 0.82s steps(2, end) infinite;
+}
+body.inline-game-over .terminal-reward-nudge > * {
+  position: relative;
+  z-index: 1;
 }
 body.inline-game-over .terminal-reward-kicker {
-  font-size: clamp(0.78rem, 2.15vw, 1.02rem);
+  font-size: clamp(0.88rem, 2.5vw, 1.18rem);
+  color: #fff27a;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.48),
+    0 0 12px rgba(245,200,0,0.42);
 }
 body.inline-game-over .terminal-reward-line {
-  font-size: clamp(0.8rem, 2.24vw, 1.06rem);
+  font-size: clamp(0.9rem, 2.58vw, 1.24rem);
 }
 body.inline-game-over .terminal-reward-unlock {
-  font-size: clamp(1.02rem, 3.35vw, 1.42rem);
+  font-size: clamp(1.18rem, 3.85vw, 1.74rem);
+  color: #ffffff;
+  animation: terminalRewardUnlockFlash 0.82s steps(2, end) infinite;
 }
 body.inline-game-over .terminal-reward-copy {
-  gap: 0.06rem;
+  gap: clamp(0.04rem, 0.45vw, 0.12rem);
 }
 body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
-  flex-basis: clamp(46px, 10.6vw, 66px);
-  width: clamp(46px, 10.6vw, 66px);
-  height: clamp(46px, 10.6vw, 66px);
-  padding: clamp(6px, 1.45vw, 9px);
+  flex-basis: clamp(58px, 12.4vw, 86px);
+  width: clamp(58px, 12.4vw, 86px);
+  height: clamp(58px, 12.4vw, 86px);
+  padding: clamp(8px, 1.7vw, 12px);
+  animation: terminalRewardDieFlash 0.82s steps(2, end) infinite;
 }
 .terminal-reward-copy {
   min-width: 0;
@@ -4096,25 +4150,26 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
 @media (max-width: 480px) and (max-height: 620px) {
   body.inline-game-over .terminal-reward-nudge {
     gap: 0.5rem;
-    padding: 0.44rem 0.68rem 0.48rem;
+    padding: 0.54rem 0.72rem 0.58rem;
+    border-width: 2px;
   }
 
   body.inline-game-over .terminal-reward-kicker {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
   }
 
   body.inline-game-over .terminal-reward-line {
-    font-size: 0.84rem;
+    font-size: 0.88rem;
   }
 
   body.inline-game-over .terminal-reward-unlock {
-    font-size: 1.04rem;
+    font-size: 1.08rem;
   }
 
   body.inline-game-over .reward-nudge-die {
-    flex-basis: 52px;
-    width: 52px;
-    height: 52px;
+    flex-basis: 54px;
+    width: 54px;
+    height: 54px;
     padding: 7px;
   }
 }
@@ -4484,6 +4539,20 @@ body.inline-game-over.inline-game-win .inline-result-banner {
     0 0 34px var(--terminal-outcome-glow),
     inset 0 0 0 3px rgba(255,255,255,0.16);
 }
+body.inline-game-over.inline-game-loss .inline-result-banner {
+  top: clamp(226px, 40dvh, 432px);
+  width: min(calc(100vw - 44px), 640px);
+  padding: clamp(10px, 2.65vw, 18px) clamp(16px, 4.2vw, 32px) clamp(10px, 2.55vw, 17px);
+  border-width: 2px;
+  animation: none;
+  transform: translate3d(-50%, -50%, 0) rotate(-1.2deg) scale(0.9);
+  filter: drop-shadow(0 10px 10px rgba(16,39,20,0.26));
+  box-shadow:
+    0 8px 0 var(--terminal-outcome-edge),
+    0 16px 28px rgba(0,0,0,0.34),
+    0 0 18px var(--terminal-outcome-glow),
+    inset 0 0 0 2px rgba(255,255,255,0.1);
+}
 body.inline-game-over.inline-game-win .inline-result-banner::before,
 body.inline-game-over.inline-game-win .inline-result-banner::after {
   content: '';
@@ -4554,6 +4623,10 @@ body.inline-game-over.inline-game-win .inline-result-title {
     0 12px 18px rgba(0,0,0,0.34),
     0 0 26px rgba(245,200,0,0.46);
 }
+body.inline-game-over.inline-game-loss .inline-result-title {
+  font-size: clamp(1.88rem, 6.7vw, 4.25rem);
+  animation: none;
+}
 body.inline-game-over .inline-result-title span {
   display: block;
 }
@@ -4582,6 +4655,11 @@ body.inline-game-over.inline-game-win .inline-result-sub {
   opacity: 0;
   transform: translate3d(0, 8px, 0) scale(0.86);
   animation: terminalWinSubPop 0.42s cubic-bezier(.13,.9,.15,1.18) 0.42s both;
+}
+body.inline-game-over.inline-game-loss .inline-result-sub {
+  font-size: clamp(0.84rem, 3.2vw, 1.18rem);
+  padding: clamp(6px, 1.6vw, 9px) clamp(12px, 3.2vw, 18px) clamp(7px, 1.7vw, 10px);
+  animation: none;
 }
 .inline-result-chip[hidden] {
   display: none !important;
@@ -4917,6 +4995,97 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
+@keyframes terminalRewardAttractGlow {
+  0%, 100% {
+    filter: brightness(1) saturate(1.02);
+    box-shadow:
+      0 7px 0 rgba(5,50,27,0.58),
+      0 16px 29px rgba(0,0,0,0.3),
+      0 0 25px rgba(245,200,0,0.42),
+      0 0 52px rgba(255,39,26,0.12),
+      inset 0 0 0 2px rgba(255,255,255,0.16);
+  }
+  50% {
+    filter: brightness(1.18) saturate(1.16);
+    box-shadow:
+      0 8px 0 rgba(5,50,27,0.62),
+      0 18px 32px rgba(0,0,0,0.33),
+      0 0 36px rgba(245,200,0,0.66),
+      0 0 70px rgba(255,39,26,0.2),
+      inset 0 0 0 2px rgba(255,255,255,0.22);
+  }
+}
+@keyframes terminalRewardDockedAttract {
+  0%, 100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-0.5deg) scale(1);
+  }
+  18% {
+    transform: translate3d(-50%, calc(-50% - 2px), 0) rotate(1deg) scale(1.035);
+  }
+  38% {
+    transform: translate3d(-50%, -50%, 0) rotate(-1.2deg) scale(0.992);
+  }
+  58% {
+    transform: translate3d(-50%, calc(-50% - 1px), 0) rotate(0.7deg) scale(1.025);
+  }
+}
+@keyframes terminalRewardAttractSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-58%) skewX(-17deg);
+  }
+  18% {
+    opacity: 0.95;
+  }
+  62% {
+    opacity: 0.28;
+    transform: translateX(54%) skewX(-17deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(72%) skewX(-17deg);
+  }
+}
+@keyframes terminalRewardAttractRim {
+  0%, 100% {
+    opacity: 0.56;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.34);
+  }
+}
+@keyframes terminalRewardUnlockFlash {
+  0%, 100% {
+    text-shadow:
+      0 1px 0 rgba(0,0,0,0.52),
+      0 0 10px rgba(245,200,0,0.28);
+  }
+  50% {
+    text-shadow:
+      0 1px 0 rgba(0,0,0,0.58),
+      0 0 16px rgba(245,200,0,0.68),
+      0 0 26px rgba(255,255,255,0.28);
+  }
+}
+@keyframes terminalRewardDieFlash {
+  0%, 100% {
+    filter: brightness(1.02) saturate(1.02);
+    box-shadow:
+      3px 4px 0 var(--reward-edge),
+      7px 8px 0 rgba(0,0,0,0.26),
+      inset 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  50% {
+    filter: brightness(1.22) saturate(1.18);
+    box-shadow:
+      3px 4px 0 var(--reward-edge),
+      7px 8px 0 rgba(0,0,0,0.26),
+      0 0 18px rgba(255,242,56,0.62),
+      inset 0 0 0 1px rgba(255,255,255,0.28);
+  }
+}
 @keyframes terminalWinEdgeFlash {
   0% {
     opacity: 0;
@@ -4980,6 +5149,17 @@ body.inline-game-win #p1StatusBar.round-winner-praise {
   body.inline-game-over.inline-game-win .inline-result-banner {
     top: clamp(210px, 37dvh, 340px);
   }
+  body.inline-game-over.inline-game-loss .inline-result-banner {
+    top: clamp(214px, 38dvh, 344px);
+    width: calc(100vw - 42px);
+    padding: clamp(9px, 2.8vw, 15px) clamp(14px, 4.4vw, 24px) clamp(9px, 2.8vw, 15px);
+  }
+  body.inline-game-over.inline-game-loss .inline-result-title {
+    font-size: clamp(1.72rem, 8.8vw, 2.8rem);
+  }
+  body.inline-game-over.inline-game-loss .inline-result-sub {
+    font-size: clamp(0.78rem, 3.8vw, 1.06rem);
+  }
 }
 @media (max-width: 480px) and (max-height: 700px) {
   body.inline-game-over .inline-result-banner {
@@ -4992,15 +5172,21 @@ body.inline-game-win #p1StatusBar.round-winner-praise {
   body.inline-game-over.inline-game-win .inline-result-title {
     font-size: clamp(1.68rem, 9.5vw, 2.78rem);
   }
+  body.inline-game-over.inline-game-loss .inline-result-banner {
+    width: calc(100vw - 38px);
+  }
+  body.inline-game-over.inline-game-loss .inline-result-title {
+    font-size: clamp(1.54rem, 8vw, 2.38rem);
+  }
   body.inline-game-over .terminal-reward-nudge {
-    gap: 0.42rem;
-    padding: 0.42rem 0.56rem 0.46rem;
+    gap: 0.48rem;
+    padding: 0.5rem 0.64rem 0.54rem;
   }
   body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
-    flex-basis: 44px;
-    width: 44px;
-    height: 44px;
-    padding: 6px;
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+    padding: 7px;
   }
 }
 .roll-btn:disabled {
@@ -5793,6 +5979,9 @@ body.tablet-effects-lite.inline-game-over .slot-die.reward-skinned .slot-reward-
 }
 body.tablet-effects-lite.inline-game-over .inline-result-banner {
   animation: inlineResultPop 0.5s cubic-bezier(.13,.86,.16,1) both;
+}
+body.tablet-effects-lite.inline-game-over.inline-game-loss .inline-result-banner {
+  animation: none !important;
 }
 body.tablet-effects-lite.inline-game-over.inline-game-win .inline-result-banner {
   animation: terminalWinStamp 0.68s cubic-bezier(.12,.9,.13,1.12) both;
@@ -10074,6 +10263,9 @@ body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
 
 body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
   transform: translate3d(-50%, -50%, 0);
+  animation:
+    terminalRewardDockedAttract 0.82s cubic-bezier(.12,.86,.16,1) infinite,
+    terminalRewardAttractGlow 0.82s steps(2, end) infinite;
 }
 
 .round-loss-reward-nudge[data-layout="player-panel-dock"] .reward-nudge-die,
@@ -10082,6 +10274,13 @@ body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] .r
   width: clamp(46px, 8vw, 72px);
   height: clamp(46px, 8vw, 72px);
   padding: clamp(6px, 1.25vw, 10px);
+}
+
+body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] .reward-nudge-die {
+  flex-basis: clamp(58px, 9.5vw, 88px);
+  width: clamp(58px, 9.5vw, 88px);
+  height: clamp(58px, 9.5vw, 88px);
+  padding: clamp(8px, 1.48vw, 12px);
 }
 
 body.inline-game-over .roll-panel {
@@ -12237,9 +12436,11 @@ body.inline-game-over .roll-panel {
     const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     const maxWidth = Math.max(0, viewportWidth - 20);
     const minWidth = Math.min(220, maxWidth);
+    const terminalAttract = el === terminalRewardNudge && document.body.classList.contains('inline-game-over');
     const inset = panelRect.width >= 520 ? 18 : 12;
-    const width = clamp(panelRect.width - inset, minWidth, maxWidth);
-    const minHeight = Math.max(58, Math.round(panelRect.height - 16));
+    const widthBonus = terminalAttract ? Math.min(38, Math.max(16, panelRect.width * 0.045)) : 0;
+    const width = clamp(panelRect.width - inset + widthBonus, minWidth, maxWidth);
+    const minHeight = Math.max(terminalAttract ? 70 : 58, Math.round(panelRect.height - (terminalAttract ? 4 : 16)));
     let left = panelRect.left + scrollX + panelRect.width / 2;
     let top = panelRect.top + scrollY + panelRect.height / 2;
     left = clamp(left, scrollX + width / 2 + 10, scrollX + viewportWidth - width / 2 - 10);

@@ -1460,6 +1460,9 @@ async function main() {
           const dieRect = die.getBoundingClientRect();
           const dieStyle = getComputedStyle(die);
           const style = getComputedStyle(nudge);
+          const beforeStyle = getComputedStyle(nudge, '::before');
+          const afterStyle = getComputedStyle(nudge, '::after');
+          const unlockStyle = getComputedStyle(unlock);
           const btnRect = btn.getBoundingClientRect();
           const panelRect = panel ? panel.getBoundingClientRect() : null;
           const overlaps = (a, b) => !!(a && b && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
@@ -1482,13 +1485,18 @@ async function main() {
             dieName: die.dataset.rewardName || '',
             dieEffect: die.dataset.rewardEffect || '',
             diePipColor: dieStyle.getPropertyValue('--reward-pip').trim(),
+            animationName: style.animationName || '',
+            beforeAnimationName: beforeStyle.animationName || '',
+            afterAnimationName: afterStyle.animationName || '',
+            dieAnimationName: dieStyle.animationName || '',
+            unlockAnimationName: unlockStyle.animationName || '',
             layout: nudge.dataset.layout || '',
             rect: { left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), height: Math.round(r.height), top: Math.round(r.top), bottom: Math.round(r.bottom) },
             playerPanelRect: panelRect ? { left: Math.round(panelRect.left), right: Math.round(panelRect.right), width: Math.round(panelRect.width), height: Math.round(panelRect.height), top: Math.round(panelRect.top), bottom: Math.round(panelRect.bottom) } : null,
             dieRect: { width: Math.round(dieRect.width), height: Math.round(dieRect.height) },
             abovePlayAgain: r.bottom <= btnRect.top + 2,
             overlapsPlayAgain: overlaps(r, btnRect),
-            dockedToPlayerPanel: !!(panelRect && r.left >= panelRect.left - 18 && r.right <= panelRect.right + 18 && centerDeltaY <= Math.max(18, panelRect.height * 0.42)),
+            dockedToPlayerPanel: !!(panelRect && r.left >= panelRect.left - 36 && r.right <= panelRect.right + 36 && centerDeltaY <= Math.max(24, panelRect.height * 0.48)),
             fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1
           };
         })(),
@@ -1528,10 +1536,11 @@ async function main() {
       assert(terminal.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterTwo.name}` && terminal.terminalRewardNudge.line === `Win ${rewardNextAfterTwo.minWins - 2} more rounds to unlock:` && terminal.terminalRewardNudge.unlockLine === `${rewardNextAfterTwo.name} DIE SKIN`, `${viewport.name}: terminal reward nudge copy wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.nextName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.roundsNeeded === String(rewardNextAfterTwo.minWins - 2) && terminal.terminalRewardNudge.targetWins === String(rewardNextAfterTwo.minWins) && terminal.terminalRewardNudge.copyMode === 'close' && terminal.terminalRewardNudge.preview === 'next', `${viewport.name}: terminal reward nudge milestone metadata wrong ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.dieEffect === rewardNextAfterTwo.effect, `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
-      assert(terminal.terminalRewardNudge.rect.height >= 54 && terminal.terminalRewardNudge.dieRect.width >= 44 && terminal.terminalRewardNudge.dieRect.height >= 44, `${viewport.name}: terminal reward nudge should stay legible without becoming a competing outcome banner ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      assert(terminal.terminalRewardNudge.rect.height >= 68 && terminal.terminalRewardNudge.dieRect.width >= 52 && terminal.terminalRewardNudge.dieRect.height >= 52, `${viewport.name}: terminal reward nudge should read bigger than the old static dock ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      assert(terminal.terminalRewardNudge.animationName.includes('terminalRewardDockedAttract') && terminal.terminalRewardNudge.beforeAnimationName.includes('terminalRewardAttractSweep') && terminal.terminalRewardNudge.afterAnimationName.includes('terminalRewardAttractRim') && terminal.terminalRewardNudge.dieAnimationName.includes('terminalRewardDieFlash') && terminal.terminalRewardNudge.unlockAnimationName.includes('terminalRewardUnlockFlash'), `${viewport.name}: terminal reward nudge should carry attract-mode motion while the outcome panel stays calmer ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true && terminal.terminalRewardNudge.layout === 'player-panel-dock' && terminal.terminalRewardNudge.overlapsPlayAgain === false && terminal.terminalRewardNudge.dockedToPlayerPanel === true, `${viewport.name}: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(terminal.terminalRewardNudge)}`);
       if (viewport.mobile && viewport.width > 720) {
-        assert(terminal.activeAnimationCount <= 8, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
+        assert(terminal.activeAnimationCount <= 12, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);
       }
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
@@ -1563,7 +1572,7 @@ async function main() {
       assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
       assert(terminalLoop.rewardVisible === false, `${viewport.name}: reward unlock should clear before sustained win loop ${JSON.stringify(terminalLoop)}`);
       if (viewport.mobile && viewport.width > 720) {
-        assert(terminalLoop.activeAnimationCount <= 5, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.activeAnimationCount <= 8, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
       }
       const utilityClick = await evalValue(page, `(() => {
         const mute = document.getElementById('audioMuteBtn');
@@ -2565,6 +2574,7 @@ async function main() {
         const state = window.TrashDiceQA.state();
         const roll = document.getElementById('rollBtn');
         const nudge = document.getElementById('terminalRewardNudge');
+        const outcomeCard = document.getElementById('inlineResultBanner');
         const panel = document.getElementById('p1Inventory') ? document.getElementById('p1Inventory').closest('.player-panel') : null;
         const toRect = el => {
           const r = el ? el.getBoundingClientRect() : null;
@@ -2573,6 +2583,10 @@ async function main() {
         const rollRectRaw = roll ? roll.getBoundingClientRect() : null;
         const nudgeRectRaw = nudge ? nudge.getBoundingClientRect() : null;
         const panelRectRaw = panel ? panel.getBoundingClientRect() : null;
+        const outcomeRectRaw = outcomeCard ? outcomeCard.getBoundingClientRect() : null;
+        const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
+        const nudgeBeforeStyle = nudge ? getComputedStyle(nudge, '::before') : null;
+        const outcomeStyle = outcomeCard ? getComputedStyle(outcomeCard) : null;
         const overlaps = (a, b) => !!(a && b && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
         const centerDeltaY = panelRectRaw && nudgeRectRaw
           ? Math.abs((nudgeRectRaw.top + nudgeRectRaw.bottom) / 2 - (panelRectRaw.top + panelRectRaw.bottom) / 2)
@@ -2584,11 +2598,18 @@ async function main() {
           terminalRewardNudge: {
             visible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none' && nudgeRectRaw && nudgeRectRaw.width >= 120 && nudgeRectRaw.height >= 28),
             layout: nudge ? nudge.dataset.layout || '' : '',
+            animationName: nudgeStyle ? nudgeStyle.animationName || '' : '',
+            beforeAnimationName: nudgeBeforeStyle ? nudgeBeforeStyle.animationName || '' : '',
             overlapsRoll: overlaps(nudgeRectRaw, rollRectRaw),
-            dockedToPlayerPanel: !!(nudgeRectRaw && panelRectRaw && nudgeRectRaw.left >= panelRectRaw.left - 18 && nudgeRectRaw.right <= panelRectRaw.right + 18 && centerDeltaY <= Math.max(18, panelRectRaw.height * 0.42)),
+            dockedToPlayerPanel: !!(nudgeRectRaw && panelRectRaw && nudgeRectRaw.left >= panelRectRaw.left - 36 && nudgeRectRaw.right <= panelRectRaw.right + 36 && centerDeltaY <= Math.max(24, panelRectRaw.height * 0.48)),
             rect: toRect(nudge),
             rollRect: toRect(roll),
             playerPanelRect: toRect(panel)
+          },
+          outcomeCard: {
+            visible: !!(outcomeCard && outcomeStyle && outcomeStyle.visibility !== 'hidden' && parseFloat(outcomeStyle.opacity || '0') > 0.1 && outcomeRectRaw && outcomeRectRaw.width > 0 && outcomeRectRaw.height > 0),
+            animationName: outcomeStyle ? outcomeStyle.animationName || '' : '',
+            rect: toRect(outcomeCard)
           },
           outcomeVisible: getComputedStyle(document.getElementById('debugOutcomeControls')).display !== 'none'
         };
@@ -2597,6 +2618,10 @@ async function main() {
       assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.rollButtonText.includes('KEEP PLAYING!'), `${outcome.label} probe: keep-playing CTA missing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.terminalRewardNudge.visible === true && outcomeState.terminalRewardNudge.layout === 'player-panel-dock' && outcomeState.terminalRewardNudge.overlapsRoll === false && outcomeState.terminalRewardNudge.dockedToPlayerPanel === true, `${outcome.label} probe: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(outcomeState)}`);
+      assert(outcomeState.terminalRewardNudge.animationName.includes('terminalRewardDockedAttract') && outcomeState.terminalRewardNudge.beforeAnimationName.includes('terminalRewardAttractSweep'), `${outcome.label} probe: terminal reward nudge should be the animated attract-mode element ${JSON.stringify(outcomeState)}`);
+      if (outcome.label === 'lose') {
+        assert(outcomeState.outcomeCard.visible === true && outcomeState.outcomeCard.animationName === 'none' && outcomeState.outcomeCard.rect.width <= 660, `${outcome.label} probe: GAME OVER outcome panel should be static and smaller than the reward chase ${JSON.stringify(outcomeState)}`);
+      }
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
     }
 
