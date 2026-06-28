@@ -1366,8 +1366,10 @@ async function main() {
           const r = card.getBoundingClientRect();
           const br = btn.getBoundingClientRect();
           const style = getComputedStyle(card);
+          const titleStyle = getComputedStyle(title);
           const subStyle = getComputedStyle(sub);
           const chipStyle = getComputedStyle(chip);
+          const chipCountStyle = chipCount ? getComputedStyle(chipCount) : null;
           const chipRect = chip.getBoundingClientRect();
           const edgeStyle = getComputedStyle(card, '::before');
           const sparkStyle = getComputedStyle(card, '::after');
@@ -1376,6 +1378,10 @@ async function main() {
             visible: style.visibility !== 'hidden' && parseFloat(style.opacity || '0') > 0.9 && r.width >= 240 && r.height >= 120,
             title: title.textContent.replace(/\s+/g, ' ').trim(),
             sub: sub.textContent.replace(/\s+/g, ' ').trim(),
+            subHidden: !!sub.hidden || sub.getAttribute('aria-hidden') === 'true',
+            subDisplay: subStyle.display,
+            backgroundImage: style.backgroundImage,
+            titleColor: titleStyle.color,
             animationName: style.animationName,
             subAnimationName: subStyle.animationName,
             edgeAnimationName: edgeStyle.animationName,
@@ -1395,6 +1401,8 @@ async function main() {
               firstTickDelayMs: Number(chip.dataset.windupFirstTickDelayMs || 0),
               tickMs: Number(chip.dataset.windupTickMs || 0),
               countMinWidth: chipCount ? getComputedStyle(chipCount).minWidth : '',
+              fontSize: chipStyle.fontSize,
+              countFontSize: chipCountStyle ? chipCountStyle.fontSize : '',
               rect: { left: Math.round(chipRect.left), right: Math.round(chipRect.right), top: Math.round(chipRect.top), bottom: Math.round(chipRect.bottom), width: Math.round(chipRect.width), height: Math.round(chipRect.height) }
             },
             fitsViewport: r.left >= -1 && r.right <= window.innerWidth + 1 && r.top >= -1 && r.bottom <= window.innerHeight + 1,
@@ -1513,9 +1521,10 @@ async function main() {
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
       assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
-      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === "CPU CAN'T COME BACK", `${viewport.name}: game-win outcome card missing or wrong ${JSON.stringify(terminal.outcomeCard)}`);
-      assert(terminal.outcomeCard.animationName.includes('terminalWinStamp') && terminal.outcomeCard.subAnimationName.includes('terminalWinSubPop') && terminal.outcomeCard.edgeAnimationName.includes('terminalWinEdgeFlash') && terminal.outcomeCard.sparkAnimationName.includes('terminalWinDiceSpark'), `${viewport.name}: game-win outcome card should use the slam, subline pop, edge flash, and dice sparkle beats ${JSON.stringify(terminal.outcomeCard)}`);
-      assert(terminal.outcomeCard.chip.visible === true && terminal.outcomeCard.chip.label === 'ROUNDS WON:' && terminal.outcomeCard.chip.count === 'x2' && /ROUNDS WON:\s*x2/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.windupComplete === true && terminal.outcomeCard.chip.windupTicks >= 1 && terminal.outcomeCard.chip.roundWins === 2 && terminal.outcomeCard.chip.windupCurrent === 2 && terminal.outcomeCard.chip.firstTickDelayMs >= 800 && terminal.outcomeCard.chip.tickMs >= 42 && !terminal.outcomeCard.chip.text.includes('DICE SECURED') && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include the session round-wins arcade wind-up chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
+      assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === '' && terminal.outcomeCard.subHidden === true && terminal.outcomeCard.subDisplay === 'none', `${viewport.name}: game-win outcome card should remove the CPU cannot come back subline ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(/245,\s*200,\s*0|255,\s*248,\s*171|229,\s*173,\s*0/.test(terminal.outcomeCard.backgroundImage) && /11,\s*92,\s*49|8,\s*99,\s*53/.test(terminal.outcomeCard.titleColor), `${viewport.name}: game-win outcome card should use the inverted prize color treatment ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.animationName.includes('terminalWinStamp') && terminal.outcomeCard.edgeAnimationName.includes('terminalWinEdgeFlash') && terminal.outcomeCard.sparkAnimationName.includes('terminalWinDiceSpark'), `${viewport.name}: game-win outcome card should use the slam, edge flash, and dice sparkle beats ${JSON.stringify(terminal.outcomeCard)}`);
+      assert(terminal.outcomeCard.chip.visible === true && terminal.outcomeCard.chip.label === 'ROUNDS WON:' && terminal.outcomeCard.chip.count === 'x2' && /ROUNDS WON:\s*x2/.test(terminal.outcomeCard.chip.text) && terminal.outcomeCard.chip.windupComplete === true && terminal.outcomeCard.chip.windupTicks >= 1 && terminal.outcomeCard.chip.roundWins === 2 && terminal.outcomeCard.chip.windupCurrent === 2 && terminal.outcomeCard.chip.firstTickDelayMs >= 800 && terminal.outcomeCard.chip.tickMs >= 42 && parseFloat(terminal.outcomeCard.chip.fontSize || '0') >= (viewport.mobile ? 16 : 28) && parseFloat(terminal.outcomeCard.chip.countFontSize || '0') >= (viewport.mobile ? 26 : 44) && !terminal.outcomeCard.chip.text.includes('DICE SECURED') && terminal.outcomeCard.chip.animationName.includes('terminalWinSubPop'), `${viewport.name}: game-win outcome card should include the larger session round-wins arcade wind-up chip inside the card ${JSON.stringify(terminal.outcomeCard.chip)}`);
       assert(terminal.outcomeCard.fitsViewport === true && terminal.outcomeCard.clearsPlayAgain === true, `${viewport.name}: game-win outcome card should fit above Keep Playing ${JSON.stringify(terminal.outcomeCard)}`);
       assert(terminal.roundWinBurst.present === true && terminal.roundWinBurst.visible === false, `${viewport.name}: game-win card should not stack on top of the round-win burst ${JSON.stringify(terminal.roundWinBurst)}`);
       assert(terminal.winnerPanel === true && terminal.winnerPile === true && terminal.winnerPraise === true, `${viewport.name}: player game-win should reuse the round-win lower panel celebration ${JSON.stringify(terminal)}`);
@@ -1729,7 +1738,7 @@ async function main() {
       assert(mathPlayerWinUi.terminalRewardNudge.kicker === `NEXT SKIN: ${rewardNextAfterEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === `ROUNDS WON: 11 / ${rewardNextAfterEleven.minWins}` && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardNextAfterEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should use lightweight progress copy when the next skin is not close ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'progress' && mathPlayerWinUi.terminalRewardNudge.preview === 'next', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardNextAfterEleven.effect, `${viewport.name}: mathematical player win should preview the next chase die after unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === "CPU CAN'T COME BACK" && mathPlayerWinUi.chip.visible === true && /ROUNDS WON:\s*x11/.test(mathPlayerWinUi.chip.text) && !mathPlayerWinUi.chip.text.includes('DICE SECURED'), `${viewport.name}: player-win banner changed ${JSON.stringify(mathPlayerWinUi)}`);
+      assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === '' && mathPlayerWinUi.chip.visible === true && /ROUNDS WON:\s*x11/.test(mathPlayerWinUi.chip.text) && !mathPlayerWinUi.chip.text.includes('DICE SECURED'), `${viewport.name}: player-win banner should remove the subline and emphasize the round counter ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);
       assert(mathPlayerWinUi.p2Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerWinUi.p2LoserReason === true, `${viewport.name}: green loser status should explain mathematical elimination ${JSON.stringify(mathPlayerWinUi)}`);
