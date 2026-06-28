@@ -632,7 +632,7 @@ async function main() {
       assert(initial.titleLogoGlint.frameWidth <= initial.titleLogoGlint.logoWidth + 2, `${viewport.name}: title logo glint frame should not span the page ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.frameOverflow === 'visible' && initial.titleLogoGlint.frameContain === 'none', `${viewport.name}: title logo frame should not clip drop-shadow/backing paint ${JSON.stringify(initial.titleLogoGlint)}`);
       assert(initial.titleLogoGlint.clipPath === 'none' && initial.titleLogoGlint.maskImage !== 'none' && initial.titleLogoGlint.backgroundSize !== 'auto', `${viewport.name}: title logo glint should use a masked horizontal background sweep ${JSON.stringify(initial.titleLogoGlint)}`);
-      await evalValue(page, `window.localStorage.setItem('trashDiceRewardWinsV1', '3'); true`);
+      await evalValue(page, `window.localStorage.setItem('trashDiceRewardWinsV1', '3'); window.sessionStorage.setItem('trashDiceSessionRewardWinsV1', '100'); true`);
       await page.cdp('Page.navigate', { url: `${baseUrl}?source=qa&qa=1&staleRewardProbe=${encodeURIComponent(viewport.name)}` });
       await sleep(700);
       await waitEval(page, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, `${viewport.name} stale reward storage reload`);
@@ -646,15 +646,19 @@ async function main() {
           activeName: state.activeName,
           playerRewardSkinned: skin.playerDie.rewardSkinned,
           playerTier: skin.playerDie.tier,
-          previewOverride: skin.previewOverride
+          previewOverride: skin.previewOverride,
+          sessionStored: window.sessionStorage.getItem('trashDiceSessionRewardWinsV1'),
+          bodyVip: document.body.classList.contains('vip-disco-party'),
+          bodyVipDataset: document.body.dataset.vipDiscoParty || ''
         };
       })()`);
-      assert(staleRewardStorage.stored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '', `${viewport.name}: stale reward storage should not skin a fresh session ${JSON.stringify(staleRewardStorage)}`);
+      assert(staleRewardStorage.stored === null && staleRewardStorage.sessionStored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '' && staleRewardStorage.bodyVip === false && staleRewardStorage.bodyVipDataset === '', `${viewport.name}: stale reward storage should not skin a fresh session or start VIP disco lighting ${JSON.stringify(staleRewardStorage)}`);
       rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
       rewardConfigNames = rewardConfig.map(item => item.name);
-      rewardPairCount = Math.ceil(rewardConfig.length / 2);
+      const titleRewardConfig = rewardConfig.filter(item => !item.vip && item.effect !== 'discoBall');
+      rewardPairCount = Math.ceil(titleRewardConfig.length / 2);
       rewardPairNames = Array.from({ length: rewardPairCount }, (_, i) =>
-        [rewardConfig[i * 2], rewardConfig[i * 2 + 1]].map(item => item ? item.name : 'DEFAULT').join('|')
+        [titleRewardConfig[i * 2], titleRewardConfig[i * 2 + 1]].map(item => item ? item.name : 'DEFAULT').join('|')
       );
       rewardFirst = rewardConfig[0];
       rewardSecond = rewardConfig[1];
@@ -705,16 +709,17 @@ async function main() {
       assert(Math.abs(initial.titleLayout.odgCenterOffset) <= 3, `${viewport.name}: title ODG wordmark is not centered ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.badgeRect === null, `${viewport.name}: beta badge should be removed from retail title ${JSON.stringify(initial.badgeRect)}`);
       const titleHeroDiceCycle = await evalValue(page, `(() => {
-        const pairCount = Math.ceil(window.TrashDiceQA.rewardDiceConfig().length / 2);
+        const pairCount = Math.ceil(window.TrashDiceQA.rewardDiceConfig().filter(item => !item.vip && item.effect !== 'discoBall').length / 2);
         return Array.from({ length: pairCount + 2 }, () => window.TrashDiceQA.advanceTitleHeroDiceCycle());
       })()`);
       const titleHeroDiceNames = titleHeroDiceCycle.map(step => step.dice.map(die => die.rewardName || 'DEFAULT').join('|'));
       const titleRewardCycleSteps = titleHeroDiceCycle.slice(0, rewardPairCount);
-      const titleExpectedRewardDie = (stepIndex, dieIndex) => rewardConfig[stepIndex * 2 + dieIndex] || null;
+      const titleExpectedRewardDie = (stepIndex, dieIndex) => titleRewardConfig[stepIndex * 2 + dieIndex] || null;
       const everyTitleRewardDie = predicate => titleRewardCycleSteps.every((step, stepIndex) =>
         step.dice.every((die, dieIndex) => predicate(die, titleExpectedRewardDie(stepIndex, dieIndex), stepIndex, dieIndex))
       );
       assert(titleHeroDiceNames.join(' > ') === [...rewardPairNames, 'DEFAULT|DEFAULT', rewardPairNames[0]].join(' > '), `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify({ rewardConfig, titleHeroDiceCycle })}`);
+      assert(titleHeroDiceCycle.every(step => step.dice.every(die => die.rewardName !== 'DISCO BALL' && die.rewardEffect !== 'discoBall')), `${viewport.name}: VIP DISCO BALL should never appear in the title reward dice cycle ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(everyTitleRewardDie((die, expected) => expected ? (die.rewardSkinned === true && die.rewardTier === String(expected.tier) && die.rewardEffect === expected.effect) : (die.rewardSkinned === false && die.rewardTier === '' && die.rewardEffect === '')), `${viewport.name}: title reward dice cycle should apply reward visuals and restore the odd final partner to default ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(everyTitleRewardDie((die, expected) => expected ? die.usesRewardDieComponent === true : die.usesRewardDieComponent === false), `${viewport.name}: title reward dice should use the in-game reward component only for configured reward dice ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(titleRewardCycleSteps.every(step => step.dice[0].motionSlot === 'left' && step.dice[0].animationName === 'startYellowStartled' && step.dice[1].motionSlot === 'right' && step.dice[1].animationName === 'startGreenStartled'), `${viewport.name}: title reward dice should share the default left/right idle and can-bite jump animations ${JSON.stringify(titleHeroDiceCycle)}`);
@@ -1059,7 +1064,7 @@ async function main() {
       const discoOverlayConics = (discoDebug.discoOverlayBackground.match(/conic-gradient/g) || []).length;
       const discoOverlayRadials = (discoDebug.discoOverlayBackground.match(/radial-gradient/g) || []).length;
       const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(discoDebug.discoOverlayZIndex) >= 80 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 8 && discoOverlayLinears >= 4 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible multi-spot party lighting ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears })}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 8 && discoOverlayLinears >= 4 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible low-layer multi-spot party lighting ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
@@ -1195,6 +1200,7 @@ async function main() {
         }
         const style = die ? getComputedStyle(die) : null;
         const before = die ? getComputedStyle(die, '::before') : null;
+        const stageShadow = stage ? getComputedStyle(stage, '::before') : null;
         const stageDepth = stage ? getComputedStyle(stage, '::after') : null;
         const rect = die ? die.getBoundingClientRect() : null;
         const slot = document.querySelector('.slot-die.reward-skinned');
@@ -1215,6 +1221,10 @@ async function main() {
           boxShadow: style ? style.boxShadow : '',
           filter: style ? style.filter : '',
           beforeTransform: before ? before.transform : '',
+          stageShadowAnimationName: stageShadow ? stageShadow.animationName : '',
+          stageShadowTransform: stageShadow ? stageShadow.transform : '',
+          stageShadowOpacity: stageShadow ? stageShadow.opacity : '',
+          stageShadowBackground: stageShadow ? [stageShadow.backgroundImage, stageShadow.backgroundColor].join(' ').trim() : '',
           stageDepthContent: stageDepth ? stageDepth.content : '',
           stageDepthOpacity: stageDepth ? stageDepth.opacity : '',
           stageDepthSoftEnough: depthOpacity > 0 && depthOpacity <= 0.45,
@@ -1231,6 +1241,7 @@ async function main() {
         return result;
       })()`);
       assert(liveRewardDieEdge.spin && /rewardDieRoll/.test(liveRewardDieEdge.spin.animationName || ''), `${viewport.name}: reward hero spin should use reward-specific shape-preserving animation ${JSON.stringify(liveRewardDieEdge)}`);
+      assert(liveRewardDieEdge.stageShadowAnimationName === 'none' && liveRewardDieEdge.stageShadowTransform === 'none' && Number.parseFloat(liveRewardDieEdge.stageShadowOpacity || '0') <= 0.5 && !/conic-gradient/i.test(liveRewardDieEdge.stageShadowBackground || ''), `${viewport.name}: DISCO rolling die stage shadow should stay attached instead of using the lagging projector layer ${JSON.stringify(liveRewardDieEdge)}`);
       if (viewport.mobile && viewport.width <= 720) {
         const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
@@ -1754,7 +1765,7 @@ async function main() {
       })()`);
       assert(vipDiscoWin.passed === true && vipDiscoWin.inlineGameOver.rewardDie && vipDiscoWin.inlineGameOver.rewardDie.totalWins === 100, `${viewport.name}: VIP disco win proof failed ${JSON.stringify(vipDiscoWin)}`);
       assert(vipDiscoUi.rewardState.totalWins === 100 && vipDiscoUi.rewardState.activeName === 'DISCO BALL' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true, `${viewport.name}: VIP disco reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
-      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(vipDiscoUi.discoOverlayZIndex) >= 80 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be visible and non-blocking ${JSON.stringify(vipDiscoUi)}`);
+      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(vipDiscoUi.discoOverlayZIndex) <= 1 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be visible, non-blocking, and behind the outcome/game UI ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '100' && /ROUNDS WON:\s*x100/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('VIP-ONLY DISCO PARTY'), `${viewport.name}: VIP game-win chip should wind up to x100 and show the party badge ${JSON.stringify(vipDiscoUi.chip)}`);
       assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO BALL' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO BALL DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped disco skin ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);

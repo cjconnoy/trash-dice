@@ -53,6 +53,7 @@ body {
   background:
     radial-gradient(ellipse at 50% 42%, rgba(255,255,255,0.95), rgba(245,242,234,0.86) 42%, rgba(214,205,190,0.72) 78%, rgba(184,174,160,0.88) 100%),
     linear-gradient(180deg, #faf8f2 0%, #ddd5c8 100%);
+  isolation: isolate;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1439,21 +1440,14 @@ body.inline-game-over .roll-panel {
   z-index: -1;
 }
 .roll-die-stage.active:has(.die.reward-skinned.effect-discoBall)::before {
-  inset: -34% -42% -28% -42%;
-  height: auto;
-  border-radius: 48%;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.82) 0 5%, transparent 11%),
-    conic-gradient(from 24deg,
-      rgba(255,0,204,0.62),
-      rgba(0,255,172,0.44),
-      rgba(42,104,255,0.5),
-      rgba(255,238,42,0.48),
-      rgba(255,0,204,0.62));
-  filter: blur(4px) saturate(1.85) brightness(1.16);
-  opacity: 0.9;
-  transform: rotate(-8deg) scale(0.86, 0.58);
-  animation: rollDiscoDieProjector 0.96s linear infinite;
+  inset: auto 7% -8% 9%;
+  height: 17%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(22,27,55,0.34), transparent 72%);
+  filter: blur(1.5px);
+  opacity: 0.42;
+  transform: none;
+  animation: none;
 }
 .roll-die-stage .die {
   width: 100%;
@@ -3835,7 +3829,7 @@ body.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 0;
   pointer-events: none;
   background:
     radial-gradient(circle at 18% 17%, rgba(255,0,202,0.34), transparent 34%),
@@ -3850,7 +3844,7 @@ body.vip-disco-party[data-game-started="true"]::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 91;
+  z-index: 1;
   pointer-events: none;
   background:
     conic-gradient(from 214deg at 80% 60%,
@@ -3920,8 +3914,14 @@ body.vip-disco-party[data-game-started="true"]::after {
   animation: vipDiscoPartySweep 1.85s linear infinite;
 }
 body.vip-disco-party.inline-game-over::after {
-  z-index: 91;
+  z-index: 1;
   opacity: 0.52;
+}
+body.vip-disco-party[data-game-started="true"] .game-area {
+  z-index: 2;
+}
+body.vip-disco-party[data-game-started="true"] #heroTitle {
+  z-index: 10;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"]::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]::after,
@@ -10741,9 +10741,9 @@ body.inline-game-over .roll-panel {
     { id: 'diamond', tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
     { id: 'prism', tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true },
     { id: 'camo', tier: 9, minWins: 50, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
-    { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true },
-    { id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true }
+    { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true }
   ]);
+  const VIP_REWARD_DIE = Object.freeze({ id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
   function rewardDiceSessionSeed() {
@@ -10801,7 +10801,8 @@ body.inline-game-over .roll-panel {
     return Object.freeze(lineup.map(die => Object.freeze(die)));
   }
 
-  const REWARD_DICE = buildSessionRewardDice();
+  const REGULAR_REWARD_DICE = buildSessionRewardDice();
+  const REWARD_DICE = Object.freeze([...REGULAR_REWARD_DICE, VIP_REWARD_DIE]);
   let forcedRolls = [];
   let betaSocket = null;
   let betaRoomCode = TWO_PLAYER_ENABLED ? cleanRoomCode(URL_OPTIONS.get('room')) : '';
@@ -11966,7 +11967,7 @@ body.inline-game-over .roll-panel {
     } catch (_) {
     }
     try {
-      return normalizeRewardWins(window.sessionStorage.getItem(REWARD_DICE_SESSION_STORAGE_KEY));
+      window.sessionStorage.removeItem(REWARD_DICE_SESSION_STORAGE_KEY);
     } catch (_) {
     }
     return 0;
@@ -11976,7 +11977,7 @@ body.inline-game-over .roll-panel {
     const normalized = normalizeRewardWins(totalWins);
     rewardDieWins = normalized;
     try {
-      window.sessionStorage.setItem(REWARD_DICE_SESSION_STORAGE_KEY, String(normalized));
+      window.sessionStorage.removeItem(REWARD_DICE_SESSION_STORAGE_KEY);
     } catch (_) {
     }
     refreshVipDiscoPartyState();
@@ -12627,8 +12628,8 @@ body.inline-game-over .roll-panel {
   }
 
   function cycleRewardDieReview() {
-    rewardDieReviewIndex = (rewardDieReviewIndex + 1) % REWARD_DICE.length;
-    const die = REWARD_DICE[rewardDieReviewIndex];
+    rewardDieReviewIndex = rewardDieReviewIndex >= REGULAR_REWARD_DICE.length - 1 ? 0 : rewardDieReviewIndex + 1;
+    const die = REGULAR_REWARD_DICE[rewardDieReviewIndex];
     rewardDiePreviewOverride = die;
     if (devRewardDieBtn) {
       devRewardDieBtn.textContent = `D${die.tier}`;
@@ -12760,13 +12761,13 @@ body.inline-game-over .roll-panel {
   }
 
   function applyTitleHeroDiceCycle(index = -1) {
-    const pairCount = Math.ceil(REWARD_DICE.length / 2);
+    const pairCount = Math.ceil(REGULAR_REWARD_DICE.length / 2);
     titleHeroDiceCycleIndex = index >= 0 ? clamp(Math.floor(index), 0, pairCount - 1) : -1;
     const pairStart = titleHeroDiceCycleIndex >= 0 ? titleHeroDiceCycleIndex * 2 : -1;
     startHeroDice.forEach((el, i) => {
       if (!el) return;
       el.dataset.titleRewardPair = titleHeroDiceCycleIndex < 0 ? 'default' : String(titleHeroDiceCycleIndex + 1);
-      const die = pairStart >= 0 ? REWARD_DICE[pairStart + i] : null;
+      const die = pairStart >= 0 ? REGULAR_REWARD_DICE[pairStart + i] : null;
       if (die) {
         renderTitleRewardDie(el, die, i);
       } else {
@@ -12781,7 +12782,7 @@ body.inline-game-over .roll-panel {
 
   function advanceTitleHeroDiceCycle() {
     if (gameStarted) return applyTitleHeroDiceCycle(-1);
-    const pairCount = Math.ceil(REWARD_DICE.length / 2);
+    const pairCount = Math.ceil(REGULAR_REWARD_DICE.length / 2);
     const nextIndex = titleHeroDiceCycleIndex >= pairCount - 1 ? -1 : titleHeroDiceCycleIndex + 1;
     return applyTitleHeroDiceCycle(nextIndex);
   }
