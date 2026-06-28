@@ -2334,6 +2334,13 @@ async function main() {
     assert(laterAssist.deficitCpu.faces.some(face => laterAssist.deficitCpu.openSlots.includes(face)) && laterAssist.deficitCpu.faces.some(face => !laterAssist.deficitCpu.openSlots.includes(face)), `later assist probe: CPU later-session brake should stay soft, not a hard no-streak cap ${JSON.stringify(laterAssist.deficitCpu)}`);
     assert(laterAssist.pressurePlayer.context.active === true && laterAssist.pressurePlayer.context.pressure === true && laterAssist.pressurePlayer.context.behind === false && laterAssist.pressurePlayer.context.assistanceTier === 'pressure', `later assist probe: late low-dice pressure should activate contextual soft help without requiring CPU streak logic ${JSON.stringify(laterAssist.pressurePlayer)}`);
 
+    const lastOpenSlotBuff = await evalValue(openingGuardProbe, `window.TrashDiceQA.lastOpenSlotPlayerBuffProbe({ samples: 600, openFace: 4 })`);
+    assert(lastOpenSlotBuff.chance >= 0.4 && lastOpenSlotBuff.chance <= 0.5, `last-open-slot buff probe: player buff should be meaningful but not guaranteed ${JSON.stringify(lastOpenSlotBuff)}`);
+    assert(lastOpenSlotBuff.player.hitRate >= 0.38 && lastOpenSlotBuff.player.hitRate <= 0.5 && lastOpenSlotBuff.player.hitRate > lastOpenSlotBuff.fairChance * 2.2, `last-open-slot buff probe: player hit rate should rise clearly above fair dice odds ${JSON.stringify(lastOpenSlotBuff)}`);
+    assert(lastOpenSlotBuff.player.openHits > 0 && lastOpenSlotBuff.player.openMisses > 0 && lastOpenSlotBuff.player.buffUses === lastOpenSlotBuff.samples && lastOpenSlotBuff.player.buffHits === lastOpenSlotBuff.player.openHits && lastOpenSlotBuff.player.buffMisses === lastOpenSlotBuff.player.openMisses, `last-open-slot buff probe: player buff should be once-per-fresh-round and still missable ${JSON.stringify(lastOpenSlotBuff)}`);
+    assert(lastOpenSlotBuff.cpu.hitRate >= 0.13 && lastOpenSlotBuff.cpu.hitRate <= 0.2 && lastOpenSlotBuff.cpu.buffUses === 0 && lastOpenSlotBuff.cpu.openHits > 0 && lastOpenSlotBuff.cpu.openMisses > 0, `last-open-slot buff probe: CPU should stay on fair unbuffed die odds ${JSON.stringify(lastOpenSlotBuff)}`);
+    assert(lastOpenSlotBuff.repeat.firstBuff && lastOpenSlotBuff.repeat.usedAfterFirst === true && lastOpenSlotBuff.repeat.secondBuff === null && lastOpenSlotBuff.repeat.usedAfterSecond === true, `last-open-slot buff probe: player buff should not fire twice in one round ${JSON.stringify(lastOpenSlotBuff.repeat)}`);
+
     for (const winner of ['p1', 'p2']) {
       const roundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
       await evalValue(roundWinProbe, `document.getElementById('startBtn').click(); true`);

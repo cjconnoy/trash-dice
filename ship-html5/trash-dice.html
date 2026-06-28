@@ -10837,7 +10837,7 @@ body.inline-game-over .roll-panel {
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
-  const PLAYER_CLUTCH_MAGNET_CHANCE = 0.22;
+  const LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE = 0.44;
   const FIRST_GAME_ASSIST_MAX_USES = 8;
   const FIRST_GAME_ASSIST_PLAYER_HIT_CHANCE = 0.58;
   const FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE = 0.82;
@@ -11050,7 +11050,8 @@ body.inline-game-over .roll-panel {
   let roundWinnerStatusText = 'WINNER';
   let roundWinnerStatusSuppressChaseDie = false;
   let lastPlayerHitPraise = null;
-  let playerClutchMagnetUsedThisRound = false;
+  let lastOpenSlotPlayerBuffUsedThisRound = false;
+  let lastOpenSlotPlayerBuff = null;
   let enduranceAssistRolls = 0;
   let enduranceAssistUsedThisRound = false;
   let lastEnduranceAssist = null;
@@ -13160,7 +13161,8 @@ body.inline-game-over .roll-panel {
     busy = false;
     totalRolls = 0;
     if (TWO_PLAYER_ENABLED) gameStarted = false;
-    playerClutchMagnetUsedThisRound = false;
+    lastOpenSlotPlayerBuffUsedThisRound = false;
+    lastOpenSlotPlayerBuff = null;
     enduranceAssistRolls = 0;
     enduranceAssistUsedThisRound = false;
     lastEnduranceAssist = null;
@@ -16378,10 +16380,23 @@ body.inline-game-over .roll-panel {
     };
   }
 
-  function choosePlayerClutchFace(openFace, chance = PLAYER_CLUTCH_MAGNET_CHANCE) {
+  function chooseLastOpenSlotPlayerBuffFace(openFace, chance = LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE) {
     if (Math.random() < chance) return openFace;
     const otherFaces = [1, 2, 3, 4, 5, 6].filter(face => face !== openFace);
     return randomFrom(otherFaces);
+  }
+
+  function markLastOpenSlotPlayerBuff(face, openFace, chance, context = null) {
+    lastOpenSlotPlayerBuff = {
+      face,
+      openFace,
+      hit: face === openFace,
+      chance,
+      round,
+      totalRolls,
+      assistanceTier: context && context.active ? context.assistanceTier : 'normal',
+      at: Date.now()
+    };
   }
 
   function boardPlacementCount(player) {
@@ -16529,17 +16544,21 @@ body.inline-game-over .roll-panel {
     if (
       player === 'p1' &&
       !p0Autoplay &&
-      !playerClutchMagnetUsedThisRound &&
+      !lastOpenSlotPlayerBuffUsedThisRound &&
       openSlots.length === 1
     ) {
-      playerClutchMagnetUsedThisRound = true;
+      lastOpenSlotPlayerBuffUsedThisRound = true;
       const enduranceClutchChance = enduranceContext.behind
         ? ENDURANCE_ASSIST_PLAYER_CLUTCH_BEHIND_CHANCE
         : ENDURANCE_ASSIST_PLAYER_CLUTCH_CHANCE;
-      const face = choosePlayerClutchFace(
+      const buffChance = enduranceContext.active
+        ? Math.max(LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE, enduranceClutchChance)
+        : LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE;
+      const face = chooseLastOpenSlotPlayerBuffFace(
         openSlots[0],
-        enduranceContext.active ? enduranceClutchChance : PLAYER_CLUTCH_MAGNET_CHANCE
+        buffChance
       );
+      markLastOpenSlotPlayerBuff(face, openSlots[0], buffChance, enduranceContext);
       if (enduranceContext.active && face === openSlots[0]) markEnduranceAssist('player-clutch', face, enduranceContext);
       return face;
     }
@@ -16718,7 +16737,8 @@ body.inline-game-over .roll-panel {
     round     = 1;
     busy      = false;
     totalRolls= 0;
-    playerClutchMagnetUsedThisRound = false;
+    lastOpenSlotPlayerBuffUsedThisRound = false;
+    lastOpenSlotPlayerBuff = null;
     enduranceAssistRolls = 0;
     enduranceAssistUsedThisRound = false;
     lastEnduranceAssist = null;
@@ -17214,7 +17234,8 @@ body.inline-game-over .roll-panel {
       trashDice = [];
       canLoadSignature = null;
       round++;
-      playerClutchMagnetUsedThisRound = false;
+      lastOpenSlotPlayerBuffUsedThisRound = false;
+      lastOpenSlotPlayerBuff = null;
       enduranceAssistUsedThisRound = false;
       syncUI();
       if (lostTrashCount > 0) renderCanLoad();
@@ -17311,7 +17332,7 @@ body.inline-game-over .roll-panel {
     p1Autoplay = false;
     clearP1AutoplayTimer();
     updateP0ReviewControl();
-    playerClutchMagnetUsedThisRound = true;
+    lastOpenSlotPlayerBuffUsedThisRound = true;
     pools = {
       p1: { yellow: forcedWinner === 'p1' ? 1 : 0, green: 0 },
       p2: { yellow: 0, green: forcedWinner === 'p2' ? 1 : 0 }
@@ -17889,6 +17910,174 @@ body.inline-game-over .roll-panel {
           cpuSamples
         };
       },
+      lastOpenSlotPlayerBuffProbe(config = {}) {
+        ensureQaGame();
+        const previous = {
+          board: Array.isArray(board) ? board.map(slot => slot ? { ...slot } : null) : board,
+          pools: JSON.parse(JSON.stringify(pools)),
+          round,
+          totalRolls,
+          roundWins: { ...roundWins },
+          current,
+          gameStarted,
+          busy,
+          p0Autoplay,
+          p0ReviewMode,
+          p1Autoplay,
+          tdCompletedGames,
+          openingComebackAssistRolls,
+          firstGameAssistUses,
+          lastFirstGameAssist,
+          firstGameMiracleRolls,
+          lastFirstGameMiracle,
+          firstRoundGuardRolls,
+          lastFirstRoundGuard,
+          firstRoundCpuIntroPlaced,
+          postLossComebackRoundPending,
+          postLossComebackRoundRolls,
+          postLossComebackRoundConsumed,
+          lastPostLossComebackRound,
+          lastOpenSlotPlayerBuffUsedThisRound,
+          lastOpenSlotPlayerBuff,
+          enduranceAssistRolls,
+          enduranceAssistUsedThisRound,
+          lastEnduranceAssist
+        };
+        const originalRandom = Math.random;
+        const openFace = clamp(Math.floor(Number(config.openFace) || 4), 1, 6);
+        const samples = clamp(Math.floor(Number(config.samples) || 600), 60, 1200);
+
+        function configure(player) {
+          writeCompletedGameCount(1);
+          gameStarted = true;
+          busy = false;
+          p0Autoplay = false;
+          p0ReviewMode = false;
+          p1Autoplay = false;
+          clearP1AutoplayTimer();
+          round = 4;
+          totalRolls = 24;
+          roundWins = { p1: 1, p2: 1 };
+          openingComebackAssistRolls = 0;
+          firstGameAssistUses = 0;
+          lastFirstGameAssist = null;
+          firstGameMiracleRolls = 0;
+          lastFirstGameMiracle = null;
+          firstRoundGuardRolls = 0;
+          lastFirstRoundGuard = null;
+          firstRoundCpuIntroPlaced = true;
+          postLossComebackRoundPending = false;
+          postLossComebackRoundRolls = 0;
+          postLossComebackRoundConsumed = false;
+          lastPostLossComebackRound = null;
+          enduranceAssistRolls = 0;
+          enduranceAssistUsedThisRound = false;
+          lastEnduranceAssist = null;
+          pools = {
+            p1: { yellow: 10, green: 0 },
+            p2: { yellow: 0, green: 10 }
+          };
+          resetPoolFaces();
+          board = Array.from({ length: 6 }, (_, i) => i + 1 === openFace
+            ? null
+            : { player: i % 2 ? 'p2' : 'p1', color: i % 2 ? 'green' : 'yellow', value: i + 1 });
+          current = player === 'p2' ? 'p2' : 'p1';
+          lastOpenSlotPlayerBuffUsedThisRound = !!config.buffUsed;
+          lastOpenSlotPlayerBuff = null;
+        }
+
+        function sample(player, seed) {
+          configure(player);
+          Math.random = rewardDiceSeededRandom(seed);
+          const counts = {};
+          let buffUses = 0;
+          let buffHits = 0;
+          let buffMisses = 0;
+          for (let i = 0; i < samples; i++) {
+            lastOpenSlotPlayerBuffUsedThisRound = !!config.buffUsed;
+            lastOpenSlotPlayerBuff = null;
+            const face = chooseRollValue(player);
+            counts[face] = (counts[face] || 0) + 1;
+            if (lastOpenSlotPlayerBuff) {
+              buffUses++;
+              if (lastOpenSlotPlayerBuff.hit) buffHits++;
+              else buffMisses++;
+            }
+          }
+          const openHits = counts[openFace] || 0;
+          return {
+            counts,
+            openHits,
+            openMisses: samples - openHits,
+            hitRate: openHits / samples,
+            buffUses,
+            buffHits,
+            buffMisses
+          };
+        }
+
+        function repeatWithoutReset() {
+          configure('p1');
+          Math.random = rewardDiceSeededRandom('last-open-slot-repeat');
+          lastOpenSlotPlayerBuffUsedThisRound = false;
+          lastOpenSlotPlayerBuff = null;
+          const first = chooseRollValue('p1');
+          const firstBuff = lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null;
+          const usedAfterFirst = lastOpenSlotPlayerBuffUsedThisRound;
+          lastOpenSlotPlayerBuff = null;
+          const second = chooseRollValue('p1');
+          const secondBuff = lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null;
+          return { first, second, firstBuff, secondBuff, usedAfterFirst, usedAfterSecond: lastOpenSlotPlayerBuffUsedThisRound };
+        }
+
+        try {
+          const player = sample('p1', `last-open-slot-player-${openFace}-${samples}`);
+          const cpu = sample('p2', `last-open-slot-cpu-${openFace}-${samples}`);
+          const repeat = repeatWithoutReset();
+          return {
+            chance: LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE,
+            fairChance: 1 / 6,
+            openFace,
+            samples,
+            player,
+            cpu,
+            repeat
+          };
+        } finally {
+          Math.random = originalRandom;
+          board = previous.board;
+          pools = previous.pools;
+          resetPoolFaces();
+          round = previous.round;
+          totalRolls = previous.totalRolls;
+          roundWins = previous.roundWins;
+          current = previous.current;
+          gameStarted = previous.gameStarted;
+          busy = previous.busy;
+          p0Autoplay = previous.p0Autoplay;
+          p0ReviewMode = previous.p0ReviewMode;
+          p1Autoplay = previous.p1Autoplay;
+          writeCompletedGameCount(previous.tdCompletedGames);
+          openingComebackAssistRolls = previous.openingComebackAssistRolls;
+          firstGameAssistUses = previous.firstGameAssistUses;
+          lastFirstGameAssist = previous.lastFirstGameAssist;
+          firstGameMiracleRolls = previous.firstGameMiracleRolls;
+          lastFirstGameMiracle = previous.lastFirstGameMiracle;
+          firstRoundGuardRolls = previous.firstRoundGuardRolls;
+          lastFirstRoundGuard = previous.lastFirstRoundGuard;
+          firstRoundCpuIntroPlaced = previous.firstRoundCpuIntroPlaced;
+          postLossComebackRoundPending = previous.postLossComebackRoundPending;
+          postLossComebackRoundRolls = previous.postLossComebackRoundRolls;
+          postLossComebackRoundConsumed = previous.postLossComebackRoundConsumed;
+          lastPostLossComebackRound = previous.lastPostLossComebackRound;
+          lastOpenSlotPlayerBuffUsedThisRound = previous.lastOpenSlotPlayerBuffUsedThisRound;
+          lastOpenSlotPlayerBuff = previous.lastOpenSlotPlayerBuff;
+          enduranceAssistRolls = previous.enduranceAssistRolls;
+          enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
+          lastEnduranceAssist = previous.lastEnduranceAssist;
+          syncUI();
+        }
+      },
       cpuEmptyRewardCreditProof(mode = 'trash', startingWins = 0) {
         ensureDevCheatGame();
         const normalizedMode = mode === 'place' ? 'place' : 'trash';
@@ -17952,7 +18141,8 @@ body.inline-game-over .roll-panel {
           p0Autoplay,
           p0ReviewMode,
           p1Autoplay,
-          playerClutchMagnetUsedThisRound,
+          lastOpenSlotPlayerBuffUsedThisRound,
+          lastOpenSlotPlayerBuff,
           enduranceAssistRolls,
           enduranceAssistUsedThisRound,
           lastEnduranceAssist
@@ -17980,7 +18170,9 @@ body.inline-game-over .roll-panel {
         p0ReviewMode = false;
         p1Autoplay = false;
         clearP1AutoplayTimer();
-        playerClutchMagnetUsedThisRound = !!config.clutchUsed;
+        const buffAlreadyUsed = !!(config.buffUsed ?? config.clutchUsed);
+        lastOpenSlotPlayerBuffUsedThisRound = buffAlreadyUsed;
+        lastOpenSlotPlayerBuff = null;
         enduranceAssistRolls = Math.max(0, Math.floor(config.uses || 0));
         enduranceAssistUsedThisRound = !!config.usedThisRound;
         lastEnduranceAssist = null;
@@ -17990,7 +18182,8 @@ body.inline-game-over .roll-panel {
         const samples = Math.max(1, Math.min(300, Math.floor(config.samples || 120)));
         const counts = {};
         for (let i = 0; i < samples; i++) {
-          playerClutchMagnetUsedThisRound = !!config.clutchUsed;
+          lastOpenSlotPlayerBuffUsedThisRound = buffAlreadyUsed;
+          lastOpenSlotPlayerBuff = null;
           enduranceAssistRolls = Math.max(0, Math.floor(config.uses || 0));
           enduranceAssistUsedThisRound = !!config.usedThisRound;
           lastEnduranceAssist = null;
@@ -18009,13 +18202,14 @@ body.inline-game-over .roll-panel {
         p0Autoplay = previous.p0Autoplay;
         p0ReviewMode = previous.p0ReviewMode;
         p1Autoplay = previous.p1Autoplay;
-        playerClutchMagnetUsedThisRound = previous.playerClutchMagnetUsedThisRound;
+        lastOpenSlotPlayerBuffUsedThisRound = previous.lastOpenSlotPlayerBuffUsedThisRound;
+        lastOpenSlotPlayerBuff = previous.lastOpenSlotPlayerBuff;
         enduranceAssistRolls = previous.enduranceAssistRolls;
         enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
         lastEnduranceAssist = previous.lastEnduranceAssist;
         syncUI();
 
-        return { context, openingComebackAssistActive, counts, samples, openSlots };
+        return { context, openingComebackAssistActive, counts, samples, openSlots, buffAlreadyUsed };
       },
       cpuHandoffProbe(value = 1, mode = 'place') {
         ensureQaGame();
@@ -18198,6 +18392,11 @@ body.inline-game-over .roll-panel {
             last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
           },
           postLossComebackRound: snapshotPostLossComebackRound(),
+          lastOpenSlotPlayerBuff: {
+            chance: LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE,
+            usedThisRound: lastOpenSlotPlayerBuffUsedThisRound,
+            last: lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null
+          },
           timings: {
             rollAnimationMs: ROLL_ANIMATION_MS,
             rollRevealHoldMs: ROLL_REVEAL_HOLD_MS,
