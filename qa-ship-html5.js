@@ -404,6 +404,8 @@ async function main() {
         p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
         p1AutoButton: !!document.getElementById('devP1AutoBtn'),
         p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
+        p1AutoButtonText: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').textContent.trim() : '',
+        p1AutoButtonAudienceClass: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').classList.contains('auto-play-btn') : false,
         rewardReviewButton: !!document.getElementById('devRewardDieBtn'),
         rewardReviewButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
         discoButton: !!document.getElementById('devDiscoBtn'),
@@ -585,8 +587,9 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
       assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
-      assert(initial.p1AutoButton === true, `${viewport.name}: P1 AUTO debug button missing`);
-      assert(initial.p1AutoButtonHidden === true, `${viewport.name}: P1 AUTO debug button should hide on title screen`);
+      assert(initial.p1AutoButton === true, `${viewport.name}: AUTO button missing`);
+      assert(initial.p1AutoButtonHidden === true, `${viewport.name}: AUTO button should hide on title screen`);
+      assert(initial.p1AutoButtonText === 'AUTO' && initial.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button should ship as audience-facing copy/class ${JSON.stringify(initial)}`);
       assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
       assert(initial.discoButton === true, `${viewport.name}: DISCO debug button missing`);
@@ -828,6 +831,8 @@ async function main() {
           } : null,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
+          p1AutoButtonText: p1AutoButton.textContent.trim(),
+          p1AutoButtonAudienceClass: p1AutoButton.classList.contains('auto-play-btn'),
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           discoButtonVisible: getComputedStyle(discoButton).display !== 'none' && dr.width > 42 && dr.height > 24 && dr.right <= window.innerWidth + 1 && dr.top >= -1,
           discoClearsRewardButton: dr.right <= rbr.left - 3 || dr.bottom <= rbr.top - 3 || dr.top >= rbr.bottom + 3,
@@ -890,7 +895,7 @@ async function main() {
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.p1AutoButtonVisible, `${viewport.name}: P1 AUTO button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === 'AUTO' && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button not visible or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
@@ -2193,6 +2198,8 @@ async function main() {
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
+      p1AutoButtonText: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').textContent.trim() : '',
+      p1AutoButtonAudienceClass: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').classList.contains('auto-play-btn') : false,
       rewardButtonHidden: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display === 'none' : false,
       discoButtonHidden: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display === 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
@@ -2205,7 +2212,7 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: debug controls should be hidden before play except reward review is armed ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.p1AutoButtonText === 'AUTO' && publicInitial.p1AutoButtonAudienceClass === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: hidden pre-play controls should include the audience-facing AUTO control while reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
@@ -2215,13 +2222,15 @@ async function main() {
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonVisible: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display !== 'none' : false,
+      p1AutoButtonText: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').textContent.trim() : '',
+      p1AutoButtonAudienceClass: document.getElementById('devP1AutoBtn') ? document.getElementById('devP1AutoBtn').classList.contains('auto-play-btn') : false,
       rewardButtonVisible: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display !== 'none' : false,
       discoButtonVisible: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display !== 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: P1 AUTO and reward review should show during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === 'AUTO' && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: AUTO and reward review should show during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
@@ -2287,13 +2296,14 @@ async function main() {
         p1AutoButtonVisible: qa.p1AutoButtonVisible,
         firstGameAssistActive: qa.firstGameAssist.active,
         firstGameAssistUses: qa.firstGameAssist.uses,
-        bodyP1Auto: document.body.classList.contains('debug-p1-auto')
+        bodyP1Auto: document.body.classList.contains('debug-p1-auto'),
+        bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoOn.before.firstGameAssist.active === true, `P1 auto probe: first-game assists should be eligible before autoplay starts ${JSON.stringify(p1AutoOn)}`);
-    assert(p1AutoOn.buttonText === 'P1 ON' && p1AutoOn.ariaPressed === 'true', `P1 auto probe: button did not switch on ${JSON.stringify(p1AutoOn)}`);
-    assert(p1AutoOn.p1Autoplay === true && p1AutoOn.p0Autoplay === false && p1AutoOn.p0ReviewMode === false, `P1 auto probe: wrong autoplay mode after enabling ${JSON.stringify(p1AutoOn)}`);
-    assert(p1AutoOn.p1AutoButtonVisible === true && p1AutoOn.bodyP1Auto === true, `P1 auto probe: button/body state missing after enable ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.before.firstGameAssist.active === true, `AUTO probe: first-game assists should be eligible before autoplay starts ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.buttonText === 'AUTO ON' && p1AutoOn.ariaPressed === 'true', `AUTO probe: button did not switch on ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.p1Autoplay === true && p1AutoOn.p0Autoplay === false && p1AutoOn.p0ReviewMode === false, `AUTO probe: wrong autoplay mode after enabling ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.p1AutoButtonVisible === true && p1AutoOn.bodyP1Auto === true && p1AutoOn.bodyAutoActive === true, `AUTO probe: button/body state missing after enable ${JSON.stringify(p1AutoOn)}`);
     await waitEval(p1AutoProbe, `window.TrashDiceQA.state().totalRolls >= 3`, 'P1 auto probe natural game rolls', 12000);
     const p1AutoProgress = await evalValue(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
@@ -2311,8 +2321,8 @@ async function main() {
         message: (document.getElementById('message') || {}).textContent || ''
       };
     })()`);
-    assert(p1AutoProgress.totalRolls >= 3 && p1AutoProgress.p1Autoplay === true && p1AutoProgress.p0Autoplay === false && p1AutoProgress.p0ReviewMode === false, `P1 auto probe: natural P1-vs-CPU autoplay did not advance correctly ${JSON.stringify(p1AutoProgress)}`);
-    assert(p1AutoProgress.firstGameAssistActive === true || p1AutoProgress.firstGameAssistUses > 0, `P1 auto probe: P1 autoplay should preserve first-game assist eligibility/usage ${JSON.stringify(p1AutoProgress)}`);
+    assert(p1AutoProgress.totalRolls >= 3 && p1AutoProgress.p1Autoplay === true && p1AutoProgress.p0Autoplay === false && p1AutoProgress.p0ReviewMode === false, `AUTO probe: natural player-vs-CPU autoplay did not advance correctly ${JSON.stringify(p1AutoProgress)}`);
+    assert(p1AutoProgress.firstGameAssistActive === true || p1AutoProgress.firstGameAssistUses > 0, `AUTO probe: autoplay should preserve first-game assist eligibility/usage ${JSON.stringify(p1AutoProgress)}`);
     const p1AutoOff = await evalValue(p1AutoProbe, `(() => {
       const btn = document.getElementById('devP1AutoBtn');
       btn.click();
@@ -2322,10 +2332,11 @@ async function main() {
         ariaPressed: btn.getAttribute('aria-pressed'),
         p1Autoplay: qa.p1Autoplay,
         p0Autoplay: qa.p0Autoplay,
-        p1AutoButtonVisible: qa.p1AutoButtonVisible
+        p1AutoButtonVisible: qa.p1AutoButtonVisible,
+        bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoOff.buttonText === 'P1 AUTO' && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true, `P1 auto probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
+    assert(p1AutoOff.buttonText === 'AUTO' && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true && p1AutoOff.bodyAutoActive === false, `AUTO probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
 
     const p1AutoBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe()`);
     const p1AutoBuffCases = [

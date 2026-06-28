@@ -724,7 +724,7 @@ body.quit-return-open .audio-mute-btn {
 }
 
 .debug-p0-btn,
-.debug-p1-auto-btn {
+.auto-play-btn {
   position: fixed;
   z-index: 144;
   display: none;
@@ -752,14 +752,14 @@ body.quit-return-open .audio-mute-btn {
   touch-action: manipulation;
 }
 
-.debug-p1-auto-btn {
+.auto-play-btn {
   bottom: calc(env(safe-area-inset-bottom, 0px) + 122px);
-  min-width: 68px;
+  min-width: 58px;
   background: rgba(17,96,168,0.86);
 }
 
 body.debug-controls-enabled[data-game-started="true"] .debug-p0-btn,
-body[data-game-started="true"] .debug-p1-auto-btn {
+body[data-game-started="true"] .auto-play-btn {
   display: inline-flex;
 }
 
@@ -770,19 +770,19 @@ body.p0-mode .debug-p0-btn {
   color: #123d25;
 }
 
-body.debug-p1-auto .debug-p1-auto-btn {
+body.auto-play-active .auto-play-btn {
   background: rgba(245,200,0,0.92);
   border-color: rgba(15,95,50,0.42);
   color: #123d25;
 }
 
 .debug-p0-btn:active,
-.debug-p1-auto-btn:active {
+.auto-play-btn:active {
   transform: translateY(1px);
 }
 
 body.quit-return-open .debug-p0-btn,
-body.quit-return-open .debug-p1-auto-btn {
+body.quit-return-open .auto-play-btn {
   opacity: 0;
   pointer-events: none;
 }
@@ -897,7 +897,7 @@ body.reward-review-enabled[data-game-started="true"] .debug-disco-btn {
 }
 
 body.quit-return-open .debug-outcome-controls,
-body.quit-return-open .debug-p1-auto-btn,
+body.quit-return-open .auto-play-btn,
 body.quit-return-open .debug-reward-die-btn,
 body.quit-return-open .debug-disco-btn {
   opacity: 0;
@@ -8804,10 +8804,10 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     padding-right: 0.38rem;
   }
 
-  .debug-p1-auto-btn {
+  .auto-play-btn {
     right: calc(env(safe-area-inset-right, 0px) + 8px);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 174px);
-    min-width: 58px;
+    min-width: 54px;
     min-height: 30px;
     padding-left: 0.36rem;
     padding-right: 0.36rem;
@@ -9257,9 +9257,9 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     min-height: 28px;
   }
 
-  .debug-p1-auto-btn {
+  .auto-play-btn {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
-    min-width: 54px;
+    min-width: 50px;
     min-height: 28px;
   }
 
@@ -10605,7 +10605,7 @@ body.inline-game-over .roll-panel {
     <path d="M22 8l-5 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
   </svg>
 </button>
-<button class="debug-p1-auto-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay Player 1 turns" aria-pressed="false">P1 AUTO</button>
+<button class="auto-play-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay your turns" aria-pressed="false">AUTO</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate VIP disco reward die" aria-pressed="false">DISCO</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
@@ -16266,10 +16266,11 @@ body.inline-game-over .roll-panel {
     document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
     document.body.classList.toggle('p0-mode', p0ReviewMode);
     document.body.classList.toggle('debug-p1-auto', p1Autoplay);
+    document.body.classList.toggle('auto-play-active', p1Autoplay);
     if (devCheatBar) devCheatBar.hidden = !DEV_CHEATS_ENABLED;
     if (devP1AutoBtn) {
-      devP1AutoBtn.textContent = p1Autoplay ? 'P1 ON' : 'P1 AUTO';
-      devP1AutoBtn.setAttribute('aria-label', p1Autoplay ? 'Stop Player 1 autoplay' : 'Autoplay Player 1 turns');
+      devP1AutoBtn.textContent = p1Autoplay ? 'AUTO ON' : 'AUTO';
+      devP1AutoBtn.setAttribute('aria-label', p1Autoplay ? 'Stop autoplay' : 'Autoplay your turns');
       devP1AutoBtn.setAttribute('aria-pressed', String(p1Autoplay));
     }
     if (devP0Btn) {
@@ -16306,7 +16307,7 @@ body.inline-game-over .roll-panel {
     p1Autoplay = false;
     clearP0Timer();
     clearP1AutoplayTimer();
-    document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto', 'player-roll-ready');
+    document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto', 'auto-play-active', 'player-roll-ready');
     updateP0ReviewControl();
   }
 
@@ -16874,8 +16875,9 @@ body.inline-game-over .roll-panel {
     }
     p1Autoplay = !!enabled;
     document.body.classList.toggle('debug-p1-auto', p1Autoplay);
+    document.body.classList.toggle('auto-play-active', p1Autoplay);
     if (p1Autoplay) {
-      if (announce && gameStarted) setMsg('P1 AUTO');
+      if (announce && gameStarted) setMsg('AUTO ON');
       scheduleP1Autoplay();
     } else {
       clearP1AutoplayTimer();
@@ -17591,7 +17593,7 @@ body.inline-game-over .roll-panel {
     p0ReviewMode = false;
     p1Autoplay = false;
     updateP0ReviewControl();
-    document.body.classList.remove('player-roll-ready', 'p0-mode', 'debug-p1-auto', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
+    document.body.classList.remove('player-roll-ready', 'p0-mode', 'debug-p1-auto', 'auto-play-active', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
     clearInlineEndingVisuals();
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
@@ -19363,7 +19365,7 @@ body.inline-game-over .roll-panel {
       p1Autoplay = false;
       clearP0Timer();
       clearP1AutoplayTimer();
-      document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto');
+      document.body.classList.remove('p0-mode', 'debug-p0', 'debug-p1-auto', 'auto-play-active');
       updateP0ReviewControl();
       clearBenchCelebration(false);
       clearPlayerPayoutFanfare(false);
