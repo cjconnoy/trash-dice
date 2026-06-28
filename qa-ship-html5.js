@@ -1043,6 +1043,7 @@ async function main() {
           bodyVipDataset: document.body.dataset.vipDiscoParty || '',
           discoVenueWashOpacity: bodyBefore.opacity || '',
           discoVenueWashZIndex: bodyBefore.zIndex || '',
+          discoVenueWashBackground: bodyBefore.backgroundImage || '',
           discoOverlayAnimation: bodyAfter.animationName || '',
           discoOverlayAnimationDuration: bodyAfter.animationDuration || '',
           discoOverlayOpacity: bodyAfter.opacity || '',
@@ -1065,9 +1066,11 @@ async function main() {
       const discoOverlayConics = (discoDebug.discoOverlayBackground.match(/conic-gradient/g) || []).length;
       const discoOverlayRadials = (discoDebug.discoOverlayBackground.match(/radial-gradient/g) || []).length;
       const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
+      const discoVenueRadials = (discoDebug.discoVenueWashBackground.match(/radial-gradient/g) || []).length;
+      const discoVenueLinears = (discoDebug.discoVenueWashBackground.match(/linear-gradient/g) || []).length;
       const discoOverlayDuration = parseFloat(discoDebug.discoOverlayAnimationDuration || '0');
       const discoOverlayOldAnchors = /at\s+80%\s+60%|at\s+16%\s+72%/i.test(discoDebug.discoOverlayBackground);
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoOverlayDuration >= 10 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 8 && discoOverlayLinears >= 4 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible low-layer multi-spot party lighting with grounded, slow-moving beams ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoOverlayDuration >= 10 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 12 && discoOverlayLinears >= 8 && discoVenueRadials >= 8 && discoVenueLinears >= 3 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible low-layer multi-spot party lighting with grounded, slow-moving ribbons ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
