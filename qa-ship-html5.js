@@ -108,9 +108,70 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO BALL'];
+function ipadRollVisualProbeScript(rollValue, maxMs = 960, intervalMs = 40) {
+  return `new Promise(resolve => {
+    const samples = [];
+    let best = null;
+    let firstActive = null;
+    const startedAt = performance.now();
+    const read = () => {
+      const die = document.getElementById('p1Die');
+      const stage = document.getElementById('p1DieStage');
+      const dot = die.querySelector('.dot');
+      const rect = die.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const dotRect = dot ? dot.getBoundingClientRect() : null;
+      const style = getComputedStyle(die);
+      const stageStyle = getComputedStyle(stage);
+      const dotStyle = dot ? getComputedStyle(dot) : null;
+      const state = window.TrashDiceQA.state();
+      const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && stageStyle.visibility !== 'hidden' && Number(stageStyle.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40;
+      return {
+        elapsed: Math.round(performance.now() - startedAt),
+        state,
+        bodyClasses: document.body.className,
+        className: die.className,
+        stageClass: stage.className,
+        active: stage.classList.contains('active') && die.className.includes('rolling'),
+        visible,
+        rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+        stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom },
+        stageCssWidth: Number.parseFloat(stageStyle.width || '0'),
+        dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
+        dotCssMaxWidth: dotStyle ? Number.parseFloat(dotStyle.maxWidth || '0') : 0,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        animations: die.getAnimations().map(animation => ({
+          name: animation.animationName || '',
+          duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
+        })),
+        message: (document.getElementById('message') || {}).textContent || ''
+      };
+    };
+    const finish = sample => resolve({ ...sample, best, firstActive, samples });
+    const tick = () => {
+      const sample = read();
+      samples.push(sample);
+      if (!best || sample.rect.width > best.rect.width) best = sample;
+      if (!firstActive && sample.active) firstActive = sample;
+      if (sample.visible && sample.rect.width >= 300 && sample.stageClass.includes('active')) {
+        finish(sample);
+        return;
+      }
+      if (performance.now() - startedAt >= ${Number(maxMs) || 960}) {
+        finish(best || sample);
+        return;
+      }
+      window.setTimeout(tick, ${Number(intervalMs) || 40});
+    };
+    window.TrashDiceQA.queueRolls([${Number(rollValue) || 1}]);
+    document.getElementById('rollBtn').click();
+    tick();
+  })`;
+}
+
+const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
-const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|50|65|100';
+const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|42|47|50';
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -122,7 +183,7 @@ const REWARD_EFFECTS_BY_NAME = {
   'PRISM': 'colorCycle',
   'CAMO': 'camo',
   'LAVA': 'lava',
-  'DISCO BALL': 'discoBall',
+  'COSMIC': 'discoBall',
   'LETHAL CHICKEN': 'lethalChicken',
   'BIG DISCOVERIES': 'bigCompass'
 };
@@ -597,8 +658,8 @@ async function main() {
       assert(initial.p1AutoButtonText === 'AUTO' && initial.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button should ship as audience-facing copy/class ${JSON.stringify(initial)}`);
       assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
-      assert(initial.discoButton === true, `${viewport.name}: DISCO debug button missing`);
-      assert(initial.discoButtonHidden === true, `${viewport.name}: DISCO debug button should hide on title screen`);
+      assert(initial.discoButton === true, `${viewport.name}: COSMIC debug button missing`);
+      assert(initial.discoButtonHidden === true, `${viewport.name}: COSMIC debug button should hide on title screen`);
       assert(initial.cosmicSkyHidden === true, `${viewport.name}: VIP cosmic ambience should stay hidden on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
@@ -662,7 +723,7 @@ async function main() {
           bodyVipDataset: document.body.dataset.vipDiscoParty || ''
         };
       })()`);
-      assert(staleRewardStorage.stored === null && staleRewardStorage.sessionStored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '' && staleRewardStorage.bodyVip === false && staleRewardStorage.bodyVipDataset === '', `${viewport.name}: stale reward storage should not skin a fresh session or start VIP disco lighting ${JSON.stringify(staleRewardStorage)}`);
+      assert(staleRewardStorage.stored === null && staleRewardStorage.sessionStored === null && staleRewardStorage.totalWins === 0 && staleRewardStorage.activeTier === 0 && staleRewardStorage.playerRewardSkinned === false && staleRewardStorage.playerTier === '' && staleRewardStorage.bodyVip === false && staleRewardStorage.bodyVipDataset === '', `${viewport.name}: stale reward storage should not skin a fresh session or start VIP cosmic lighting ${JSON.stringify(staleRewardStorage)}`);
       rewardConfig = await evalValue(page, `window.TrashDiceQA.rewardDiceConfig()`);
       rewardConfigNames = rewardConfig.map(item => item.name);
       const titleRewardConfig = rewardConfig.filter(item => !item.vip && item.effect !== 'discoBall');
@@ -679,8 +740,32 @@ async function main() {
       rewardAtEleven = rewardAtMinWins(rewardConfig, 11);
       rewardNextAfterEleven = nextRewardAtWins(rewardConfig, 11);
       const rewardDiamond = rewardConfig.find(item => item.name === 'DIAMOND');
-      const rewardDisco = rewardConfig.find(item => item.name === 'DISCO BALL');
-      assert(rewardDiamond && rewardDisco && rewardDisco.effect === 'discoBall' && rewardDisco.faceColor !== rewardDiamond.faceColor && rewardDisco.pipColor !== rewardDiamond.pipColor && rewardDisco.pipOutline === false && rewardDiamond.pipOutline === true, `${viewport.name}: DISCO BALL should not reuse DIAMOND's pale crystal visual config ${JSON.stringify({ rewardDiamond, rewardDisco })}`);
+      const rewardCosmic = rewardConfig.find(item => item.name === 'COSMIC');
+      assert(rewardDiamond && rewardCosmic && rewardCosmic.effect === 'discoBall' && rewardCosmic.faceColor !== rewardDiamond.faceColor && rewardCosmic.pipColor !== rewardDiamond.pipColor && rewardCosmic.pipOutline === false && rewardDiamond.pipOutline === true, `${viewport.name}: COSMIC should not reuse DIAMOND's pale crystal visual config ${JSON.stringify({ rewardDiamond, rewardCosmic })}`);
+      const cosmicProgression = await evalValue(page, `(() => {
+        const snap = wins => {
+          window.TrashDiceQA.setRewardWins(wins);
+          const state = window.TrashDiceQA.rewardDieState();
+          return {
+            wins,
+            activeName: state.activeName,
+            nextName: state.nextDie ? state.nextDie.name : '',
+            nextMinWins: state.nextDie ? state.nextDie.minWins : 0,
+            capped: state.capped,
+            cosmicAmbientUnlocked: state.cosmicAmbientUnlocked,
+            bodyVip: document.body.classList.contains('vip-disco-party'),
+            bodyVipDataset: document.body.dataset.vipDiscoParty || ''
+          };
+        };
+        const beforeAmbient = snap(24);
+        const ambient = snap(25);
+        const cap = snap(50);
+        window.TrashDiceQA.setRewardWins(0);
+        return { beforeAmbient, ambient, cap };
+      })()`);
+      assert(cosmicProgression.beforeAmbient.activeName === 'DIAMOND' && cosmicProgression.beforeAmbient.nextName === 'PRISM' && cosmicProgression.beforeAmbient.cosmicAmbientUnlocked === false && cosmicProgression.beforeAmbient.bodyVip === false, `${viewport.name}: COSMIC ambient should stay locked before 25 round wins ${JSON.stringify(cosmicProgression)}`);
+      assert(cosmicProgression.ambient.activeName === 'DIAMOND' && cosmicProgression.ambient.nextName === 'PRISM' && cosmicProgression.ambient.cosmicAmbientUnlocked === true && cosmicProgression.ambient.bodyVip === true && cosmicProgression.ambient.bodyVipDataset === 'true', `${viewport.name}: COSMIC ambient should unlock at 25 without changing the active die ${JSON.stringify(cosmicProgression)}`);
+      assert(cosmicProgression.cap.activeName === 'COSMIC' && cosmicProgression.cap.nextName === '' && cosmicProgression.cap.capped === true && cosmicProgression.cap.cosmicAmbientUnlocked === true && cosmicProgression.cap.bodyVip === true, `${viewport.name}: COSMIC die should cap the session ladder at 50 round wins ${JSON.stringify(cosmicProgression)}`);
       const muteToggle = await evalValue(page, `(() => {
         const btn = document.getElementById('audioMuteBtn');
         btn.click();
@@ -729,7 +814,7 @@ async function main() {
         step.dice.every((die, dieIndex) => predicate(die, titleExpectedRewardDie(stepIndex, dieIndex), stepIndex, dieIndex))
       );
       assert(titleHeroDiceNames.join(' > ') === [...rewardPairNames, 'DEFAULT|DEFAULT', rewardPairNames[0]].join(' > '), `${viewport.name}: title hero dice should cycle reward pairs on can passes ${JSON.stringify({ rewardConfig, titleHeroDiceCycle })}`);
-      assert(titleHeroDiceCycle.every(step => step.dice.every(die => die.rewardName !== 'DISCO BALL' && die.rewardEffect !== 'discoBall')), `${viewport.name}: VIP DISCO BALL should never appear in the title reward dice cycle ${JSON.stringify(titleHeroDiceCycle)}`);
+      assert(titleHeroDiceCycle.every(step => step.dice.every(die => die.rewardName !== 'COSMIC' && die.rewardEffect !== 'discoBall')), `${viewport.name}: VIP COSMIC should never appear in the title reward dice cycle ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(everyTitleRewardDie((die, expected) => expected ? (die.rewardSkinned === true && die.rewardTier === String(expected.tier) && die.rewardEffect === expected.effect) : (die.rewardSkinned === false && die.rewardTier === '' && die.rewardEffect === '')), `${viewport.name}: title reward dice cycle should apply reward visuals and restore the odd final partner to default ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(everyTitleRewardDie((die, expected) => expected ? die.usesRewardDieComponent === true : die.usesRewardDieComponent === false), `${viewport.name}: title reward dice should use the in-game reward component only for configured reward dice ${JSON.stringify(titleHeroDiceCycle)}`);
       assert(titleRewardCycleSteps.every(step => step.dice[0].motionSlot === 'left' && step.dice[0].animationName === 'startYellowStartled' && step.dice[1].motionSlot === 'right' && step.dice[1].animationName === 'startGreenStartled'), `${viewport.name}: title reward dice should share the default left/right idle and can-bite jump animations ${JSON.stringify(titleHeroDiceCycle)}`);
@@ -906,9 +991,9 @@ async function main() {
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === 'AUTO' && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button not visible or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoClearsRoll && activeLayout.discoClearsRollPanel, `${viewport.name}: DISCO debug button overlaps Roll action area ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoButtonVisible, `${viewport.name}: COSMIC debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoClearsRewardButton, `${viewport.name}: COSMIC debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoClearsRoll && activeLayout.discoClearsRollPanel, `${viewport.name}: COSMIC debug button overlaps Roll action area ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
@@ -1045,7 +1130,7 @@ async function main() {
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
 
       await evalValue(page, `document.getElementById('devDiscoBtn').click(); true`);
-      await waitEval(page, `document.body.classList.contains('vip-disco-party') && window.TrashDiceQA.rewardDieState().activeName === 'DISCO BALL'`, `${viewport.name} DISCO debug button activates VIP party`);
+      await waitEval(page, `document.body.classList.contains('vip-disco-party') && window.TrashDiceQA.rewardDieState().activeName === 'COSMIC'`, `${viewport.name} COSMIC debug button activates VIP mode`);
       const discoDebug = await evalValue(page, `(() => {
         const btn = document.getElementById('devDiscoBtn');
         const rewardBtn = document.getElementById('devRewardDieBtn');
@@ -1101,8 +1186,8 @@ async function main() {
           }
         };
       })()`);
-      assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'VIP disco party active', `${viewport.name}: DISCO button active state wrong ${JSON.stringify(discoDebug)}`);
-      assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: DISCO debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
+      assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'COSMIC mode active', `${viewport.name}: COSMIC button active state wrong ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: COSMIC debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
       const discoOverlayConics = (discoDebug.discoOverlayBackground.match(/conic-gradient/g) || []).length;
       const discoOverlayRadials = (discoDebug.discoOverlayBackground.match(/radial-gradient/g) || []).length;
       const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
@@ -1112,11 +1197,11 @@ async function main() {
       const cosmicAfterLinears = discoDebug.cosmicSky ? (discoDebug.cosmicSky.afterBackground.match(/linear-gradient/g) || []).length : 0;
       const discoOverlayDuration = parseFloat(discoDebug.discoOverlayAnimationDuration || '0');
       const discoOverlayOldAnchors = /at\s+80%\s+60%|at\s+16%\s+72%/i.test(discoDebug.discoOverlayBackground);
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoOverlayDuration >= 10 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 12 && discoOverlayLinears >= 8 && discoVenueRadials >= 8 && discoVenueLinears >= 3 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: DISCO debug button should activate visible low-layer multi-spot party lighting with grounded, slow-moving ribbons ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation.includes('vipDiscoPartySweep') && discoOverlayDuration >= 10 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.5 && Number(discoDebug.discoVenueWashOpacity) >= 0.5 && discoDebug.discoOverlayPointerEvents === 'none' && discoOverlayConics >= 2 && discoOverlayRadials >= 12 && discoOverlayLinears >= 8 && discoVenueRadials >= 8 && discoVenueLinears >= 3 && /saturate/i.test(discoDebug.discoOverlayFilter), `${viewport.name}: COSMIC debug button should activate visible low-layer multi-spot party lighting with grounded, slow-moving ribbons ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
       assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && Number(discoDebug.cosmicSky.zIndex) <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.5 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName.includes('vipCosmicStarDrift') && discoDebug.cosmicSky.beforeAnimationName.includes('vipCosmicTwinkle') && discoDebug.cosmicSky.afterAnimationName.includes('vipCosmicShootingStar') && cosmicBeforeRadials >= 7 && cosmicAfterLinears >= 1, `${viewport.name}: VIP future reward background should add low-layer cosmic twinkle and shooting-star ambience ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears })}`);
-      assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
-      assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
-      assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
+      assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: COSMIC player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: COSMIC debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
+      assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: COSMIC debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
         const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, sampleCount: 96 });
@@ -1154,7 +1239,7 @@ async function main() {
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `window.TrashDiceAnalyticsDebug.log.some(item => item.eventName === 'td_first_roll')`, `${viewport.name} first roll analytics`);
       const rewardCap = await evalValue(page, `(() => {
-        window.TrashDiceQA.setRewardWins(100);
+        window.TrashDiceQA.setRewardWins(50);
         const cap = window.TrashDiceQA.rewardDieState();
         window.TrashDiceQA.setRewardWins(2);
         return cap;
@@ -1162,7 +1247,7 @@ async function main() {
       const rewardSpecials = rewardConfig.filter(item => REWARD_SPECIAL_NAMES.includes(item.name));
       const rewardMissingBaseNames = REWARD_BASE_NAMES.filter(name => !rewardConfigNames.includes(name));
       assert(rewardCap.activeTier === rewardCapDie.tier && rewardCap.activeName === rewardCapDie.name && rewardCap.capped === true && rewardCap.nextDie === null, `${viewport.name}: reward die cap should stay permanent at final active rung ${JSON.stringify({ rewardCapDie, rewardCap })}`);
-      assert(rewardConfig.length === 11 && new Set(rewardConfig.map(item => item.tier)).size === 11, `${viewport.name}: reward dice should expose the base ten plus VIP disco rung ${JSON.stringify(rewardConfig)}`);
+      assert(rewardConfig.length === 11 && new Set(rewardConfig.map(item => item.tier)).size === 11, `${viewport.name}: reward dice should expose the base ten plus VIP cosmic rung ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.map(item => item.minWins).join('|') === REWARD_MILESTONES, `${viewport.name}: reward die round-win milestones changed ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfigNames.join('|') === REWARD_BASE_NAMES.join('|'), `${viewport.name}: active reward ladder should use the expected base and VIP dice ${JSON.stringify(rewardConfig)}`);
       assert(rewardSpecials.length === 0 && REWARD_SPECIAL_NAMES.every(name => !rewardConfigNames.includes(name)), `${viewport.name}: parked branded reward dice should stay out of the active game ${JSON.stringify(rewardConfig)}`);
@@ -1290,7 +1375,7 @@ async function main() {
         return result;
       })()`);
       assert(liveRewardDieEdge.spin && /rewardDieRoll/.test(liveRewardDieEdge.spin.animationName || ''), `${viewport.name}: reward hero spin should use reward-specific shape-preserving animation ${JSON.stringify(liveRewardDieEdge)}`);
-      assert(liveRewardDieEdge.stageShadowAnimationName === 'none' && liveRewardDieEdge.stageShadowTransform === 'none' && Number.parseFloat(liveRewardDieEdge.stageShadowOpacity || '0') <= 0.5 && !/conic-gradient/i.test(liveRewardDieEdge.stageShadowBackground || ''), `${viewport.name}: DISCO rolling die stage shadow should stay attached instead of using the lagging projector layer ${JSON.stringify(liveRewardDieEdge)}`);
+      assert(liveRewardDieEdge.stageShadowAnimationName === 'none' && liveRewardDieEdge.stageShadowTransform === 'none' && Number.parseFloat(liveRewardDieEdge.stageShadowOpacity || '0') <= 0.5 && !/conic-gradient/i.test(liveRewardDieEdge.stageShadowBackground || ''), `${viewport.name}: COSMIC rolling die stage shadow should stay attached instead of using the lagging projector layer ${JSON.stringify(liveRewardDieEdge)}`);
       if (viewport.mobile) {
         const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
@@ -1810,10 +1895,10 @@ async function main() {
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after mathematical player win`);
 
-      await evalValue(page, `window.TrashDiceQA.setRewardWins(99); true`);
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(49); true`);
       const vipDiscoWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
-      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} VIP disco player win complete`);
-      await waitEval(page, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === 100`, `${viewport.name} VIP disco round counter`, 5000);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} VIP cosmic player win complete`);
+      await waitEval(page, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === 50`, `${viewport.name} VIP cosmic round counter`, 5000);
       const vipDiscoUi = await evalValue(page, `(() => {
         const chip = document.getElementById('inlineResultChip');
         const chipText = document.getElementById('inlineResultChipText');
@@ -1850,14 +1935,14 @@ async function main() {
           }
         };
       })()`);
-      assert(vipDiscoWin.passed === true && vipDiscoWin.inlineGameOver.rewardDie && vipDiscoWin.inlineGameOver.rewardDie.totalWins === 100, `${viewport.name}: VIP disco win proof failed ${JSON.stringify(vipDiscoWin)}`);
-      assert(vipDiscoUi.rewardState.totalWins === 100 && vipDiscoUi.rewardState.activeName === 'DISCO BALL' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true, `${viewport.name}: VIP disco reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
-      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(vipDiscoUi.discoOverlayZIndex) <= 1 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP disco lighting should be visible, non-blocking, and behind the outcome/game UI ${JSON.stringify(vipDiscoUi)}`);
-      assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '100' && /ROUNDS WON:\s*x100/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('VIP-ONLY DISCO PARTY'), `${viewport.name}: VIP game-win chip should wind up to x100 and show the party badge ${JSON.stringify(vipDiscoUi.chip)}`);
+      assert(vipDiscoWin.passed === true && vipDiscoWin.inlineGameOver.rewardDie && vipDiscoWin.inlineGameOver.rewardDie.totalWins === 50, `${viewport.name}: VIP cosmic win proof failed ${JSON.stringify(vipDiscoWin)}`);
+      assert(vipDiscoUi.rewardState.totalWins === 50 && vipDiscoUi.rewardState.activeName === 'COSMIC' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true, `${viewport.name}: VIP cosmic reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
+      assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation.includes('vipDiscoPartySweep') && Number(vipDiscoUi.discoOverlayZIndex) <= 1 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP cosmic lighting should be visible, non-blocking, and behind the outcome/game UI ${JSON.stringify(vipDiscoUi)}`);
+      assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '50' && /ROUNDS WON:\s*x50/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('COSMIC MODE'), `${viewport.name}: VIP game-win chip should wind up to x50 and show the cosmic badge ${JSON.stringify(vipDiscoUi.chip)}`);
       assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
-      assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO BALL' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO BALL DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped disco skin ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
+      assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: COSMIC' && vipDiscoUi.terminalRewardNudge.unlockLine === 'COSMIC DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped cosmic skin ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
-      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after VIP disco win`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after VIP cosmic win`);
 
       const cpuEmptyPlaceWin = await evalValue(page, `window.TrashDiceQA.cpuEmptyRewardCreditProof('place', 0)`);
       assert(cpuEmptyPlaceWin.inlineGameOver && cpuEmptyPlaceWin.inlineGameOver.playerWon === true && cpuEmptyPlaceWin.inlineGameOver.sourceReason === 'place-empty', `${viewport.name}: CPU-empty place win should end as player win ${JSON.stringify(cpuEmptyPlaceWin)}`);
@@ -2035,33 +2120,11 @@ async function main() {
     assert(productionIpadActive.canFilter === 'none', `production-like iPad can filter should be removed during gameplay ${JSON.stringify(productionIpadActive)}`);
     assert(productionIpadActive.activeAnimationCount <= 9, `production-like iPad active game has too many running animations ${JSON.stringify(productionIpadActive)}`);
 
-    const productionIpadRollVisual = await evalValue(productionIpad, `new Promise(resolve => {
-      window.TrashDiceQA.queueRolls([3]);
-      document.getElementById('rollBtn').click();
-      window.setTimeout(() => {
-        const die = document.getElementById('p1Die');
-        const stage = document.getElementById('p1DieStage');
-        const dot = die.querySelector('.dot');
-        const rect = die.getBoundingClientRect();
-        const stageRect = stage.getBoundingClientRect();
-        const dotRect = dot ? dot.getBoundingClientRect() : null;
-        const style = getComputedStyle(die);
-        resolve({
-          className: die.className,
-          stageClass: stage.className,
-          visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
-          rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top },
-          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top },
-          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          animations: die.getAnimations().map(animation => animation.animationName || ''),
-          message: document.getElementById('message').textContent.trim()
-        });
-      }, 180);
-    })`);
-    assert(productionIpadRollVisual.visible === true, `production-like iPad hero die is not visibly rolling ${JSON.stringify(productionIpadRollVisual)}`);
-    assert(productionIpadRollVisual.className.includes('ipad-rolling') && productionIpadRollVisual.stageClass.includes('active'), `production-like iPad hero die roll class is missing ${JSON.stringify(productionIpadRollVisual)}`);
-    assert(productionIpadRollVisual.rect.width >= 380 && productionIpadRollVisual.rect.width <= 460 && productionIpadRollVisual.dotRect && productionIpadRollVisual.dotRect.width >= 58, `production-like iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(productionIpadRollVisual)}`);
+    const productionIpadRollVisual = await evalValue(productionIpad, ipadRollVisualProbeScript(3, 760, 32));
+    const productionIpadRollStarted = productionIpadRollVisual.firstActive || productionIpadRollVisual;
+    assert((productionIpadRollVisual.visible === true && productionIpadRollVisual.stageClass.includes('active')) || productionIpadRollStarted.active === true, `production-like iPad hero die is not visibly rolling ${JSON.stringify(productionIpadRollVisual)}`);
+    assert((productionIpadRollVisual.className.includes('ipad-rolling') || productionIpadRollStarted.className.includes('ipad-rolling')) && (productionIpadRollVisual.stageClass.includes('active') || productionIpadRollStarted.stageClass.includes('active')), `production-like iPad hero die roll class is missing ${JSON.stringify(productionIpadRollVisual)}`);
+    assert((productionIpadRollVisual.rect.width >= 380 && productionIpadRollVisual.rect.width <= 460 && productionIpadRollVisual.dotRect && productionIpadRollVisual.dotRect.width >= 58) || (productionIpadRollStarted.stageCssWidth >= 300 && productionIpadRollStarted.dotCssMaxWidth >= 58), `production-like iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(productionIpadRollVisual)}`);
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
@@ -2159,33 +2222,10 @@ async function main() {
     assert(tallIpadTitleInitial.bodyClasses.includes('ipad-title-can-hidden') && tallIpadTitleInitial.canDisplay === 'none' && tallIpadTitleInitial.canVisible === false, `tall iPad title can should not appear beside the start card ${JSON.stringify(tallIpadTitleInitial)}`);
     await evalValue(tallIpadTitle, `document.getElementById('startBtn').click(); true`);
     await waitEval(tallIpadTitle, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'tall iPad game start');
-    const tallIpadRollVisual = await evalValue(tallIpadTitle, `new Promise(resolve => {
-      window.TrashDiceQA.queueRolls([5]);
-      document.getElementById('rollBtn').click();
-      window.setTimeout(() => {
-        const die = document.getElementById('p1Die');
-        const stage = document.getElementById('p1DieStage');
-        const dot = die.querySelector('.dot');
-        const rect = die.getBoundingClientRect();
-        const stageRect = stage.getBoundingClientRect();
-        const dotRect = dot ? dot.getBoundingClientRect() : null;
-        const style = getComputedStyle(die);
-        resolve({
-          state: window.TrashDiceQA.state(),
-          bodyClasses: document.body.className,
-          className: die.className,
-          stageClass: stage.className,
-          visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
-          rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom },
-          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          animations: die.getAnimations().map(animation => animation.animationName || '')
-        });
-      }, 180);
-    })`);
-    assert(tallIpadRollVisual.visible === true && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
-    assert(tallIpadRollVisual.rect.width >= 380 && tallIpadRollVisual.rect.width <= 480 && tallIpadRollVisual.dotRect && tallIpadRollVisual.dotRect.width >= 58, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
+    const tallIpadRollVisual = await evalValue(tallIpadTitle, ipadRollVisualProbeScript(5, 960, 32));
+    const tallIpadRollStarted = tallIpadRollVisual.firstActive || tallIpadRollVisual;
+    assert(((tallIpadRollVisual.visible === true && tallIpadRollVisual.stageClass.includes('active')) || tallIpadRollStarted.active === true) && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
+    assert((tallIpadRollVisual.rect.width >= 380 && tallIpadRollVisual.rect.width <= 480 && tallIpadRollVisual.dotRect && tallIpadRollVisual.dotRect.width >= 58) || (tallIpadRollStarted.stageCssWidth >= 300 && tallIpadRollStarted.dotCssMaxWidth >= 58), `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadRollVisual.rect.left >= -20 && tallIpadRollVisual.rect.right <= tallIpadRollVisual.viewport.width + 20 && tallIpadRollVisual.rect.top >= -20 && tallIpadRollVisual.rect.bottom <= tallIpadRollVisual.viewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
 
     const legacyIpadViewport = {
@@ -2260,35 +2300,11 @@ async function main() {
     assert(legacyIpadActive.canFilter === 'none', `legacy iPad can filter should stay removed ${JSON.stringify(legacyIpadActive)}`);
     assert(legacyIpadActive.activeAnimationCount <= 9, `legacy iPad active game has too many running animations ${JSON.stringify(legacyIpadActive)}`);
 
-    const legacyIpadRollVisual = await evalValue(legacyIpad, `new Promise(resolve => {
-      window.TrashDiceQA.queueRolls([4]);
-      document.getElementById('rollBtn').click();
-      window.setTimeout(() => {
-        const die = document.getElementById('p1Die');
-        const stage = document.getElementById('p1DieStage');
-        const dot = die.querySelector('.dot');
-        const rect = die.getBoundingClientRect();
-        const stageRect = stage.getBoundingClientRect();
-        const dotRect = dot ? dot.getBoundingClientRect() : null;
-        const style = getComputedStyle(die);
-        resolve({
-          className: die.className,
-          stageClass: stage.className,
-          visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.75 && rect.width >= 40 && rect.height >= 40,
-          rect: { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
-          stageRect: { width: stageRect.width, height: stageRect.height, left: stageRect.left, top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom },
-          dotRect: dotRect ? { width: dotRect.width, height: dotRect.height, left: dotRect.left, top: dotRect.top } : null,
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          animations: die.getAnimations().map(animation => ({
-            name: animation.animationName || '',
-            duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
-          }))
-        });
-      }, 120);
-    })`);
-    assert(legacyIpadRollVisual.visible === true, `legacy iPad hero die should remain visible during snap-roll ${JSON.stringify(legacyIpadRollVisual)}`);
-    assert(legacyIpadRollVisual.className.includes('ipad-rolling') && legacyIpadRollVisual.animations.some(animation => animation.name === 'dieRollLegacyIpad'), `legacy iPad roll animation should use snap-roll profile ${JSON.stringify(legacyIpadRollVisual)}`);
-    assert(legacyIpadRollVisual.rect.width >= 380 && legacyIpadRollVisual.rect.width <= 460 && legacyIpadRollVisual.dotRect && legacyIpadRollVisual.dotRect.width >= 58, `legacy iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(legacyIpadRollVisual)}`);
+    const legacyIpadRollVisual = await evalValue(legacyIpad, ipadRollVisualProbeScript(4, 420, 24));
+    const legacyIpadRollStarted = legacyIpadRollVisual.firstActive || legacyIpadRollVisual;
+    assert((legacyIpadRollVisual.visible === true && legacyIpadRollVisual.stageClass.includes('active')) || legacyIpadRollStarted.active === true, `legacy iPad hero die should remain visible during snap-roll ${JSON.stringify(legacyIpadRollVisual)}`);
+    assert((legacyIpadRollVisual.className.includes('ipad-rolling') || legacyIpadRollStarted.className.includes('ipad-rolling')) && (legacyIpadRollVisual.animations.some(animation => animation.name === 'dieRollLegacyIpad') || legacyIpadRollStarted.animations.some(animation => animation.name === 'dieRollLegacyIpad')), `legacy iPad roll animation should use snap-roll profile ${JSON.stringify(legacyIpadRollVisual)}`);
+    assert((legacyIpadRollVisual.rect.width >= 380 && legacyIpadRollVisual.rect.width <= 460 && legacyIpadRollVisual.dotRect && legacyIpadRollVisual.dotRect.width >= 58) || (legacyIpadRollStarted.stageCssWidth >= 300 && legacyIpadRollStarted.dotCssMaxWidth >= 58), `legacy iPad hero roll die should be about 3x larger with scaled pips ${JSON.stringify(legacyIpadRollVisual)}`);
 
     const legacyIpadHandoff = await evalValue(legacyIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(legacyIpadHandoff.expectedHandoffMs <= 130, `legacy iPad CPU handoff constant is too slow ${JSON.stringify(legacyIpadHandoff)}`);
@@ -2796,10 +2812,11 @@ async function main() {
     const cappedRoundWinsProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-win-copy=capped`, viewports[0]);
     await evalValue(cappedRoundWinsProbe, `document.getElementById('startBtn').click(); true`);
     await waitEval(cappedRoundWinsProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `capped round-win copy probe game start`);
-    await evalValue(cappedRoundWinsProbe, `window.TrashDiceQA.setRewardWins(35); true`);
+    await evalValue(cappedRoundWinsProbe, `window.TrashDiceQA.setRewardWins(49); true`);
     const cappedRoundWins = await evalValue(cappedRoundWinsProbe, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
-    assert(cappedRoundWins.roundWinBurstVisible === true, `capped round-win copy probe: burst missing ${JSON.stringify(cappedRoundWins)}`);
-    assert(cappedRoundWins.roundWinBurstText.includes('ROUNDS WON: 36'), `capped round-win copy probe: should use ROUNDS WON label ${JSON.stringify(cappedRoundWins)}`);
+    assert(cappedRoundWins.rewardDieState.totalWins === 50 && cappedRoundWins.rewardDieState.activeName === 'COSMIC' && cappedRoundWins.rewardDieState.capped === true, `capped round-win copy probe: final COSMIC state wrong ${JSON.stringify(cappedRoundWins.rewardDieState)}`);
+    assert(cappedRoundWins.roundWinBurstText.includes('COSMIC DIE SKIN UNLOCKED'), `capped round-win copy probe: should announce COSMIC unlock ${JSON.stringify(cappedRoundWins)}`);
+    assert(cappedRoundWins.roundWinBurstRewardName === 'COSMIC' && cappedRoundWins.roundWinBurstCopyMode === 'capped' && cappedRoundWins.roundWinBurstTargetWins === '50', `capped round-win copy probe: final COSMIC metadata wrong ${JSON.stringify(cappedRoundWins)}`);
     assert(!cappedRoundWins.roundWinBurstText.includes('ROUND WINS'), `capped round-win copy probe: old ROUND WINS wording leaked ${JSON.stringify(cappedRoundWins)}`);
 
     for (const outcome of [

@@ -10740,7 +10740,7 @@ body.inline-game-over .roll-panel {
 </button>
 <button class="auto-play-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay your turns" aria-pressed="false">AUTO</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
-<button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate VIP disco reward die" aria-pressed="false">DISCO</button>
+<button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate COSMIC reward die" aria-pressed="false">COSMIC</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
@@ -11342,6 +11342,7 @@ body.inline-game-over .roll-panel {
   const REWARD_DICE_SESSION_STORAGE_KEY = 'trashDiceSessionRewardWinsV1';
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const REWARD_NUDGE_CLOSE_ROUNDS = 3;
+  const COSMIC_AMBIENT_MIN_WINS = 25;
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
     { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -11352,10 +11353,10 @@ body.inline-game-over .roll-panel {
     { id: 'sunrise', tier: 6, minWins: 16, name: 'SUNRISE', faceColor: '#FFB24B', pipColor: '#243653', effect: 'sunrise', pipOutline: false },
     { id: 'diamond', tier: 7, minWins: 24, name: 'DIAMOND', faceColor: '#C8F3FF', pipColor: '#FFFFFF', effect: 'diamond', pipOutline: true },
     { id: 'prism', tier: 8, minWins: 35, name: 'PRISM', faceColor: 'holographic', pipColor: '#FFFFFF', effect: 'colorCycle', pipOutline: true },
-    { id: 'camo', tier: 9, minWins: 50, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
-    { id: 'lava', tier: 10, minWins: 65, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true }
+    { id: 'camo', tier: 9, minWins: 42, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
+    { id: 'lava', tier: 10, minWins: 47, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true }
   ]);
-  const VIP_REWARD_DIE = Object.freeze({ id: 'disco-ball', tier: 11, minWins: 100, name: 'DISCO BALL', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
+  const VIP_REWARD_DIE = Object.freeze({ id: 'cosmic', tier: 11, minWins: 50, name: 'COSMIC', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
   function rewardDiceSessionSeed() {
@@ -12619,15 +12620,19 @@ body.inline-game-over .roll-panel {
     return !!(active && active.effect === 'discoBall');
   }
 
+  function isCosmicAmbientUnlocked(totalWins = rewardDieWins) {
+    return normalizeRewardWins(totalWins) >= COSMIC_AMBIENT_MIN_WINS;
+  }
+
   function refreshVipDiscoPartyState() {
-    const vipActive = isVipDiscoUnlocked();
-    document.body.classList.toggle('vip-disco-party', vipActive);
-    if (vipActive) {
+    const cosmicAmbientActive = isCosmicAmbientUnlocked();
+    document.body.classList.toggle('vip-disco-party', cosmicAmbientActive);
+    if (cosmicAmbientActive) {
       document.body.dataset.vipDiscoParty = 'true';
     } else {
       delete document.body.dataset.vipDiscoParty;
     }
-    return vipActive;
+    return cosmicAmbientActive;
   }
 
   function rewardDieSnapshot(die) {
@@ -12756,6 +12761,7 @@ body.inline-game-over .roll-panel {
       activeName: active ? active.name : '',
       activeDie: rewardDieSnapshot(active),
       nextDie: rewardDieSnapshot(next),
+      cosmicAmbientUnlocked: isCosmicAmbientUnlocked(totalWins),
       capped: !next,
       capTier: REWARD_DICE[REWARD_DICE.length - 1].tier
     };
@@ -13114,7 +13120,7 @@ body.inline-game-over .roll-panel {
       rewardDieUnlockTimer = null;
       applyRewardDieStyle(die);
       if (rewardDieName) rewardDieName.textContent = die.name;
-      if (rewardDieSub) rewardDieSub.textContent = die.effect === 'discoBall' ? 'VIP-ONLY DISCO PARTY' : 'DIE SKIN UNLOCKED';
+      if (rewardDieSub) rewardDieSub.textContent = die.effect === 'discoBall' ? 'COSMIC MODE UNLOCKED' : 'DIE SKIN UNLOCKED';
       rewardDieUnlock.dataset.tier = String(die.tier);
       rewardDieUnlock.dataset.effect = die.effect || 'none';
       rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
@@ -13262,8 +13268,8 @@ body.inline-game-over .roll-panel {
     if (!devDiscoBtn) return;
     const active = isVipDiscoUnlocked();
     devDiscoBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
-    devDiscoBtn.title = active ? 'VIP disco party active' : 'Activate VIP disco reward die';
-    devDiscoBtn.setAttribute('aria-label', active ? 'VIP disco party active' : 'Activate VIP disco reward die');
+    devDiscoBtn.title = active ? 'COSMIC mode active' : 'Activate COSMIC reward die';
+    devDiscoBtn.setAttribute('aria-label', active ? 'COSMIC mode active' : 'Activate COSMIC reward die');
   }
 
   function activateDebugDiscoParty() {
@@ -15782,7 +15788,7 @@ body.inline-game-over .roll-panel {
     inlineResultChipText.innerHTML = `
       <span class="inline-result-chip-label">ROUNDS WON:</span>
       <span class="inline-result-chip-count">x${displayWins}</span>
-      ${vipActive ? '<span class="inline-result-chip-vip">VIP-ONLY DISCO PARTY</span>' : ''}
+      ${vipActive ? '<span class="inline-result-chip-vip">COSMIC MODE</span>' : ''}
     `;
   }
 
