@@ -467,6 +467,7 @@ async function main() {
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
         tabletEffectsLite: document.body.classList.contains('tablet-effects-lite'),
         mobileRollSmoothing: document.body.classList.contains('mobile-roll-smoothing'),
+        ipadTitleCanHidden: document.body.classList.contains('ipad-title-can-hidden'),
         version: document.body.dataset.trashDiceVersion || '',
         orientationLock: (() => {
           const gate = document.getElementById('orientationLockScreen');
@@ -548,6 +549,7 @@ async function main() {
           const studioLabelRect = rect(studioLabel);
           const odgRect = rect(odgLogo);
           const copyrightStyle = getComputedStyle(copyright);
+          const startCanStyle = getComputedStyle(startCan);
           return {
             presenterLogoWidth: presenterRect.width,
             presenterSubHeight: presenterSubRect.height,
@@ -567,6 +569,9 @@ async function main() {
             odgLogoSrc: odgLogo ? odgLogo.getAttribute('src') : '',
             odgLogoAlt: odgLogo ? odgLogo.getAttribute('alt') : '',
             odgCenterOffset: odgRect.left + odgRect.width / 2 - window.innerWidth / 2,
+            startCanDisplay: startCanStyle.display,
+            startCanAnimation: startCanStyle.animationName,
+            startCanVisible: startCanStyle.display !== 'none' && startCanStyle.visibility !== 'hidden' && Number(startCanStyle.opacity || 1) > 0.01 && startCanRect.width > 0 && startCanRect.height > 0,
             presenterRect,
             presenterSubRect,
             titleRect,
@@ -744,12 +749,16 @@ async function main() {
           assert(initial.titleLayout.presenterLogoWidth <= (compactTabletLandscape ? 122 : 152), `${viewport.name}: tablet presenter logo too large ${JSON.stringify(initial.titleLayout)}`);
           assert(initial.titleLayout.presenterToTitle >= (compactTabletLandscape ? 8 : 28), `${viewport.name}: tablet presenter needs breathing room above Trash Dice logo ${JSON.stringify(initial.titleLayout)}`);
           assert(initial.titleLayout.titleToStartCard >= (compactTabletLandscape ? 16 : 28) && initial.titleLayout.titleToStartCard <= (compactTabletLandscape ? 96 : 115), `${viewport.name}: tablet title-to-start-card spacing is off ${JSON.stringify(initial.titleLayout)}`);
-          assert(initial.titleLayout.startCanRect.width >= (compactTabletLandscape ? 96 : 120), `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
-          if (compactTabletLandscape) {
-            assert(initial.titleLayout.startCanRect.right >= 48 && initial.titleLayout.startCanRect.left <= viewport.width - 48, `${viewport.name}: landscape title can should stay visibly in the scene ${JSON.stringify(initial.titleLayout)}`);
+          if (initial.ipadTitleCanHidden) {
+            assert(initial.titleLayout.startCanVisible === false && initial.titleLayout.startCanDisplay === 'none', `${viewport.name}: iPad title can should be hidden instead of parked beside the start card ${JSON.stringify(initial.titleLayout)}`);
           } else {
-            assert(initial.titleLayout.startCanRect.left >= 0, `${viewport.name}: tablet title can should not be cut off ${JSON.stringify(initial.titleLayout)}`);
-            assert(initial.titleLayout.startCanToCard >= -24 && initial.titleLayout.startCanToCard <= 36, `${viewport.name}: tablet title can should sit near the start card ${JSON.stringify(initial.titleLayout)}`);
+            assert(initial.titleLayout.startCanRect.width >= (compactTabletLandscape ? 96 : 120), `${viewport.name}: tablet title can should read as a scene prop ${JSON.stringify(initial.titleLayout)}`);
+            if (compactTabletLandscape) {
+              assert(initial.titleLayout.startCanRect.right >= 48 && initial.titleLayout.startCanRect.left <= viewport.width - 48, `${viewport.name}: landscape title can should stay visibly in the scene ${JSON.stringify(initial.titleLayout)}`);
+            } else {
+              assert(initial.titleLayout.startCanRect.left >= 0, `${viewport.name}: tablet title can should not be cut off ${JSON.stringify(initial.titleLayout)}`);
+              assert(initial.titleLayout.startCanToCard >= -24 && initial.titleLayout.startCanToCard <= 36, `${viewport.name}: tablet title can should sit near the start card ${JSON.stringify(initial.titleLayout)}`);
+            }
           }
         }
       } else {
@@ -2027,6 +2036,14 @@ async function main() {
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
     assert(productionIpadHandoff.totalMs <= 1300, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    const fullBoardDoRollGuard = await evalValue(productionIpad, `window.TrashDiceQA.fullBoardGuardProbe('doRoll', 'p2')`);
+    assert(fullBoardDoRollGuard.after.current === 'p2', `full-board doRoll guard should not flip current ${JSON.stringify(fullBoardDoRollGuard)}`);
+    assert(fullBoardDoRollGuard.after.p2Dice === fullBoardDoRollGuard.before.p2Dice && fullBoardDoRollGuard.after.totalRolls === fullBoardDoRollGuard.before.totalRolls, `full-board doRoll guard should not spend CPU dice or count a roll ${JSON.stringify(fullBoardDoRollGuard)}`);
+    assert(fullBoardDoRollGuard.after.roundResolution && fullBoardDoRollGuard.after.roundResolution.winner === 'p2' && fullBoardDoRollGuard.after.roundResolution.payoutStarted === true, `full-board doRoll guard should resolve for the current winner ${JSON.stringify(fullBoardDoRollGuard)}`);
+    const fullBoardNextTurnGuard = await evalValue(productionIpad, `window.TrashDiceQA.fullBoardGuardProbe('nextTurn', 'p1')`);
+    assert(fullBoardNextTurnGuard.after.current === 'p1', `full-board nextTurn guard should not flip current before resolution ${JSON.stringify(fullBoardNextTurnGuard)}`);
+    assert(fullBoardNextTurnGuard.after.p1Dice === fullBoardNextTurnGuard.before.p1Dice && fullBoardNextTurnGuard.after.totalRolls === fullBoardNextTurnGuard.before.totalRolls, `full-board nextTurn guard should not spend dice or count a roll ${JSON.stringify(fullBoardNextTurnGuard)}`);
+    assert(fullBoardNextTurnGuard.after.roundResolution && fullBoardNextTurnGuard.after.roundResolution.winner === 'p1' && fullBoardNextTurnGuard.after.roundResolution.payoutStarted === true, `full-board nextTurn guard should resolve for the pre-toggle winner ${JSON.stringify(fullBoardNextTurnGuard)}`);
     reports.push({
       viewport: 'ipad-portrait-production-like',
       status: 'ok',
@@ -2035,7 +2052,9 @@ async function main() {
       cpuHandoff: {
         totalMs: productionIpadHandoff.totalMs,
         handoffMs: productionIpadHandoff.handoffMs,
-        expectedHandoffMs: productionIpadHandoff.expectedHandoffMs
+        expectedHandoffMs: productionIpadHandoff.expectedHandoffMs,
+        fullBoardDoRollGuard,
+        fullBoardNextTurnGuard
       }
     });
 
@@ -2049,11 +2068,20 @@ async function main() {
     await waitEval(modernIpad, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'modern iPad QA hooks');
     const modernIpadInitial = await evalValue(modernIpad, `(() => {
       const note = document.getElementById('legacyIpadGuidance');
+      const can = document.querySelector('.start-lurker-can');
       const rect = note ? note.getBoundingClientRect() : null;
+      const canRect = can ? can.getBoundingClientRect() : null;
+      const canStyle = can ? getComputedStyle(can) : null;
       return {
         state: window.TrashDiceQA.state(),
         bodyClasses: document.body.className,
         deviceProfile: document.body.dataset.deviceProfile || '',
+        titleCan: can ? {
+          display: canStyle.display,
+          animationName: canStyle.animationName,
+          visible: canStyle.display !== 'none' && canStyle.visibility !== 'hidden' && Number(canStyle.opacity || 1) > 0.01 && canRect.width > 0 && canRect.height > 0,
+          rect: { top: canRect.top, right: canRect.right, bottom: canRect.bottom, left: canRect.left, width: canRect.width, height: canRect.height }
+        } : null,
         guidance: note ? {
           visible: getComputedStyle(note).display !== 'none' && rect.width > 0 && rect.height > 0,
           rect: { top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left, width: rect.width, height: rect.height }
@@ -2066,7 +2094,39 @@ async function main() {
     assert(modernIpadInitial.state.iPadGameplayPerformanceMode === true, `modern iPad should keep iPad gameplay performance mode ${JSON.stringify(modernIpadInitial)}`);
     assert(modernIpadInitial.state.legacyIpadPerformanceMode === false, `modern iPad should not enter legacy mode ${JSON.stringify(modernIpadInitial)}`);
     assert(modernIpadInitial.deviceProfile === 'ipad' && !modernIpadInitial.bodyClasses.includes('legacy-ipad-performance'), `modern iPad should stay in standard iPad profile ${JSON.stringify(modernIpadInitial)}`);
+    assert(modernIpadInitial.bodyClasses.includes('ipad-title-can-hidden') && modernIpadInitial.titleCan && modernIpadInitial.titleCan.visible === false && modernIpadInitial.titleCan.display === 'none', `modern iPad title can should be hidden, not parked next to the start card ${JSON.stringify(modernIpadInitial)}`);
     assert(modernIpadInitial.guidance && modernIpadInitial.guidance.visible === false, `modern iPad should not show legacy guidance ${JSON.stringify(modernIpadInitial)}`);
+
+    const tallIpadTitleViewport = {
+      ...productionIpadViewport,
+      name: 'ipad-title-tall-safari',
+      width: 1024,
+      height: 1260,
+      screenWidth: 1024,
+      screenHeight: 1366,
+      userAgent: IPAD_OS18_USER_AGENT,
+      platform: 'iPad'
+    };
+    const tallIpadTitle = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1&tall-ipad-title=1`, tallIpadTitleViewport);
+    await waitEval(tallIpadTitle, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'tall iPad title QA hooks');
+    const tallIpadTitleInitial = await evalValue(tallIpadTitle, `(() => {
+      const can = document.querySelector('.start-lurker-can');
+      const card = document.querySelector('.start-blob-wrap');
+      const canRect = can ? can.getBoundingClientRect() : null;
+      const cardRect = card ? card.getBoundingClientRect() : null;
+      const canStyle = can ? getComputedStyle(can) : null;
+      return {
+        state: window.TrashDiceQA.state(),
+        bodyClasses: document.body.className,
+        canDisplay: canStyle ? canStyle.display : '',
+        canAnimationName: canStyle ? canStyle.animationName : '',
+        canVisible: !!(can && canStyle.display !== 'none' && canStyle.visibility !== 'hidden' && Number(canStyle.opacity || 1) > 0.01 && canRect.width > 0 && canRect.height > 0),
+        canRect: canRect ? { top: canRect.top, right: canRect.right, bottom: canRect.bottom, left: canRect.left, width: canRect.width, height: canRect.height } : null,
+        cardRect: cardRect ? { top: cardRect.top, right: cardRect.right, bottom: cardRect.bottom, left: cardRect.left, width: cardRect.width, height: cardRect.height } : null
+      };
+    })()`);
+    assert(tallIpadTitleInitial.state.deviceProfile.isIpad === true && tallIpadTitleInitial.state.tabletEffectsLite === false, `tall iPad probe should reproduce the non-tablet-effects title path ${JSON.stringify(tallIpadTitleInitial)}`);
+    assert(tallIpadTitleInitial.bodyClasses.includes('ipad-title-can-hidden') && tallIpadTitleInitial.canDisplay === 'none' && tallIpadTitleInitial.canVisible === false, `tall iPad title can should not appear beside the start card ${JSON.stringify(tallIpadTitleInitial)}`);
 
     const legacyIpadViewport = {
       ...productionIpadViewport,
@@ -2085,8 +2145,10 @@ async function main() {
         state: window.TrashDiceQA.state(),
         bodyClasses: document.body.className,
         deviceProfile: document.body.dataset.deviceProfile || '',
+        canDisplay: can ? getComputedStyle(can).display : '',
         canAnimationName: can ? getComputedStyle(can).animationName : '',
         canAnimationDuration: can ? getComputedStyle(can).animationDuration : '',
+        canVisible: !!(can && getComputedStyle(can).display !== 'none' && getComputedStyle(can).visibility !== 'hidden' && Number(getComputedStyle(can).opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0),
         canLeft: rect ? rect.left : null,
         guidance: note ? {
           text: note.textContent.trim(),
@@ -2106,11 +2168,10 @@ async function main() {
     assert(legacyIpadInitialStart.state.deviceProfile.appleOsMajor === 16, `legacy iPad detector should read iPadOS 16 ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.state.deviceProfile.isNineSevenIpadSize === true, `legacy iPad detector should identify 9.7-inch size class ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.state.legacyIpadPerformanceMode === true, `legacy iPad performance mode missing ${JSON.stringify(legacyIpadInitialStart)}`);
-    assert(legacyIpadInitialStart.deviceProfile === 'legacy-ipad' && legacyIpadInitialStart.bodyClasses.includes('legacy-ipad-performance'), `legacy iPad body profile missing ${JSON.stringify(legacyIpadInitialStart)}`);
+    assert(legacyIpadInitialStart.deviceProfile === 'legacy-ipad' && legacyIpadInitialStart.bodyClasses.includes('legacy-ipad-performance') && legacyIpadInitialStart.bodyClasses.includes('ipad-title-can-hidden'), `legacy iPad body profile missing ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.guidance && legacyIpadInitialStart.guidance.visible === true, `legacy iPad guidance should be visible ${JSON.stringify(legacyIpadInitialStart)}`);
     assert(legacyIpadInitialStart.guidance.text === 'For the smoothest experience, play on iPhone, desktop, or a newer iPad.', `legacy iPad guidance copy changed ${JSON.stringify(legacyIpadInitialStart.guidance)}`);
-    assert(legacyIpadInitialStart.canAnimationName === 'startCanLurkIpadSmooth' && legacyIpadInitialStart.canAnimationDuration === '20s', `legacy iPad title can should use slower compositor motion ${JSON.stringify(legacyIpadInitialStart)}`);
-    assert(legacyIpadTitleCanTravel >= 14 && legacyIpadTitleCanTravel <= 120, `legacy iPad title can motion should be smooth and not frantic ${JSON.stringify({ legacyIpadInitialStart, legacyIpadInitialEnd, legacyIpadTitleCanTravel })}`);
+    assert(legacyIpadInitialStart.canDisplay === 'none' && legacyIpadInitialStart.canVisible === false && legacyIpadTitleCanTravel === 0, `legacy iPad title can should be hidden instead of parked beside the start card ${JSON.stringify({ legacyIpadInitialStart, legacyIpadInitialEnd, legacyIpadTitleCanTravel })}`);
 
     await evalValue(legacyIpad, `document.getElementById('startBtn').click(); true`);
     await waitEval(legacyIpad, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'legacy iPad game start');

@@ -6322,6 +6322,12 @@ body.ipad-gameplay-performance:not([data-game-started="true"]) .start-lurker-can
   animation: startCanLurkIpadSmooth 18s linear -2.16s infinite !important;
   will-change: transform;
 }
+body.ipad-title-can-hidden:not([data-game-started="true"]) .start-lurker-can {
+  display: none !important;
+  opacity: 0 !important;
+  animation: none !important;
+  will-change: auto !important;
+}
 body.legacy-ipad-performance:not([data-game-started="true"]) .start-lurker-can {
   animation-duration: 20s !important;
   animation-delay: -2.4s !important;
@@ -11149,6 +11155,7 @@ body.inline-game-over .roll-panel {
   document.body.classList.toggle('tablet-effects-lite', TABLET_EFFECTS_LITE);
   document.body.classList.toggle('ipad-gameplay-performance', IPAD_GAMEPLAY_PERFORMANCE_MODE);
   document.body.classList.toggle('legacy-ipad-performance', LEGACY_IPAD_PERFORMANCE_MODE);
+  document.body.classList.toggle('ipad-title-can-hidden', DEVICE_PROFILE.isIpad);
   document.body.classList.toggle('debug-controls-enabled', DEBUG_CONTROLS_ENABLED);
   document.body.classList.toggle('reward-review-enabled', REWARD_REVIEW_ENABLED);
   document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
@@ -13279,8 +13286,14 @@ body.inline-game-over .roll-panel {
     applyTitleHeroDiceCycle(-1);
     if (!startLurkerCan) return;
     if (titleCanMotionListener) startLurkerCan.removeEventListener('animationiteration', titleCanMotionListener);
+    if (titleCanMotionTimer !== null) {
+      window.clearInterval(titleCanMotionTimer);
+      titleCanMotionTimer = null;
+    }
     titleCanMotionListener = onTitleCanAnimationIteration;
     startLurkerCan.addEventListener('animationiteration', titleCanMotionListener);
+    const canHidden = getComputedStyle(startLurkerCan).display === 'none';
+    if (canHidden) titleCanMotionTimer = window.setInterval(advanceTitleHeroDiceCycle, 9800);
   }
 
   function stopTitleCanMotion(reset = true) {
@@ -17176,6 +17189,7 @@ body.inline-game-over .roll-panel {
     if (betaMultiplayerActive && (betaFirstRoll.active || betaFirstRoll.settling)) return;
     if (betaMultiplayerActive && !betaApplyingRemoteRoll) return;
     if (current === 'p1' && rollBtn.disabled && !betaApplyingRemoteRoll) return; // only block human; green rolls freely
+    if (resolveFullBoardIfNeeded(current)) return;
     clearRollGatedRewardUi();
     const humanGestureRoll = current === 'p1';
     busy = true;
@@ -17595,6 +17609,13 @@ body.inline-game-over .roll-panel {
   }
 
   // ── GAME OVER ────────────────────────────────────────────────
+  function resolveFullBoardIfNeeded(winner = current) {
+    if (!hasValidBoard() || !board.every(Boolean)) return false;
+    const resolution = beginRoundResolution(winner);
+    endRound(resolution.runId);
+    return true;
+  }
+
   function gameOver(winner, options = {}) {
     return enterInlineGameOver(winner, options);
   }
@@ -18928,6 +18949,52 @@ body.inline-game-over .roll-panel {
           doRoll();
         });
       },
+      fullBoardGuardProbe(mode = 'doRoll', winner = 'p1') {
+        ensureQaGame();
+        clearRuntimeTimers();
+        cancelProgressionWatchdog();
+        clearBenchCelebration(false);
+        clearInventoryMischief();
+        clearDie(null);
+        document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+
+        const expectedWinner = winner === 'p2' ? 'p2' : 'p1';
+        roundResolutionState = null;
+        current = expectedWinner;
+        busy = false;
+        rollBtn.disabled = expectedWinner === 'p2';
+        pools = { p1: { yellow: 10, green: 0 }, p2: { yellow: 0, green: 10 } };
+        resetPoolFaces();
+        trashDice = [];
+        trashed = { p1: 0, p2: 0 };
+        board = Array.from({ length: 6 }, (_, i) => ({
+          player: i % 2 ? 'p2' : 'p1',
+          color: i % 2 ? 'green' : 'yellow',
+          value: i + 1
+        }));
+        buildSlots();
+        board.forEach((die, i) => paintSlot(i, die));
+        syncUI();
+
+        const before = {
+          current,
+          p1Dice: totalDice('p1'),
+          p2Dice: totalDice('p2'),
+          totalRolls
+        };
+        if (String(mode).toLowerCase() === 'nextturn') nextTurn();
+        else doRoll();
+        const after = {
+          current,
+          p1Dice: totalDice('p1'),
+          p2Dice: totalDice('p2'),
+          totalRolls,
+          roundResolution: roundResolutionState ? { ...roundResolutionState } : null,
+          busy
+        };
+        clearRuntimeTimers();
+        return { mode, expectedWinner, before, after };
+      },
       breakProgression(kind = 'player-blocked') {
         ensureQaGame();
         clearRuntimeTimers();
@@ -19078,6 +19145,7 @@ body.inline-game-over .roll-panel {
   function nextTurn() {
     clearBenchCelebration(false);
     if (maybeEndMathematicalGame('pre-next-turn-insufficient-dice')) return;
+    if (resolveFullBoardIfNeeded(current)) return;
     current = current === 'p1' ? 'p2' : 'p1';
 
     if (totalDice(current) <= 0) {
