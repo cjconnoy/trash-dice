@@ -2305,6 +2305,26 @@ async function main() {
     })()`);
     assert(p1AutoOff.buttonText === 'P1 AUTO' && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true, `P1 auto probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
 
+    const p1AutoBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe()`);
+    const p1AutoBuffCases = [
+      p1AutoBuffAudit.firstRoundGuard,
+      p1AutoBuffAudit.firstGameAssist,
+      p1AutoBuffAudit.firstGameMiracle,
+      p1AutoBuffAudit.openingComeback,
+      p1AutoBuffAudit.postLossComeback,
+      p1AutoBuffAudit.lastOpenSlot,
+      p1AutoBuffAudit.enduranceAssist
+    ];
+    assert(p1AutoBuffAudit.p1AutoMode === true && p1AutoBuffAudit.allPlayerBuffs.length === 7, `P1 auto buff audit: missing expected player buff coverage ${JSON.stringify(p1AutoBuffAudit)}`);
+    assert(p1AutoBuffCases.every(item => item && item.p1Autoplay === true && item.p0Autoplay === false && item.p0ReviewMode === false), `P1 auto buff audit: a buff case did not run under P1 Auto-only state ${JSON.stringify(p1AutoBuffAudit)}`);
+    assert(p1AutoBuffAudit.firstRoundGuard.contexts.firstRoundGuardActive === true && p1AutoBuffAudit.firstRoundGuard.after.firstRoundGuardRolls > p1AutoBuffAudit.firstRoundGuard.before.firstRoundGuardRolls && p1AutoBuffAudit.firstRoundGuard.openHits === p1AutoBuffAudit.firstRoundGuard.samples.length, `P1 auto buff audit: first-round guard did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstRoundGuard)}`);
+    assert(p1AutoBuffAudit.firstGameAssist.contexts.firstGameAssist.active === true && p1AutoBuffAudit.firstGameAssist.after.firstGameAssistUses > p1AutoBuffAudit.firstGameAssist.before.firstGameAssistUses && p1AutoBuffAudit.firstGameAssist.openHits > p1AutoBuffAudit.firstGameAssist.takenHits, `P1 auto buff audit: first-game assist did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstGameAssist)}`);
+    assert(p1AutoBuffAudit.firstGameMiracle.contexts.firstGameMiracle.active === true && p1AutoBuffAudit.firstGameMiracle.after.firstGameMiracleRolls > p1AutoBuffAudit.firstGameMiracle.before.firstGameMiracleRolls && p1AutoBuffAudit.firstGameMiracle.openHits === p1AutoBuffAudit.firstGameMiracle.samples.length, `P1 auto buff audit: first-game miracle did not force P1 Auto open-slot hits ${JSON.stringify(p1AutoBuffAudit.firstGameMiracle)}`);
+    assert(p1AutoBuffAudit.openingComeback.contexts.openingComebackAssistActive === true && p1AutoBuffAudit.openingComeback.after.openingComebackAssistRolls > p1AutoBuffAudit.openingComeback.before.openingComebackAssistRolls && p1AutoBuffAudit.openingComeback.openHits === p1AutoBuffAudit.openingComeback.samples.length, `P1 auto buff audit: opening comeback did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.openingComeback)}`);
+    assert(p1AutoBuffAudit.postLossComeback.before.postLossComebackRound.active === true && p1AutoBuffAudit.postLossComeback.after.postLossComebackRound.rolls >= p1AutoBuffAudit.postLossComeback.samples.length && p1AutoBuffAudit.postLossComeback.openHits === p1AutoBuffAudit.postLossComeback.samples.length, `P1 auto buff audit: post-loss comeback did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.postLossComeback)}`);
+    assert(p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffUses === p1AutoBuffAudit.lastOpenSlot.samples.length && p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffHits > 0 && p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffMisses > 0 && p1AutoBuffAudit.lastOpenSlot.hitRate >= 0.38 && p1AutoBuffAudit.lastOpenSlot.hitRate <= 0.5, `P1 auto buff audit: last-open-slot buff did not stay active and missable for P1 Auto ${JSON.stringify(p1AutoBuffAudit.lastOpenSlot)}`);
+    assert(p1AutoBuffAudit.enduranceAssist.contexts.enduranceAssist.active === true && p1AutoBuffAudit.enduranceAssist.events.enduranceAssistUses > 0 && p1AutoBuffAudit.enduranceAssist.hitRate > 0.38, `P1 auto buff audit: endurance assist did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.enduranceAssist)}`);
+
     const openingGuardProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(openingGuardProbe, `document.getElementById('startBtn').click(); true`);
     await waitEval(openingGuardProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'opening sweep guard probe game start');
