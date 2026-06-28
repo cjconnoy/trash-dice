@@ -1015,7 +1015,11 @@ async function main() {
           dieClipStyle: {
             borderRadius: dieStyle.borderRadius,
             backgroundClip: dieStyle.backgroundClip,
+            clipPath: dieStyle.clipPath || '',
+            webkitClipPath: dieStyle.webkitClipPath || '',
+            overflow: dieStyle.overflow || '',
             webkitMaskImage: dieStyle.webkitMaskImage || '',
+            maskImage: dieStyle.maskImage || '',
             backfaceVisibility: dieStyle.backfaceVisibility || ''
           },
           playerSkin: {
@@ -1033,6 +1037,9 @@ async function main() {
       assert(rewardReview.dieFitsViewport === true && rewardReview.sceneFitsViewport === true, `${viewport.name}: reward review die should stay inside viewport ${JSON.stringify({ dieRect: rewardReview.dieRect, sceneRect: rewardReview.sceneRect })}`);
       if (viewport.mobile && viewport.width <= 720) {
         assert(/padding-box/i.test(rewardReview.dieClipStyle.backgroundClip) && /radial-gradient/i.test(rewardReview.dieClipStyle.webkitMaskImage) && /hidden/i.test(rewardReview.dieClipStyle.backfaceVisibility), `${viewport.name}: mobile reward unlock die should use soft clipped edges ${JSON.stringify(rewardReview.dieClipStyle)}`);
+      }
+      if (viewport.mobile && viewport.width > 720) {
+        assert(/padding-box/i.test(rewardReview.dieClipStyle.backgroundClip) && /round/i.test(rewardReview.dieClipStyle.clipPath || rewardReview.dieClipStyle.webkitClipPath || '') && /radial-gradient/i.test(rewardReview.dieClipStyle.webkitMaskImage) && /hidden/i.test(rewardReview.dieClipStyle.overflow) && /hidden/i.test(rewardReview.dieClipStyle.backfaceVisibility), `${viewport.name}: iPad reward unlock die should keep rounded clipped edges while composited ${JSON.stringify(rewardReview.dieClipStyle)}`);
       }
       assert(rewardReview.playerSkin.rewardSkinned === true && rewardReview.playerSkin.tier === String(rewardFirst.tier) && rewardReview.playerSkin.name === rewardFirst.name && rewardReview.playerSkin.effect === rewardFirst.effect, `${viewport.name}: reward review should skin the real player die ${JSON.stringify({ rewardFirst, playerSkin: rewardReview.playerSkin })}`);
       assert(rewardReview.progressState.totalWins === rewardReviewBefore.totalWins && rewardReview.progressState.activeTier === rewardReviewBefore.activeTier, `${viewport.name}: reward review should not change unlock progress ${JSON.stringify({ before: rewardReviewBefore, after: rewardReview.progressState })}`);
@@ -1284,7 +1291,7 @@ async function main() {
       })()`);
       assert(liveRewardDieEdge.spin && /rewardDieRoll/.test(liveRewardDieEdge.spin.animationName || ''), `${viewport.name}: reward hero spin should use reward-specific shape-preserving animation ${JSON.stringify(liveRewardDieEdge)}`);
       assert(liveRewardDieEdge.stageShadowAnimationName === 'none' && liveRewardDieEdge.stageShadowTransform === 'none' && Number.parseFloat(liveRewardDieEdge.stageShadowOpacity || '0') <= 0.5 && !/conic-gradient/i.test(liveRewardDieEdge.stageShadowBackground || ''), `${viewport.name}: DISCO rolling die stage shadow should stay attached instead of using the lagging projector layer ${JSON.stringify(liveRewardDieEdge)}`);
-      if (viewport.mobile && viewport.width <= 720) {
+      if (viewport.mobile) {
         const radiusValue = parseFloat(liveRewardDieEdge.borderRadius || '0');
         const radiusIsPercent = String(liveRewardDieEdge.borderRadius || '').includes('%');
         const spinRadiusValue = parseFloat((liveRewardDieEdge.spin && liveRewardDieEdge.spin.borderRadius) || '0');
@@ -1295,12 +1302,15 @@ async function main() {
         assert(liveRewardDieEdge.spin.animationName === 'rewardDieRollMobile', `${viewport.name}: mobile reward hero spin should avoid the generic squashing roll keyframes ${JSON.stringify(liveRewardDieEdge.spin)}`);
         assert(/round/i.test(liveRewardDieEdge.clipPath || liveRewardDieEdge.webkitClipPath || '') && /round/i.test(liveRewardDieEdge.spin.clipPath || liveRewardDieEdge.spin.webkitClipPath || ''), `${viewport.name}: mobile reward hero die should use a hard rounded clip to prevent square compositing during spin ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
-        assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
-        assert(liveRewardDieEdge.stageDepthContent !== 'none' && liveRewardDieEdge.stageDepthSoftEnough === true && liveRewardDieEdge.stageDepthBoxShadow.includes('rgba') && liveRewardDieEdge.stageDepthTransform !== 'none', `${viewport.name}: mobile live reward die should keep a bounded depth backing without a panel-sized shadow ${JSON.stringify(liveRewardDieEdge)}`);
+        assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
+        if (viewport.width <= 720) {
+          assert(liveRewardDieEdge.boxShadow.includes('13px 14px'), `${viewport.name}: phone live reward die should keep its deeper mobile skin shadow ${JSON.stringify(liveRewardDieEdge)}`);
+          assert(liveRewardDieEdge.stageDepthContent !== 'none' && liveRewardDieEdge.stageDepthSoftEnough === true && liveRewardDieEdge.stageDepthBoxShadow.includes('rgba') && liveRewardDieEdge.stageDepthTransform !== 'none', `${viewport.name}: mobile live reward die should keep a bounded depth backing without a panel-sized shadow ${JSON.stringify(liveRewardDieEdge)}`);
+        }
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
       const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardCapDie.minWins)})`);
-      if (viewport.mobile && viewport.width <= 720) {
+      if (viewport.mobile) {
         for (const travelState of [travellingRewardDieEdge.toSlot, travellingRewardDieEdge.toTrash]) {
           const radiusValue = parseFloat(travelState.borderRadius || '0');
           const radiusIsPercent = String(travelState.borderRadius || '').includes('%');
@@ -1309,7 +1319,10 @@ async function main() {
           assert(/round/i.test(travelState.clipPath || travelState.webkitClipPath || ''), `${viewport.name}: travelling reward die should use the same hard rounded clip as the live hero die ${JSON.stringify(travelState)}`);
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
-          assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.boxShadow.includes('9px 10px') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
+          assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
+          if (viewport.width <= 720) {
+            assert(travelState.boxShadow.includes('9px 10px'), `${viewport.name}: phone travelling reward die should keep its deeper mobile skin shadow ${JSON.stringify(travelState)}`);
+          }
         }
       }
       await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
@@ -1539,6 +1552,13 @@ async function main() {
             dieName: die.dataset.rewardName || '',
             dieEffect: die.dataset.rewardEffect || '',
             diePipColor: dieStyle.getPropertyValue('--reward-pip').trim(),
+            dieBorderRadius: dieStyle.borderTopLeftRadius || '',
+            dieBackgroundClip: dieStyle.backgroundClip || '',
+            dieClipPath: dieStyle.clipPath || '',
+            dieWebkitClipPath: dieStyle.webkitClipPath || '',
+            dieOverflow: dieStyle.overflow || '',
+            dieWebkitMaskImage: dieStyle.webkitMaskImage || '',
+            dieMaskImage: dieStyle.maskImage || '',
             animationName: style.animationName || '',
             beforeAnimationName: beforeStyle.animationName || '',
             afterAnimationName: afterStyle.animationName || '',
@@ -1593,6 +1613,9 @@ async function main() {
       assert(terminal.terminalRewardNudge.dieRewardSkinned === true && terminal.terminalRewardNudge.dieName === rewardNextAfterTwo.name && terminal.terminalRewardNudge.dieEffect === rewardNextAfterTwo.effect, `${viewport.name}: terminal reward nudge should preview the next die skin ${JSON.stringify({ rewardNextAfterTwo, terminalRewardNudge: terminal.terminalRewardNudge })}`);
       assert(terminal.terminalRewardNudge.rect.height >= 68 && terminal.terminalRewardNudge.dieRect.width >= 52 && terminal.terminalRewardNudge.dieRect.height >= 52, `${viewport.name}: terminal reward nudge should read bigger than the old static dock ${JSON.stringify(terminal.terminalRewardNudge)}`);
       assert(terminal.terminalRewardNudge.animationName.includes('terminalRewardDockedAttract') && terminal.terminalRewardNudge.beforeAnimationName.includes('terminalRewardAttractSweep') && terminal.terminalRewardNudge.afterAnimationName.includes('terminalRewardAttractRim') && terminal.terminalRewardNudge.dieAnimationName.includes('terminalRewardDieFlash') && terminal.terminalRewardNudge.unlockAnimationName.includes('terminalRewardUnlockFlash'), `${viewport.name}: terminal reward nudge should carry attract-mode motion while the outcome panel stays calmer ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      if (viewport.mobile && viewport.width > 720) {
+        assert(/padding-box/i.test(terminal.terminalRewardNudge.dieBackgroundClip || '') && /round/i.test(terminal.terminalRewardNudge.dieClipPath || terminal.terminalRewardNudge.dieWebkitClipPath || '') && terminal.terminalRewardNudge.dieOverflow === 'hidden' && terminal.terminalRewardNudge.dieWebkitMaskImage === 'none' && terminal.terminalRewardNudge.dieMaskImage === 'none', `${viewport.name}: iPad terminal reward nudge die should keep rounded clipped edges ${JSON.stringify(terminal.terminalRewardNudge)}`);
+      }
       assert(terminal.terminalRewardNudge.abovePlayAgain === true && terminal.terminalRewardNudge.fitsViewport === true && terminal.terminalRewardNudge.layout === 'player-panel-dock' && terminal.terminalRewardNudge.overlapsPlayAgain === false && terminal.terminalRewardNudge.dockedToPlayerPanel === true, `${viewport.name}: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(terminal.terminalRewardNudge)}`);
       if (viewport.mobile && viewport.width > 720) {
         assert(terminal.activeAnimationCount <= 12, `${viewport.name}: tablet win state has too many running animations ${JSON.stringify(terminal)}`);

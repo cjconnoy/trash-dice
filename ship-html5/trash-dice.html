@@ -6304,6 +6304,47 @@ body.tablet-effects-lite .roll-die-stage .die.reward-skinned.rolling,
 body.mobile-roll-smoothing .roll-die-stage .die.reward-skinned.rolling {
   animation-name: rewardDieRollMobile;
 }
+body.tablet-effects-lite .roll-die-stage .die.reward-skinned,
+body.tablet-effects-lite .die.travelling-die.reward-skinned {
+  border-radius: 22%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 22%);
+  clip-path: inset(0 round 22%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+body.tablet-effects-lite .roll-die-stage .die.reward-skinned::before,
+body.tablet-effects-lite .roll-die-stage .die.reward-skinned::after,
+body.tablet-effects-lite .die.travelling-die.reward-skinned::before,
+body.tablet-effects-lite .die.travelling-die.reward-skinned::after {
+  transform: translateZ(0);
+}
+body.tablet-effects-lite[data-game-started="true"] .reward-die {
+  border-radius: 26%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 26%);
+  clip-path: inset(0 round 26%);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  backface-visibility: hidden;
+}
+body.tablet-effects-lite[data-game-started="true"] .reward-nudge-die {
+  border-radius: 23%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 23%);
+  clip-path: inset(0 round 23%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+body.tablet-effects-lite[data-game-started="true"] .reward-die::before,
+body.tablet-effects-lite[data-game-started="true"] .reward-die::after,
+body.tablet-effects-lite[data-game-started="true"] .reward-die-spark,
+body.tablet-effects-lite[data-game-started="true"] .reward-nudge-die::before,
+body.tablet-effects-lite[data-game-started="true"] .reward-nudge-die::after {
+  transform: translateZ(0);
+}
 body.tablet-effects-lite .roll-die-stage .die.roll-resolved {
   animation: none !important;
 }
@@ -6470,6 +6511,73 @@ body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.re
 body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.rolling,
 body.legacy-ipad-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned.ipad-rolling {
   animation-name: rewardDieRollMobile;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned,
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.reward-skinned,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.reward-skinned,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.reward-skinned {
+  border-radius: 22%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 22%);
+  clip-path: inset(0 round 22%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned::before,
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned::after,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned::before,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned::after,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned::before,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned::after,
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.reward-skinned::before,
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.reward-skinned::after,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.reward-skinned::before,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.reward-skinned::after,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.reward-skinned::before,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.reward-skinned::after {
+  transform: translateZ(0);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .reward-die,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-die,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-die {
+  border-radius: 26%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 26%);
+  clip-path: inset(0 round 26%);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  backface-visibility: hidden;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .reward-nudge-die,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-nudge-die,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-nudge-die {
+  border-radius: 23%;
+  background-clip: padding-box;
+  overflow: hidden;
+  -webkit-clip-path: inset(0 round 23%);
+  clip-path: inset(0 round 23%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .reward-die::before,
+body.ipad-gameplay-performance[data-game-started="true"] .reward-die::after,
+body.ipad-gameplay-performance[data-game-started="true"] .reward-die-spark,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-die::before,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-die::after,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-die-spark,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-die::before,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-die::after,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-die-spark,
+body.ipad-gameplay-performance[data-game-started="true"] .reward-nudge-die::before,
+body.ipad-gameplay-performance[data-game-started="true"] .reward-nudge-die::after,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-nudge-die::before,
+body[data-device-profile="ipad"][data-game-started="true"] .reward-nudge-die::after,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-nudge-die::before,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .reward-nudge-die::after {
+  transform: translateZ(0);
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.roll-resolved {
   animation: none !important;
