@@ -284,6 +284,21 @@ body:not([data-game-started="true"]) #trashCan > svg {
   margin-bottom: clamp(0.3rem, 0.9vh, 0.46rem);
   white-space: nowrap;
 }
+.title-build-version {
+  position: absolute;
+  left: calc(env(safe-area-inset-left, 0px) + clamp(0.54rem, 1.7vw, 0.95rem));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(0.48rem, 1.4vh, 0.78rem));
+  z-index: 9;
+  max-width: min(34vw, 220px);
+  color: rgba(47,52,45,0.7);
+  font-family: 'Fredoka One', 'Arial Black', sans-serif;
+  font-size: clamp(0.48rem, 1.2vw, 0.66rem);
+  line-height: 1.08;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.28);
+  white-space: nowrap;
+  pointer-events: none;
+}
 .title-studio-label {
   color: rgba(47,52,45,0.82);
   font-size: 0.76em;
@@ -399,6 +414,11 @@ body:not([data-game-started="true"]) #trashCan > svg {
     max-width: min(94vw, 352px);
     font-size: clamp(0.56rem, 2.8vw, 0.72rem);
     line-height: 1.12;
+  }
+  .title-build-version {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(5rem, 14.9vh, 6.3rem));
+    max-width: 46vw;
+    font-size: clamp(0.45rem, 2.15vw, 0.56rem);
   }
   .title-odg-wordmark {
     width: clamp(116px, 34vw, 150px);
@@ -6487,6 +6507,17 @@ body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stag
   max-width: clamp(60px, 15vw, 87px);
   max-height: clamp(60px, 15vw, 87px);
 }
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.hero-travel-scale,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.hero-travel-scale,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.hero-travel-scale {
+  padding: clamp(24px, 7.2vw, 39px);
+}
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.hero-travel-scale .dot,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.hero-travel-scale .dot,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.hero-travel-scale .dot {
+  max-width: clamp(60px, 15vw, 87px);
+  max-height: clamp(60px, 15vw, 87px);
+}
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.rolling,
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.ipad-rolling {
   animation: dieRollIpadLite 0.52s cubic-bezier(.18,.84,.16,1) both;
@@ -6828,6 +6859,15 @@ body.player-roll-ready .trash-can:not(.flash):not(.pour):not(.victory-erupt) {
   will-change: transform, opacity;
   contain: layout style;
   backface-visibility: hidden;
+}
+.die.travelling-die.hero-travel-scale {
+  padding: clamp(8px, 2.4vw, 13px);
+}
+.die.travelling-die.hero-travel-scale .dot {
+  width: 78%;
+  height: 78%;
+  max-width: clamp(20px, 5vw, 29px);
+  max-height: clamp(20px, 5vw, 29px);
 }
 .travelling-die.to-slot-physical {
   animation: dieArcToLid 0.66s cubic-bezier(.13,.77,.2,1) forwards;
@@ -9248,6 +9288,11 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     font-size: clamp(0.5rem, 2.55vw, 0.62rem);
     line-height: 1.08;
   }
+  .title-build-version {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(5rem, 14.9vh, 6.3rem));
+    max-width: 48vw;
+    font-size: clamp(0.42rem, 2vw, 0.52rem);
+  }
 
   .title-odg-wordmark {
     width: clamp(104px, 32vw, 134px);
@@ -11084,6 +11129,7 @@ body.inline-game-over .roll-panel {
     <button class="start-btn" id="startBtn">TAP TO START</button>
   </div>
   <div class="legacy-ipad-guidance" id="legacyIpadGuidance">For the smoothest experience, play on iPhone, desktop, or a newer iPad.</div>
+  <div class="title-build-version" id="titleBuildVersion" aria-hidden="true"></div>
   <div class="title-legal">
     <span class="title-copyright">&copy; 2026 Big Discoveries. Trash Dice&trade;.</span>
     <span class="title-studio-label">Digital companion by</span>
@@ -11163,8 +11209,16 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-html5-p1-wip-20260604';
+  const TD_SHIP_VERSION = 'td-retail-dev-v8-20260628.1';
   const TD_SHIP_CHANNEL = 'phase1-html5';
+  function formatTrashDiceVersion(version) {
+    const devMatch = String(version).match(/^td-retail-dev-(v\d+)-(\d{8}\.\d+)$/i);
+    if (devMatch) return `TD Retail DEV ${devMatch[1].toLowerCase()} ${devMatch[2]}`;
+    const liveMatch = String(version).match(/^td-retail-live-(\d+\.\d+\.\d+\+\d{8}\.\d+)$/i);
+    if (liveMatch) return `TD Retail LIVE ${liveMatch[1]}`;
+    return String(version || '');
+  }
+  const TD_SHIP_VERSION_LABEL = formatTrashDiceVersion(TD_SHIP_VERSION);
   const TWO_PLAYER_ENABLED = false;
   const PWA_ENABLED = false;
   const PUBLIC_BETA_WS_URL = '';
@@ -11287,6 +11341,9 @@ body.inline-game-over .roll-panel {
   document.body.classList.toggle('reward-review-enabled', REWARD_REVIEW_ENABLED);
   document.body.dataset.deviceProfile = DEVICE_PROFILE.bucket;
   document.body.dataset.trashDiceVersion = TD_SHIP_VERSION;
+  document.body.dataset.trashDiceVersionLabel = TD_SHIP_VERSION_LABEL;
+  const titleBuildVersion = document.getElementById('titleBuildVersion');
+  if (titleBuildVersion) titleBuildVersion.textContent = TD_SHIP_VERSION_LABEL;
   const orientationLockScreen = document.getElementById('orientationLockScreen');
   function getOrientationViewportSize() {
     const vv = window.visualViewport;
@@ -15583,6 +15640,7 @@ body.inline-game-over .roll-panel {
     const clone = source.cloneNode(true);
     clone.removeAttribute('id');
     clone.className = 'die ' + colorClass(color) + ' travelling-die';
+    if (source.closest('.roll-die-stage')) clone.classList.add('hero-travel-scale');
     applyPlayerRewardSkin(clone, player);
     clone.style.left = r.left + 'px';
     clone.style.top = r.top + 'px';
@@ -18190,6 +18248,17 @@ body.inline-game-over .roll-panel {
             backfaceVisibility: style.backfaceVisibility || '',
             boxShadow: style.boxShadow || '',
             filter: style.filter || '',
+            paddingTop: parseFloat(style.paddingTop || '0') || 0,
+            dotCssMaxWidth: (() => {
+              const dot = clone.querySelector('.dot');
+              return dot ? (parseFloat(getComputedStyle(dot).maxWidth || '0') || 0) : 0;
+            })(),
+            dotRect: (() => {
+              const dot = clone.querySelector('.dot');
+              if (!dot) return null;
+              const dotRect = dot.getBoundingClientRect();
+              return { width: dotRect.width, height: dotRect.height };
+            })(),
             beforeTransform: before ? before.transform : '',
             afterTransform: after ? after.transform : '',
             rect: { width: rect.width, height: rect.height }

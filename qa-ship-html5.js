@@ -169,9 +169,95 @@ function ipadRollVisualProbeScript(rollValue, maxMs = 960, intervalMs = 40) {
   })`;
 }
 
+function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 32) {
+  return `new Promise(resolve => {
+    const samples = [];
+    let bestRoll = null;
+    let firstActive = null;
+    let firstTravel = null;
+    let bestTravel = null;
+    const startedAt = performance.now();
+    const numberValue = value => Number.parseFloat(value || '0') || 0;
+    const rectOf = el => {
+      const r = el.getBoundingClientRect();
+      return { width: r.width, height: r.height, left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    };
+    const snapDie = (el, stage = null) => {
+      if (!el) return null;
+      const dot = el.querySelector('.dot');
+      const style = getComputedStyle(el);
+      const stageStyle = stage ? getComputedStyle(stage) : null;
+      const dotStyle = dot ? getComputedStyle(dot) : null;
+      const rect = rectOf(el);
+      const dotRect = dot ? rectOf(dot) : null;
+      return {
+        className: el.className,
+        motionClass: el.classList.contains('to-slot-physical') ? 'to-slot-physical' : (el.classList.contains('to-trash-physical') ? 'to-trash-physical' : ''),
+        stageClass: stage ? stage.className : '',
+        active: !!(stage && stage.classList.contains('active') && el.className.includes('rolling')),
+        visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.45 && (!stageStyle || (stageStyle.visibility !== 'hidden' && Number(stageStyle.opacity || 1) > 0.45)) && rect.width >= 40 && rect.height >= 40,
+        rect,
+        dotRect,
+        dotCssMaxWidth: dotStyle ? numberValue(dotStyle.maxWidth) : 0,
+        dotCssMaxHeight: dotStyle ? numberValue(dotStyle.maxHeight) : 0,
+        paddingTop: numberValue(style.paddingTop),
+        transform: style.transform || '',
+        animations: el.getAnimations().map(animation => ({
+          name: animation.animationName || '',
+          duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
+        }))
+      };
+    };
+    const read = () => {
+      const die = document.getElementById('p1Die');
+      const stage = document.getElementById('p1DieStage');
+      const travel = document.querySelector('.travelling-die');
+      return {
+        elapsed: Math.round(performance.now() - startedAt),
+        state: window.TrashDiceQA.state(),
+        bodyClasses: document.body.className,
+        roll: snapDie(die, stage),
+        travel: snapDie(travel),
+        message: (document.getElementById('message') || {}).textContent || ''
+      };
+    };
+    const finish = () => resolve({
+      bestRoll,
+      firstActive,
+      firstTravel,
+      bestTravel,
+      samples: samples.slice(-12),
+      state: window.TrashDiceQA.state()
+    });
+    const tick = () => {
+      const sample = read();
+      samples.push(sample);
+      if (sample.roll && (!bestRoll || sample.roll.rect.width > bestRoll.rect.width)) bestRoll = sample.roll;
+      if (sample.roll && sample.roll.active && !firstActive) firstActive = sample.roll;
+      if (sample.travel && sample.travel.visible) {
+        if (!firstTravel) firstTravel = sample.travel;
+        const sampleDot = sample.travel.dotRect ? sample.travel.dotRect.width : 0;
+        const bestDot = bestTravel && bestTravel.dotRect ? bestTravel.dotRect.width : 0;
+        if (!bestTravel || sampleDot > bestDot || (!bestTravel.motionClass && sample.travel.motionClass)) bestTravel = sample.travel;
+      }
+      if ((bestTravel && bestTravel.motionClass) || performance.now() - startedAt >= ${Number(maxMs) || 1700}) {
+        finish();
+        return;
+      }
+      window.setTimeout(tick, ${Number(intervalMs) || 32});
+    };
+    window.TrashDiceQA.queueRolls([${Number(rollValue) || 1}]);
+    document.getElementById('rollBtn').click();
+    tick();
+  })`;
+}
+
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|42|47|50';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-v8-20260628.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV v8 20260628.1';
+const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-v\d+-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -530,6 +616,7 @@ async function main() {
         mobileRollSmoothing: document.body.classList.contains('mobile-roll-smoothing'),
         ipadTitleCanHidden: document.body.classList.contains('ipad-title-can-hidden'),
         version: document.body.dataset.trashDiceVersion || '',
+        versionLabel: document.body.dataset.trashDiceVersionLabel || '',
         orientationLock: (() => {
           const gate = document.getElementById('orientationLockScreen');
           return {
@@ -594,11 +681,13 @@ async function main() {
           const copyright = document.querySelector('.title-copyright');
           const studioLabel = document.querySelector('.title-studio-label');
           const odgLogo = document.querySelector('.title-odg-wordmark');
+          const buildVersion = document.getElementById('titleBuildVersion');
           const startCan = document.querySelector('.start-lurker-can');
           const rect = el => {
             const r = el.getBoundingClientRect();
             return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
           };
+          const overlaps = (a, b) => !!(a && b && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top);
           const presenterRect = rect(presenterLogo);
           const presenterSubRect = rect(presenterSub);
           const titleRect = rect(titleLogo);
@@ -610,6 +699,8 @@ async function main() {
           const studioLabelRect = rect(studioLabel);
           const odgRect = rect(odgLogo);
           const copyrightStyle = getComputedStyle(copyright);
+          const buildVersionRect = buildVersion ? rect(buildVersion) : null;
+          const buildVersionStyle = buildVersion ? getComputedStyle(buildVersion) : null;
           const startCanStyle = getComputedStyle(startCan);
           return {
             presenterLogoWidth: presenterRect.width,
@@ -624,6 +715,12 @@ async function main() {
             copyrightText: copyright ? copyright.textContent.trim() : '',
             copyrightWhiteSpace: copyrightStyle.whiteSpace,
             copyrightFitsViewport: copyrightRect.left >= -1 && copyrightRect.right <= window.innerWidth + 1,
+            buildVersionText: buildVersion ? buildVersion.textContent.trim() : '',
+            buildVersionWhiteSpace: buildVersionStyle ? buildVersionStyle.whiteSpace : '',
+            buildVersionFitsViewport: buildVersionRect ? buildVersionRect.left >= -1 && buildVersionRect.right <= window.innerWidth + 1 && buildVersionRect.top >= -1 && buildVersionRect.bottom <= window.innerHeight + 1 : false,
+            buildVersionLowerLeft: buildVersionRect ? buildVersionRect.left <= Math.max(24, window.innerWidth * 0.08) && buildVersionRect.top >= window.innerHeight * 0.62 : false,
+            buildVersionClearLegal: !overlaps(buildVersionRect, legalRect),
+            buildVersionClearStartCard: !overlaps(buildVersionRect, startCardRect),
             titleTaglinePresent: !!document.querySelector('.start-overlay .start-tagline'),
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
             studioLabelColor: studioLabel ? getComputedStyle(studioLabel).color : '',
@@ -639,6 +736,7 @@ async function main() {
             startCardRect,
             startCanRect,
             legalRect,
+            buildVersionRect,
             copyrightRect,
             studioLabelRect,
             odgRect
@@ -688,7 +786,11 @@ async function main() {
       assert(initial.startText.trim() === EXPECTED_START_CTA, `${viewport.name}: start CTA should be ${EXPECTED_START_CTA}`);
       assert(initial.badgeText.trim() === '' && initial.betaWipCopyPresent === false, `${viewport.name}: beta WIP badge/copy should not be visible in retail ${JSON.stringify(initial)}`);
       assert(initial.legacyIpadGuidance && initial.legacyIpadGuidance.visible === false, `${viewport.name}: legacy iPad guidance should stay hidden outside legacy profile ${JSON.stringify(initial.legacyIpadGuidance)}`);
-      assert(initial.version === 'td-html5-p1-wip-20260604', `${viewport.name}: version data missing`);
+      assert(TRASH_DICE_VERSION_PATTERN.test(initial.version), `${viewport.name}: version should use dev/live retail format ${JSON.stringify(initial)}`);
+      assert(initial.version === EXPECTED_TRASH_DICE_VERSION, `${viewport.name}: version data changed without updating QA/report contract ${JSON.stringify(initial)}`);
+      assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
+      assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true, `${viewport.name}: title build version should stay in the lower-left without colliding ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.orientationLock.bodyBlocked === false && initial.orientationLock.datasetBlocked === 'false' && initial.orientationLock.hidden === true && initial.orientationLock.ariaHidden === 'true', `${viewport.name}: portrait/desktop gameplay viewport should not show rotate blocker ${JSON.stringify(initial.orientationLock)}`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -1405,6 +1507,7 @@ async function main() {
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
           assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
+          assert(travelState.className.includes('hero-travel-scale') && travelState.dotCssMaxWidth >= ((travelState.rect && travelState.rect.width >= 300) ? 58 : 20), `${viewport.name}: travelling reward die should inherit hero-stage pip sizing ${JSON.stringify(travelState)}`);
           if (viewport.width <= 720) {
             assert(travelState.boxShadow.includes('9px 10px'), `${viewport.name}: phone travelling reward die should keep its deeper mobile skin shadow ${JSON.stringify(travelState)}`);
           }
@@ -2222,11 +2325,14 @@ async function main() {
     assert(tallIpadTitleInitial.bodyClasses.includes('ipad-title-can-hidden') && tallIpadTitleInitial.canDisplay === 'none' && tallIpadTitleInitial.canVisible === false, `tall iPad title can should not appear beside the start card ${JSON.stringify(tallIpadTitleInitial)}`);
     await evalValue(tallIpadTitle, `document.getElementById('startBtn').click(); true`);
     await waitEval(tallIpadTitle, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'tall iPad game start');
-    const tallIpadRollVisual = await evalValue(tallIpadTitle, ipadRollVisualProbeScript(5, 960, 32));
-    const tallIpadRollStarted = tallIpadRollVisual.firstActive || tallIpadRollVisual;
-    assert(((tallIpadRollVisual.visible === true && tallIpadRollVisual.stageClass.includes('active')) || tallIpadRollStarted.active === true) && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
-    assert((tallIpadRollVisual.rect.width >= 380 && tallIpadRollVisual.rect.width <= 480 && tallIpadRollVisual.dotRect && tallIpadRollVisual.dotRect.width >= 58) || (tallIpadRollStarted.stageCssWidth >= 300 && tallIpadRollStarted.dotCssMaxWidth >= 58), `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
-    assert(tallIpadRollVisual.rect.left >= -20 && tallIpadRollVisual.rect.right <= tallIpadRollVisual.viewport.width + 20 && tallIpadRollVisual.rect.top >= -20 && tallIpadRollVisual.rect.bottom <= tallIpadRollVisual.viewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
+    const tallIpadRollVisual = await evalValue(tallIpadTitle, rollHeroTravelVisualProbeScript(5, 1800, 32));
+    const tallIpadRollStarted = tallIpadRollVisual.firstActive || tallIpadRollVisual.bestRoll;
+    const tallIpadBestRoll = tallIpadRollVisual.bestRoll || tallIpadRollStarted;
+    const tallIpadTravel = tallIpadRollVisual.bestTravel || tallIpadRollVisual.firstTravel;
+    assert(tallIpadRollStarted && tallIpadRollStarted.active === true && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadBestRoll && tallIpadBestRoll.rect.width >= 380 && tallIpadBestRoll.rect.width <= 520 && tallIpadBestRoll.dotRect && tallIpadBestRoll.dotRect.width >= 58, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadBestRoll.rect.left >= -20 && tallIpadBestRoll.rect.right <= tallIpadTitleViewport.width + 20 && tallIpadBestRoll.rect.top >= -20 && tallIpadBestRoll.rect.bottom <= tallIpadTitleViewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadTravel && tallIpadTravel.className.includes('hero-travel-scale') && tallIpadTravel.motionClass === 'to-slot-physical' && tallIpadTravel.dotRect && tallIpadTravel.dotRect.width >= 58 && tallIpadTravel.dotCssMaxWidth >= 58, `tall iPad travel die should keep enlarged pips while moving to the lid ${JSON.stringify(tallIpadRollVisual)}`);
 
     const legacyIpadViewport = {
       ...productionIpadViewport,
@@ -2321,6 +2427,30 @@ async function main() {
         expectedHandoffMs: legacyIpadHandoff.expectedHandoffMs
       }
     });
+
+    const travelCheckViewports = [
+      viewports.find(viewport => viewport.name === 'desktop'),
+      viewports.find(viewport => viewport.name === 'iphone-13-safari')
+    ].filter(Boolean);
+    for (const travelViewport of travelCheckViewports) {
+      const travelProbe = await openPage(`${baseUrl}?source=qa&qa=1&travel-visual=${encodeURIComponent(travelViewport.name)}`, travelViewport);
+      await waitEval(travelProbe, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, `${travelViewport.name} travel visual QA hooks`);
+      await evalValue(travelProbe, `document.getElementById('startBtn').click(); true`);
+      await waitEval(travelProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${travelViewport.name} travel visual game start`);
+      const travelVisual = await evalValue(travelProbe, rollHeroTravelVisualProbeScript(4, travelViewport.mobile ? 1650 : 1750, 32));
+      const rollStarted = travelVisual.firstActive || travelVisual.bestRoll;
+      const travelDie = travelVisual.bestTravel || travelVisual.firstTravel;
+      assert(rollStarted && rollStarted.active === true && rollStarted.dotCssMaxWidth >= 20, `${travelViewport.name}: hero die should visibly roll before travel ${JSON.stringify(travelVisual)}`);
+      assert(travelDie && travelDie.className.includes('hero-travel-scale') && travelDie.motionClass === 'to-slot-physical', `${travelViewport.name}: travelling die should carry hero scale class while moving to the lid ${JSON.stringify(travelVisual)}`);
+      assert(Math.abs((travelDie.dotCssMaxWidth || 0) - (rollStarted.dotCssMaxWidth || 0)) <= 1 && travelDie.dotRect && travelDie.dotRect.width >= Math.max(17, (rollStarted.dotRect ? rollStarted.dotRect.width * 0.72 : 17)), `${travelViewport.name}: travelling die pips should not shrink relative to hero roll pips ${JSON.stringify(travelVisual)}`);
+      reports.push({
+        viewport: `${travelViewport.name}-travel-visual`,
+        status: 'ok',
+        rollDotCssMaxWidth: rollStarted.dotCssMaxWidth,
+        travelDotCssMaxWidth: travelDie.dotCssMaxWidth,
+        travelDotRect: travelDie.dotRect
+      });
+    }
 
     const roomProbe = await openPage(`${baseUrl}?source=qa&qa=1&room=1234`, viewports[0]);
     const roomState = await evalValue(roomProbe, `(() => ({
@@ -2907,6 +3037,8 @@ async function main() {
     console.log(JSON.stringify({
       status: 'SHIP_HTML5_QA_OK',
       url: baseUrl,
+      version: EXPECTED_TRASH_DICE_VERSION,
+      versionLabel: EXPECTED_TRASH_DICE_VERSION_LABEL,
       viewports: reports,
       requestCount: requests.length
     }, null, 2));
