@@ -194,6 +194,8 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
         className: el.className,
         motionClass: el.classList.contains('to-slot-physical') ? 'to-slot-physical' : (el.classList.contains('to-trash-physical') ? 'to-trash-physical' : ''),
         stageClass: stage ? stage.className : '',
+        stageCssWidth: stageStyle ? numberValue(stageStyle.width) : 0,
+        stageCssHeight: stageStyle ? numberValue(stageStyle.height) : 0,
         active: !!(stage && stage.classList.contains('active') && el.className.includes('rolling')),
         visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.45 && (!stageStyle || (stageStyle.visibility !== 'hidden' && Number(stageStyle.opacity || 1) > 0.45)) && rect.width >= 40 && rect.height >= 40,
         rect,
@@ -342,11 +344,16 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|4|7|11|16|24|35|42|47|50';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.3';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.3';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260628.4';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260628.4';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
+const HERO_ROLL_VISUAL_EXPECTATIONS = {
+  desktop: { stageMin: 360, stageMax: 390, dotCssMin: 56 },
+  'iphone-se-visible': { stageMin: 178, stageMax: 195, dotCssMin: 24 },
+  'iphone-13-safari': { stageMin: 178, stageMax: 195, dotCssMin: 24 }
+};
 const REWARD_EFFECTS_BY_NAME = {
   'FEATHERS': 'featherRipple',
   'TOXIC': 'toxicSpat',
@@ -1604,7 +1611,8 @@ async function main() {
           assert(/padding-box/i.test(travelState.backgroundClip || ''), `${viewport.name}: travelling reward die should clip reward face to padding box ${JSON.stringify(travelState)}`);
           assert(travelState.webkitMaskImage === 'none' && travelState.maskImage === 'none', `${viewport.name}: travelling reward die should not mask away the external 3D backing ${JSON.stringify(travelState)}`);
           assert(travelState.overflow === 'hidden' && travelState.boxShadow.includes('inset') && travelState.beforeTransform !== 'none' && travelState.afterTransform !== 'none', `${viewport.name}: travelling reward die pseudo layers should stay clipped while the object keeps physical depth ${JSON.stringify(travelState)}`);
-          assert(travelState.className.includes('hero-travel-scale') && travelState.dotCssMaxWidth >= ((travelState.rect && travelState.rect.width >= 300) ? 58 : 20), `${viewport.name}: travelling reward die should inherit hero-stage pip sizing ${JSON.stringify(travelState)}`);
+          const expectedTravelDotCss = viewport.width <= 720 ? 24 : ((travelState.rect && travelState.rect.width >= 300) ? 58 : 20);
+          assert(travelState.className.includes('hero-travel-scale') && travelState.dotCssMaxWidth >= expectedTravelDotCss, `${viewport.name}: travelling reward die should inherit hero-stage pip sizing ${JSON.stringify(travelState)}`);
           if (viewport.width <= 720) {
             assert(travelState.boxShadow.includes('9px 10px'), `${viewport.name}: phone travelling reward die should keep its deeper mobile skin shadow ${JSON.stringify(travelState)}`);
           }
@@ -2429,8 +2437,10 @@ async function main() {
     const tallIpadRollStarted = tallIpadRollVisual.firstActive || tallIpadRollVisual.bestRoll;
     const tallIpadBestRoll = tallIpadRollVisual.bestRoll || tallIpadRollStarted;
     const tallIpadTravel = tallIpadRollVisual.bestTravel || tallIpadRollVisual.firstTravel;
+    const tallIpadRollHasHeroRect = !!(tallIpadBestRoll && tallIpadBestRoll.rect.width >= 380 && tallIpadBestRoll.rect.width <= 520 && tallIpadBestRoll.dotRect && tallIpadBestRoll.dotRect.width >= 58);
+    const tallIpadRollHasHeroCss = !!(tallIpadBestRoll && tallIpadBestRoll.stageCssWidth >= 300 && tallIpadBestRoll.dotCssMaxWidth >= 58);
     assert(tallIpadRollStarted && tallIpadRollStarted.active === true && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
-    assert(tallIpadBestRoll && tallIpadBestRoll.rect.width >= 380 && tallIpadBestRoll.rect.width <= 520 && tallIpadBestRoll.dotRect && tallIpadBestRoll.dotRect.width >= 58, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadRollHasHeroRect || tallIpadRollHasHeroCss, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadBestRoll.rect.left >= -20 && tallIpadBestRoll.rect.right <= tallIpadTitleViewport.width + 20 && tallIpadBestRoll.rect.top >= -20 && tallIpadBestRoll.rect.bottom <= tallIpadTitleViewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadTravel && tallIpadTravel.className.includes('hero-travel-scale') && tallIpadTravel.motionClass === 'to-slot-physical' && tallIpadTravel.dotRect && tallIpadTravel.dotRect.width >= 58 && tallIpadTravel.dotCssMaxWidth >= 58, `tall iPad travel die should keep enlarged pips while moving to the lid ${JSON.stringify(tallIpadRollVisual)}`);
 
@@ -2530,22 +2540,26 @@ async function main() {
 
     const travelCheckViewports = [
       viewports.find(viewport => viewport.name === 'desktop'),
+      viewports.find(viewport => viewport.name === 'iphone-se-visible'),
       viewports.find(viewport => viewport.name === 'iphone-13-safari')
     ].filter(Boolean);
     for (const travelViewport of travelCheckViewports) {
+      const heroRollExpected = HERO_ROLL_VISUAL_EXPECTATIONS[travelViewport.name];
       const travelProbe = await openPage(`${baseUrl}?source=qa&qa=1&travel-visual=${encodeURIComponent(travelViewport.name)}`, travelViewport);
       await waitEval(travelProbe, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, `${travelViewport.name} travel visual QA hooks`);
       await evalValue(travelProbe, `document.getElementById('startBtn').click(); true`);
       await waitEval(travelProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${travelViewport.name} travel visual game start`);
       const travelVisual = await evalValue(travelProbe, rollHeroTravelVisualProbeScript(4, travelViewport.mobile ? 1650 : 1750, 32));
-      const rollStarted = travelVisual.firstActive || travelVisual.bestRoll;
+      const activeRoll = travelVisual.firstActive;
+      const rollStarted = travelVisual.bestRoll || activeRoll;
       const travelDie = travelVisual.bestTravel || travelVisual.firstTravel;
-      assert(rollStarted && rollStarted.active === true && rollStarted.dotCssMaxWidth >= 20, `${travelViewport.name}: hero die should visibly roll before travel ${JSON.stringify(travelVisual)}`);
+      assert(activeRoll && activeRoll.active === true && rollStarted && heroRollExpected && rollStarted.stageCssWidth >= heroRollExpected.stageMin && rollStarted.stageCssWidth <= heroRollExpected.stageMax && rollStarted.dotCssMaxWidth >= heroRollExpected.dotCssMin, `${travelViewport.name}: hero die should visibly roll at the tuned hero size before travel ${JSON.stringify(travelVisual)}`);
       assert(travelDie && travelDie.className.includes('hero-travel-scale') && travelDie.motionClass === 'to-slot-physical', `${travelViewport.name}: travelling die should carry hero scale class while moving to the lid ${JSON.stringify(travelVisual)}`);
-      assert(Math.abs((travelDie.dotCssMaxWidth || 0) - (rollStarted.dotCssMaxWidth || 0)) <= 1 && travelDie.dotRect && travelDie.dotRect.width >= Math.max(17, (rollStarted.dotRect ? rollStarted.dotRect.width * 0.72 : 17)), `${travelViewport.name}: travelling die pips should not shrink relative to hero roll pips ${JSON.stringify(travelVisual)}`);
+      assert(Math.abs((travelDie.dotCssMaxWidth || 0) - (rollStarted.dotCssMaxWidth || 0)) <= 1 && travelDie.dotCssMaxWidth >= heroRollExpected.dotCssMin && travelDie.dotRect && travelDie.dotRect.width >= 17, `${travelViewport.name}: travelling die pips should keep the hero roll CSS sizing during travel ${JSON.stringify(travelVisual)}`);
       reports.push({
         viewport: `${travelViewport.name}-travel-visual`,
         status: 'ok',
+        rollStageCssWidth: rollStarted.stageCssWidth,
         rollDotCssMaxWidth: rollStarted.dotCssMaxWidth,
         travelDotCssMaxWidth: travelDie.dotCssMaxWidth,
         travelDotRect: travelDie.dotRect

@@ -1446,7 +1446,16 @@ body.inline-game-over .roll-panel {
 }
 @media (min-width: 769px) {
   body:not(.mobile-roll-smoothing) .inventory-cluster .roll-die-stage {
-    --roll-stage-size: clamp(129px, 31.05vw, 186px);
+    --roll-stage-size: clamp(258px, 62.1vw, 372px);
+  }
+  body:not(.mobile-roll-smoothing) .roll-die-stage .die,
+  body:not(.mobile-roll-smoothing) .die.travelling-die.hero-travel-scale {
+    padding: clamp(16px, 4.8vw, 26px);
+  }
+  body:not(.mobile-roll-smoothing) .roll-die-stage .dot,
+  body:not(.mobile-roll-smoothing) .die.travelling-die.hero-travel-scale .dot {
+    max-width: clamp(40px, 10vw, 58px);
+    max-height: clamp(40px, 10vw, 58px);
   }
 }
 .roll-die-stage::before {
@@ -8249,7 +8258,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .inventory-cluster .roll-die-stage {
-    --roll-stage-size: clamp(144px, 34.5vw, 207px);
+    --roll-stage-size: clamp(180px, 43.125vw, 259px);
   }
 
   .roll-die-stage::before {
@@ -8265,7 +8274,18 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .roll-die-stage .die {
     backface-visibility: hidden;
+    padding: clamp(10px, 3vw, 16px);
     transform: translate3d(0,0,0);
+  }
+
+  .die.travelling-die.hero-travel-scale {
+    padding: clamp(10px, 3vw, 16px);
+  }
+
+  .roll-die-stage .dot,
+  .die.travelling-die.hero-travel-scale .dot {
+    max-width: clamp(25px, 6.25vw, 36px);
+    max-height: clamp(25px, 6.25vw, 36px);
   }
 
   .roll-die-stage .die.rolling {
@@ -11209,7 +11229,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260628.3';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260628.4';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -15607,7 +15627,7 @@ body.inline-game-over .roll-panel {
     applyPlayerRewardSkin(el, player);
   }
 
-  // Update pips only — does NOT reset class/animation
+  // Update pips only; roll/start/final render paths own skin and animation classes.
   function setPips(value, player) {
     const el = getDie(player);
     el.innerHTML = '';
@@ -15623,7 +15643,6 @@ body.inline-game-over .roll-panel {
         el.appendChild(cell);
       }
     }
-    applyPlayerRewardSkin(el, player);
   }
 
   function clearDie(player) {
@@ -15642,11 +15661,30 @@ body.inline-game-over .roll-panel {
 
   function makeDieClone(player, color) {
     const source = getDie(player);
-    const r = source.getBoundingClientRect();
+    const sourceRect = source.getBoundingClientRect();
+    const heroStage = source.closest('.roll-die-stage');
+    let r = sourceRect;
+    if (heroStage) {
+      const stageStyle = getComputedStyle(heroStage);
+      const stageCssWidth = Number.parseFloat(stageStyle.width || '0') || 0;
+      const stageCssHeight = Number.parseFloat(stageStyle.height || '0') || 0;
+      const width = Math.max(sourceRect.width, stageCssWidth);
+      const height = Math.max(sourceRect.height, stageCssHeight);
+      const centerX = sourceRect.left + sourceRect.width / 2;
+      const centerY = sourceRect.top + sourceRect.height / 2;
+      r = {
+        left: centerX - width / 2,
+        top: centerY - height / 2,
+        right: centerX + width / 2,
+        bottom: centerY + height / 2,
+        width,
+        height
+      };
+    }
     const clone = source.cloneNode(true);
     clone.removeAttribute('id');
     clone.className = 'die ' + colorClass(color) + ' travelling-die';
-    if (source.closest('.roll-die-stage')) clone.classList.add('hero-travel-scale');
+    if (heroStage) clone.classList.add('hero-travel-scale');
     applyPlayerRewardSkin(clone, player);
     clone.style.left = r.left + 'px';
     clone.style.top = r.top + 'px';
@@ -17417,6 +17455,7 @@ body.inline-game-over .roll-panel {
       activeStage.classList.add('active');
     }
     activeDie.className = 'die ' + colorClass(rollColor) + (IPAD_GAMEPLAY_PERFORMANCE_MODE ? ' rolling ipad-rolling' : ' rolling');
+    applyPlayerRewardSkin(activeDie, current);
     setPips(Math.floor(Math.random() * 6) + 1, current);
     const playRollAudio = () => Audio.rollLoop(ROLL_ANIMATION_MS);
     if (Audio.ready()) playRollAudio();
