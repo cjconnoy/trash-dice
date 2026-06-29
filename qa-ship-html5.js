@@ -398,6 +398,156 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
   })`;
 }
 
+function preShipPerfLeakProbeScript(options = {}) {
+  const cycles = Math.max(1, Math.floor(Number(options.cycles) || 2));
+  const sampleMs = Math.max(180, Math.floor(Number(options.sampleMs) || 320));
+  const rollCleanSettleMs = Math.max(900, Math.floor(Number(options.rollCleanSettleMs) || 1250));
+  const capWins = Math.max(1, Math.floor(Number(options.capWins) || 12));
+  const prismWins = Math.max(1, Math.floor(Number(options.prismWins) || 9));
+  return `(async () => {
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const waitUntil = async (predicate, timeout = 7000) => {
+      const start = performance.now();
+      while (performance.now() - start < timeout) {
+        if (predicate()) return true;
+        await sleep(40);
+      }
+      return false;
+    };
+    const generatedSelectors = [
+      '.travelling-die',
+      '.can-pour-die',
+      '.lid-payout-die',
+      '.payout-comet-trail',
+      '.lid-place-burst',
+      '.claim-badge',
+      '.victory-cannon-die',
+      '.victory-settled-die',
+      '.victory-floor-die',
+      '.victory-rain-die',
+      '.victory-rain-die-lite',
+      '.victory-jackpot-die',
+      '.victory-dice-floor',
+      '.victory-dice-rain',
+      '.victory-can-jackpot',
+      '.victory-screen-burst',
+      '.victory-lid-backdrop',
+      '.victory-lid-hero',
+      '.victory-can-hero'
+    ];
+    const frameStats = sampleDurationMs => new Promise(resolve => {
+      const deltas = [];
+      const startedAt = performance.now();
+      let last = startedAt;
+      const tick = now => {
+        deltas.push(now - last);
+        last = now;
+        if (now - startedAt >= sampleDurationMs) {
+          const frames = deltas.slice(1);
+          const sorted = frames.slice().sort((a, b) => a - b);
+          const avg = frames.reduce((sum, value) => sum + value, 0) / Math.max(1, frames.length);
+          resolve({
+            frames: frames.length,
+            avgFrameMs: Number(avg.toFixed(2)),
+            p95FrameMs: Number((sorted[Math.floor(sorted.length * 0.95)] || 0).toFixed(2)),
+            maxFrameMs: Number((sorted[sorted.length - 1] || 0).toFixed(2)),
+            over34Frames: frames.filter(value => value > 34).length,
+            over50Frames: frames.filter(value => value > 50).length
+          });
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    const generatedCounts = () => Object.fromEntries(generatedSelectors.map(selector => [selector, document.querySelectorAll(selector).length]));
+    const totalGenerated = counts => Object.values(counts).reduce((sum, value) => sum + value, 0);
+    const activeAnimationNames = () => document.getAnimations()
+      .filter(animation => animation.playState === 'running')
+      .map(animation => animation.animationName || '')
+      .filter(Boolean);
+    const snapshot = async label => {
+      await sleep(140);
+      const counts = generatedCounts();
+      const state = window.TrashDiceQA.state();
+      const animationNames = activeAnimationNames();
+      return {
+        label,
+        nodeCount: document.getElementsByTagName('*').length,
+        generatedTotal: totalGenerated(counts),
+        generatedNonzero: Object.fromEntries(Object.entries(counts).filter(([, value]) => value > 0)),
+        activeAnimationCount: animationNames.length,
+        activeAnimationNames: Array.from(new Set(animationNames)).slice(0, 14),
+        heapUsedKb: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1024) : null,
+        bodyVip: document.body.classList.contains('vip-disco-party'),
+        inlineGameOver: !!(state.inlineGameOver && state.inlineGameOver.active),
+        fastPreview: state.fastPreview,
+        tabletEffectsLite: state.tabletEffectsLite,
+        iPadGameplayPerformanceMode: state.iPadGameplayPerformanceMode,
+        frameStats: await frameStats(${sampleMs})
+      };
+    };
+    if (!window.TrashDiceQA || !window.TrashDiceDebug) return { error: 'qa hooks missing' };
+    if (document.body.dataset.gameStarted !== 'true') {
+      const startBtn = document.getElementById('startBtn');
+      if (startBtn) startBtn.click();
+      await waitUntil(() => document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled);
+    }
+    window.TrashDiceDebug.gameStart();
+    await waitUntil(() => document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && !window.TrashDiceQA.state().inlineGameOver);
+    await sleep(180);
+    const samples = [];
+    samples.push(await snapshot('baseline'));
+    window.TrashDiceQA.setRewardWins(${capWins});
+    await waitUntil(() => document.body.classList.contains('vip-disco-party'), 2500);
+    samples.push(await snapshot('cosmic'));
+    for (let i = 0; i < ${cycles}; i++) {
+      window.TrashDiceQA.gameWin('p1');
+      await waitUntil(() => {
+        const state = window.TrashDiceQA.state();
+        return state.inlineGameOver && state.inlineGameOver.active;
+      });
+      samples.push(await snapshot('game-win-' + (i + 1)));
+      window.TrashDiceDebug.gameStart();
+      await waitUntil(() => document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && !window.TrashDiceQA.state().inlineGameOver);
+      samples.push(await snapshot('reset-after-win-' + (i + 1)));
+      window.TrashDiceQA.setRewardWins(${prismWins});
+      window.TrashDiceQA.queueRolls([(i % 6) + 1]);
+      document.getElementById('rollBtn').click();
+      await waitUntil(() => !document.getElementById('rollBtn').disabled && !document.querySelector('.travelling-die'));
+      samples.push(await snapshot('prism-roll-settled-' + (i + 1)));
+      await sleep(${rollCleanSettleMs});
+      samples.push(await snapshot('prism-roll-clean-' + (i + 1)));
+    }
+    window.TrashDiceDebug.gameStart();
+    window.TrashDiceQA.setRewardWins(0);
+    await sleep(420);
+    samples.push(await snapshot('final-clean'));
+    const cleanSamples = samples.filter(sample => /baseline|cosmic|reset-after-win|prism-roll-clean|final-clean/.test(sample.label));
+    const firstHeap = samples[0].heapUsedKb;
+    const finalHeap = samples[samples.length - 1].heapUsedKb;
+    return {
+      version: document.body.dataset.trashDiceVersion,
+      versionLabel: document.body.dataset.trashDiceVersionLabel,
+      samples,
+      summary: {
+        cycles: ${cycles},
+        nodeGrowth: samples[samples.length - 1].nodeCount - samples[0].nodeCount,
+        maxGeneratedAfterClean: Math.max(...cleanSamples.map(sample => sample.generatedTotal)),
+        finalGenerated: samples[samples.length - 1].generatedTotal,
+        maxActiveAnimationCount: Math.max(...samples.map(sample => sample.activeAnimationCount)),
+        finalActiveAnimationCount: samples[samples.length - 1].activeAnimationCount,
+        maxSteadyP95FrameMs: Math.max(...cleanSamples.map(sample => sample.frameStats.p95FrameMs)),
+        maxSteadyOver50Frames: Math.max(...cleanSamples.map(sample => sample.frameStats.over50Frames)),
+        maxAnyOver50Frames: Math.max(...samples.map(sample => sample.frameStats.over50Frames)),
+        firstHeapKb: firstHeap,
+        finalHeapKb: finalHeap,
+        heapGrowthKb: firstHeap === null || finalHeap === null ? null : finalHeap - firstHeap
+      }
+    };
+  })()`;
+}
+
 function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, intervalMs = 40) {
   return `new Promise(resolve => {
     const samples = [];
@@ -488,8 +638,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.9';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.9';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.10';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.10';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -561,6 +711,19 @@ function hasVisibleSeatedRewardAnimation(item) {
     slot.animationNames.includes(rewardSlotAnimation(item.activeEffect || slot.effect)) &&
     Number(slot.animatedElementCount || 0) >= 2 &&
     hasNonZeroAnimationDuration(slot);
+}
+
+function assertPreShipPerfLeakProbe(label, result) {
+  assert(result && !result.error, `${label}: pre-ship perf/leak probe did not run ${JSON.stringify(result)}`);
+  const summary = result.summary || {};
+  const steadyFrameLimit = Math.max(2, Math.ceil(Number(summary.cycles || 1) * 1.5));
+  assert(summary.finalGenerated === 0 && summary.maxGeneratedAfterClean === 0, `${label}: generated visual nodes leaked after cleanup ${JSON.stringify(result)}`);
+  assert(summary.nodeGrowth >= -4 && summary.nodeGrowth <= 48, `${label}: DOM node count drifted during repeated pre-ship cycles ${JSON.stringify(result)}`);
+  assert(summary.finalActiveAnimationCount <= 16, `${label}: steady-state animation count stayed too high after cleanup ${JSON.stringify(result)}`);
+  assert(summary.maxSteadyP95FrameMs <= 55 && summary.maxSteadyOver50Frames <= steadyFrameLimit, `${label}: steady-state frame pacing regressed in pre-ship probe ${JSON.stringify({ summary, steadyFrameLimit, samples: result.samples })}`);
+  if (summary.heapGrowthKb !== null && Number.isFinite(summary.heapGrowthKb)) {
+    assert(summary.heapGrowthKb <= 8192, `${label}: JS heap grew too much during repeated pre-ship cycles ${JSON.stringify(result)}`);
+  }
 }
 
 async function main() {
@@ -1553,6 +1716,13 @@ async function main() {
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: COSMIC player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: COSMIC debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: COSMIC debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
+      const preShipPerf = await evalValue(page, preShipPerfLeakProbeScript({
+        cycles: 2,
+        sampleMs: viewport.mobile ? 320 : 300,
+        capWins: rewardCapDie.minWins,
+        prismWins: rewardPrism.minWins
+      }));
+      assertPreShipPerfLeakProbe(viewport.name, preShipPerf);
       await evalValue(page, `window.TrashDiceQA.setRewardWins(0); true`);
       const firstGameAssist = await evalValue(page, `(() => {
         const active = window.TrashDiceQA.firstGameAssistProbe({ completedGames: 0, player: 'p1', filledSlots: 2, p1Dice: 10, p2Dice: 15, sampleCount: 96 });
@@ -2502,7 +2672,7 @@ async function main() {
       const quitDismissed = await evalValue(page, `window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)`);
       assert(quitDismissed.includes('td_quit_keep_playing'), `${viewport.name}: missing quit keep-playing analytics`);
 
-      reports.push({ viewport: viewport.name, status: 'ok', events: quitDismissed });
+      reports.push({ viewport: viewport.name, status: 'ok', events: quitDismissed, preShipPerf: preShipPerf.summary });
     }
 
     const productionIpadViewport = viewports.find(viewport => viewport.name === 'ipad-portrait');
@@ -2611,11 +2781,19 @@ async function main() {
     assert(fullBoardNextTurnGuard.after.current === 'p1', `full-board nextTurn guard should not flip current before resolution ${JSON.stringify(fullBoardNextTurnGuard)}`);
     assert(fullBoardNextTurnGuard.after.p1Dice === fullBoardNextTurnGuard.before.p1Dice && fullBoardNextTurnGuard.after.totalRolls === fullBoardNextTurnGuard.before.totalRolls, `full-board nextTurn guard should not spend dice or count a roll ${JSON.stringify(fullBoardNextTurnGuard)}`);
     assert(fullBoardNextTurnGuard.after.roundResolution && fullBoardNextTurnGuard.after.roundResolution.winner === 'p1' && fullBoardNextTurnGuard.after.roundResolution.payoutStarted === true, `full-board nextTurn guard should resolve for the pre-toggle winner ${JSON.stringify(fullBoardNextTurnGuard)}`);
+    const productionIpadPreShipPerf = await evalValue(productionIpad, preShipPerfLeakProbeScript({
+      cycles: 2,
+      sampleMs: 320,
+      capWins: rewardCapDie.minWins,
+      prismWins: rewardPrism.minWins
+    }));
+    assertPreShipPerfLeakProbe('ipad-portrait-production-like', productionIpadPreShipPerf);
     reports.push({
       viewport: 'ipad-portrait-production-like',
       status: 'ok',
       timings: productionIpadActive.state.timings,
       rollVisual: productionIpadRollVisual,
+      preShipPerf: productionIpadPreShipPerf.summary,
       cpuHandoff: {
         totalMs: productionIpadHandoff.totalMs,
         handoffMs: productionIpadHandoff.handoffMs,
