@@ -344,8 +344,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.4';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.4';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.5';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.5';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -819,6 +819,7 @@ async function main() {
             buildVersionLowerLeft: buildVersionRect ? buildVersionRect.left <= Math.max(24, window.innerWidth * 0.08) && buildVersionRect.top >= window.innerHeight * 0.62 : false,
             buildVersionClearLegal: !overlaps(buildVersionRect, legalRect),
             buildVersionClearStartCard: !overlaps(buildVersionRect, startCardRect),
+            buildVersionBelowStartCard: buildVersionRect ? buildVersionRect.top >= startCardRect.bottom + Math.max(10, window.innerHeight * 0.018) : false,
             titleTaglinePresent: !!document.querySelector('.start-overlay .start-tagline'),
             studioLabelText: studioLabel ? studioLabel.textContent.trim() : '',
             studioLabelColor: studioLabel ? getComputedStyle(studioLabel).color : '',
@@ -888,7 +889,7 @@ async function main() {
       assert(initial.version === EXPECTED_TRASH_DICE_VERSION, `${viewport.name}: version data changed without updating QA/report contract ${JSON.stringify(initial)}`);
       assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
       assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
-      assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true, `${viewport.name}: title build version should stay in the lower-left without colliding ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true && initial.titleLayout.buildVersionBelowStartCard === true, `${viewport.name}: title build version should stay in the lower-left footer zone without touching the hero die panel ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.orientationLock.bodyBlocked === false && initial.orientationLock.datasetBlocked === 'false' && initial.orientationLock.hidden === true && initial.orientationLock.ariaHidden === 'true', `${viewport.name}: portrait/desktop gameplay viewport should not show rotate blocker ${JSON.stringify(initial.orientationLock)}`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
