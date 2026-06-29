@@ -344,8 +344,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.3';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.3';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.4';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.4';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1497,6 +1497,105 @@ async function main() {
         return result;
       })()`);
       assert(rewardSkinGreenClassPips.computedDotBackground === rewardSkinGreenClassPips.expected, `${viewport.name}: reward-skinned player die with collected green class should keep reward pip color ${JSON.stringify(rewardSkinGreenClassPips)}`);
+      const rewardOutlinedPipCompositing = await evalValue(page, `(() => {
+        const outlinedWins = ${JSON.stringify(rewardConfig.filter(item => item.pipOutline).map(item => item.minWins))};
+        const previousDeviceProfile = document.body.dataset.deviceProfile;
+        const previousGameStarted = document.body.dataset.gameStarted;
+        const previousIpadClass = document.body.classList.contains('ipad-gameplay-performance');
+        const hasSpreadOutlineShadow = value => /(?:^|,\\s*)(?:rgba?\\([^)]+\\)|#[0-9a-fA-F]+|[a-zA-Z]+)\\s+0px\\s+0px\\s+0px\\s+(?:[1-9]\\d*|0\\.[1-9]\\d*|[1-9]\\d*\\.\\d+)px/.test(value || '');
+        const isTransparent = value => !value || value === 'transparent' || value === 'rgba(0, 0, 0, 0)';
+        const inspectPip = dot => {
+          const cell = dot ? dot.closest('.dot-cell') : null;
+          const style = dot ? getComputedStyle(dot) : null;
+          const cellStyle = cell ? getComputedStyle(cell) : null;
+          const clipPath = style ? [style.clipPath || '', style.webkitClipPath || ''].join(' ') : '';
+          const boxShadow = style ? (style.boxShadow || '') : '';
+          return {
+            present: !!dot,
+            backgroundClip: style ? style.backgroundClip || '' : '',
+            borderTopWidth: style ? style.borderTopWidth || '' : '',
+            borderTopStyle: style ? style.borderTopStyle || '' : '',
+            borderTopColor: style ? style.borderTopColor || '' : '',
+            borderRadius: style ? style.borderTopLeftRadius || '' : '',
+            clipPath,
+            filter: style ? style.filter || '' : '',
+            boxShadow,
+            outlineWidth: style ? (parseFloat(style.borderTopWidth || '0') || 0) : 0,
+            circularClip: /circle/i.test(clipPath),
+            shadowHasSpreadOutline: hasSpreadOutlineShadow(boxShadow),
+            cellBackgroundColor: cellStyle ? cellStyle.backgroundColor || '' : '',
+            cellBackgroundImage: cellStyle ? cellStyle.backgroundImage || '' : '',
+            cellTransparent: !!cellStyle && isTransparent(cellStyle.backgroundColor || '') && (!cellStyle.backgroundImage || cellStyle.backgroundImage === 'none')
+          };
+        };
+        const inspectTravelPip = travelState => {
+          const dotStyle = travelState && travelState.dotStyle ? travelState.dotStyle : null;
+          const cellStyle = travelState && travelState.dotCellStyle ? travelState.dotCellStyle : null;
+          const clipPath = dotStyle ? [dotStyle.clipPath || '', dotStyle.webkitClipPath || ''].join(' ') : '';
+          const boxShadow = dotStyle ? (dotStyle.boxShadow || '') : '';
+          return {
+            motionClass: travelState ? travelState.motionClass || '' : '',
+            className: travelState ? travelState.className || '' : '',
+            rewardSkinned: !!(travelState && travelState.rewardSkinned),
+            effect: travelState ? travelState.effect || '' : '',
+            backgroundClip: dotStyle ? dotStyle.backgroundClip || '' : '',
+            borderTopWidth: dotStyle ? dotStyle.borderTopWidth || '' : '',
+            borderTopStyle: dotStyle ? dotStyle.borderTopStyle || '' : '',
+            borderTopColor: dotStyle ? dotStyle.borderTopColor || '' : '',
+            borderRadius: dotStyle ? dotStyle.borderRadius || '' : '',
+            clipPath,
+            filter: dotStyle ? dotStyle.filter || '' : '',
+            boxShadow,
+            outlineWidth: dotStyle ? (parseFloat(dotStyle.borderTopWidth || '0') || 0) : 0,
+            circularClip: /circle/i.test(clipPath),
+            shadowHasSpreadOutline: hasSpreadOutlineShadow(boxShadow),
+            cellBackgroundColor: cellStyle ? cellStyle.backgroundColor || '' : '',
+            cellBackgroundImage: cellStyle ? cellStyle.backgroundImage || '' : '',
+            cellTransparent: !!cellStyle && isTransparent(cellStyle.backgroundColor || '') && (!cellStyle.backgroundImage || cellStyle.backgroundImage === 'none')
+          };
+        };
+        document.body.dataset.deviceProfile = 'ipad';
+        document.body.dataset.gameStarted = 'true';
+        document.body.classList.add('ipad-gameplay-performance');
+        const results = outlinedWins.map(totalWins => {
+          const fixture = window.TrashDiceQA.rewardSkinFixture(totalWins);
+          const stage = document.getElementById('p1DieStage');
+          const die = document.getElementById('p1Die');
+          if (stage) stage.classList.add('active');
+          if (die) die.classList.add('rolling', 'ipad-rolling');
+          const live = inspectPip(die ? die.querySelector('.dot') : null);
+          const travel = window.TrashDiceQA.rewardTravelCloneProbe(totalWins);
+          return {
+            totalWins,
+            activeDie: fixture.activePlayerDie,
+            live,
+            toSlot: inspectTravelPip(travel && travel.toSlot),
+            toTrash: inspectTravelPip(travel && travel.toTrash)
+          };
+        });
+        if (typeof previousDeviceProfile === 'undefined') delete document.body.dataset.deviceProfile;
+        else document.body.dataset.deviceProfile = previousDeviceProfile;
+        if (typeof previousGameStarted === 'undefined') delete document.body.dataset.gameStarted;
+        else document.body.dataset.gameStarted = previousGameStarted;
+        document.body.classList.toggle('ipad-gameplay-performance', previousIpadClass);
+        window.TrashDiceQA.rewardSkinFixture(2);
+        return results;
+      })()`);
+      const rewardPipLooksCircular = pip =>
+        pip && pip.present !== false &&
+        pip.outlineWidth >= 1 &&
+        pip.borderTopStyle === 'solid' &&
+        /padding-box/i.test(pip.backgroundClip || '') &&
+        pip.circularClip === true &&
+        pip.shadowHasSpreadOutline === false &&
+        pip.filter === 'none' &&
+        pip.cellTransparent === true;
+      const rewardOutlinedPipFailures = rewardOutlinedPipCompositing.flatMap(item => [
+        { skin: item.activeDie && item.activeDie.name, location: 'live', pip: item.live },
+        { skin: item.activeDie && item.activeDie.name, location: 'toSlot', pip: item.toSlot },
+        { skin: item.activeDie && item.activeDie.name, location: 'toTrash', pip: item.toTrash }
+      ].filter(entry => !rewardPipLooksCircular(entry.pip)));
+      assert(rewardOutlinedPipFailures.length === 0, `${viewport.name}: iPad outlined reward pips should render as clipped circular borders without square shadow cells ${JSON.stringify(rewardOutlinedPipFailures)}`);
       const rewardSkinLadderFixtures = await evalValue(page, `(() => {
         const milestones = ${JSON.stringify(rewardConfig.map(item => item.minWins))};
         const fixtures = milestones.map(totalWins => window.TrashDiceQA.rewardSkinFixture(totalWins));

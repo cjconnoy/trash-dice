@@ -2084,6 +2084,7 @@ body.inline-game-over .roll-panel {
   --reward-face: #C0421F;
   --reward-pip: #FFFFFF;
   --reward-pip-outline: transparent;
+  --reward-pip-outline-width: 0px;
   --reward-edge: rgba(0,0,0,0.24);
   --reward-glow: rgba(255,246,150,0.24);
   overflow: hidden;
@@ -2135,9 +2136,14 @@ body.inline-game-over .roll-panel {
 .die.reward-skinned .dot {
   position: relative;
   z-index: 5;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: var(--reward-pip-outline-width) solid var(--reward-pip-outline);
+  -webkit-clip-path: circle(50% at 50% 50%);
+  clip-path: circle(50% at 50% 50%);
   background: var(--reward-pip);
+  background-clip: padding-box;
   box-shadow:
-    0 0 0 1.6px var(--reward-pip-outline),
     inset 1.7px 1.7px 3.2px rgba(0,0,0,0.48),
     inset -1px -1px 2px rgba(255,255,255,0.16),
     0 1.2px 1px rgba(255,255,255,0.14);
@@ -2300,6 +2306,7 @@ body.inline-game-over .roll-panel {
   --reward-face: #A9772F;
   --reward-pip: #1A1A1A;
   --reward-pip-outline: transparent;
+  --reward-pip-outline-width: 0px;
   --reward-edge: rgba(0,0,0,0.24);
   --reward-glow: rgba(255,246,150,0.24);
   position: relative;
@@ -2345,9 +2352,14 @@ body.inline-game-over .roll-panel {
   width: clamp(16px, 5.2vmin, 30px);
   aspect-ratio: 1 / 1;
   border-radius: 999px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: var(--reward-pip-outline-width) solid var(--reward-pip-outline);
+  -webkit-clip-path: circle(50% at 50% 50%);
+  clip-path: circle(50% at 50% 50%);
   background: var(--reward-pip);
+  background-clip: padding-box;
   box-shadow:
-    0 0 0 clamp(1.4px, 0.42vmin, 2.4px) var(--reward-pip-outline),
     inset 0 1px 0 rgba(255,255,255,0.18),
     0 1px 2px rgba(0,0,0,0.3);
   opacity: 0;
@@ -3773,6 +3785,7 @@ body.inline-game-over .roll-panel {
 .die.reward-skinned.p1 .dot,
 .die.reward-skinned.p2 .dot {
   background: var(--reward-pip);
+  background-clip: padding-box;
 }
 @keyframes rewardDieRollMobile {
   0% {
@@ -6565,6 +6578,22 @@ body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travellin
   clip-path: inset(0 round 22%);
   -webkit-mask-image: none;
   mask-image: none;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned .dot,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned .dot,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned .dot,
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.reward-skinned .dot,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.reward-skinned .dot,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.reward-skinned .dot {
+  filter: none !important;
+}
+body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned .dot-cell,
+body[data-device-profile="ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned .dot-cell,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .roll-die-stage .die.reward-skinned .dot-cell,
+body.ipad-gameplay-performance[data-game-started="true"] .die.travelling-die.reward-skinned .dot-cell,
+body[data-device-profile="ipad"][data-game-started="true"] .die.travelling-die.reward-skinned .dot-cell,
+body[data-device-profile="legacy-ipad"][data-game-started="true"] .die.travelling-die.reward-skinned .dot-cell {
+  background: transparent;
 }
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned::before,
 body.ipad-gameplay-performance[data-game-started="true"] .roll-die-stage .die.reward-skinned::after,
@@ -11230,7 +11259,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260629.3';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260629.4';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -12756,6 +12785,7 @@ body.inline-game-over .roll-panel {
     el.style.removeProperty('--reward-face');
     el.style.removeProperty('--reward-pip');
     el.style.removeProperty('--reward-pip-outline');
+    el.style.removeProperty('--reward-pip-outline-width');
     el.style.removeProperty('--reward-edge');
     el.style.removeProperty('--reward-glow');
   }
@@ -12767,6 +12797,7 @@ body.inline-game-over .roll-panel {
     el.style.setProperty('--reward-face', rewardDieFaceColor(die));
     el.style.setProperty('--reward-pip', die.pipColor);
     el.style.setProperty('--reward-pip-outline', die.pipOutline ? 'rgba(0,0,0,0.72)' : 'transparent');
+    el.style.setProperty('--reward-pip-outline-width', die.pipOutline ? '1.6px' : '0px');
     el.style.setProperty('--reward-edge', effect === 'lava' ? 'rgba(255,93,16,0.42)' : (effect === 'camo' ? 'rgba(10,43,17,0.44)' : (effect === 'discoBall' ? 'rgba(60,70,105,0.42)' : (['diamond', 'colorCycle', 'shineSweep'].includes(effect) ? 'rgba(32,32,32,0.28)' : 'rgba(0,0,0,0.24)'))));
     el.style.setProperty('--reward-glow', effect === 'lava' ? 'rgba(255,103,16,0.44)' : (effect === 'discoBall' ? 'rgba(116,230,255,0.36)' : (effect === 'aura' ? 'rgba(70,150,255,0.58)' : 'rgba(255,246,150,0.24)')));
   }
@@ -18371,6 +18402,10 @@ body.inline-game-over .roll-panel {
           const before = getComputedStyle(clone, '::before');
           const after = getComputedStyle(clone, '::after');
           const rect = clone.getBoundingClientRect();
+          const dot = clone.querySelector('.dot');
+          const dotStyle = dot ? getComputedStyle(dot) : null;
+          const dotCell = dot ? dot.closest('.dot-cell') : null;
+          const dotCellStyle = dotCell ? getComputedStyle(dotCell) : null;
           const result = {
             motionClass,
             className: clone.className,
@@ -18387,16 +18422,28 @@ body.inline-game-over .roll-panel {
             boxShadow: style.boxShadow || '',
             filter: style.filter || '',
             paddingTop: parseFloat(style.paddingTop || '0') || 0,
-            dotCssMaxWidth: (() => {
-              const dot = clone.querySelector('.dot');
-              return dot ? (parseFloat(getComputedStyle(dot).maxWidth || '0') || 0) : 0;
-            })(),
+            dotCssMaxWidth: dotStyle ? (parseFloat(dotStyle.maxWidth || '0') || 0) : 0,
             dotRect: (() => {
-              const dot = clone.querySelector('.dot');
               if (!dot) return null;
               const dotRect = dot.getBoundingClientRect();
               return { width: dotRect.width, height: dotRect.height };
             })(),
+            dotStyle: dotStyle ? {
+              backgroundClip: dotStyle.backgroundClip || '',
+              borderTopWidth: dotStyle.borderTopWidth || '',
+              borderTopStyle: dotStyle.borderTopStyle || '',
+              borderTopColor: dotStyle.borderTopColor || '',
+              borderRadius: dotStyle.borderTopLeftRadius || '',
+              boxShadow: dotStyle.boxShadow || '',
+              clipPath: dotStyle.clipPath || '',
+              webkitClipPath: dotStyle.webkitClipPath || '',
+              filter: dotStyle.filter || ''
+            } : null,
+            dotCellStyle: dotCellStyle ? {
+              backgroundColor: dotCellStyle.backgroundColor || '',
+              backgroundImage: dotCellStyle.backgroundImage || '',
+              zIndex: dotCellStyle.zIndex || ''
+            } : null,
             beforeTransform: before ? before.transform : '',
             afterTransform: after ? after.transform : '',
             rect: { width: rect.width, height: rect.height }
