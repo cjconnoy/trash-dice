@@ -11229,7 +11229,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260628.4';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260629.1';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11426,6 +11426,7 @@ body.inline-game-over .roll-panel {
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const REWARD_NUDGE_CLOSE_ROUNDS = 3;
   const COSMIC_AMBIENT_MIN_WINS = 25;
+  const COSMIC_AMBIENT_COPY = 'COSMIC MODE STIRS';
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
     { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -12868,6 +12869,20 @@ body.inline-game-over .roll-panel {
     }
   }
 
+  function rewardSkinCurrentKicker(active) {
+    return `CURRENT SKIN: ${active ? active.name : 'DEFAULT'}`;
+  }
+
+  function rewardSkinCountdownLine(roundsNeeded) {
+    const count = Math.max(1, Math.floor(Number(roundsNeeded) || 1));
+    return `NEXT SKIN IN ${count} ROUND WIN${count === 1 ? '' : 'S'}:`;
+  }
+
+  function rewardNextSkinCopy(die) {
+    if (!die) return '';
+    return die.vip ? 'MYSTERY FINAL SKIN' : die.name;
+  }
+
   function rewardNudgeModel(totalWins = rewardDieWins) {
     const wins = normalizeRewardWins(totalWins);
     const active = activeRewardDie(wins);
@@ -12875,25 +12890,40 @@ body.inline-game-over .roll-panel {
     if (next) {
       const roundsNeeded = Math.max(1, next.minWins - wins);
       const closeEnough = roundsNeeded <= REWARD_NUDGE_CLOSE_ROUNDS;
-      const roundText = `${roundsNeeded} ${roundsNeeded === 1 ? 'round' : 'rounds'}`;
-      const moreText = wins > 0 ? `${roundsNeeded} more ${roundsNeeded === 1 ? 'round' : 'rounds'}` : roundText;
-      const line = closeEnough
-        ? `Win ${moreText} to unlock:`
-        : `ROUNDS WON: ${wins} / ${next.minWins}`;
+      const currentKicker = rewardSkinCurrentKicker(active);
+      const line = rewardSkinCountdownLine(roundsNeeded);
+      const nextCopy = rewardNextSkinCopy(next);
+      if (wins === COSMIC_AMBIENT_MIN_WINS) {
+        return {
+          totalWins: wins,
+          activeDie: rewardDieSnapshot(active),
+          nextDie: rewardDieSnapshot(next),
+          previewDie: active,
+          previewKind: 'current',
+          copyMode: 'cosmic-ambient',
+          roundsNeeded,
+          targetWins: COSMIC_AMBIENT_MIN_WINS,
+          terminalKicker: currentKicker,
+          roundLossKicker: currentKicker,
+          line: COSMIC_AMBIENT_COPY,
+          burstLine: COSMIC_AMBIENT_COPY,
+          unlockLine: `${line} ${nextCopy}`
+        };
+      }
       return {
         totalWins: wins,
         activeDie: rewardDieSnapshot(active),
         nextDie: rewardDieSnapshot(next),
-        previewDie: next,
-        previewKind: 'next',
+        previewDie: next.vip ? active : next,
+        previewKind: next.vip ? 'current' : 'next',
         copyMode: closeEnough ? 'close' : 'progress',
         roundsNeeded,
         targetWins: next.minWins,
-        terminalKicker: `NEXT SKIN: ${next.name}`,
-        roundLossKicker: 'KEEP ROLLING',
+        terminalKicker: currentKicker,
+        roundLossKicker: currentKicker,
         line,
-        burstLine: closeEnough ? `${line} ${next.name} DIE SKIN` : line,
-        unlockLine: `${next.name} DIE SKIN`
+        burstLine: `${line} ${nextCopy}`,
+        unlockLine: nextCopy
       };
     }
     return {
@@ -12907,7 +12937,7 @@ body.inline-game-over .roll-panel {
       targetWins: wins,
       terminalKicker: active ? `CURRENT SKIN: ${active.name}` : 'DIE SKINS',
       roundLossKicker: active ? `${active.name} UNLOCKED` : 'KEEP ROLLING',
-      line: active ? 'Keep rolling with:' : 'Keep playing to unlock:',
+      line: active ? 'FINAL SKIN UNLOCKED' : 'Keep playing to unlock:',
       burstLine: `ROUNDS WON: ${wins}`,
       unlockLine: active ? `${active.name} DIE SKIN` : 'DIE SKINS'
     };
@@ -13302,9 +13332,7 @@ body.inline-game-over .roll-panel {
           : `ROUNDS WON: ${totalWins}`;
     }
     void roundWinBurst.offsetWidth;
-    requestAnimationFrame(() => {
-      roundWinBurst.classList.add('show');
-    });
+    roundWinBurst.classList.add('show');
     return {
       shown: true,
       unlockedDie: rewardDieSnapshot(unlockedDie),
@@ -13325,10 +13353,12 @@ body.inline-game-over .roll-panel {
     const afterWins = writeRewardDieWins(beforeWins + 1);
     const afterTier = activeRewardDie(afterWins);
     const unlocked = afterTier && (!beforeTier || afterTier.tier !== beforeTier.tier);
+    const cosmicAmbientUnlocked = beforeWins < COSMIC_AMBIENT_MIN_WINS && afterWins >= COSMIC_AMBIENT_MIN_WINS;
     return {
       beforeWins,
       totalWins: afterWins,
       activeDie: rewardDieSnapshot(afterTier),
+      cosmicAmbientUnlocked,
       unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins, { delayMs: REWARD_DICE_ROUND_UNLOCK_DELAY_MS, roundWinCompanion: true }) : null
     };
   }
@@ -15609,6 +15639,7 @@ body.inline-game-over .roll-panel {
 
   function renderDie(value, player, color) {
     const el = getDie(player);
+    stopRewardRollBodySpin(player, true);
     el.className = 'die ' + colorClass(color || (player === 'p1' ? 'yellow' : 'green'));
     el.innerHTML = '';
     for (let r = 0; r < 3; r++) {
@@ -15645,11 +15676,71 @@ body.inline-game-over .roll-panel {
     }
   }
 
+  const rewardRollBodySpinFrames = { p1: null, p2: null };
+
+  function rewardRollBodySpinTransform(progress) {
+    const t = clamp(Number(progress) || 0, 0, 1);
+    const spin = Math.round(t * 1080);
+    const waveA = Math.sin(t * Math.PI * 6);
+    const waveB = Math.cos(t * Math.PI * 5);
+    const rx = (-10 + waveA * 22).toFixed(2);
+    const ry = (10 + waveB * 24).toFixed(2);
+    const scale = (1 + Math.sin(t * Math.PI * 8) * 0.045).toFixed(3);
+    return `perspective(540px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${spin}deg) scale(${scale})`;
+  }
+
+  function rewardRollBodySpinTransformMobile(progress) {
+    const t = clamp(Number(progress) || 0, 0, 1);
+    const spin = Math.round(t * 900);
+    const lift = Math.sin(t * Math.PI * 4) * -2;
+    const scale = (1 + Math.sin(t * Math.PI * 7) * 0.025).toFixed(3);
+    return `translate3d(0,${lift.toFixed(2)}px,0) rotate(${spin}deg) scale(${scale})`;
+  }
+
+  function stopRewardRollBodySpin(player, clearTransform = false) {
+    const key = player === 'p2' ? 'p2' : 'p1';
+    if (rewardRollBodySpinFrames[key]) {
+      cancelAnimationFrame(rewardRollBodySpinFrames[key]);
+      rewardRollBodySpinFrames[key] = null;
+    }
+    if (clearTransform) {
+      const die = getDie(key);
+      if (die) die.style.removeProperty('transform');
+    }
+  }
+
+  function startRewardRollBodySpin(player) {
+    const key = player === 'p2' ? 'p2' : 'p1';
+    const die = getDie(key);
+    stopRewardRollBodySpin(key);
+    if (!die || !die.classList.contains('reward-skinned') || !die.classList.contains('rolling')) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const startedAt = performance.now();
+    const duration = Math.max(220, ROLL_ANIMATION_MS);
+    const transformForProgress = MOBILE_ROLL_SMOOTHING
+      ? rewardRollBodySpinTransformMobile
+      : rewardRollBodySpinTransform;
+    const tick = now => {
+      if (!die.classList.contains('rolling') || !die.classList.contains('reward-skinned')) {
+        stopRewardRollBodySpin(key, true);
+        return;
+      }
+      const progress = clamp((now - startedAt) / duration, 0, 1);
+      die.style.setProperty('transform', transformForProgress(progress), 'important');
+      if (progress < 1) {
+        rewardRollBodySpinFrames[key] = requestAnimationFrame(tick);
+      }
+    };
+    die.style.setProperty('transform', transformForProgress(0), 'important');
+    rewardRollBodySpinFrames[key] = requestAnimationFrame(tick);
+  }
+
   function clearDie(player) {
     const targets = player
       ? [{ el: getDie(player), player }]
       : [{ el: p1Die, player: 'p1' }, { el: p2Die, player: 'p2' }];
     targets.forEach(target => {
+      stopRewardRollBodySpin(target.player, true);
       target.el.className = `die idle ready-${target.player}`;
       target.el.style.opacity = '';
       target.el.innerHTML = Array(9).fill('<div class="dot-cell"></div>').join('');
@@ -17456,6 +17547,7 @@ body.inline-game-over .roll-panel {
     }
     activeDie.className = 'die ' + colorClass(rollColor) + (IPAD_GAMEPLAY_PERFORMANCE_MODE ? ' rolling ipad-rolling' : ' rolling');
     applyPlayerRewardSkin(activeDie, current);
+    startRewardRollBodySpin(current);
     setPips(Math.floor(Math.random() * 6) + 1, current);
     const playRollAudio = () => Audio.rollLoop(ROLL_ANIMATION_MS);
     if (Audio.ready()) playRollAudio();
