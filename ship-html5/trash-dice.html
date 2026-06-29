@@ -4682,6 +4682,28 @@ body.inline-game-over.inline-game-win .inline-result-banner > * {
   position: relative;
   z-index: 1;
 }
+
+.inline-result-logo[hidden] {
+  display: none !important;
+}
+
+.inline-result-logo {
+  width: clamp(140px, 32vw, 250px);
+  margin: 0 auto clamp(1px, 0.8vw, 5px);
+  filter: drop-shadow(0 6px 0 rgba(6,53,29,0.34)) drop-shadow(0 0 15px rgba(255,244,163,0.34));
+}
+
+.inline-result-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body.inline-game-over.guided-game-complete .inline-result-banner {
+  width: min(calc(100vw - 24px), 820px);
+  padding-top: clamp(12px, 3vw, 22px);
+}
+
 body.inline-game-over .inline-result-title {
   display: grid;
   justify-items: center;
@@ -4711,6 +4733,11 @@ body.inline-game-over.inline-game-win .inline-result-title {
     0 12px 18px rgba(0,0,0,0.34),
     0 0 26px rgba(255,244,163,0.46);
 }
+
+body.inline-game-over.guided-game-complete .inline-result-title {
+  font-size: clamp(2.02rem, 7.8vw, 5.2rem);
+}
+
 body.inline-game-over.inline-game-loss .inline-result-title {
   font-size: clamp(1.88rem, 6.7vw, 4.25rem);
   animation: none;
@@ -4743,6 +4770,17 @@ body.inline-game-over.inline-game-win .inline-result-sub {
   display: none !important;
   animation: none;
 }
+
+body.inline-game-over.guided-game-complete .inline-result-sub {
+  display: inline-flex !important;
+  max-width: min(82vw, 560px);
+  color: #0b5c31;
+  font-size: clamp(0.9rem, 3.5vw, 1.24rem);
+  line-height: 1.12;
+  text-transform: none;
+  animation: terminalWinSubPop 0.42s cubic-bezier(.13,.9,.15,1.18) 0.32s both;
+}
+
 body.inline-game-over.inline-game-loss .inline-result-sub {
   font-size: clamp(0.84rem, 3.2vw, 1.18rem);
   padding: clamp(6px, 1.6vw, 9px) clamp(12px, 3.2vw, 18px) clamp(7px, 1.7vw, 10px);
@@ -5592,6 +5630,35 @@ body.inline-game-win #p1StatusBar.round-winner-praise {
   filter: drop-shadow(0 12px 13px rgba(16,39,20,0.34));
 }
 
+.round-win-capstone-logo[hidden] {
+  display: none !important;
+}
+
+.round-win-capstone-logo {
+  width: clamp(134px, 36vw, 230px);
+  margin: 0 auto clamp(2px, 1vw, 6px);
+  filter: drop-shadow(0 6px 0 rgba(6,53,29,0.36)) drop-shadow(0 0 15px rgba(255,244,163,0.34));
+}
+
+.round-win-capstone-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.round-win-burst.is-guided-complete .round-win-burst-content {
+  width: min(92vw, 720px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.3), transparent 52%),
+    linear-gradient(180deg, rgba(255,248,171,0.98), rgba(245,200,0,0.94) 58%, rgba(229,173,0,0.95));
+  border-color: rgba(8,99,53,0.9);
+  box-shadow:
+    0 14px 0 rgba(152,112,0,0.46),
+    0 24px 42px rgba(0,0,0,0.42),
+    0 0 34px rgba(255,244,163,0.48),
+    inset 0 0 0 3px rgba(255,255,255,0.16);
+}
+
 .round-win-burst-title {
   font-family: 'Fredoka One', system-ui, sans-serif;
   line-height: 0.82;
@@ -5606,6 +5673,19 @@ body.inline-game-win #p1StatusBar.round-winner-praise {
 .round-win-burst-title span {
   display: block;
   font-size: clamp(2.35rem, 11.4vw, 5.85rem);
+}
+
+.round-win-burst.is-guided-complete .round-win-burst-title {
+  color: #0b5c31;
+  text-shadow:
+    0 2px 0 #fff27a,
+    0 5px 0 #e1382b,
+    0 12px 18px rgba(0,0,0,0.34),
+    0 0 26px rgba(255,244,163,0.46);
+}
+
+.round-win-burst.is-guided-complete .round-win-burst-title span {
+  font-size: clamp(2rem, 9.6vw, 5.2rem);
 }
 
 .round-win-burst-die[hidden] {
@@ -5649,6 +5729,14 @@ body.inline-game-win #p1StatusBar.round-winner-praise {
 
 .round-win-burst.has-reward .round-win-burst-sub {
   color: #e93a2d;
+}
+
+.round-win-burst.is-guided-complete .round-win-burst-sub {
+  max-width: min(82vw, 560px);
+  color: #0b5c31;
+  font-size: clamp(0.92rem, 3.8vw, 1.28rem);
+  line-height: 1.12;
+  text-transform: none;
 }
 
 @keyframes roundWinBurstShell {
@@ -10768,7 +10856,7 @@ body.inline-game-over .roll-panel {
 </button>
 <button class="auto-play-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay your turns" aria-pressed="false">AUTO</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
-<button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate COSMIC reward die" aria-pressed="false">COSMIC</button>
+<button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate DISCO reward die" aria-pressed="false">DISCO</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
@@ -10965,6 +11053,10 @@ body.inline-game-over .roll-panel {
       <div class="can-load-pile" id="canLoadPile"></div>
     </div>
     <div class="inline-result-banner" id="inlineResultBanner" role="status" aria-live="polite" aria-hidden="true">
+      <picture class="inline-result-logo" id="inlineResultLogo" hidden aria-hidden="true">
+        <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
+        <img src="assets/brand/trash-dice-logo.png" alt="" width="1500" height="822" decoding="async">
+      </picture>
       <div class="inline-result-title" id="inlineResultTitle"></div>
       <div class="inline-result-sub" id="inlineResultSub"></div>
       <div class="inline-result-chip" id="inlineResultChip" hidden aria-hidden="true">
@@ -11124,6 +11216,10 @@ body.inline-game-over .roll-panel {
 <div class="round-flash" id="roundFlash"></div>
 <div class="round-win-burst" id="roundWinBurst" hidden aria-live="polite" aria-atomic="true">
   <div class="round-win-burst-content">
+    <picture class="round-win-capstone-logo" id="roundWinCapstoneLogo" hidden aria-hidden="true">
+      <source srcset="assets/brand/trash-dice-logo-title.webp" type="image/webp">
+      <img src="assets/brand/trash-dice-logo.png" alt="" width="1500" height="822" decoding="async">
+    </picture>
     <div class="die reward-nudge-die round-win-burst-die" id="roundWinBurstDie" hidden aria-hidden="true"></div>
     <div class="round-win-burst-title"><span>ROUND</span><span>WINNER</span></div>
     <div class="round-win-burst-sub" id="roundWinBurstSub">Reward die ready</div>
@@ -11192,7 +11288,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260629.10';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260629.11';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11390,7 +11486,9 @@ body.inline-game-over .roll-panel {
   const REWARD_DICE_ROUND_UNLOCK_DELAY_MS = 1250;
   const REWARD_NUDGE_CLOSE_ROUNDS = 3;
   const COSMIC_AMBIENT_MIN_WINS = 8;
-  const COSMIC_AMBIENT_COPY = 'COSMIC MODE STIRS';
+  const COSMIC_AMBIENT_COPY = 'COSMIC VIBES';
+  const GUIDED_GAME_COMPLETE_TITLE = ['YOU BEAT', 'THE GAME!'];
+  const GUIDED_GAME_COMPLETE_SUBCOPY = 'You unlocked every die. How many more rounds can you win?';
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
     { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -11404,7 +11502,7 @@ body.inline-game-over .roll-panel {
     { id: 'camo', tier: 9, minWins: 10, name: 'CAMO', faceColor: '#4EA536', pipColor: '#FFF46A', effect: 'camo', pipOutline: true },
     { id: 'lava', tier: 10, minWins: 11, name: 'LAVA', faceColor: '#15100E', pipColor: '#FFD23E', effect: 'lava', pipOutline: true }
   ]);
-  const VIP_REWARD_DIE = Object.freeze({ id: 'cosmic', tier: 11, minWins: 12, name: 'COSMIC', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
+  const VIP_REWARD_DIE = Object.freeze({ id: 'disco', tier: 11, minWins: 12, name: 'DISCO', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
 
   function rewardDiceSessionSeed() {
@@ -11527,6 +11625,8 @@ body.inline-game-over .roll-panel {
   let inlineGameOverTimer = null;
   let inlineWinAccentTimer = null;
   let inlineRoundWinsWindupTimer = null;
+  let guidedGameCompletionPending = false;
+  let guidedGameCompleted = false;
   let rewardDieWins = readRewardDieWins();
   let rewardDieUnlockTimer = null;
   let roundWinBurstTimer = null;
@@ -12563,6 +12663,7 @@ body.inline-game-over .roll-panel {
   const inlineResultSub = document.getElementById('inlineResultSub');
   const inlineResultChip = document.getElementById('inlineResultChip');
   const inlineResultChipText = document.getElementById('inlineResultChipText');
+  const inlineResultLogo = document.getElementById('inlineResultLogo');
   const rewardDieUnlock = document.getElementById('rewardDieUnlock');
   const rewardDie = document.getElementById('rewardDie');
   const rewardDieName = document.getElementById('rewardDieName');
@@ -12580,6 +12681,8 @@ body.inline-game-over .roll-panel {
   const roundWinBurst = document.getElementById('roundWinBurst');
   const roundWinBurstDie = document.getElementById('roundWinBurstDie');
   const roundWinBurstSub = document.getElementById('roundWinBurstSub');
+  const roundWinCapstoneLogo = document.getElementById('roundWinCapstoneLogo');
+  const roundWinBurstTitle = roundWinBurst ? roundWinBurst.querySelector('.round-win-burst-title') : null;
   const p1TurnTag   = document.getElementById('p1TurnTag');
   const p2TurnTag   = document.getElementById('p2TurnTag');
   const roundFlash  = document.getElementById('roundFlash');
@@ -12640,11 +12743,16 @@ body.inline-game-over .roll-panel {
   function writeRewardDieWins(totalWins) {
     const normalized = normalizeRewardWins(totalWins);
     rewardDieWins = normalized;
+    if (normalized < VIP_REWARD_DIE.minWins) {
+      guidedGameCompletionPending = false;
+      guidedGameCompleted = false;
+    }
     try {
       window.sessionStorage.removeItem(REWARD_DICE_SESSION_STORAGE_KEY);
     } catch (_) {
     }
     refreshVipDiscoPartyState();
+    refreshGuidedGameCompletionState();
     updateDevDiscoButtonState();
     return rewardDieWins;
   }
@@ -12670,6 +12778,59 @@ body.inline-game-over .roll-panel {
 
   function isCosmicAmbientUnlocked(totalWins = rewardDieWins) {
     return normalizeRewardWins(totalWins) >= COSMIC_AMBIENT_MIN_WINS;
+  }
+
+  function refreshGuidedGameCompletionState() {
+    document.body.dataset.guidedGameCompletionPending = guidedGameCompletionPending ? 'true' : 'false';
+    document.body.dataset.guidedGameCompleted = guidedGameCompleted ? 'true' : 'false';
+    return {
+      pending: guidedGameCompletionPending,
+      completed: guidedGameCompleted
+    };
+  }
+
+  function finalRewardDie() {
+    return REWARD_DICE[REWARD_DICE.length - 1] || null;
+  }
+
+  function isFinalRewardDie(die) {
+    const cap = finalRewardDie();
+    return !!(die && cap && die.tier === cap.tier && die.minWins === cap.minWins);
+  }
+
+  function isGuidedGameCompletionPending() {
+    return guidedGameCompletionPending && !guidedGameCompleted && isVipDiscoUnlocked();
+  }
+
+  function markGuidedGameCompletionPending(reason = '') {
+    if (guidedGameCompleted || !isVipDiscoUnlocked()) {
+      refreshGuidedGameCompletionState();
+      return false;
+    }
+    guidedGameCompletionPending = true;
+    document.body.dataset.guidedGameCompletionReason = reason;
+    refreshGuidedGameCompletionState();
+    return true;
+  }
+
+  function consumeGuidedGameCompletion(reason = '') {
+    if (!isGuidedGameCompletionPending()) {
+      refreshGuidedGameCompletionState();
+      return false;
+    }
+    guidedGameCompletionPending = false;
+    guidedGameCompleted = true;
+    document.body.dataset.guidedGameCompletionReason = reason;
+    refreshGuidedGameCompletionState();
+    return true;
+  }
+
+  function guidedGameCompletionState() {
+    return {
+      pending: guidedGameCompletionPending,
+      completed: guidedGameCompleted,
+      reason: document.body.dataset.guidedGameCompletionReason || ''
+    };
   }
 
   function refreshVipDiscoPartyState() {
@@ -12813,7 +12974,9 @@ body.inline-game-over .roll-panel {
       nextDie: rewardDieSnapshot(next),
       cosmicAmbientUnlocked: isCosmicAmbientUnlocked(totalWins),
       capped: !next,
-      capTier: REWARD_DICE[REWARD_DICE.length - 1].tier
+      capTier: REWARD_DICE[REWARD_DICE.length - 1].tier,
+      guidedCompletionPending: guidedGameCompletionPending,
+      guidedGameCompleted: guidedGameCompleted
     };
   }
 
@@ -12853,6 +13016,23 @@ body.inline-game-over .roll-panel {
     const wins = normalizeRewardWins(totalWins);
     const active = activeRewardDie(wins);
     const next = nextRewardDie(wins);
+    if (guidedGameCompleted) {
+      return {
+        totalWins: wins,
+        activeDie: rewardDieSnapshot(active),
+        nextDie: null,
+        previewDie: null,
+        previewKind: 'none',
+        copyMode: 'endless',
+        roundsNeeded: 0,
+        targetWins: wins,
+        terminalKicker: '',
+        roundLossKicker: '',
+        line: '',
+        burstLine: `ROUNDS WON: ${wins}`,
+        unlockLine: ''
+      };
+    }
     if (next) {
       const roundsNeeded = Math.max(1, next.minWins - wins);
       const closeEnough = roundsNeeded <= REWARD_NUDGE_CLOSE_ROUNDS;
@@ -13010,6 +13190,10 @@ body.inline-game-over .roll-panel {
 
   function showTerminalRewardNudge() {
     if (!terminalRewardNudge) return null;
+    if (guidedGameCompleted) {
+      hideTerminalRewardNudge();
+      return null;
+    }
     if (terminalRewardNudge.parentElement !== document.body) {
       document.body.appendChild(terminalRewardNudge);
     }
@@ -13046,6 +13230,10 @@ body.inline-game-over .roll-panel {
 
   function showRoundLossRewardNudge() {
     if (!roundLossRewardNudge) return null;
+    if (guidedGameCompleted) {
+      hideRoundLossRewardNudge();
+      return null;
+    }
     const model = rewardNudgeModel();
     hideRoundLossRewardNudge();
     if (roundLossRewardNudgeKicker) roundLossRewardNudgeKicker.textContent = model.roundLossKicker;
@@ -13199,7 +13387,7 @@ body.inline-game-over .roll-panel {
       rewardDieUnlockTimer = null;
       applyRewardDieStyle(die);
       if (rewardDieName) rewardDieName.textContent = die.name;
-      if (rewardDieSub) rewardDieSub.textContent = die.effect === 'discoBall' ? 'COSMIC MODE UNLOCKED' : 'DIE SKIN UNLOCKED';
+      if (rewardDieSub) rewardDieSub.textContent = 'DIE SKIN UNLOCKED';
       rewardDieUnlock.dataset.tier = String(die.tier);
       rewardDieUnlock.dataset.effect = die.effect || 'none';
       rewardDieUnlock.dataset.pipOutline = die.pipOutline ? 'true' : 'false';
@@ -13228,9 +13416,26 @@ body.inline-game-over .roll-panel {
     return rewardDieSnapshot(die);
   }
 
+  function setRoundWinBurstTitle(words) {
+    if (!roundWinBurstTitle) return;
+    roundWinBurstTitle.textContent = '';
+    words.forEach((word, idx) => {
+      if (idx > 0) roundWinBurstTitle.appendChild(document.createTextNode(' '));
+      const span = document.createElement('span');
+      span.textContent = word;
+      roundWinBurstTitle.appendChild(span);
+    });
+  }
+
+  function setRoundWinCapstoneLogoVisible(visible) {
+    if (!roundWinCapstoneLogo) return;
+    roundWinCapstoneLogo.hidden = !visible;
+    roundWinCapstoneLogo.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  }
+
   function hideRoundWinBurst() {
     if (roundWinBurst) {
-      roundWinBurst.classList.remove('show', 'p1', 'has-reward', 'has-chase-die');
+      roundWinBurst.classList.remove('show', 'p1', 'has-reward', 'has-chase-die', 'is-guided-complete');
       roundWinBurst.hidden = true;
       roundWinBurst.removeAttribute('data-reward-tier');
       roundWinBurst.removeAttribute('data-reward-name');
@@ -13240,6 +13445,8 @@ body.inline-game-over .roll-panel {
       roundWinBurst.removeAttribute('data-copy-mode');
       roundWinBurst.removeAttribute('data-target-wins');
     }
+    setRoundWinCapstoneLogoVisible(false);
+    setRoundWinBurstTitle(['ROUND', 'WINNER']);
     if (roundWinBurstDie) {
       roundWinBurstDie.hidden = true;
       roundWinBurstDie.innerHTML = '';
@@ -13254,14 +13461,18 @@ body.inline-game-over .roll-panel {
   function showRoundWinBurst(winner, rewardProgress = null) {
     if (winner !== 'p1' || !roundWinBurst) return null;
     const unlockedDie = rewardProgress && rewardProgress.unlockedDie ? rewardProgress.unlockedDie : null;
+    const guidedCompletionTriggered = !!(rewardProgress && rewardProgress.guidedCompletionTriggered);
     const rewardModel = rewardNudgeModel(rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins);
     if (roundWinBurstTimer) {
       cancelRuntimeTimer(roundWinBurstTimer);
       roundWinBurstTimer = null;
     }
     roundWinBurst.hidden = false;
-    roundWinBurst.classList.remove('show', 'p1', 'has-reward');
+    roundWinBurst.classList.remove('show', 'p1', 'has-reward', 'is-guided-complete');
     roundWinBurst.classList.add('p1');
+    roundWinBurst.classList.toggle('is-guided-complete', guidedCompletionTriggered);
+    setRoundWinCapstoneLogoVisible(guidedCompletionTriggered);
+    setRoundWinBurstTitle(guidedCompletionTriggered ? GUIDED_GAME_COMPLETE_TITLE : ['ROUND', 'WINNER']);
     if (unlockedDie) {
       roundWinBurst.classList.add('has-reward');
       roundWinBurst.dataset.rewardTier = String(unlockedDie.tier);
@@ -13270,7 +13481,7 @@ body.inline-game-over .roll-panel {
       roundWinBurst.removeAttribute('data-reward-tier');
       roundWinBurst.removeAttribute('data-reward-name');
     }
-    const previewDie = unlockedDie || rewardModel.previewDie;
+    const previewDie = guidedCompletionTriggered ? null : (unlockedDie || rewardModel.previewDie);
     if (previewDie && roundWinBurstDie) {
       renderRewardNudgeDie(roundWinBurstDie, previewDie);
       roundWinBurst.classList.add('has-chase-die');
@@ -13293,7 +13504,9 @@ body.inline-game-over .roll-panel {
       const totalWins = rewardProgress && rewardProgress.totalWins ? rewardProgress.totalWins : rewardDieWins;
       roundWinBurstSub.textContent = unlockedDie
         ? `${unlockedDie.name} DIE SKIN UNLOCKED`
-        : rewardModel.nextDie
+        : guidedCompletionTriggered
+          ? GUIDED_GAME_COMPLETE_SUBCOPY
+          : rewardModel.nextDie
           ? rewardModel.burstLine
           : `ROUNDS WON: ${totalWins}`;
     }
@@ -13302,6 +13515,7 @@ body.inline-game-over .roll-panel {
     return {
       shown: true,
       unlockedDie: rewardDieSnapshot(unlockedDie),
+      guidedCompletionTriggered,
       totalWins: rewardProgress ? rewardProgress.totalWins : normalizeRewardWins(rewardDieWins)
     };
   }
@@ -13316,15 +13530,24 @@ body.inline-game-over .roll-panel {
     rewardDiePreviewOverride = null;
     const beforeWins = normalizeRewardWins(rewardDieWins);
     const beforeTier = activeRewardDie(beforeWins);
+    const guidedCompletionTriggered = beforeWins >= VIP_REWARD_DIE.minWins
+      ? consumeGuidedGameCompletion('round-win')
+      : false;
     const afterWins = writeRewardDieWins(beforeWins + 1);
     const afterTier = activeRewardDie(afterWins);
     const unlocked = afterTier && (!beforeTier || afterTier.tier !== beforeTier.tier);
     const cosmicAmbientUnlocked = beforeWins < COSMIC_AMBIENT_MIN_WINS && afterWins >= COSMIC_AMBIENT_MIN_WINS;
+    const finalUnlockPending = unlocked && isFinalRewardDie(afterTier)
+      ? markGuidedGameCompletionPending('final-die-unlocked')
+      : guidedGameCompletionPending;
     return {
       beforeWins,
       totalWins: afterWins,
       activeDie: rewardDieSnapshot(afterTier),
       cosmicAmbientUnlocked,
+      guidedCompletionTriggered,
+      guidedCompletionPending: !!finalUnlockPending,
+      guidedCompletionCompleted: guidedGameCompleted,
       unlockedDie: unlocked ? showRewardDieUnlock(afterTier, afterWins, { delayMs: REWARD_DICE_ROUND_UNLOCK_DELAY_MS, roundWinCompanion: true }) : null
     };
   }
@@ -13347,8 +13570,8 @@ body.inline-game-over .roll-panel {
     if (!devDiscoBtn) return;
     const active = isVipDiscoUnlocked();
     devDiscoBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
-    devDiscoBtn.title = active ? 'COSMIC mode active' : 'Activate COSMIC reward die';
-    devDiscoBtn.setAttribute('aria-label', active ? 'COSMIC mode active' : 'Activate COSMIC reward die');
+    devDiscoBtn.title = active ? 'DISCO die active' : 'Activate DISCO reward die';
+    devDiscoBtn.setAttribute('aria-label', active ? 'DISCO die active' : 'Activate DISCO reward die');
   }
 
   function activateDebugDiscoParty() {
@@ -15947,7 +16170,7 @@ body.inline-game-over .roll-panel {
     inlineResultChipText.innerHTML = `
       <span class="inline-result-chip-label">ROUNDS WON:</span>
       <span class="inline-result-chip-count">x${displayWins}</span>
-      ${vipActive ? '<span class="inline-result-chip-vip">COSMIC MODE</span>' : ''}
+      ${vipActive ? '<span class="inline-result-chip-vip">COSMIC VIBES</span>' : ''}
     `;
   }
 
@@ -16008,6 +16231,10 @@ body.inline-game-over .roll-panel {
       inlineResultBanner.setAttribute('aria-hidden', 'true');
       inlineResultBanner.classList.remove('win', 'loss');
     }
+    if (inlineResultLogo) {
+      inlineResultLogo.hidden = true;
+      inlineResultLogo.setAttribute('aria-hidden', 'true');
+    }
     if (inlineResultTitle) inlineResultTitle.textContent = '';
     if (inlineResultSub) inlineResultSub.textContent = '';
     if (inlineResultChip) {
@@ -16048,15 +16275,24 @@ body.inline-game-over .roll-panel {
 
   function startInlineEndingVisuals(playerWon, rewardState = null) {
     clearInlineEndingVisuals();
+    const guidedCompletionTriggered = !!(playerWon && rewardState && rewardState.guidedCompletionTriggered);
     if (inlineResultBanner) {
       inlineResultBanner.classList.add(playerWon ? 'win' : 'loss');
       inlineResultBanner.setAttribute('aria-hidden', 'false');
     }
-    setInlineResultTitle(playerWon ? ['YOU TRASHED', 'THE CPU!'] : ['GAME', 'OVER']);
+    if (inlineResultLogo) {
+      inlineResultLogo.hidden = !guidedCompletionTriggered;
+      inlineResultLogo.setAttribute('aria-hidden', guidedCompletionTriggered ? 'false' : 'true');
+    }
+    setInlineResultTitle(playerWon
+      ? (guidedCompletionTriggered ? GUIDED_GAME_COMPLETE_TITLE : ['YOU TRASHED', 'THE CPU!'])
+      : ['GAME', 'OVER']);
     if (inlineResultSub) {
-      inlineResultSub.textContent = playerWon ? '' : 'CPU WINS';
-      inlineResultSub.hidden = !!playerWon;
-      inlineResultSub.setAttribute('aria-hidden', playerWon ? 'true' : 'false');
+      inlineResultSub.textContent = playerWon
+        ? (guidedCompletionTriggered ? GUIDED_GAME_COMPLETE_SUBCOPY : '')
+        : 'CPU WINS';
+      inlineResultSub.hidden = playerWon && !guidedCompletionTriggered;
+      inlineResultSub.setAttribute('aria-hidden', playerWon && !guidedCompletionTriggered ? 'true' : 'false');
     }
     if (inlineResultChip) {
       inlineResultChip.hidden = !playerWon;
@@ -16105,7 +16341,7 @@ body.inline-game-over .roll-panel {
       cancelRuntimeTimer(inlineWinAccentTimer);
       inlineWinAccentTimer = null;
     }
-    document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss');
+    document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss', 'guided-game-complete');
     clearMathematicalLoserStatus();
     hidePwaInstallHint();
     clearTerminalDiceCelebration();
@@ -16210,11 +16446,16 @@ body.inline-game-over .roll-panel {
       autoRestartPausedForPwa: false
     };
     let finalRewardProgress = null;
+    let guidedCompletionTriggered = false;
     if (shouldCreditFinalRewardRound) {
       recordRoundWin('p1');
       finalRewardProgress = recordRewardDiePlayerRoundWin();
+      guidedCompletionTriggered = !!(finalRewardProgress && finalRewardProgress.guidedCompletionTriggered);
       inlineGameOverState.finalRewardRoundCredited = true;
+    } else if (playerWon) {
+      guidedCompletionTriggered = consumeGuidedGameCompletion('game-win');
     }
+    inlineGameOverState.guidedCompletionTriggered = guidedCompletionTriggered;
     if (playerWon) {
       clearPostLossComebackRound('player-game-win');
     } else {
@@ -16238,7 +16479,10 @@ body.inline-game-over .roll-panel {
       rolls: firstGameMiracleRolls,
       last: lastFirstGameMiracle ? { ...lastFirstGameMiracle } : null
     };
-    inlineGameOverState.rewardDie = finalRewardProgress || getRewardDieState();
+    inlineGameOverState.rewardDie = {
+      ...(finalRewardProgress || getRewardDieState()),
+      guidedCompletionTriggered
+    };
 
     gameStarted = true;
     busy = true;
@@ -16252,6 +16496,7 @@ body.inline-game-over .roll-panel {
     document.body.classList.add('inline-game-over');
     document.body.classList.toggle('inline-game-win', playerWon);
     document.body.classList.toggle('inline-game-loss', !playerWon);
+    document.body.classList.toggle('guided-game-complete', guidedCompletionTriggered);
     clearRollGatedRewardUi();
     startInlineEndingVisuals(playerWon, inlineGameOverState.rewardDie);
     showTerminalRewardNudge();
@@ -18276,6 +18521,13 @@ body.inline-game-over .roll-panel {
         resetRewardDieReviewPreview();
         return getRewardDieState();
       },
+      setGuidedCompletion({ pending = false, completed = false, reason = 'qa' } = {}) {
+        guidedGameCompletionPending = !!pending;
+        guidedGameCompleted = !!completed;
+        document.body.dataset.guidedGameCompletionReason = reason;
+        refreshGuidedGameCompletionState();
+        return guidedGameCompletionState();
+      },
       rewardSkinProbe() {
         return qaRewardSkinProbe();
       },
@@ -19455,6 +19707,7 @@ body.inline-game-over .roll-panel {
           forcedRolls: forcedRolls.slice(),
           inlineGameOver: inlineGameOverState ? { ...inlineGameOverState } : null,
           rewardDie: getRewardDieState(),
+          guidedGameCompletion: guidedGameCompletionState(),
           enduranceAssist: pools && Array.isArray(board) ? createEnduranceAssistContext(
             board.reduce((slots, slot, i) => {
               if (slot === null) slots.push(i + 1);
@@ -19834,6 +20087,9 @@ body.inline-game-over .roll-panel {
           const statusChaseRect = p1StatusChaseDie ? p1StatusChaseDie.getBoundingClientRect() : null;
           const burstStyle = roundWinBurst ? getComputedStyle(roundWinBurst) : null;
           const burstRect = roundWinBurst ? roundWinBurst.getBoundingClientRect() : null;
+          const burstLogo = document.getElementById('roundWinCapstoneLogo');
+          const burstLogoStyle = burstLogo ? getComputedStyle(burstLogo) : null;
+          const burstLogoRect = burstLogo ? burstLogo.getBoundingClientRect() : null;
           const burstDieStyle = roundWinBurstDie ? getComputedStyle(roundWinBurstDie) : null;
           const burstDieRect = roundWinBurstDie ? roundWinBurstDie.getBoundingClientRect() : null;
           const rewardStyle = rewardDieUnlock ? getComputedStyle(rewardDieUnlock) : null;
@@ -19880,6 +20136,8 @@ body.inline-game-over .roll-panel {
             statusChaseDieFitsStatus: !!(statusChaseRect && statusRect && statusChaseRect.left >= statusRect.left - 1 && statusChaseRect.right <= statusRect.right + 1 && statusChaseRect.top >= statusRect.top - 1 && statusChaseRect.bottom <= statusRect.bottom + 1),
             statusChaseDieRect: statusChaseRect ? { left: Math.round(statusChaseRect.left), right: Math.round(statusChaseRect.right), top: Math.round(statusChaseRect.top), bottom: Math.round(statusChaseRect.bottom), width: Math.round(statusChaseRect.width), height: Math.round(statusChaseRect.height) } : null,
             roundWinBurstVisible: !!(roundWinBurst && !roundWinBurst.hidden && roundWinBurst.classList.contains('show') && burstStyle && burstStyle.display !== 'none' && parseFloat(burstStyle.opacity || '0') > 0),
+            roundWinBurstGuidedComplete: !!(roundWinBurst && roundWinBurst.classList.contains('is-guided-complete')),
+            roundWinCapstoneLogoVisible: !!(burstLogo && !burstLogo.hidden && burstLogoStyle && burstLogoStyle.display !== 'none' && burstLogoRect && burstLogoRect.width >= 100 && burstLogoRect.height >= 40),
             roundWinBurstRect: burstRect ? { left: Math.round(burstRect.left), right: Math.round(burstRect.right), top: Math.round(burstRect.top), bottom: Math.round(burstRect.bottom), width: Math.round(burstRect.width), height: Math.round(burstRect.height) } : null,
             roundWinBurstText: roundWinBurst ? roundWinBurst.textContent.replace(/\s+/g, ' ').trim() : '',
             roundWinBurstRewardTier: roundWinBurst ? roundWinBurst.dataset.rewardTier || '' : '',
