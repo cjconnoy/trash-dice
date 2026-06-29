@@ -488,8 +488,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.8';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.8';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.9';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.9';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -2511,11 +2511,14 @@ async function main() {
     const productionIpadInitialStart = await evalValue(productionIpad, `(() => {
       const can = document.querySelector('.start-lurker-can');
       const rect = can ? can.getBoundingClientRect() : null;
+      const canStyle = can ? getComputedStyle(can) : null;
       return {
         state: window.TrashDiceQA.state(),
         bodyClasses: document.body.className,
-        canAnimationName: can ? getComputedStyle(can).animationName : '',
-        canTransform: can ? getComputedStyle(can).transform : '',
+        canDisplay: canStyle ? canStyle.display : '',
+        canAnimationName: canStyle ? canStyle.animationName : '',
+        canTransform: canStyle ? canStyle.transform : '',
+        canVisible: !!(can && canStyle.display !== 'none' && canStyle.visibility !== 'hidden' && Number(canStyle.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0),
         canLeft: rect ? rect.left : null,
         mouthAnimationName: getComputedStyle(document.querySelector('.start-can-mouth')).animationName,
         chompAnimationName: getComputedStyle(document.querySelector('.start-can-lid-chomp')).animationName,
@@ -2526,8 +2529,10 @@ async function main() {
     const productionIpadInitialEnd = await evalValue(productionIpad, `(() => {
       const can = document.querySelector('.start-lurker-can');
       const rect = can ? can.getBoundingClientRect() : null;
+      const canStyle = can ? getComputedStyle(can) : null;
       return {
-        canTransform: can ? getComputedStyle(can).transform : '',
+        canDisplay: canStyle ? canStyle.display : '',
+        canTransform: canStyle ? canStyle.transform : '',
         canLeft: rect ? rect.left : null
       };
     })()`);
@@ -2541,11 +2546,8 @@ async function main() {
     assert(productionIpadInitial.state.tabletEffectsLite === true, `production-like iPad should use tablet effects lite ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.iPadGameplayPerformanceMode === true, `production-like iPad performance mode missing ${JSON.stringify(productionIpadInitial)}`);
     assert(productionIpadInitial.state.legacyIpadPerformanceMode === false, `default production-like iPad probe should not force legacy mode ${JSON.stringify(productionIpadInitial)}`);
-    assert(productionIpadInitial.canAnimationName === 'startCanLurkIpadSmooth', `production-like iPad title can should use compositor CSS body motion ${JSON.stringify(productionIpadInitial)}`);
     const productionIpadTitleCanTravel = Math.abs(productionIpadInitial.canSecondLeft - productionIpadInitial.canFirstLeft);
-    assert(productionIpadTitleCanTravel >= 16, `production-like iPad title can body motion appears stopped ${JSON.stringify(productionIpadInitial)}`);
-    assert(productionIpadTitleCanTravel <= 130, `production-like iPad title can body motion is too fast ${JSON.stringify(productionIpadInitial)}`);
-    assert(productionIpadInitial.mouthAnimationName !== 'none' && productionIpadInitial.chompAnimationName !== 'none', `production-like iPad title can chomp should stay alive ${JSON.stringify(productionIpadInitial)}`);
+    assert(productionIpadInitial.bodyClasses.includes('ipad-title-can-hidden') && productionIpadInitial.canDisplay === 'none' && productionIpadInitial.canAnimationName === 'none' && productionIpadInitial.canVisible === false && productionIpadTitleCanTravel === 0, `production-like iPad title can should be removed from the title screen ${JSON.stringify({ productionIpadInitial, productionIpadInitialEnd, productionIpadTitleCanTravel })}`);
 
     await evalValue(productionIpad, `document.getElementById('startBtn').click(); true`);
     await waitEval(productionIpad, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'production-like iPad game start');
