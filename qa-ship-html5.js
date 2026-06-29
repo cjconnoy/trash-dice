@@ -169,7 +169,7 @@ function ipadRollVisualProbeScript(rollValue, maxMs = 960, intervalMs = 40) {
   })`;
 }
 
-function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 32) {
+function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 32, rewardWins = 0) {
   return `new Promise(resolve => {
     const samples = [];
     let bestRoll = null;
@@ -194,6 +194,8 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
         className: el.className,
         motionClass: el.classList.contains('to-slot-physical') ? 'to-slot-physical' : (el.classList.contains('to-trash-physical') ? 'to-trash-physical' : ''),
         stageClass: stage ? stage.className : '',
+        rewardSkinned: el.classList.contains('reward-skinned'),
+        effect: el.dataset.rewardEffect || '',
         stageCssWidth: stageStyle ? numberValue(stageStyle.width) : 0,
         stageCssHeight: stageStyle ? numberValue(stageStyle.height) : 0,
         active: !!(stage && stage.classList.contains('active') && el.className.includes('rolling')),
@@ -204,6 +206,8 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
         dotCssMaxHeight: dotStyle ? numberValue(dotStyle.maxHeight) : 0,
         paddingTop: numberValue(style.paddingTop),
         transform: style.transform || '',
+        animationName: style.animationName || '',
+        animationDuration: style.animationDuration || '',
         animations: el.getAnimations().map(animation => ({
           name: animation.animationName || '',
           duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
@@ -223,14 +227,20 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
         message: (document.getElementById('message') || {}).textContent || ''
       };
     };
-    const finish = () => resolve({
-      bestRoll,
-      firstActive,
-      firstTravel,
-      bestTravel,
-      samples: samples.slice(-12),
-      state: window.TrashDiceQA.state()
-    });
+    const finish = () => {
+      const travelSamples = samples.map(sample => sample.travel).filter(Boolean);
+      const travelAnimationNames = Array.from(new Set(travelSamples.flatMap(sample => [sample.animationName].concat((sample.animations || []).map(animation => animation.name))).filter(Boolean)));
+      resolve({
+        bestRoll,
+        firstActive,
+        firstTravel,
+        bestTravel,
+        travelAnimationNames,
+        travelSamples: travelSamples.slice(-12),
+        samples: samples.slice(-12),
+        state: window.TrashDiceQA.state()
+      });
+    };
     const tick = () => {
       const sample = read();
       samples.push(sample);
@@ -248,6 +258,8 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
       }
       window.setTimeout(tick, ${Number(intervalMs) || 32});
     };
+    const rewardWins = ${Number(rewardWins) || 0};
+    if (rewardWins > 0 && window.TrashDiceQA.rewardSkinFixture) window.TrashDiceQA.rewardSkinFixture(rewardWins);
     window.TrashDiceQA.queueRolls([${Number(rollValue) || 1}]);
     document.getElementById('rollBtn').click();
     tick();
@@ -344,8 +356,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.5';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.5';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.6';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.6';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1705,6 +1717,13 @@ async function main() {
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
       const travellingRewardDieEdge = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardCapDie.minWins)})`);
+      const prismTravellingRewardDieMotion = await evalValue(page, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardPrism.minWins)})`);
+      const expectedPrismToSlotAnimation = viewport.mobile ? 'dieArcToLidMobile' : 'dieArcToLid';
+      const expectedPrismToTrashAnimation = viewport.mobile ? 'dieArcToCanMobile' : 'dieArcToCan';
+      assert(prismTravellingRewardDieMotion.toSlot.rewardSkinned === true && prismTravellingRewardDieMotion.toSlot.effect === rewardPrism.effect, `${viewport.name}: PRISM travelling-to-lid clone did not activate PRISM skin ${JSON.stringify({ rewardPrism, prismTravellingRewardDieMotion })}`);
+      assert(prismTravellingRewardDieMotion.toTrash.rewardSkinned === true && prismTravellingRewardDieMotion.toTrash.effect === rewardPrism.effect, `${viewport.name}: PRISM travelling-to-trash clone did not activate PRISM skin ${JSON.stringify({ rewardPrism, prismTravellingRewardDieMotion })}`);
+      assert((prismTravellingRewardDieMotion.toSlot.animationName || '').includes(expectedPrismToSlotAnimation) && !(prismTravellingRewardDieMotion.toSlot.animationName || '').includes('rewardPrismCycle'), `${viewport.name}: PRISM travelling-to-lid clone should run the lid arc, not the idle prism cycle ${JSON.stringify({ expectedPrismToSlotAnimation, prismTravellingRewardDieMotion })}`);
+      assert((prismTravellingRewardDieMotion.toTrash.animationName || '').includes(expectedPrismToTrashAnimation) && !(prismTravellingRewardDieMotion.toTrash.animationName || '').includes('rewardPrismCycle'), `${viewport.name}: PRISM travelling-to-trash clone should run the trash arc, not the idle prism cycle ${JSON.stringify({ expectedPrismToTrashAnimation, prismTravellingRewardDieMotion })}`);
       if (viewport.mobile) {
         for (const travelState of [travellingRewardDieEdge.toSlot, travellingRewardDieEdge.toTrash]) {
           const radiusValue = parseFloat(travelState.borderRadius || '0');
@@ -2440,6 +2459,9 @@ async function main() {
     const productionIpadPrismSpin = await evalValue(productionIpad, rewardHeroBodySpinProbeScript(rewardPrism.minWins, 4, 760, 24));
     assert(productionIpadPrismSpin.firstActive && productionIpadPrismSpin.firstActive.rewardSkinned === true && productionIpadPrismSpin.firstActive.effect === rewardPrism.effect, `production-like iPad PRISM hero roll probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, productionIpadPrismSpin })}`);
     assert(productionIpadPrismSpin.animationNames.includes('rewardDieRollMobile') && productionIpadPrismSpin.activeSamples >= 2 && productionIpadPrismSpin.rollKeyframeTransformCount >= 2 && (productionIpadPrismSpin.uniqueTransformCount >= 2 || productionIpadPrismSpin.rollAnimationCurrentTimeDelta >= 40), `production-like iPad PRISM reward hero die body should visibly spin during roll ${JSON.stringify(productionIpadPrismSpin)}`);
+    const productionIpadPrismTravelMotion = await evalValue(productionIpad, `window.TrashDiceQA.rewardTravelCloneProbe(${JSON.stringify(rewardPrism.minWins)})`);
+    assert(productionIpadPrismTravelMotion.toSlot.rewardSkinned === true && productionIpadPrismTravelMotion.toSlot.effect === rewardPrism.effect && (productionIpadPrismTravelMotion.toSlot.animationName || '').includes('dieArcToLidIpadLite') && !(productionIpadPrismTravelMotion.toSlot.animationName || '').includes('rewardPrismCycle'), `production-like iPad PRISM travel clone should keep the iPad lid arc instead of the idle prism cycle ${JSON.stringify(productionIpadPrismTravelMotion)}`);
+    assert(productionIpadPrismTravelMotion.toTrash.rewardSkinned === true && productionIpadPrismTravelMotion.toTrash.effect === rewardPrism.effect && (productionIpadPrismTravelMotion.toTrash.animationName || '').includes('dieArcToCanIpadLite') && !(productionIpadPrismTravelMotion.toTrash.animationName || '').includes('rewardPrismCycle'), `production-like iPad PRISM travel clone should keep the iPad trash arc instead of the idle prism cycle ${JSON.stringify(productionIpadPrismTravelMotion)}`);
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
@@ -2547,6 +2569,14 @@ async function main() {
     assert(tallIpadRollHasHeroRect || tallIpadRollHasHeroCss, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadBestRoll.rect.left >= -20 && tallIpadBestRoll.rect.right <= tallIpadTitleViewport.width + 20 && tallIpadBestRoll.rect.top >= -20 && tallIpadBestRoll.rect.bottom <= tallIpadTitleViewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadTravel && tallIpadTravel.className.includes('hero-travel-scale') && tallIpadTravel.motionClass === 'to-slot-physical' && tallIpadTravel.dotRect && tallIpadTravel.dotRect.width >= 58 && tallIpadTravel.dotCssMaxWidth >= 58, `tall iPad travel die should keep enlarged pips while moving to the lid ${JSON.stringify(tallIpadRollVisual)}`);
+    const tallIpadPrismTravelPage = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1&tall-ipad-prism-travel=1`, tallIpadTitleViewport);
+    await waitEval(tallIpadPrismTravelPage, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'tall iPad PRISM travel QA hooks');
+    await evalValue(tallIpadPrismTravelPage, `document.getElementById('startBtn').click(); true`);
+    await waitEval(tallIpadPrismTravelPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'tall iPad PRISM travel game start');
+    const tallIpadPrismTravelVisual = await evalValue(tallIpadPrismTravelPage, rollHeroTravelVisualProbeScript(4, 1800, 32, rewardPrism.minWins));
+    const tallIpadPrismTravel = tallIpadPrismTravelVisual.bestTravel || tallIpadPrismTravelVisual.firstTravel;
+    assert(tallIpadPrismTravel && tallIpadPrismTravel.rewardSkinned === true && tallIpadPrismTravel.effect === rewardPrism.effect, `tall iPad PRISM travel probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, tallIpadPrismTravelVisual })}`);
+    assert(tallIpadPrismTravel.motionClass === 'to-slot-physical' && (tallIpadPrismTravel.animationName || '').includes('dieArcToLidMobile') && !(tallIpadPrismTravel.animationName || '').includes('rewardPrismCycle'), `tall iPad PRISM travel should fly to the lid instead of running the idle prism cycle ${JSON.stringify(tallIpadPrismTravelVisual)}`);
 
     const legacyIpadViewport = {
       ...productionIpadViewport,
@@ -2657,16 +2687,26 @@ async function main() {
       const activeRoll = travelVisual.firstActive;
       const rollStarted = travelVisual.bestRoll || activeRoll;
       const travelDie = travelVisual.bestTravel || travelVisual.firstTravel;
+      const expectedTravelAnimation = travelViewport.mobile ? 'dieArcToLidMobile' : 'dieArcToLid';
       assert(activeRoll && activeRoll.active === true && rollStarted && heroRollExpected && rollStarted.stageCssWidth >= heroRollExpected.stageMin && rollStarted.stageCssWidth <= heroRollExpected.stageMax && rollStarted.dotCssMaxWidth >= heroRollExpected.dotCssMin, `${travelViewport.name}: hero die should visibly roll at the tuned hero size before travel ${JSON.stringify(travelVisual)}`);
       assert(travelDie && travelDie.className.includes('hero-travel-scale') && travelDie.motionClass === 'to-slot-physical', `${travelViewport.name}: travelling die should carry hero scale class while moving to the lid ${JSON.stringify(travelVisual)}`);
       assert(Math.abs((travelDie.dotCssMaxWidth || 0) - (rollStarted.dotCssMaxWidth || 0)) <= 1 && travelDie.dotCssMaxWidth >= heroRollExpected.dotCssMin && travelDie.dotRect && travelDie.dotRect.width >= 17, `${travelViewport.name}: travelling die pips should keep the hero roll CSS sizing during travel ${JSON.stringify(travelVisual)}`);
+      const prismTravelProbe = await openPage(`${baseUrl}?source=qa&qa=1&prism-travel-visual=${encodeURIComponent(travelViewport.name)}`, travelViewport);
+      await waitEval(prismTravelProbe, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, `${travelViewport.name} PRISM travel visual QA hooks`);
+      await evalValue(prismTravelProbe, `document.getElementById('startBtn').click(); true`);
+      await waitEval(prismTravelProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${travelViewport.name} PRISM travel visual game start`);
+      const prismTravelVisual = await evalValue(prismTravelProbe, rollHeroTravelVisualProbeScript(4, travelViewport.mobile ? 1650 : 1750, 32, rewardPrism.minWins));
+      const prismTravelDie = prismTravelVisual.bestTravel || prismTravelVisual.firstTravel;
+      assert(prismTravelDie && prismTravelDie.rewardSkinned === true && prismTravelDie.effect === rewardPrism.effect, `${travelViewport.name}: PRISM travel visual probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, prismTravelVisual })}`);
+      assert(prismTravelDie.motionClass === 'to-slot-physical' && (prismTravelDie.animationName || '').includes(expectedTravelAnimation) && !(prismTravelDie.animationName || '').includes('rewardPrismCycle'), `${travelViewport.name}: PRISM travelling die should fly to the lid instead of replaying the idle prism reveal cycle ${JSON.stringify({ expectedTravelAnimation, prismTravelVisual })}`);
       reports.push({
         viewport: `${travelViewport.name}-travel-visual`,
         status: 'ok',
         rollStageCssWidth: rollStarted.stageCssWidth,
         rollDotCssMaxWidth: rollStarted.dotCssMaxWidth,
         travelDotCssMaxWidth: travelDie.dotCssMaxWidth,
-        travelDotRect: travelDie.dotRect
+        travelDotRect: travelDie.dotRect,
+        prismTravelAnimationName: prismTravelDie.animationName
       });
     }
 

@@ -2765,7 +2765,7 @@ body.inline-game-over .roll-panel {
   animation: rewardDieWiggle 0.84s cubic-bezier(.37,.01,.24,1) infinite, rewardPrismCycle 1.45s linear infinite;
 }
 
-.die.reward-skinned.effect-colorCycle:not(.rolling):not(.ipad-rolling):not(.roll-resolved) {
+.die.reward-skinned.effect-colorCycle:not(.rolling):not(.ipad-rolling):not(.roll-resolved):not(.travelling-die) {
   animation: rewardPrismCycle 1.45s linear infinite;
 }
 
@@ -11261,7 +11261,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260629.5';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260629.6';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -18421,6 +18421,12 @@ body.inline-game-over .roll-panel {
             webkitMaskImage: style.webkitMaskImage || '',
             maskImage: style.maskImage || '',
             backfaceVisibility: style.backfaceVisibility || '',
+            animationName: style.animationName || '',
+            animationDuration: style.animationDuration || '',
+            animations: clone.getAnimations().map(animation => ({
+              name: animation.animationName || '',
+              duration: animation.effect && animation.effect.getTiming ? animation.effect.getTiming().duration : null
+            })),
             boxShadow: style.boxShadow || '',
             filter: style.filter || '',
             paddingTop: parseFloat(style.paddingTop || '0') || 0,
