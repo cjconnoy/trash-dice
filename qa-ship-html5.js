@@ -344,8 +344,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.2';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.3';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.3';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1535,6 +1535,7 @@ async function main() {
             webkitMaskImage: spinStyle.webkitMaskImage || '',
             maskImage: spinStyle.maskImage || '',
             boxShadow: spinStyle.boxShadow,
+            filter: spinStyle.filter || '',
             rect: spinRect ? { width: spinRect.width, height: spinRect.height } : null
           };
           die.classList.remove('rolling');
@@ -1597,8 +1598,9 @@ async function main() {
         assert(liveRewardDieEdge.webkitMaskImage === 'none' && liveRewardDieEdge.maskImage === 'none', `${viewport.name}: mobile live reward die should not mask away the external 3D backing ${JSON.stringify(liveRewardDieEdge)}`);
         assert(liveRewardDieEdge.overflow === 'hidden' && liveRewardDieEdge.boxShadow.includes('inset') && liveRewardDieEdge.beforeTransform !== 'none', `${viewport.name}: mobile live reward die should keep physical hero depth and clipped skin treatment ${JSON.stringify(liveRewardDieEdge)}`);
         if (viewport.width <= 720) {
-          assert(liveRewardDieEdge.boxShadow.includes('13px 14px'), `${viewport.name}: phone live reward die should keep its deeper mobile skin shadow ${JSON.stringify(liveRewardDieEdge)}`);
-          assert(liveRewardDieEdge.stageDepthContent !== 'none' && liveRewardDieEdge.stageDepthSoftEnough === true && liveRewardDieEdge.stageDepthBoxShadow.includes('rgba') && liveRewardDieEdge.stageDepthTransform !== 'none', `${viewport.name}: mobile live reward die should keep a bounded depth backing without a panel-sized shadow ${JSON.stringify(liveRewardDieEdge)}`);
+          assert(!/drop-shadow/i.test(liveRewardDieEdge.filter || '') && !/drop-shadow/i.test((liveRewardDieEdge.spin && liveRewardDieEdge.spin.filter) || ''), `${viewport.name}: phone live reward die should avoid CSS filter drop-shadows that rasterize as a panel on mobile Safari ${JSON.stringify(liveRewardDieEdge)}`);
+          assert(!liveRewardDieEdge.boxShadow.includes('13px 14px') && liveRewardDieEdge.boxShadow.includes('8px 9px'), `${viewport.name}: phone live reward die should use a tighter attached mobile skin shadow ${JSON.stringify(liveRewardDieEdge)}`);
+          assert(liveRewardDieEdge.stageDepthContent === 'none' && Number.parseFloat(liveRewardDieEdge.stageDepthOpacity || '0') === 0 && liveRewardDieEdge.stageDepthBoxShadow === 'none' && liveRewardDieEdge.stageDepthTransform === 'none', `${viewport.name}: phone live reward die should disable the separate panel-sized depth backing ${JSON.stringify(liveRewardDieEdge)}`);
         }
       }
       assert(liveRewardDieEdge.seatedRewardStillSvg === true && liveRewardDieEdge.seatedRewardEffect === rewardCapDie.effect, `${viewport.name}: live reward die edge probe should not remove seated reward dice ${JSON.stringify({ rewardCapDie, liveRewardDieEdge })}`);
@@ -1616,7 +1618,7 @@ async function main() {
           const expectedTravelDotCss = viewport.width <= 720 ? 24 : ((travelState.rect && travelState.rect.width >= 300) ? 58 : 20);
           assert(travelState.className.includes('hero-travel-scale') && travelState.dotCssMaxWidth >= expectedTravelDotCss, `${viewport.name}: travelling reward die should inherit hero-stage pip sizing ${JSON.stringify(travelState)}`);
           if (viewport.width <= 720) {
-            assert(travelState.boxShadow.includes('9px 10px'), `${viewport.name}: phone travelling reward die should keep its deeper mobile skin shadow ${JSON.stringify(travelState)}`);
+            assert(travelState.filter === 'none' && !travelState.boxShadow.includes('9px 10px') && travelState.boxShadow.includes('6px 7px'), `${viewport.name}: phone travelling reward die should use attached box-shadows instead of a CSS filter drop-shadow ${JSON.stringify(travelState)}`);
           }
         }
       }
