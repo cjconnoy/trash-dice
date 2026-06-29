@@ -266,6 +266,72 @@ function rollHeroTravelVisualProbeScript(rollValue, maxMs = 1700, intervalMs = 3
   })`;
 }
 
+function desktopRollStartStabilityProbeScript(maxMs = 360, intervalMs = 24) {
+  return `new Promise(resolve => {
+    const board = document.getElementById('boardWrap');
+    const stage = document.getElementById('p1DieStage');
+    const rollBtn = document.getElementById('rollBtn');
+    const rectOf = el => {
+      const rect = el.getBoundingClientRect();
+      return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+    };
+    const boardIdleAnimation = () => board
+      ? board.getAnimations().find(animation => animation.animationName === 'lidIdleReadyStable' || animation.animationName === 'lidIdleWobble')
+      : null;
+    const snap = label => {
+      const boardStyle = board ? getComputedStyle(board) : null;
+      const stageStyle = stage ? getComputedStyle(stage) : null;
+      return {
+        label,
+        elapsed: 0,
+        bodyReady: document.body.classList.contains('player-roll-ready'),
+        boardRect: board ? rectOf(board) : null,
+        boardTransform: boardStyle ? boardStyle.transform || '' : '',
+        boardAnimationName: boardStyle ? boardStyle.animationName || '' : '',
+        stageClass: stage ? stage.className : '',
+        stageAnimationName: stageStyle ? stageStyle.animationName || '' : '',
+        stageFilter: stageStyle ? stageStyle.filter || '' : ''
+      };
+    };
+    const idle = boardIdleAnimation();
+    if (idle && idle.effect && idle.effect.getTiming) {
+      const timing = idle.effect.getTiming();
+      if (Number.isFinite(Number(timing.duration)) && Number(timing.duration) > 0) {
+        idle.currentTime = Number(timing.duration) * 0.62;
+      }
+    }
+    const before = snap('before');
+    const samples = [];
+    const startedAt = performance.now();
+    const tick = () => {
+      const sample = snap('after');
+      sample.elapsed = Math.round(performance.now() - startedAt);
+      samples.push(sample);
+      if (sample.elapsed >= ${Number(maxMs) || 360}) {
+        const shifts = samples
+          .filter(item => item.boardRect && before.boardRect)
+          .map(item => Math.max(
+            Math.abs(item.boardRect.left - before.boardRect.left),
+            Math.abs(item.boardRect.top - before.boardRect.top),
+            Math.abs(item.boardRect.width - before.boardRect.width),
+            Math.abs(item.boardRect.height - before.boardRect.height)
+          ));
+        resolve({
+          before,
+          samples,
+          maxBoardShiftPx: shifts.length ? Math.max(...shifts) : 0,
+          stageFilters: Array.from(new Set(samples.map(item => item.stageFilter).filter(Boolean))),
+          state: window.TrashDiceQA.state()
+        });
+        return;
+      }
+      window.setTimeout(tick, ${Number(intervalMs) || 24});
+    };
+    rollBtn.click();
+    tick();
+  })`;
+}
+
 function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, intervalMs = 40) {
   return `new Promise(resolve => {
     const samples = [];
@@ -356,8 +422,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'COSMIC'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.6';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.6';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.7';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.7';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -615,7 +681,7 @@ async function main() {
           playAgain: { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height), visible: r.top >= -1 && r.bottom <= window.innerHeight + 1, text: btn.textContent || '' }
         };
       })()`);
-      assert(shortBeforeScroll.bodyOverflowX === 'hidden' && shortBeforeScroll.bodyOverflowY === 'auto', `${viewport.name}: desktop short viewport should allow vertical-only overflow ${JSON.stringify(shortBeforeScroll)}`);
+      assert(shortBeforeScroll.bodyOverflowX === 'hidden' && ['auto', 'scroll'].includes(shortBeforeScroll.bodyOverflowY), `${viewport.name}: desktop short viewport should allow stable vertical-only overflow ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.htmlOverflowY === 'hidden', `${viewport.name}: document root should not create a second vertical scroll surface ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.horizontalFits === true, `${viewport.name}: desktop short viewport should not create horizontal overflow ${JSON.stringify(shortBeforeScroll)}`);
       assert(shortBeforeScroll.playAgain.text.includes('KEEP PLAYING!'), `${viewport.name}: short viewport Keep Playing CTA missing ${JSON.stringify(shortBeforeScroll)}`);
@@ -2670,6 +2736,22 @@ async function main() {
         handoffMs: legacyIpadHandoff.handoffMs,
         expectedHandoffMs: legacyIpadHandoff.expectedHandoffMs
       }
+    });
+
+    const desktopRollStartViewport = viewports.find(viewport => viewport.name === 'desktop');
+    const desktopRollStart = await openPage(`${baseUrl}?source=qa&qa=1&desktop-roll-start-stability=1`, desktopRollStartViewport);
+    await waitEval(desktopRollStart, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'desktop roll-start stability QA hooks');
+    await evalValue(desktopRollStart, `document.getElementById('startBtn').click(); true`);
+    await waitEval(desktopRollStart, `document.body.dataset.gameStarted === 'true' && document.body.classList.contains('player-roll-ready') && !document.getElementById('rollBtn').disabled`, 'desktop roll-start ready state');
+    const desktopRollStartStability = await evalValue(desktopRollStart, desktopRollStartStabilityProbeScript(360, 24));
+    assert(desktopRollStartStability.before.bodyReady === true && desktopRollStartStability.before.boardAnimationName === 'lidIdleReadyStable', `desktop roll-start probe should begin from transform-stable ready-state lid idle ${JSON.stringify(desktopRollStartStability)}`);
+    assert(desktopRollStartStability.maxBoardShiftPx <= 0.75, `desktop roll start should not snap or shutter the lid board ${JSON.stringify(desktopRollStartStability)}`);
+    assert(desktopRollStartStability.stageFilters.every(filter => filter === 'none'), `desktop enlarged hero roll stage should avoid filter flashes during roll start ${JSON.stringify(desktopRollStartStability)}`);
+    reports.push({
+      viewport: 'desktop-roll-start-stability',
+      status: 'ok',
+      maxBoardShiftPx: desktopRollStartStability.maxBoardShiftPx,
+      stageFilters: desktopRollStartStability.stageFilters
     });
 
     const travelCheckViewports = [
