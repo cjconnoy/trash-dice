@@ -3935,8 +3935,9 @@ body.vip-disco-party[data-game-started="true"]::after {
 }
 body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
   display: block;
-  opacity: 0.46;
-  animation: none;
+  opacity: 0.52;
+  will-change: transform;
+  animation: vipCosmicStarDrift 42s ease-in-out infinite;
 }
 .vip-cosmic-sky::before,
 .vip-cosmic-sky::after {
@@ -3967,8 +3968,9 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
     31px 6px,
     67px 43px,
     12px 88px;
-  opacity: 0.66;
-  animation: none;
+  opacity: 0.72;
+  will-change: opacity;
+  animation: vipCosmicTwinkle 10.5s ease-in-out infinite;
 }
 .vip-cosmic-sky::after {
   display: none;
@@ -3982,7 +3984,8 @@ body.vip-disco-party.inline-game-over::after {
   opacity: 0.5;
 }
 body.vip-disco-party.inline-game-over .vip-cosmic-sky {
-  opacity: 0.36;
+  opacity: 0.4;
+  animation-duration: 54s;
 }
 body.vip-disco-party[data-game-started="true"] .game-area {
   z-index: 2;
@@ -3998,12 +4001,14 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
-  opacity: 0.34;
+  opacity: 0.36;
+  animation-duration: 56s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before {
-  opacity: 0.54;
+  opacity: 0.58;
+  animation-duration: 14s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
@@ -4015,6 +4020,12 @@ body.tablet-effects-lite.vip-disco-party[data-game-started="true"]:not(.inline-g
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before {
   opacity: 0.72;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before {
+    animation: none !important;
+  }
 }
 .terminal-reward-nudge[hidden],
 .round-loss-reward-nudge[hidden] {
@@ -5142,53 +5153,23 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
 @keyframes vipCosmicStarDrift {
   0%, 100% {
     transform: translate3d(-0.35%, -0.2%, 0) scale(1.01);
-    filter: saturate(1.14) brightness(1.03);
   }
   45% {
     transform: translate3d(0.42%, -0.34%, 0) scale(1.015);
-    filter: saturate(1.25) brightness(1.08);
   }
   72% {
     transform: translate3d(0.15%, 0.28%, 0) scale(1.012);
-    filter: saturate(1.18) brightness(1.05);
   }
 }
 @keyframes vipCosmicTwinkle {
   0%, 100% {
-    opacity: 0.58;
-    filter: brightness(0.94);
-    background-position:
-      0 0,
-      0 0,
-      8px 18px,
-      31px 6px,
-      67px 43px,
-      12px 88px,
-      96px 32px;
+    opacity: 0.62;
   }
   38% {
-    opacity: 0.86;
-    filter: brightness(1.18);
-    background-position:
-      0 0,
-      0 0,
-      14px 23px,
-      38px 10px,
-      74px 48px,
-      17px 94px,
-      102px 37px;
+    opacity: 0.82;
   }
   67% {
-    opacity: 0.7;
-    filter: brightness(1.04);
-    background-position:
-      0 0,
-      0 0,
-      11px 20px,
-      34px 8px,
-      70px 45px,
-      15px 91px,
-      99px 34px;
+    opacity: 0.68;
   }
 }
 @keyframes vipCosmicShootingStar {
@@ -11298,7 +11279,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260629.14';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260629.15';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
