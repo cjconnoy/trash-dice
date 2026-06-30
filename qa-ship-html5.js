@@ -337,6 +337,22 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
     const deltas = [];
     const startedAt = performance.now();
     let last = startedAt;
+    const cosmicMotionSnapshot = () => {
+      const cosmic = document.querySelector('.vip-cosmic-sky');
+      if (!cosmic) return null;
+      const style = getComputedStyle(cosmic);
+      const before = getComputedStyle(cosmic, '::before');
+      const after = getComputedStyle(cosmic, '::after');
+      return {
+        transform: style.transform || '',
+        opacity: style.opacity || '',
+        beforeOpacity: before.opacity || '',
+        beforeAnimationName: before.animationName || '',
+        afterOpacity: after.opacity || '',
+        afterTransform: after.transform || '',
+        afterAnimationName: after.animationName || ''
+      };
+    };
     const animationSummary = () => document.getAnimations()
       .filter(animation => animation.playState === 'running')
       .map(animation => ({
@@ -346,6 +362,7 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
           : ''
       }));
     const activeAnimations = animationSummary();
+    const motionStart = cosmicMotionSnapshot();
     const tick = now => {
       deltas.push(now - last);
       last = now;
@@ -361,6 +378,13 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
         const cosmicStyle = cosmic ? getComputedStyle(cosmic) : null;
         const cosmicBefore = cosmic ? getComputedStyle(cosmic, '::before') : null;
         const cosmicAfter = cosmic ? getComputedStyle(cosmic, '::after') : null;
+        const motionEnd = cosmicMotionSnapshot();
+        const motionChanged = !!(motionStart && motionEnd) && (
+          motionStart.transform !== motionEnd.transform ||
+          motionStart.beforeOpacity !== motionEnd.beforeOpacity ||
+          motionStart.afterTransform !== motionEnd.afterTransform ||
+          motionStart.afterOpacity !== motionEnd.afterOpacity
+        );
         const cosmicLayerAnimations = activeAnimations
           .filter(item => /^vip(?:Disco|Cosmic)/.test(item.name || ''));
         resolve({
@@ -382,6 +406,11 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
           venueFilter: bodyBefore.filter || '',
           venueGradientCount: (bodyBefore.backgroundImage.match(/gradient/g) || []).length,
           bodyVip: document.body.classList.contains('vip-disco-party'),
+          cosmicMotion: {
+            changed: motionChanged,
+            start: motionStart,
+            end: motionEnd
+          },
           cosmicSky: cosmicStyle ? {
             display: cosmicStyle.display || '',
             opacity: cosmicStyle.opacity || '',
@@ -638,8 +667,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.2';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1686,7 +1715,9 @@ async function main() {
             beforeAnimationName: cosmicBefore.animationName || '',
             afterBackground: cosmicAfter.backgroundImage || '',
             afterAnimationName: cosmicAfter.animationName || '',
-            afterAnimationDuration: cosmicAfter.animationDuration || ''
+            afterAnimationDuration: cosmicAfter.animationDuration || '',
+            afterOpacity: cosmicAfter.opacity || '',
+            afterTransform: cosmicAfter.transform || ''
           } : null,
           playerDieBoxShadow: playerDieStyle.boxShadow || '',
           playerSkin: {
@@ -1709,11 +1740,11 @@ async function main() {
       const discoOverlayDuration = parseFloat(discoDebug.discoOverlayAnimationDuration || '0');
       const discoOverlayOldAnchors = /at\s+80%\s+60%|at\s+16%\s+72%/i.test(discoDebug.discoOverlayBackground);
       assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation === 'none' && discoOverlayDuration === 0 && !discoOverlayOldAnchors && Number(discoDebug.discoOverlayZIndex) <= 1 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.35 && Number(discoDebug.discoVenueWashOpacity) >= 0.55 && discoDebug.discoOverlayPointerEvents === 'none' && discoDebug.discoOverlayBlend === 'normal' && discoDebug.discoOverlayFilter === 'none' && discoOverlayConics === 0 && discoOverlayRadials >= 5 && discoOverlayRadials <= 8 && discoOverlayLinears >= 3 && discoOverlayLinears <= 5 && discoVenueRadials >= 5 && discoVenueRadials <= 7 && discoVenueLinears >= 2 && discoVenueLinears <= 3, `${viewport.name}: DISCO debug button should activate visible low-layer perf-safe static lighting under the moving cosmic sky ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors })}`);
-      assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && Number(discoDebug.cosmicSky.zIndex) <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.3 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'vipCosmicStarDrift' && discoDebug.cosmicSky.beforeAnimationName === 'vipCosmicTwinkle' && discoDebug.cosmicSky.afterAnimationName === 'none' && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7 && cosmicAfterLinears === 0, `${viewport.name}: VIP future reward background should restore perf-safe moving cosmic ambience without shooting-star effects ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears })}`);
+      assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && Number(discoDebug.cosmicSky.zIndex) <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.45 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'vipCosmicStarDrift' && discoDebug.cosmicSky.beforeAnimationName === 'vipCosmicTwinkle' && discoDebug.cosmicSky.afterAnimationName === 'vipCosmicRiverFlow' && Number(discoDebug.cosmicSky.afterOpacity) >= 0.24 && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7 && cosmicAfterLinears >= 2 && cosmicAfterLinears <= 3, `${viewport.name}: VIP future reward background should show graceful perf-safe moving cosmic ambience ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears })}`);
       const cosmicPerf = await evalValue(page, cosmicAmbientPerfProbeScript(viewport.mobile ? 900 : 760));
       const cosmicPerfOver50Limit = Math.max(2, Math.ceil(cosmicPerf.frames * 0.07));
       const cosmicAnimationNames = (cosmicPerf.cosmicLayerAnimations || []).map(item => item.name || '');
-      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicLayerAnimationCount >= 1 && cosmicPerf.cosmicLayerAnimationCount <= 2 && cosmicAnimationNames.includes('vipCosmicStarDrift') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 10 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should move subtly and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === true && cosmicPerf.cosmicLayerAnimationCount >= 2 && cosmicPerf.cosmicLayerAnimationCount <= 3 && cosmicAnimationNames.includes('vipCosmicStarDrift') && cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 10 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should visibly move and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
