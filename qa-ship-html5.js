@@ -339,14 +339,24 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
     let last = startedAt;
     const cosmicMotionSnapshot = () => {
       const cosmic = document.querySelector('.vip-cosmic-sky');
+      const colorField = document.querySelector('.vip-cosmic-color-field');
       if (!cosmic) return null;
       const bodyAfter = getComputedStyle(document.body, '::after');
       const style = getComputedStyle(cosmic);
       const before = getComputedStyle(cosmic, '::before');
       const after = getComputedStyle(cosmic, '::after');
+      const colorStyle = colorField ? getComputedStyle(colorField) : null;
+      const colorBefore = colorField ? getComputedStyle(colorField, '::before') : null;
+      const colorAfter = colorField ? getComputedStyle(colorField, '::after') : null;
       return {
         overlayTransform: bodyAfter.transform || '',
         overlayAnimationName: bodyAfter.animationName || '',
+        colorFieldTransform: colorStyle ? colorStyle.transform || '' : '',
+        colorFieldAnimationName: colorStyle ? colorStyle.animationName || '' : '',
+        colorFieldBeforeTransform: colorBefore ? colorBefore.transform || '' : '',
+        colorFieldBeforeAnimationName: colorBefore ? colorBefore.animationName || '' : '',
+        colorFieldAfterTransform: colorAfter ? colorAfter.transform || '' : '',
+        colorFieldAfterAnimationName: colorAfter ? colorAfter.animationName || '' : '',
         transform: style.transform || '',
         opacity: style.opacity || '',
         beforeOpacity: before.opacity || '',
@@ -387,9 +397,21 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
           motionStart.beforeOpacity !== motionEnd.beforeOpacity ||
           motionStart.afterTransform !== motionEnd.afterTransform ||
           motionStart.afterOpacity !== motionEnd.afterOpacity ||
-          motionStart.overlayTransform !== motionEnd.overlayTransform
+          motionStart.overlayTransform !== motionEnd.overlayTransform ||
+          motionStart.colorFieldTransform !== motionEnd.colorFieldTransform ||
+          motionStart.colorFieldBeforeTransform !== motionEnd.colorFieldBeforeTransform ||
+          motionStart.colorFieldAfterTransform !== motionEnd.colorFieldAfterTransform
         );
         const overlayMotionChanged = !!(motionStart && motionEnd) && motionStart.overlayTransform !== motionEnd.overlayTransform;
+        const colorFieldMotionChanged = !!(motionStart && motionEnd) && (
+          motionStart.colorFieldTransform !== motionEnd.colorFieldTransform ||
+          motionStart.colorFieldBeforeTransform !== motionEnd.colorFieldBeforeTransform ||
+          motionStart.colorFieldAfterTransform !== motionEnd.colorFieldAfterTransform
+        );
+        const colorLayerTransforms = motionEnd
+          ? [motionEnd.colorFieldTransform, motionEnd.colorFieldBeforeTransform, motionEnd.colorFieldAfterTransform].filter(value => value && value !== 'none')
+          : [];
+        const colorLayerTransformsDiffer = new Set(colorLayerTransforms).size >= 2;
         const cosmicLayerAnimations = activeAnimations
           .filter(item => /^vip(?:Disco|Cosmic)/.test(item.name || ''));
         resolve({
@@ -415,6 +437,21 @@ function cosmicAmbientPerfProbeScript(sampleMs = 960) {
             changed: overlayMotionChanged,
             start: motionStart ? motionStart.overlayTransform : '',
             end: motionEnd ? motionEnd.overlayTransform : ''
+          },
+          colorFieldMotion: {
+            changed: colorFieldMotionChanged,
+            layered: colorLayerTransformsDiffer,
+            transforms: colorLayerTransforms,
+            start: motionStart ? {
+              field: motionStart.colorFieldTransform,
+              before: motionStart.colorFieldBeforeTransform,
+              after: motionStart.colorFieldAfterTransform
+            } : null,
+            end: motionEnd ? {
+              field: motionEnd.colorFieldTransform,
+              before: motionEnd.colorFieldBeforeTransform,
+              after: motionEnd.colorFieldAfterTransform
+            } : null
           },
           cosmicMotion: {
             changed: motionChanged,
@@ -677,8 +714,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.4';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.4';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.5';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.5';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1687,11 +1724,15 @@ async function main() {
         const playerDie = document.getElementById('p1Die');
         const shell = document.getElementById('rewardDieUnlock');
         const cosmic = document.querySelector('.vip-cosmic-sky');
+        const colorField = document.querySelector('.vip-cosmic-color-field');
         const bodyBefore = getComputedStyle(document.body, '::before');
         const bodyAfter = getComputedStyle(document.body, '::after');
         const cosmicStyle = cosmic ? getComputedStyle(cosmic) : null;
         const cosmicBefore = cosmic ? getComputedStyle(cosmic, '::before') : null;
         const cosmicAfter = cosmic ? getComputedStyle(cosmic, '::after') : null;
+        const colorFieldStyle = colorField ? getComputedStyle(colorField) : null;
+        const colorFieldBefore = colorField ? getComputedStyle(colorField, '::before') : null;
+        const colorFieldAfter = colorField ? getComputedStyle(colorField, '::after') : null;
         const playerDieStyle = getComputedStyle(playerDie);
         return {
           buttonVisible: getComputedStyle(btn).display !== 'none',
@@ -1714,6 +1755,22 @@ async function main() {
           discoOverlayBlend: bodyAfter.mixBlendMode || '',
           discoOverlayBackground: bodyAfter.backgroundImage || '',
           discoOverlayFilter: bodyAfter.filter || '',
+          colorField: colorField ? {
+            display: colorFieldStyle.display || '',
+            opacity: colorFieldStyle.opacity || '',
+            zIndex: colorFieldStyle.zIndex || '',
+            pointerEvents: colorFieldStyle.pointerEvents || '',
+            background: colorFieldStyle.backgroundImage || '',
+            animationName: colorFieldStyle.animationName || '',
+            animationDuration: colorFieldStyle.animationDuration || '',
+            beforeBackground: colorFieldBefore.backgroundImage || '',
+            beforeAnimationName: colorFieldBefore.animationName || '',
+            beforeAnimationDuration: colorFieldBefore.animationDuration || '',
+            afterBackground: colorFieldAfter.backgroundImage || '',
+            afterAnimationName: colorFieldAfter.animationName || '',
+            afterAnimationDuration: colorFieldAfter.animationDuration || '',
+            afterOpacity: colorFieldAfter.opacity || ''
+          } : null,
           cosmicSky: cosmic ? {
             display: cosmicStyle.display || '',
             opacity: cosmicStyle.opacity || '',
@@ -1745,18 +1802,24 @@ async function main() {
       const discoOverlayLinears = (discoDebug.discoOverlayBackground.match(/linear-gradient/g) || []).length;
       const discoVenueRadials = (discoDebug.discoVenueWashBackground.match(/radial-gradient/g) || []).length;
       const discoVenueLinears = (discoDebug.discoVenueWashBackground.match(/linear-gradient/g) || []).length;
+      const colorFieldRadials = discoDebug.colorField ? ([
+        discoDebug.colorField.background,
+        discoDebug.colorField.beforeBackground,
+        discoDebug.colorField.afterBackground
+      ].join(',').match(/radial-gradient/g) || []).length : 0;
       const cosmicBeforeRadials = discoDebug.cosmicSky ? (discoDebug.cosmicSky.beforeBackground.match(/radial-gradient/g) || []).length : 0;
       const cosmicAfterLinears = discoDebug.cosmicSky ? (discoDebug.cosmicSky.afterBackground.match(/linear-gradient/g) || []).length : 0;
       const discoOverlayDuration = parseFloat(discoDebug.discoOverlayAnimationDuration || '0');
       const discoOverlayOldAnchors = /at\s+80%\s+60%|at\s+16%\s+72%/i.test(discoDebug.discoOverlayBackground);
       const discoOverlayZIndex = Number(discoDebug.discoOverlayZIndex);
       const cosmicSkyZIndex = discoDebug.cosmicSky ? Number(discoDebug.cosmicSky.zIndex) : -1;
-      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation === 'vipCosmicColorDrift' && discoOverlayDuration >= 30 && !discoOverlayOldAnchors && discoOverlayZIndex <= 0 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.35 && Number(discoDebug.discoVenueWashOpacity) >= 0.55 && discoDebug.discoOverlayPointerEvents === 'none' && discoDebug.discoOverlayBlend === 'normal' && discoDebug.discoOverlayFilter === 'none' && discoOverlayConics === 0 && discoOverlayRadials >= 5 && discoOverlayRadials <= 8 && discoOverlayLinears >= 3 && discoOverlayLinears <= 5 && discoVenueRadials >= 5 && discoVenueRadials <= 7 && discoVenueLinears >= 2 && discoVenueLinears <= 3, `${viewport.name}: DISCO debug button should activate visible low-layer perf-safe moving color lighting under the moving cosmic sky ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors, discoOverlayZIndex })}`);
+      assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation === 'vipCosmicColorDrift' && discoOverlayDuration >= 30 && !discoOverlayOldAnchors && discoOverlayZIndex <= 0 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.35 && Number(discoDebug.discoVenueWashOpacity) >= 0.55 && discoDebug.discoOverlayPointerEvents === 'none' && discoDebug.discoOverlayBlend === 'normal' && discoDebug.discoOverlayFilter === 'none' && discoOverlayConics === 0 && discoOverlayRadials >= 3 && discoOverlayRadials <= 4 && discoOverlayLinears >= 3 && discoOverlayLinears <= 5 && discoVenueRadials >= 5 && discoVenueRadials <= 7 && discoVenueLinears >= 2 && discoVenueLinears <= 3, `${viewport.name}: DISCO debug button should activate visible low-layer perf-safe moving color lighting under the moving cosmic sky ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayOldAnchors, discoOverlayZIndex })}`);
+      assert(discoDebug.colorField && discoDebug.colorField.display !== 'none' && Number(discoDebug.colorField.zIndex) <= 1 && Number(discoDebug.colorField.opacity) >= 0.45 && discoDebug.colorField.pointerEvents === 'none' && discoDebug.colorField.animationName === 'vipCosmicDotDriftA' && discoDebug.colorField.beforeAnimationName === 'vipCosmicDotDriftB' && discoDebug.colorField.afterAnimationName === 'vipCosmicDotDriftC' && parseFloat(discoDebug.colorField.animationDuration || '0') >= 30 && parseFloat(discoDebug.colorField.beforeAnimationDuration || '0') >= 40 && parseFloat(discoDebug.colorField.afterAnimationDuration || '0') >= 45 && colorFieldRadials >= 5 && colorFieldRadials <= 7, `${viewport.name}: DISCO color dots should split across non-unison drift layers ${JSON.stringify({ colorField: discoDebug.colorField, colorFieldRadials })}`);
       assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && cosmicSkyZIndex > discoOverlayZIndex && cosmicSkyZIndex <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.45 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'vipCosmicStarDrift' && discoDebug.cosmicSky.beforeAnimationName === 'vipCosmicTwinkle' && discoDebug.cosmicSky.afterAnimationName === 'vipCosmicRiverFlow' && Number(discoDebug.cosmicSky.afterOpacity) >= 0.24 && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7 && cosmicAfterLinears >= 2 && cosmicAfterLinears <= 3, `${viewport.name}: VIP future reward background should render above the static wash and show graceful perf-safe moving cosmic ambience ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears, discoOverlayZIndex, cosmicSkyZIndex })}`);
       const cosmicPerf = await evalValue(page, cosmicAmbientPerfProbeScript(viewport.mobile ? 900 : 760));
       const cosmicPerfOver50Limit = Math.max(2, Math.ceil(cosmicPerf.frames * 0.07));
       const cosmicAnimationNames = (cosmicPerf.cosmicLayerAnimations || []).map(item => item.name || '');
-      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === true && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === true && cosmicPerf.cosmicLayerAnimationCount >= 2 && cosmicPerf.cosmicLayerAnimationCount <= 4 && cosmicAnimationNames.includes('vipCosmicStarDrift') && cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'vipCosmicColorDrift' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 10 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should visibly move colored dots and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === true && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === true && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === true && cosmicPerf.colorFieldMotion.layered === true && cosmicPerf.cosmicLayerAnimationCount >= 5 && cosmicPerf.cosmicLayerAnimationCount <= 7 && cosmicAnimationNames.includes('vipCosmicStarDrift') && cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicAnimationNames.includes('vipCosmicDotDriftA') && cosmicAnimationNames.includes('vipCosmicDotDriftB') && cosmicAnimationNames.includes('vipCosmicDotDriftC') && cosmicPerf.overlayAnimationName === 'vipCosmicColorDrift' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should visibly move colored dots in non-unison layers and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);

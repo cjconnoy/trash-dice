@@ -3890,9 +3890,6 @@ body.vip-disco-party[data-game-started="true"]::after {
     linear-gradient(54deg, transparent 0 12%, rgba(255,0,208,0.24) 24%, rgba(255,0,208,0.09) 40%, transparent 65%),
     linear-gradient(108deg, transparent 0 9%, rgba(47,180,255,0.22) 22%, rgba(47,180,255,0.09) 39%, transparent 64%),
     linear-gradient(145deg, transparent 0 48%, rgba(255,224,40,0.18) 60%, rgba(255,128,48,0.08) 73%, transparent 92%),
-    radial-gradient(circle, rgba(0,255,172,0.62) 0 1.8px, transparent 3.4px),
-    radial-gradient(circle, rgba(255,44,211,0.58) 0 2px, transparent 3.8px),
-    radial-gradient(circle, rgba(255,238,43,0.62) 0 1.9px, transparent 3.7px),
     radial-gradient(circle at 16% 24%, rgba(255,0,202,0.26) 0 4%, transparent 18%),
     radial-gradient(circle at 86% 22%, rgba(0,221,255,0.24) 0 5%, transparent 20%),
     radial-gradient(ellipse at 69% 64%, rgba(255,255,255,0.14) 0 6%, rgba(171,255,228,0.08) 17%, transparent 36%);
@@ -3900,9 +3897,6 @@ body.vip-disco-party[data-game-started="true"]::after {
     120% 120%,
     118% 118%,
     118% 118%,
-    92px 68px,
-    118px 86px,
-    132px 108px,
     100% 100%,
     100% 100%,
     100% 100%;
@@ -3910,9 +3904,6 @@ body.vip-disco-party[data-game-started="true"]::after {
     -4% 0%,
     3% 0%,
     0% 3%,
-    0 0,
-    28px 10px,
-    42px 20px,
     16% 24%,
     86% 22%,
     69% 64%;
@@ -3922,6 +3913,68 @@ body.vip-disco-party[data-game-started="true"]::after {
   transform: translate3d(0, 0, 0);
   will-change: transform;
   animation: vipCosmicColorDrift 36s ease-in-out infinite;
+}
+.vip-cosmic-color-field {
+  display: none;
+  position: fixed;
+  inset: -8%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  contain: paint;
+  background:
+    radial-gradient(circle, rgba(0,255,172,0.62) 0 1.8px, transparent 3.4px),
+    radial-gradient(circle, rgba(255,238,43,0.62) 0 1.9px, transparent 3.7px);
+  background-size:
+    92px 68px,
+    132px 108px;
+  background-position:
+    0 0,
+    42px 20px;
+  transform: translate3d(0, 0, 0);
+}
+body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
+  display: block;
+  opacity: 0.62;
+  will-change: transform;
+  animation: vipCosmicDotDriftA 34s ease-in-out infinite;
+}
+.vip-cosmic-color-field::before,
+.vip-cosmic-color-field::after {
+  content: '';
+  position: absolute;
+  inset: -5%;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+}
+.vip-cosmic-color-field::before {
+  background:
+    radial-gradient(circle, rgba(255,44,211,0.58) 0 2px, transparent 3.8px),
+    radial-gradient(circle, rgba(47,180,255,0.42) 0 1.6px, transparent 3.2px);
+  background-size:
+    118px 86px,
+    166px 122px;
+  background-position:
+    28px 10px,
+    72px 46px;
+  opacity: 0.74;
+  will-change: transform;
+  animation: vipCosmicDotDriftB 47s ease-in-out infinite;
+}
+.vip-cosmic-color-field::after {
+  background:
+    radial-gradient(circle, rgba(255,238,43,0.42) 0 1.4px, transparent 3.2px),
+    radial-gradient(circle, rgba(0,255,172,0.36) 0 1.4px, transparent 3px);
+  background-size:
+    174px 142px,
+    214px 168px;
+  background-position:
+    78px 64px,
+    18px 112px;
+  opacity: 0.58;
+  will-change: transform;
+  animation: vipCosmicDotDriftC 53s ease-in-out infinite;
 }
 .vip-cosmic-sky {
   display: none;
@@ -4016,6 +4069,24 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
   opacity: 0.46;
   animation-duration: 42s;
 }
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
+  opacity: 0.5;
+  animation-duration: 46s;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before {
+  opacity: 0.62;
+  animation-duration: 58s;
+}
+body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
+body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
+body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after {
+  opacity: 0.48;
+  animation-duration: 64s;
+}
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
@@ -4042,6 +4113,9 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]:not(.inli
 }
 @media (prefers-reduced-motion: reduce) {
   body.vip-disco-party[data-game-started="true"]::after,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
+  body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
   body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
   body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
   body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after {
@@ -5191,6 +5265,39 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
   }
   76% {
     transform: translate3d(0.7%, 2.4%, 0) scale(1.025);
+  }
+}
+@keyframes vipCosmicDotDriftA {
+  0%, 100% {
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1.01);
+  }
+  41% {
+    transform: translate3d(1.9%, 1.3%, 0) scale(1.025);
+  }
+  73% {
+    transform: translate3d(-0.4%, 2.1%, 0) scale(1.015);
+  }
+}
+@keyframes vipCosmicDotDriftB {
+  0%, 100% {
+    transform: translate3d(1.6%, -1.8%, 0) scale(1.018);
+  }
+  47% {
+    transform: translate3d(-2.2%, 0.5%, 0) scale(1.035);
+  }
+  79% {
+    transform: translate3d(0.8%, 1.7%, 0) scale(1.02);
+  }
+}
+@keyframes vipCosmicDotDriftC {
+  0%, 100% {
+    transform: translate3d(-0.7%, 1.6%, 0) scale(1.012);
+  }
+  39% {
+    transform: translate3d(2.5%, -0.5%, 0) scale(1.03);
+  }
+  68% {
+    transform: translate3d(-1.7%, -1.1%, 0) scale(1.018);
   }
 }
 @keyframes vipCosmicTwinkle {
@@ -10878,6 +10985,7 @@ body.inline-game-over .roll-panel {
 </head>
 <body>
 <div class="vip-cosmic-sky" aria-hidden="true"></div>
+<div class="vip-cosmic-color-field" aria-hidden="true"></div>
 <button class="quit-game-btn" id="quitGameBtn" type="button" aria-label="Done playing Trash Dice">DONE</button>
 <button class="audio-mute-btn" id="audioMuteBtn" type="button" aria-label="Mute sound" aria-pressed="false" title="Sound on">
   <svg class="audio-mute-icon audio-mute-icon-on" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -11325,7 +11433,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260630.4';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260630.5';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
