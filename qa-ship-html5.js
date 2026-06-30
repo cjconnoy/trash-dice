@@ -638,8 +638,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.15';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.15';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.1';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -3270,9 +3270,10 @@ async function main() {
       p1AutoBuffAudit.openingComeback,
       p1AutoBuffAudit.postLossComeback,
       p1AutoBuffAudit.lastOpenSlot,
+      p1AutoBuffAudit.lastOpenSlotSpinoff,
       p1AutoBuffAudit.enduranceAssist
     ];
-    assert(p1AutoBuffAudit.p1AutoMode === true && p1AutoBuffAudit.allPlayerBuffs.length === 7, `P1 auto buff audit: missing expected player buff coverage ${JSON.stringify(p1AutoBuffAudit)}`);
+    assert(p1AutoBuffAudit.p1AutoMode === true && p1AutoBuffAudit.allPlayerBuffs.length === 8, `P1 auto buff audit: missing expected player buff coverage ${JSON.stringify(p1AutoBuffAudit)}`);
     assert(p1AutoBuffCases.every(item => item && item.p1Autoplay === true && item.p0Autoplay === false && item.p0ReviewMode === false), `P1 auto buff audit: a buff case did not run under P1 Auto-only state ${JSON.stringify(p1AutoBuffAudit)}`);
     assert(p1AutoBuffAudit.firstRoundGuard.contexts.firstRoundGuardActive === true && p1AutoBuffAudit.firstRoundGuard.after.firstRoundGuardRolls > p1AutoBuffAudit.firstRoundGuard.before.firstRoundGuardRolls && p1AutoBuffAudit.firstRoundGuard.openHits === p1AutoBuffAudit.firstRoundGuard.samples.length, `P1 auto buff audit: first-round guard did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstRoundGuard)}`);
     assert(p1AutoBuffAudit.firstGameAssist.contexts.firstGameAssist.active === true && p1AutoBuffAudit.firstGameAssist.after.firstGameAssistUses > p1AutoBuffAudit.firstGameAssist.before.firstGameAssistUses && p1AutoBuffAudit.firstGameAssist.openHits > p1AutoBuffAudit.firstGameAssist.takenHits, `P1 auto buff audit: first-game assist did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstGameAssist)}`);
@@ -3280,6 +3281,7 @@ async function main() {
     assert(p1AutoBuffAudit.openingComeback.contexts.openingComebackAssistActive === true && p1AutoBuffAudit.openingComeback.after.openingComebackAssistRolls > p1AutoBuffAudit.openingComeback.before.openingComebackAssistRolls && p1AutoBuffAudit.openingComeback.openHits === p1AutoBuffAudit.openingComeback.samples.length, `P1 auto buff audit: opening comeback did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.openingComeback)}`);
     assert(p1AutoBuffAudit.postLossComeback.before.postLossComebackRound.active === true && p1AutoBuffAudit.postLossComeback.after.postLossComebackRound.rolls >= p1AutoBuffAudit.postLossComeback.samples.length && p1AutoBuffAudit.postLossComeback.openHits === p1AutoBuffAudit.postLossComeback.samples.length, `P1 auto buff audit: post-loss comeback did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.postLossComeback)}`);
     assert(p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffUses === p1AutoBuffAudit.lastOpenSlot.samples.length && p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffHits > 0 && p1AutoBuffAudit.lastOpenSlot.events.lastOpenSlotBuffMisses > 0 && p1AutoBuffAudit.lastOpenSlot.hitRate >= 0.38 && p1AutoBuffAudit.lastOpenSlot.hitRate <= 0.5, `P1 auto buff audit: last-open-slot buff did not stay active and missable for P1 Auto ${JSON.stringify(p1AutoBuffAudit.lastOpenSlot)}`);
+    assert(p1AutoBuffAudit.lastOpenSlotSpinoff.events.lastOpenSlotBuffUses === p1AutoBuffAudit.lastOpenSlotSpinoff.samples.length && p1AutoBuffAudit.lastOpenSlotSpinoff.events.lastOpenSlotStages['spinoff-clutch'] === p1AutoBuffAudit.lastOpenSlotSpinoff.samples.length && p1AutoBuffAudit.lastOpenSlotSpinoff.hitRate >= 0.7 && p1AutoBuffAudit.lastOpenSlotSpinoff.hitRate <= 0.82, `P1 auto buff audit: last-open-slot spinoff clutch did not activate after stall threshold ${JSON.stringify(p1AutoBuffAudit.lastOpenSlotSpinoff)}`);
     assert(p1AutoBuffAudit.enduranceAssist.contexts.enduranceAssist.active === true && p1AutoBuffAudit.enduranceAssist.events.enduranceAssistUses > 0 && p1AutoBuffAudit.enduranceAssist.hitRate > 0.38, `P1 auto buff audit: endurance assist did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.enduranceAssist)}`);
 
     const openingGuardProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
@@ -3335,7 +3337,11 @@ async function main() {
     assert(lastOpenSlotBuff.player.hitRate >= 0.38 && lastOpenSlotBuff.player.hitRate <= 0.5 && lastOpenSlotBuff.player.hitRate > lastOpenSlotBuff.fairChance * 2.2, `last-open-slot buff probe: player hit rate should rise clearly above fair dice odds ${JSON.stringify(lastOpenSlotBuff)}`);
     assert(lastOpenSlotBuff.player.openHits > 0 && lastOpenSlotBuff.player.openMisses > 0 && lastOpenSlotBuff.player.buffUses === lastOpenSlotBuff.samples && lastOpenSlotBuff.player.buffHits === lastOpenSlotBuff.player.openHits && lastOpenSlotBuff.player.buffMisses === lastOpenSlotBuff.player.openMisses, `last-open-slot buff probe: player buff should be once-per-fresh-round and still missable ${JSON.stringify(lastOpenSlotBuff)}`);
     assert(lastOpenSlotBuff.cpu.hitRate >= 0.13 && lastOpenSlotBuff.cpu.hitRate <= 0.2 && lastOpenSlotBuff.cpu.buffUses === 0 && lastOpenSlotBuff.cpu.openHits > 0 && lastOpenSlotBuff.cpu.openMisses > 0, `last-open-slot buff probe: CPU should stay on fair unbuffed die odds ${JSON.stringify(lastOpenSlotBuff)}`);
-    assert(lastOpenSlotBuff.repeat.firstBuff && lastOpenSlotBuff.repeat.usedAfterFirst === true && lastOpenSlotBuff.repeat.secondBuff === null && lastOpenSlotBuff.repeat.usedAfterSecond === true, `last-open-slot buff probe: player buff should not fire twice in one round ${JSON.stringify(lastOpenSlotBuff.repeat)}`);
+    assert(lastOpenSlotBuff.spinoffThreshold === 6 && lastOpenSlotBuff.spinoffChance === 0.75 && lastOpenSlotBuff.spinoffEscalatedChance === 0.9, `last-open-slot buff probe: spinoff constants drifted ${JSON.stringify(lastOpenSlotBuff)}`);
+    assert(lastOpenSlotBuff.spinoff.hitRate >= 0.7 && lastOpenSlotBuff.spinoff.hitRate <= 0.82 && lastOpenSlotBuff.spinoff.buffUses === lastOpenSlotBuff.samples && lastOpenSlotBuff.spinoff.stages['spinoff-clutch'] === lastOpenSlotBuff.samples && lastOpenSlotBuff.spinoff.buffHits > lastOpenSlotBuff.player.buffHits, `last-open-slot buff probe: stalled spinoff should strongly buff player ${JSON.stringify(lastOpenSlotBuff.spinoff)}`);
+    assert(lastOpenSlotBuff.escalated.hitRate >= 0.86 && lastOpenSlotBuff.escalated.hitRate <= 0.94 && lastOpenSlotBuff.escalated.buffUses === lastOpenSlotBuff.samples && lastOpenSlotBuff.escalated.stages['spinoff-clutch-escalated'] === lastOpenSlotBuff.samples && lastOpenSlotBuff.escalated.buffHits > lastOpenSlotBuff.spinoff.buffHits, `last-open-slot buff probe: escalated spinoff should nearly end the duel for player ${JSON.stringify(lastOpenSlotBuff.escalated)}`);
+    assert(lastOpenSlotBuff.cpuSpinoff.hitRate >= 0.13 && lastOpenSlotBuff.cpuSpinoff.hitRate <= 0.2 && lastOpenSlotBuff.cpuSpinoff.buffUses === 0 && lastOpenSlotBuff.cpuSpinoff.openHits > 0 && lastOpenSlotBuff.cpuSpinoff.openMisses > 0, `last-open-slot buff probe: CPU should stay unbuffed after spinoff threshold ${JSON.stringify(lastOpenSlotBuff.cpuSpinoff)}`);
+    assert(lastOpenSlotBuff.repeat.firstBuff && lastOpenSlotBuff.repeat.usedAfterFirst === true && lastOpenSlotBuff.repeat.secondBuff === null && lastOpenSlotBuff.repeat.usedAfterSecond === true, `last-open-slot buff probe: player base buff should not fire twice before stall threshold ${JSON.stringify(lastOpenSlotBuff.repeat)}`);
 
     for (const winner of ['p1', 'p2']) {
       const roundWinProbe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);

@@ -11279,7 +11279,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260629.15';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260630.1';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11374,6 +11374,9 @@ body.inline-game-over .roll-panel {
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
   const LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE = 0.44;
+  const LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS = 6;
+  const LAST_OPEN_SLOT_SPINOFF_PLAYER_BUFF_CHANCE = 0.75;
+  const LAST_OPEN_SLOT_SPINOFF_PLAYER_ESCALATED_CHANCE = 0.9;
   const FIRST_GAME_ASSIST_MAX_USES = 8;
   const FIRST_GAME_ASSIST_PLAYER_HIT_CHANCE = 0.58;
   const FIRST_GAME_ASSIST_PLAYER_CLUTCH_CHANCE = 0.82;
@@ -11603,6 +11606,9 @@ body.inline-game-over .roll-panel {
   let lastPlayerHitPraise = null;
   let lastOpenSlotPlayerBuffUsedThisRound = false;
   let lastOpenSlotPlayerBuff = null;
+  let lastOpenSlotSpinoffOpenFace = null;
+  let lastOpenSlotSpinoffRolls = 0;
+  let lastOpenSlotPlayerClutchAttempts = 0;
   let enduranceAssistRolls = 0;
   let enduranceAssistUsedThisRound = false;
   let lastEnduranceAssist = null;
@@ -13884,6 +13890,9 @@ body.inline-game-over .roll-panel {
     if (TWO_PLAYER_ENABLED) gameStarted = false;
     lastOpenSlotPlayerBuffUsedThisRound = false;
     lastOpenSlotPlayerBuff = null;
+    lastOpenSlotSpinoffOpenFace = null;
+    lastOpenSlotSpinoffRolls = 0;
+    lastOpenSlotPlayerClutchAttempts = 0;
     enduranceAssistRolls = 0;
     enduranceAssistUsedThisRound = false;
     lastEnduranceAssist = null;
@@ -17266,7 +17275,34 @@ body.inline-game-over .roll-panel {
     return randomFrom(otherFaces);
   }
 
-  function markLastOpenSlotPlayerBuff(face, openFace, chance, context = null) {
+  function resetLastOpenSlotSpinoff() {
+    lastOpenSlotSpinoffOpenFace = null;
+    lastOpenSlotSpinoffRolls = 0;
+    lastOpenSlotPlayerClutchAttempts = 0;
+  }
+
+  function noteLastOpenSlotSpinoffAttempt(openSlots = []) {
+    if (!Array.isArray(openSlots) || openSlots.length !== 1) {
+      resetLastOpenSlotSpinoff();
+      return { active: false, openFace: null, rolls: 0, stalled: false };
+    }
+    const openFace = openSlots[0];
+    if (lastOpenSlotSpinoffOpenFace !== openFace) {
+      lastOpenSlotSpinoffOpenFace = openFace;
+      lastOpenSlotSpinoffRolls = 0;
+      lastOpenSlotPlayerClutchAttempts = 0;
+    }
+    lastOpenSlotSpinoffRolls++;
+    return {
+      active: true,
+      openFace,
+      rolls: lastOpenSlotSpinoffRolls,
+      stalled: lastOpenSlotSpinoffRolls >= LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS,
+      playerClutchAttempts: lastOpenSlotPlayerClutchAttempts
+    };
+  }
+
+  function markLastOpenSlotPlayerBuff(face, openFace, chance, context = null, detail = null) {
     lastOpenSlotPlayerBuff = {
       face,
       openFace,
@@ -17275,6 +17311,10 @@ body.inline-game-over .roll-panel {
       round,
       totalRolls,
       assistanceTier: context && context.active ? context.assistanceTier : 'normal',
+      stage: detail && detail.stage ? detail.stage : 'base',
+      spinoffRolls: detail && Number.isFinite(detail.spinoffRolls) ? detail.spinoffRolls : lastOpenSlotSpinoffRolls,
+      spinoffThreshold: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS,
+      clutchAttempt: detail && Number.isFinite(detail.clutchAttempt) ? detail.clutchAttempt : lastOpenSlotPlayerClutchAttempts,
       at: Date.now()
     };
   }
@@ -17365,6 +17405,7 @@ body.inline-game-over .roll-panel {
           return slots;
         }, [])
       : [];
+    const lastOpenSlotSpinoff = noteLastOpenSlotSpinoffAttempt(openSlots);
     const comebackAssistActive = isOpeningComebackAssistActive();
     const firstRoundGuardActive = isFirstRoundGuardActive();
     const postLossComebackFace = choosePostLossComebackValue(player, openSlots);
@@ -17424,23 +17465,44 @@ body.inline-game-over .roll-panel {
     if (
       player === 'p1' &&
       !p0Autoplay &&
-      !lastOpenSlotPlayerBuffUsedThisRound &&
       openSlots.length === 1
     ) {
-      lastOpenSlotPlayerBuffUsedThisRound = true;
       const enduranceClutchChance = enduranceContext.behind
         ? ENDURANCE_ASSIST_PLAYER_CLUTCH_BEHIND_CHANCE
         : ENDURANCE_ASSIST_PLAYER_CLUTCH_CHANCE;
-      const buffChance = enduranceContext.active
-        ? Math.max(LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE, enduranceClutchChance)
-        : LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE;
-      const face = chooseLastOpenSlotPlayerBuffFace(
-        openSlots[0],
-        buffChance
-      );
-      markLastOpenSlotPlayerBuff(face, openSlots[0], buffChance, enduranceContext);
-      if (enduranceContext.active && face === openSlots[0]) markEnduranceAssist('player-clutch', face, enduranceContext);
-      return face;
+      if (lastOpenSlotSpinoff.stalled) {
+        const clutchAttempt = lastOpenSlotPlayerClutchAttempts + 1;
+        const clutchChance = clutchAttempt > 1
+          ? LAST_OPEN_SLOT_SPINOFF_PLAYER_ESCALATED_CHANCE
+          : LAST_OPEN_SLOT_SPINOFF_PLAYER_BUFF_CHANCE;
+        const buffChance = enduranceContext.active
+          ? Math.max(clutchChance, enduranceClutchChance)
+          : clutchChance;
+        const face = chooseLastOpenSlotPlayerBuffFace(openSlots[0], buffChance);
+        lastOpenSlotPlayerBuffUsedThisRound = true;
+        lastOpenSlotPlayerClutchAttempts = clutchAttempt;
+        markLastOpenSlotPlayerBuff(face, openSlots[0], buffChance, enduranceContext, {
+          stage: clutchAttempt > 1 ? 'spinoff-clutch-escalated' : 'spinoff-clutch',
+          spinoffRolls: lastOpenSlotSpinoff.rolls,
+          clutchAttempt
+        });
+        if (enduranceContext.active && face === openSlots[0]) markEnduranceAssist('player-clutch', face, enduranceContext);
+        return face;
+      }
+      if (!lastOpenSlotPlayerBuffUsedThisRound) {
+        lastOpenSlotPlayerBuffUsedThisRound = true;
+        const buffChance = enduranceContext.active
+          ? Math.max(LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE, enduranceClutchChance)
+          : LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE;
+        const face = chooseLastOpenSlotPlayerBuffFace(openSlots[0], buffChance);
+        markLastOpenSlotPlayerBuff(face, openSlots[0], buffChance, enduranceContext, {
+          stage: 'base',
+          spinoffRolls: lastOpenSlotSpinoff.rolls,
+          clutchAttempt: 0
+        });
+        if (enduranceContext.active && face === openSlots[0]) markEnduranceAssist('player-clutch', face, enduranceContext);
+        return face;
+      }
     }
     if (enduranceContext.active && player === 'p1' && openSlots.length > 1) {
       const hitChance = ENDURANCE_ASSIST_PLAYER_HIT_CHANCE + (enduranceContext.behind ? ENDURANCE_ASSIST_PLAYER_BEHIND_BONUS : 0);
@@ -17621,6 +17683,9 @@ body.inline-game-over .roll-panel {
     totalRolls= 0;
     lastOpenSlotPlayerBuffUsedThisRound = false;
     lastOpenSlotPlayerBuff = null;
+    lastOpenSlotSpinoffOpenFace = null;
+    lastOpenSlotSpinoffRolls = 0;
+    lastOpenSlotPlayerClutchAttempts = 0;
     enduranceAssistRolls = 0;
     enduranceAssistUsedThisRound = false;
     lastEnduranceAssist = null;
@@ -18121,6 +18186,9 @@ body.inline-game-over .roll-panel {
       round++;
       lastOpenSlotPlayerBuffUsedThisRound = false;
       lastOpenSlotPlayerBuff = null;
+      lastOpenSlotSpinoffOpenFace = null;
+      lastOpenSlotSpinoffRolls = 0;
+      lastOpenSlotPlayerClutchAttempts = 0;
       enduranceAssistUsedThisRound = false;
       syncUI();
       if (lostTrashCount > 0) renderCanLoad();
@@ -18228,6 +18296,9 @@ body.inline-game-over .roll-panel {
     clearP1AutoplayTimer();
     updateP0ReviewControl();
     lastOpenSlotPlayerBuffUsedThisRound = true;
+    lastOpenSlotSpinoffOpenFace = null;
+    lastOpenSlotSpinoffRolls = 0;
+    lastOpenSlotPlayerClutchAttempts = 0;
     pools = {
       p1: { yellow: forcedWinner === 'p1' ? 1 : 0, green: 0 },
       p2: { yellow: 0, green: forcedWinner === 'p2' ? 1 : 0 }
@@ -18892,6 +18963,9 @@ body.inline-game-over .roll-panel {
           lastPostLossComebackRound,
           lastOpenSlotPlayerBuffUsedThisRound,
           lastOpenSlotPlayerBuff,
+          lastOpenSlotSpinoffOpenFace,
+          lastOpenSlotSpinoffRolls,
+          lastOpenSlotPlayerClutchAttempts,
           enduranceAssistRolls,
           enduranceAssistUsedThisRound,
           lastEnduranceAssist
@@ -18900,7 +18974,14 @@ body.inline-game-over .roll-panel {
         const openFace = clamp(Math.floor(Number(config.openFace) || 4), 1, 6);
         const samples = clamp(Math.floor(Number(config.samples) || 600), 60, 1200);
 
-        function configure(player) {
+        function primeLastOpenSlotSpinoff(rolls = 0, clutchAttempts = 0) {
+          const seededRolls = Math.max(0, Math.floor(Number(rolls) || 0));
+          lastOpenSlotSpinoffOpenFace = seededRolls > 0 ? openFace : null;
+          lastOpenSlotSpinoffRolls = seededRolls;
+          lastOpenSlotPlayerClutchAttempts = Math.max(0, Math.floor(Number(clutchAttempts) || 0));
+        }
+
+        function configure(player, options = {}) {
           writeCompletedGameCount(1);
           gameStarted = true;
           busy = false;
@@ -18935,26 +19016,32 @@ body.inline-game-over .roll-panel {
             ? null
             : { player: i % 2 ? 'p2' : 'p1', color: i % 2 ? 'green' : 'yellow', value: i + 1 });
           current = player === 'p2' ? 'p2' : 'p1';
-          lastOpenSlotPlayerBuffUsedThisRound = !!config.buffUsed;
+          lastOpenSlotPlayerBuffUsedThisRound = !!(options.buffUsed ?? config.buffUsed);
           lastOpenSlotPlayerBuff = null;
+          primeLastOpenSlotSpinoff(options.spinoffRolls ?? config.spinoffRolls, options.clutchAttempts ?? config.clutchAttempts);
         }
 
-        function sample(player, seed) {
-          configure(player);
+        function sample(player, seed, options = {}) {
+          configure(player, options);
           Math.random = rewardDiceSeededRandom(seed);
           const counts = {};
           let buffUses = 0;
           let buffHits = 0;
           let buffMisses = 0;
+          const stages = {};
+          const chances = {};
           for (let i = 0; i < samples; i++) {
-            lastOpenSlotPlayerBuffUsedThisRound = !!config.buffUsed;
+            lastOpenSlotPlayerBuffUsedThisRound = !!(options.buffUsed ?? config.buffUsed);
             lastOpenSlotPlayerBuff = null;
+            primeLastOpenSlotSpinoff(options.spinoffRolls ?? config.spinoffRolls, options.clutchAttempts ?? config.clutchAttempts);
             const face = chooseRollValue(player);
             counts[face] = (counts[face] || 0) + 1;
             if (lastOpenSlotPlayerBuff) {
               buffUses++;
               if (lastOpenSlotPlayerBuff.hit) buffHits++;
               else buffMisses++;
+              stages[lastOpenSlotPlayerBuff.stage] = (stages[lastOpenSlotPlayerBuff.stage] || 0) + 1;
+              chances[lastOpenSlotPlayerBuff.chance] = (chances[lastOpenSlotPlayerBuff.chance] || 0) + 1;
             }
           }
           const openHits = counts[openFace] || 0;
@@ -18965,7 +19052,9 @@ body.inline-game-over .roll-panel {
             hitRate: openHits / samples,
             buffUses,
             buffHits,
-            buffMisses
+            buffMisses,
+            stages,
+            chances
           };
         }
 
@@ -18974,6 +19063,7 @@ body.inline-game-over .roll-panel {
           Math.random = rewardDiceSeededRandom('last-open-slot-repeat');
           lastOpenSlotPlayerBuffUsedThisRound = false;
           lastOpenSlotPlayerBuff = null;
+          primeLastOpenSlotSpinoff(0, 0);
           const first = chooseRollValue('p1');
           const firstBuff = lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null;
           const usedAfterFirst = lastOpenSlotPlayerBuffUsedThisRound;
@@ -18986,14 +19076,35 @@ body.inline-game-over .roll-panel {
         try {
           const player = sample('p1', `last-open-slot-player-${openFace}-${samples}`);
           const cpu = sample('p2', `last-open-slot-cpu-${openFace}-${samples}`);
+          const spinoff = sample('p1', `last-open-slot-spinoff-${openFace}-${samples}`, {
+            buffUsed: true,
+            spinoffRolls: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS - 1,
+            clutchAttempts: 0
+          });
+          const escalated = sample('p1', `last-open-slot-spinoff-escalated-${openFace}-${samples}`, {
+            buffUsed: true,
+            spinoffRolls: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS,
+            clutchAttempts: 1
+          });
+          const cpuSpinoff = sample('p2', `last-open-slot-cpu-spinoff-${openFace}-${samples}`, {
+            buffUsed: true,
+            spinoffRolls: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS - 1,
+            clutchAttempts: 0
+          });
           const repeat = repeatWithoutReset();
           return {
             chance: LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE,
+            spinoffThreshold: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS,
+            spinoffChance: LAST_OPEN_SLOT_SPINOFF_PLAYER_BUFF_CHANCE,
+            spinoffEscalatedChance: LAST_OPEN_SLOT_SPINOFF_PLAYER_ESCALATED_CHANCE,
             fairChance: 1 / 6,
             openFace,
             samples,
             player,
             cpu,
+            spinoff,
+            escalated,
+            cpuSpinoff,
             repeat
           };
         } finally {
@@ -19025,6 +19136,9 @@ body.inline-game-over .roll-panel {
           lastPostLossComebackRound = previous.lastPostLossComebackRound;
           lastOpenSlotPlayerBuffUsedThisRound = previous.lastOpenSlotPlayerBuffUsedThisRound;
           lastOpenSlotPlayerBuff = previous.lastOpenSlotPlayerBuff;
+          lastOpenSlotSpinoffOpenFace = previous.lastOpenSlotSpinoffOpenFace;
+          lastOpenSlotSpinoffRolls = previous.lastOpenSlotSpinoffRolls;
+          lastOpenSlotPlayerClutchAttempts = previous.lastOpenSlotPlayerClutchAttempts;
           enduranceAssistRolls = previous.enduranceAssistRolls;
           enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
           lastEnduranceAssist = previous.lastEnduranceAssist;
@@ -19060,6 +19174,9 @@ body.inline-game-over .roll-panel {
           lastPostLossComebackRound,
           lastOpenSlotPlayerBuffUsedThisRound,
           lastOpenSlotPlayerBuff,
+          lastOpenSlotSpinoffOpenFace,
+          lastOpenSlotSpinoffRolls,
+          lastOpenSlotPlayerClutchAttempts,
           enduranceAssistRolls,
           enduranceAssistUsedThisRound,
           lastEnduranceAssist,
@@ -19117,6 +19234,10 @@ body.inline-game-over .roll-panel {
           lastPostLossComebackRound = null;
           lastOpenSlotPlayerBuffUsedThisRound = !!config.lastOpenUsed;
           lastOpenSlotPlayerBuff = null;
+          const spinoffRolls = Math.max(0, Math.floor(Number(config.spinoffRolls) || 0));
+          lastOpenSlotSpinoffOpenFace = spinoffRolls > 0 && openSlots.length === 1 ? openSlots[0] : null;
+          lastOpenSlotSpinoffRolls = spinoffRolls;
+          lastOpenSlotPlayerClutchAttempts = Math.max(0, Math.floor(Number(config.clutchAttempts) || 0));
           enduranceAssistRolls = Math.max(0, Math.floor(Number(config.enduranceUses) || 0));
           enduranceAssistUsedThisRound = !!config.enduranceUsedThisRound;
           lastEnduranceAssist = null;
@@ -19141,6 +19262,9 @@ body.inline-game-over .roll-panel {
             openingComebackAssistRolls,
             postLossComebackRound: snapshotPostLossComebackRound(),
             lastOpenSlotPlayerBuffUsedThisRound,
+            lastOpenSlotSpinoffOpenFace,
+            lastOpenSlotSpinoffRolls,
+            lastOpenSlotPlayerClutchAttempts,
             enduranceAssistRolls,
             enduranceAssistUsedThisRound
           };
@@ -19156,7 +19280,9 @@ body.inline-game-over .roll-panel {
             lastOpenSlotBuffUses: 0,
             lastOpenSlotBuffHits: 0,
             lastOpenSlotBuffMisses: 0,
-            enduranceAssistUses: 0
+            enduranceAssistUses: 0,
+            lastOpenSlotStages: {},
+            lastOpenSlotChances: {}
           };
           for (let i = 0; i < boundedSampleCount; i++) {
             if (typeof resetEachSample === 'function') resetEachSample();
@@ -19166,6 +19292,8 @@ body.inline-game-over .roll-panel {
               events.lastOpenSlotBuffUses++;
               if (lastOpenSlotPlayerBuff.hit) events.lastOpenSlotBuffHits++;
               else events.lastOpenSlotBuffMisses++;
+              events.lastOpenSlotStages[lastOpenSlotPlayerBuff.stage] = (events.lastOpenSlotStages[lastOpenSlotPlayerBuff.stage] || 0) + 1;
+              events.lastOpenSlotChances[lastOpenSlotPlayerBuff.chance] = (events.lastOpenSlotChances[lastOpenSlotPlayerBuff.chance] || 0) + 1;
             }
             if (lastEnduranceAssist) events.enduranceAssistUses++;
           }
@@ -19189,6 +19317,9 @@ body.inline-game-over .roll-panel {
               openingComebackAssistRolls,
               postLossComebackRound: snapshotPostLossComebackRound(),
               lastOpenSlotPlayerBuffUsedThisRound,
+              lastOpenSlotSpinoffOpenFace,
+              lastOpenSlotSpinoffRolls,
+              lastOpenSlotPlayerClutchAttempts,
               lastOpenSlotPlayerBuff: lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null,
               enduranceAssistRolls,
               enduranceAssistUsedThisRound,
@@ -19277,6 +19408,27 @@ body.inline-game-over .roll-panel {
           }, 600, () => {
             lastOpenSlotPlayerBuffUsedThisRound = false;
             lastOpenSlotPlayerBuff = null;
+            lastOpenSlotSpinoffOpenFace = null;
+            lastOpenSlotSpinoffRolls = 0;
+            lastOpenSlotPlayerClutchAttempts = 0;
+          });
+          const lastOpenSlotSpinoff = sample('last-open-slot-spinoff', {
+            completedGames: 1,
+            roundNumber: 4,
+            totalRolls: 30,
+            p1RoundWins: 1,
+            p2RoundWins: 1,
+            p1Dice: 8,
+            p2Dice: 8,
+            openSlots: [4],
+            lastOpenUsed: true,
+            spinoffRolls: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS - 1
+          }, 600, () => {
+            lastOpenSlotPlayerBuffUsedThisRound = true;
+            lastOpenSlotPlayerBuff = null;
+            lastOpenSlotSpinoffOpenFace = 4;
+            lastOpenSlotSpinoffRolls = LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS - 1;
+            lastOpenSlotPlayerClutchAttempts = 0;
           });
           const enduranceAssist = sample('endurance-assist', {
             completedGames: 1,
@@ -19301,6 +19453,7 @@ body.inline-game-over .roll-panel {
               'openingComeback',
               'postLossComeback',
               'lastOpenSlot',
+              'lastOpenSlotSpinoff',
               'enduranceAssist'
             ],
             firstRoundGuard,
@@ -19309,6 +19462,7 @@ body.inline-game-over .roll-panel {
             openingComeback,
             postLossComeback,
             lastOpenSlot,
+            lastOpenSlotSpinoff,
             enduranceAssist
           };
         } finally {
@@ -19343,6 +19497,9 @@ body.inline-game-over .roll-panel {
           lastPostLossComebackRound = previous.lastPostLossComebackRound;
           lastOpenSlotPlayerBuffUsedThisRound = previous.lastOpenSlotPlayerBuffUsedThisRound;
           lastOpenSlotPlayerBuff = previous.lastOpenSlotPlayerBuff;
+          lastOpenSlotSpinoffOpenFace = previous.lastOpenSlotSpinoffOpenFace;
+          lastOpenSlotSpinoffRolls = previous.lastOpenSlotSpinoffRolls;
+          lastOpenSlotPlayerClutchAttempts = previous.lastOpenSlotPlayerClutchAttempts;
           enduranceAssistRolls = previous.enduranceAssistRolls;
           enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
           lastEnduranceAssist = previous.lastEnduranceAssist;
@@ -19417,6 +19574,9 @@ body.inline-game-over .roll-panel {
           p1Autoplay,
           lastOpenSlotPlayerBuffUsedThisRound,
           lastOpenSlotPlayerBuff,
+          lastOpenSlotSpinoffOpenFace,
+          lastOpenSlotSpinoffRolls,
+          lastOpenSlotPlayerClutchAttempts,
           enduranceAssistRolls,
           enduranceAssistUsedThisRound,
           lastEnduranceAssist
@@ -19447,6 +19607,11 @@ body.inline-game-over .roll-panel {
         const buffAlreadyUsed = !!(config.buffUsed ?? config.clutchUsed);
         lastOpenSlotPlayerBuffUsedThisRound = buffAlreadyUsed;
         lastOpenSlotPlayerBuff = null;
+        const seededSpinoffRolls = Math.max(0, Math.floor(Number(config.spinoffRolls) || 0));
+        const seededClutchAttempts = Math.max(0, Math.floor(Number(config.clutchAttempts) || 0));
+        lastOpenSlotSpinoffOpenFace = seededSpinoffRolls > 0 && openSlots.length === 1 ? openSlots[0] : null;
+        lastOpenSlotSpinoffRolls = seededSpinoffRolls;
+        lastOpenSlotPlayerClutchAttempts = seededClutchAttempts;
         enduranceAssistRolls = Math.max(0, Math.floor(config.uses || 0));
         enduranceAssistUsedThisRound = !!config.usedThisRound;
         lastEnduranceAssist = null;
@@ -19458,6 +19623,9 @@ body.inline-game-over .roll-panel {
         for (let i = 0; i < samples; i++) {
           lastOpenSlotPlayerBuffUsedThisRound = buffAlreadyUsed;
           lastOpenSlotPlayerBuff = null;
+          lastOpenSlotSpinoffOpenFace = seededSpinoffRolls > 0 && openSlots.length === 1 ? openSlots[0] : null;
+          lastOpenSlotSpinoffRolls = seededSpinoffRolls;
+          lastOpenSlotPlayerClutchAttempts = seededClutchAttempts;
           enduranceAssistRolls = Math.max(0, Math.floor(config.uses || 0));
           enduranceAssistUsedThisRound = !!config.usedThisRound;
           lastEnduranceAssist = null;
@@ -19478,6 +19646,9 @@ body.inline-game-over .roll-panel {
         p1Autoplay = previous.p1Autoplay;
         lastOpenSlotPlayerBuffUsedThisRound = previous.lastOpenSlotPlayerBuffUsedThisRound;
         lastOpenSlotPlayerBuff = previous.lastOpenSlotPlayerBuff;
+        lastOpenSlotSpinoffOpenFace = previous.lastOpenSlotSpinoffOpenFace;
+        lastOpenSlotSpinoffRolls = previous.lastOpenSlotSpinoffRolls;
+        lastOpenSlotPlayerClutchAttempts = previous.lastOpenSlotPlayerClutchAttempts;
         enduranceAssistRolls = previous.enduranceAssistRolls;
         enduranceAssistUsedThisRound = previous.enduranceAssistUsedThisRound;
         lastEnduranceAssist = previous.lastEnduranceAssist;
@@ -19717,7 +19888,13 @@ body.inline-game-over .roll-panel {
           postLossComebackRound: snapshotPostLossComebackRound(),
           lastOpenSlotPlayerBuff: {
             chance: LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE,
+            spinoffThreshold: LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS,
+            spinoffChance: LAST_OPEN_SLOT_SPINOFF_PLAYER_BUFF_CHANCE,
+            spinoffEscalatedChance: LAST_OPEN_SLOT_SPINOFF_PLAYER_ESCALATED_CHANCE,
             usedThisRound: lastOpenSlotPlayerBuffUsedThisRound,
+            spinoffOpenFace: lastOpenSlotSpinoffOpenFace,
+            spinoffRolls: lastOpenSlotSpinoffRolls,
+            clutchAttempts: lastOpenSlotPlayerClutchAttempts,
             last: lastOpenSlotPlayerBuff ? { ...lastOpenSlotPlayerBuff } : null
           },
           timings: {
