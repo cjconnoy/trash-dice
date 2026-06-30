@@ -638,8 +638,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.13';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.13';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.14';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.14';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -2654,7 +2654,7 @@ async function main() {
       assert(mathPlayerLoss.passed === true, `${viewport.name}: mathematical player loss proof failed ${JSON.stringify(mathPlayerLoss)}`);
       assert(mathPlayerLossUi.state.reason === 'mathematical_elimination', `${viewport.name}: mathematical player loss reason missing ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.postLossComeback.pending === true && mathPlayerLossUi.postLossComeback.active === false, `${viewport.name}: player game loss should arm next-game comeback without activating on game-over screen ${JSON.stringify(mathPlayerLossUi.postLossComeback)}`);
-      assert(mathPlayerLossUi.title === 'TRY AGAIN...' && mathPlayerLossUi.sub === 'CPU WINS', `${viewport.name}: player-loss banner should invite a retry ${JSON.stringify(mathPlayerLossUi)}`);
+      assert(mathPlayerLossUi.title === 'KEEP TRYING!' && mathPlayerLossUi.sub === 'CPU WINS', `${viewport.name}: player-loss banner should invite a retry ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1Text === MATHEMATICAL_ELIMINATION_STATUS && mathPlayerLossUi.p1LoserReason === true, `${viewport.name}: yellow loser status should explain mathematical elimination ${JSON.stringify(mathPlayerLossUi)}`);
       assert(!mathPlayerLossUi.p2Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerLossUi.p2LoserReason === false, `${viewport.name}: winning green panel should not carry mathematical loser copy ${JSON.stringify(mathPlayerLossUi)}`);
       assert(mathPlayerLossUi.p1StatusFits, `${viewport.name}: yellow loser status should fit in the viewport ${JSON.stringify(mathPlayerLossUi)}`);
@@ -2895,10 +2895,11 @@ async function main() {
     const tallIpadTravel = tallIpadRollVisual.bestTravel || tallIpadRollVisual.firstTravel;
     const tallIpadRollHasHeroRect = !!(tallIpadBestRoll && tallIpadBestRoll.rect.width >= 380 && tallIpadBestRoll.rect.width <= 520 && tallIpadBestRoll.dotRect && tallIpadBestRoll.dotRect.width >= 58);
     const tallIpadRollHasHeroCss = !!(tallIpadBestRoll && tallIpadBestRoll.stageCssWidth >= 300 && tallIpadBestRoll.dotCssMaxWidth >= 58);
+    const tallIpadTravelHasHeroPips = !!(tallIpadTravel && tallIpadTravel.dotRect && tallIpadTravel.rect && tallIpadTravel.rect.width >= 280 && tallIpadTravel.dotRect.width >= 54 && tallIpadTravel.dotCssMaxWidth >= 58);
     assert(tallIpadRollStarted && tallIpadRollStarted.active === true && tallIpadRollVisual.state.deviceProfile.isIpad === true && tallIpadRollVisual.state.iPadGameplayPerformanceMode === false, `tall iPad hero die should roll on the non-performance iPad path ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadRollHasHeroRect || tallIpadRollHasHeroCss, `tall iPad hero roll die should use the enlarged iPad sizing ${JSON.stringify(tallIpadRollVisual)}`);
     assert(tallIpadBestRoll.rect.left >= -20 && tallIpadBestRoll.rect.right <= tallIpadTitleViewport.width + 20 && tallIpadBestRoll.rect.top >= -20 && tallIpadBestRoll.rect.bottom <= tallIpadTitleViewport.height + 20, `tall iPad enlarged hero die should stay framed ${JSON.stringify(tallIpadRollVisual)}`);
-    assert(tallIpadTravel && tallIpadTravel.className.includes('hero-travel-scale') && tallIpadTravel.motionClass === 'to-slot-physical' && tallIpadTravel.dotRect && tallIpadTravel.dotRect.width >= 58 && tallIpadTravel.dotCssMaxWidth >= 58, `tall iPad travel die should keep enlarged pips while moving to the lid ${JSON.stringify(tallIpadRollVisual)}`);
+    assert(tallIpadTravel && tallIpadTravel.className.includes('hero-travel-scale') && tallIpadTravel.motionClass === 'to-slot-physical' && tallIpadTravelHasHeroPips, `tall iPad travel die should keep enlarged pips while moving to the lid ${JSON.stringify(tallIpadRollVisual)}`);
     const tallIpadPrismTravelPage = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1&tall-ipad-prism-travel=1`, tallIpadTitleViewport);
     await waitEval(tallIpadPrismTravelPage, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'tall iPad PRISM travel QA hooks');
     await evalValue(tallIpadPrismTravelPage, `document.getElementById('startBtn').click(); true`);
@@ -3703,8 +3704,8 @@ async function main() {
         assert(outcomeState.playerGameWins === 1 && outcomeState.inlinePlayerGameWins && outcomeState.inlinePlayerGameWins.after === 1 && outcomeState.chip.visible === true && outcomeState.chip.gameWins === 1 && /GAMES WON:\s*1/.test(outcomeState.chip.text), `${outcome.label} probe: player game-win should show a session games-won counter ${JSON.stringify(outcomeState)}`);
       }
       if (outcome.label === 'lose') {
-        assert(outcomeState.title === 'TRY AGAIN...' && outcomeState.sub === 'CPU WINS' && outcomeState.chip.visible === false && outcomeState.playerGameWins === 0, `${outcome.label} probe: loss should invite retry without counting a game win ${JSON.stringify(outcomeState)}`);
-        assert(outcomeState.outcomeCard.visible === true && outcomeState.outcomeCard.animationName === 'none' && outcomeState.outcomeCard.rect.width <= 660, `${outcome.label} probe: TRY AGAIN outcome panel should be static and smaller than the reward chase ${JSON.stringify(outcomeState)}`);
+        assert(outcomeState.title === 'KEEP TRYING!' && outcomeState.sub === 'CPU WINS' && outcomeState.chip.visible === false && outcomeState.playerGameWins === 0, `${outcome.label} probe: loss should invite retry without counting a game win ${JSON.stringify(outcomeState)}`);
+        assert(outcomeState.outcomeCard.visible === true && outcomeState.outcomeCard.animationName === 'none' && outcomeState.outcomeCard.rect.width <= 660, `${outcome.label} probe: KEEP TRYING outcome panel should be static and smaller than the reward chase ${JSON.stringify(outcomeState)}`);
       }
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
       await waitEval(outcomeProbe, `(() => {
