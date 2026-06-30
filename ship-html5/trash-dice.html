@@ -3911,8 +3911,6 @@ body.vip-disco-party[data-game-started="true"]::after {
   opacity: 0.58;
   transform-origin: 50% 58%;
   transform: translate3d(0, 0, 0);
-  will-change: transform;
-  animation: vipCosmicColorDrift 36s ease-in-out infinite;
 }
 .vip-cosmic-color-field {
   display: none;
@@ -3938,7 +3936,7 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
   display: block;
   opacity: 0.62;
   will-change: transform;
-  animation: vipCosmicDotDriftA 34s ease-in-out infinite;
+  animation: vipCosmicDotDriftA 26s ease-in-out -7s infinite;
 }
 .vip-cosmic-color-field::before,
 .vip-cosmic-color-field::after {
@@ -3960,7 +3958,7 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
     72px 46px;
   opacity: 0.74;
   will-change: transform;
-  animation: vipCosmicDotDriftB 47s ease-in-out infinite;
+  animation: vipCosmicDotDriftB 34s ease-in-out -17s infinite;
 }
 .vip-cosmic-color-field::after {
   background:
@@ -3974,7 +3972,7 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
     18px 112px;
   opacity: 0.58;
   will-change: transform;
-  animation: vipCosmicDotDriftC 53s ease-in-out infinite;
+  animation: vipCosmicDotDriftC 40s ease-in-out -23s infinite;
 }
 .vip-cosmic-sky {
   display: none;
@@ -3990,8 +3988,6 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
 body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
   display: block;
   opacity: 0.64;
-  will-change: transform;
-  animation: vipCosmicStarDrift 24s ease-in-out infinite;
 }
 .vip-cosmic-sky::before,
 .vip-cosmic-sky::after {
@@ -4023,8 +4019,6 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
     67px 43px,
     12px 88px;
   opacity: 0.82;
-  will-change: opacity;
-  animation: vipCosmicTwinkle 7.8s ease-in-out infinite;
 }
 .vip-cosmic-sky::after {
   display: block;
@@ -4046,16 +4040,20 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
   opacity: 0.36;
   transform-origin: 50% 50%;
   transform: translate3d(-4%, -2%, 0) rotate(-1deg) scale(1.04);
-  will-change: transform, opacity;
-  animation: vipCosmicRiverFlow 16s ease-in-out infinite;
 }
 body.vip-disco-party.inline-game-over::after {
   z-index: 1;
   opacity: 0.5;
 }
+body.vip-disco-party.inline-game-over .vip-cosmic-color-field,
+body.vip-disco-party.inline-game-over .vip-cosmic-color-field::before,
+body.vip-disco-party.inline-game-over .vip-cosmic-color-field::after,
+body.vip-disco-party.inline-game-over .vip-cosmic-sky {
+  animation: none;
+  will-change: auto;
+}
 body.vip-disco-party.inline-game-over .vip-cosmic-sky {
   opacity: 0.48;
-  animation-duration: 30s;
 }
 body.vip-disco-party[data-game-started="true"] .game-area {
   z-index: 2;
@@ -4067,44 +4065,40 @@ body.tablet-effects-lite.vip-disco-party[data-game-started="true"]::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]::after,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
   opacity: 0.46;
-  animation-duration: 42s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
   opacity: 0.5;
-  animation-duration: 46s;
+  animation-duration: 34s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before {
   opacity: 0.62;
-  animation-duration: 58s;
+  animation-duration: 46s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after {
   opacity: 0.48;
-  animation-duration: 64s;
+  animation-duration: 52s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
   opacity: 0.48;
-  animation-duration: 30s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::before {
   opacity: 0.68;
-  animation-duration: 9.6s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky::after {
   display: block;
   opacity: 0.28;
-  animation-duration: 20s;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before,
@@ -5247,57 +5241,57 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
 }
 @keyframes vipCosmicStarDrift {
   0%, 100% {
-    transform: translate3d(-2.6%, -1.4%, 0) scale(1.045);
+    transform: translate3d(-3.3%, -2%, 0) scale(1.052);
   }
   45% {
-    transform: translate3d(2.8%, -0.7%, 0) scale(1.07);
+    transform: translate3d(3.8%, -1.1%, 0) scale(1.08);
   }
   72% {
-    transform: translate3d(1.1%, 2.2%, 0) scale(1.055);
+    transform: translate3d(1.6%, 3.2%, 0) scale(1.064);
   }
 }
 @keyframes vipCosmicColorDrift {
   0%, 100% {
-    transform: translate3d(-1.8%, -1.1%, 0) scale(1.02);
+    transform: translate3d(-2.8%, -1.7%, 0) scale(1.026);
   }
   44% {
-    transform: translate3d(2.1%, 1.2%, 0) scale(1.035);
+    transform: translate3d(3.1%, 2.1%, 0) scale(1.044);
   }
   76% {
-    transform: translate3d(0.7%, 2.4%, 0) scale(1.025);
+    transform: translate3d(1.1%, 3.4%, 0) scale(1.032);
   }
 }
 @keyframes vipCosmicDotDriftA {
   0%, 100% {
-    transform: translate3d(-1.2%, -0.8%, 0) scale(1.01);
+    transform: translate3d(-2.2%, -1.3%, 0) scale(1.016);
   }
   41% {
-    transform: translate3d(1.9%, 1.3%, 0) scale(1.025);
+    transform: translate3d(2.9%, 2.1%, 0) scale(1.032);
   }
   73% {
-    transform: translate3d(-0.4%, 2.1%, 0) scale(1.015);
+    transform: translate3d(-0.7%, 3.1%, 0) scale(1.022);
   }
 }
 @keyframes vipCosmicDotDriftB {
   0%, 100% {
-    transform: translate3d(1.6%, -1.8%, 0) scale(1.018);
+    transform: translate3d(2.6%, -2.6%, 0) scale(1.024);
   }
   47% {
-    transform: translate3d(-2.2%, 0.5%, 0) scale(1.035);
+    transform: translate3d(-3.4%, 0.9%, 0) scale(1.046);
   }
   79% {
-    transform: translate3d(0.8%, 1.7%, 0) scale(1.02);
+    transform: translate3d(1.3%, 2.6%, 0) scale(1.03);
   }
 }
 @keyframes vipCosmicDotDriftC {
   0%, 100% {
-    transform: translate3d(-0.7%, 1.6%, 0) scale(1.012);
+    transform: translate3d(-1.3%, 2.5%, 0) scale(1.018);
   }
   39% {
-    transform: translate3d(2.5%, -0.5%, 0) scale(1.03);
+    transform: translate3d(3.6%, -0.9%, 0) scale(1.04);
   }
   68% {
-    transform: translate3d(-1.7%, -1.1%, 0) scale(1.018);
+    transform: translate3d(-2.6%, -1.7%, 0) scale(1.026);
   }
 }
 @keyframes vipCosmicTwinkle {
@@ -5314,15 +5308,15 @@ body.inline-game-over.inline-game-win .inline-result-chip.is-winding {
 @keyframes vipCosmicRiverFlow {
   0%, 100% {
     opacity: 0.3;
-    transform: translate3d(-5%, -2.6%, 0) rotate(-1.4deg) scale(1.04);
+    transform: translate3d(-6.2%, -3.4%, 0) rotate(-1.6deg) scale(1.05);
   }
   42% {
     opacity: 0.54;
-    transform: translate3d(4.6%, 1.8%, 0) rotate(1.2deg) scale(1.08);
+    transform: translate3d(5.8%, 2.6%, 0) rotate(1.4deg) scale(1.088);
   }
   72% {
     opacity: 0.42;
-    transform: translate3d(1.8%, 4%, 0) rotate(-0.2deg) scale(1.065);
+    transform: translate3d(2.6%, 5.1%, 0) rotate(-0.3deg) scale(1.074);
   }
 }
 @keyframes vipCosmicShootingStar {
@@ -11433,7 +11427,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260630.5';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260630.6';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
