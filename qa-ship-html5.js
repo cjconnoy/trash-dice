@@ -638,8 +638,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.12';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.12';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260629.13';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260629.13';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -3404,6 +3404,7 @@ async function main() {
         const rollRect = roll ? roll.getBoundingClientRect() : null;
         const scrimStyle = shell ? getComputedStyle(shell, '::before') : null;
         const scrimMask = scrimStyle ? (scrimStyle.webkitMaskImage || scrimStyle.maskImage || '') : '';
+        const scrimBottom = scrimStyle ? scrimStyle.bottom || '' : '';
         const toRect = r => r ? { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top), bottom: Math.round(r.bottom), width: Math.round(r.width), height: Math.round(r.height) } : null;
         const hasGap = sceneRect && burstRect
           ? (sceneRect.top >= burstRect.bottom + 4 || sceneRect.bottom <= burstRect.top - 4 || sceneRect.left >= burstRect.right + 4 || sceneRect.right <= burstRect.left - 4)
@@ -3420,6 +3421,7 @@ async function main() {
           rollRect: toRect(rollRect),
           hasGap,
           clearsRoll,
+          scrimBottom,
           scrimMaskImage: scrimMask,
           scrimMaskRepeat: scrimStyle ? (scrimStyle.webkitMaskRepeat || scrimStyle.maskRepeat || '') : ''
         };
@@ -3427,7 +3429,7 @@ async function main() {
         assert(delayedRewardDie.visible === true && delayedRewardDie.tier === String(rewardFirst.tier) && delayedRewardDie.name === rewardFirst.name, `yellow round-win probe: delayed first reward die reveal missing ${JSON.stringify({ rewardFirst, roundWinEarly, delayedRewardDie })}`);
         assert(delayedRewardDie.sub === 'DIE SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include die skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
         assert(delayedRewardDie.layout === 'round-win-companion' && delayedRewardDie.hasGap === true && delayedRewardDie.clearsRoll === true, `yellow round-win probe: delayed reward reveal should dock between ROUND WINNER and Roll without overlap ${JSON.stringify(delayedRewardDie)}`);
-        assert(/gradient/i.test(delayedRewardDie.scrimMaskImage || '') && delayedRewardDie.scrimMaskRepeat === 'no-repeat', `yellow round-win probe: reward scrim should feather out before the Roll area ${JSON.stringify(delayedRewardDie)}`);
+        assert((delayedRewardDie.scrimMaskImage === 'none' || delayedRewardDie.scrimMaskImage === '') && (parseFloat(delayedRewardDie.scrimBottom || '0') || 0) === 0, `yellow round-win probe: reward scrim should cover the full viewport with no bottom feather gap ${JSON.stringify(delayedRewardDie)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
       const roundWinAfterFanfare = await evalValue(roundWinProbe, `(() => {
