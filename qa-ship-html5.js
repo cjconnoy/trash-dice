@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.6';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.6';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.7';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.7';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -2930,6 +2930,28 @@ async function main() {
       assert(beatGameRoundWin.rewardDieState.totalWins === 13 && beatGameRoundWin.rewardDieState.activeName === 'DISCO' && beatGameRoundWin.rewardDieState.guidedCompletionPending === false && beatGameRoundWin.rewardDieState.guidedGameCompleted === true, `${viewport.name}: beat-the-game round win should complete the guided path ${JSON.stringify(beatGameRoundWin.rewardDieState)}`);
       assert(beatGameRoundWin.roundWinBurstGuidedComplete === true && beatGameRoundWin.roundWinCapstoneLogoVisible === true && beatGameRoundWin.roundWinBurstText.includes('YOU BEAT THE GAME!') && beatGameRoundWin.roundWinBurstText.includes('You unlocked every die. How many more rounds can you win?'), `${viewport.name}: beat-the-game capstone round-win card missing headline, logo, or subcopy ${JSON.stringify(beatGameRoundWin)}`);
       assert(beatGameRoundWin.roundWinBurstRewardName === '' && beatGameRoundWin.roundWinBurstPreviewName === '' && beatGameRoundWin.roundWinBurstDieVisible === false && beatGameRoundWin.rewardDieVisible === false, `${viewport.name}: beat-the-game capstone should not show another unlock/chase die ${JSON.stringify(beatGameRoundWin)}`);
+
+      const postBeatGameEndlessRoundWin = await evalValue(page, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
+      assert(postBeatGameEndlessRoundWin.rewardDieState.totalWins === 14 && postBeatGameEndlessRoundWin.rewardDieState.activeName === 'DISCO' && postBeatGameEndlessRoundWin.rewardDieState.guidedCompletionPending === false && postBeatGameEndlessRoundWin.rewardDieState.guidedGameCompleted === true, `${viewport.name}: endless round win after beat-the-game should keep counting DISCO wins ${JSON.stringify(postBeatGameEndlessRoundWin.rewardDieState)}`);
+      assert(postBeatGameEndlessRoundWin.roundWinBurstVisible === true && postBeatGameEndlessRoundWin.roundWinBurstGuidedComplete === false && postBeatGameEndlessRoundWin.roundWinCapstoneLogoVisible === false && postBeatGameEndlessRoundWin.roundWinBurstCopyMode === 'endless', `${viewport.name}: post-beat-game round-win burst should be the endless counter, not the capstone ${JSON.stringify(postBeatGameEndlessRoundWin)}`);
+      assert(postBeatGameEndlessRoundWin.roundWinBurstClassName.includes('is-endless-windup') && postBeatGameEndlessRoundWin.roundWinBurstEndlessRoundWins === '14' && postBeatGameEndlessRoundWin.roundWinBurstEndlessWindupStart === '13' && postBeatGameEndlessRoundWin.roundWinBurstEndlessWindupCurrent === '13' && postBeatGameEndlessRoundWin.roundWinBurstEndlessWindupComplete === 'false' && /x13\s+ROUND WINS/.test(postBeatGameEndlessRoundWin.roundWinBurstText), `${viewport.name}: post-beat-game round-win burst should wind up from the previous count ${JSON.stringify(postBeatGameEndlessRoundWin)}`);
+      assert(!/(YOU WON|ROUNDS WON:|ROUND WINS:)/.test(postBeatGameEndlessRoundWin.roundWinBurstText), `${viewport.name}: post-beat-game round-win burst should avoid old static/label-first round wording ${JSON.stringify(postBeatGameEndlessRoundWin)}`);
+      const postBeatGameEndlessRoundWinSettled = await waitEval(page, `(() => {
+        const burst = document.getElementById('roundWinBurst');
+        if (!burst || burst.dataset.endlessWindupComplete !== 'true' || burst.dataset.endlessWindupCurrent !== '14') return false;
+        return {
+          className: burst.className || '',
+          text: burst.textContent.replace(/\\s+/g, ' ').trim(),
+          copyMode: burst.dataset.copyMode || '',
+          roundWins: burst.dataset.endlessRoundWins || '',
+          current: burst.dataset.endlessWindupCurrent || '',
+          complete: burst.dataset.endlessWindupComplete || '',
+          start: burst.dataset.endlessWindupStart || '',
+          ticks: burst.dataset.endlessWindupTicks || '',
+          guidedComplete: burst.classList.contains('is-guided-complete')
+        };
+      })()`, `${viewport.name}: post-beat-game endless round wins windup finish`, 7000);
+      assert(postBeatGameEndlessRoundWinSettled.className.includes('is-endless-complete') && !postBeatGameEndlessRoundWinSettled.guidedComplete && postBeatGameEndlessRoundWinSettled.copyMode === 'endless' && postBeatGameEndlessRoundWinSettled.roundWins === '14' && postBeatGameEndlessRoundWinSettled.current === '14' && Number(postBeatGameEndlessRoundWinSettled.ticks) >= 1 && /x14\s+ROUND WINS/.test(postBeatGameEndlessRoundWinSettled.text), `${viewport.name}: post-beat-game round-win burst should finish on the new count with fanfare state ${JSON.stringify(postBeatGameEndlessRoundWinSettled)}`);
 
       const cpuEmptyPlaceWin = await evalValue(page, `window.TrashDiceQA.cpuEmptyRewardCreditProof('place', 0)`);
       assert(cpuEmptyPlaceWin.inlineGameOver && cpuEmptyPlaceWin.inlineGameOver.playerWon === true && cpuEmptyPlaceWin.inlineGameOver.sourceReason === 'place-empty', `${viewport.name}: CPU-empty place win should end as player win ${JSON.stringify(cpuEmptyPlaceWin)}`);
