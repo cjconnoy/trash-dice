@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.14';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.14';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.15';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.15';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -4092,6 +4092,42 @@ async function main() {
       };
     })()`);
     assert(cosmicAmbientSettled.visible === true && cosmicAmbientSettled.dieVisible === true && cosmicAmbientSettled.text.includes('COSMIC VIBES') && cosmicAmbientSettled.previewName === 'DIAMOND', `COSMIC ambient round-win copy probe: ambient beat should become visible after its entry animation starts ${JSON.stringify(cosmicAmbientSettled)}`);
+
+    const cosmicAmbientTerminalProbe = await openPage(`${baseUrl}?source=qa&qa=1&terminal-nudge=cosmic-prism-next`, viewports[0]);
+    await evalValue(cosmicAmbientTerminalProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(cosmicAmbientTerminalProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `COSMIC ambient terminal nudge probe game start`);
+    await evalValue(cosmicAmbientTerminalProbe, `window.TrashDiceQA.setRewardWins(8); window.TrashDiceQA.gameWin('p2'); true`);
+    await waitEval(cosmicAmbientTerminalProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `COSMIC ambient terminal nudge probe terminal`);
+    const cosmicAmbientTerminal = await evalValue(cosmicAmbientTerminalProbe, `(() => {
+      const nudge = document.getElementById('terminalRewardNudge');
+      const die = document.getElementById('terminalRewardNudgeDie');
+      const line = document.getElementById('terminalRewardNudgeLine');
+      const unlock = document.getElementById('terminalRewardNudgeUnlock');
+      const kicker = document.getElementById('terminalRewardNudgeKicker');
+      const rect = nudge ? nudge.getBoundingClientRect() : null;
+      const dieStyle = die ? getComputedStyle(die) : null;
+      return {
+        visible: !!(nudge && !nudge.hidden && rect && rect.width >= 120 && rect.height >= 28),
+        text: nudge ? nudge.textContent.replace(/\\s+/g, ' ').trim() : '',
+        kicker: kicker ? kicker.textContent || '' : '',
+        line: line ? line.textContent || '' : '',
+        unlockLine: unlock ? unlock.textContent || '' : '',
+        nextName: nudge ? nudge.dataset.nextName || '' : '',
+        roundsNeeded: nudge ? nudge.dataset.roundsNeeded || '' : '',
+        targetWins: nudge ? nudge.dataset.targetWins || '' : '',
+        copyMode: nudge ? nudge.dataset.copyMode || '' : '',
+        preview: nudge ? nudge.dataset.preview || '' : '',
+        dieRewardSkinned: !!(die && die.classList.contains('reward-skinned')),
+        dieName: die ? die.dataset.rewardName || '' : '',
+        dieEffect: die ? die.dataset.rewardEffect || '' : '',
+        dieAnimationName: dieStyle ? dieStyle.animationName || '' : '',
+        rewardState: window.TrashDiceQA.rewardDieState()
+      };
+    })()`);
+    assert(cosmicAmbientTerminal.rewardState.totalWins === 8 && cosmicAmbientTerminal.rewardState.activeName === 'DIAMOND' && cosmicAmbientTerminal.rewardState.nextDie && cosmicAmbientTerminal.rewardState.nextDie.name === 'PRISM', `COSMIC ambient terminal nudge probe: reward state wrong ${JSON.stringify(cosmicAmbientTerminal)}`);
+    assert(cosmicAmbientTerminal.visible === true && cosmicAmbientTerminal.kicker === 'CURRENT SKIN: DIAMOND' && cosmicAmbientTerminal.line === 'COSMIC VIBES' && cosmicAmbientTerminal.unlockLine === 'NEXT SKIN IN 1 ROUND WIN: PRISM', `COSMIC ambient terminal nudge probe: copy wrong ${JSON.stringify(cosmicAmbientTerminal)}`);
+    assert(cosmicAmbientTerminal.nextName === 'PRISM' && cosmicAmbientTerminal.roundsNeeded === '1' && cosmicAmbientTerminal.targetWins === '9' && cosmicAmbientTerminal.copyMode === 'cosmic-ambient' && cosmicAmbientTerminal.preview === 'next', `COSMIC ambient terminal nudge probe: metadata should promise PRISM as the next preview ${JSON.stringify(cosmicAmbientTerminal)}`);
+    assert(cosmicAmbientTerminal.dieRewardSkinned === true && cosmicAmbientTerminal.dieName === 'PRISM' && cosmicAmbientTerminal.dieEffect === rewardPrism.effect, `COSMIC ambient terminal nudge probe: thumbnail should preview PRISM, not DIAMOND ${JSON.stringify({ rewardPrism, cosmicAmbientTerminal })}`);
 
     const mysteryFinalSkinProbe = await openPage(`${baseUrl}?source=qa&qa=1&round-loss-nudge=mystery-final`, viewports[0]);
     await evalValue(mysteryFinalSkinProbe, `document.getElementById('startBtn').click(); true`);
