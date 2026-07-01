@@ -11415,7 +11415,7 @@ body.inline-game-over .roll-panel {
         <div class="terminal-reward-unlock" id="terminalRewardNudgeUnlock">FEATHERS DIE SKIN</div>
       </div>
     </div>
-    <button class="roll-btn p1 long-roll-copy" id="rollBtn" type="button" aria-label="Tap to roll yellow die"><span class="roll-btn-label">TAP TO ROLL!</span></button>
+    <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
     <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash."><strong>ROLL.</strong> COLLECT. AVOID THE TRASH.</div>
   </div>
 
@@ -11612,7 +11612,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260701.12';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260701.13';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11622,8 +11622,8 @@ body.inline-game-over .roll-panel {
     return String(version || '');
   }
   const TD_SHIP_VERSION_LABEL = formatTrashDiceVersion(TD_SHIP_VERSION);
-  const ROLL_BUTTON_DEFAULT_LABEL = 'TAP TO ROLL!';
-  const ROLL_BUTTON_DEFAULT_ARIA_LABEL = 'Tap to roll yellow die';
+  const ROLL_BUTTON_DEFAULT_LABEL = 'ROLL!';
+  const ROLL_BUTTON_DEFAULT_ARIA_LABEL = 'Roll yellow die';
   const FIRST_ROLL_PROMPT_LABEL = 'TAP TO START!';
   const FIRST_ROLL_PROMPT_ARIA_LABEL = 'Tap to start rolling';
   const TWO_PLAYER_ENABLED = false;
@@ -11792,7 +11792,7 @@ body.inline-game-over .roll-panel {
   const ROLL_TRAVEL_TO_SLOT_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 720;
   const ROLL_TRAVEL_TO_TRASH_MS = IPAD_GAMEPLAY_PERFORMANCE_MODE ? 0 : 740;
   const TURN_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 340 : 950));
-  const PLAYER_PLACE_CELEBRATE_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 280 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620));
+  const PLAYER_HIT_PRAISE_VISIBLE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 280 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620));
   const CPU_START_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 180 : 650));
   const PLAYER_TO_CPU_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 70 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140));
   const CPU_TO_PLAYER_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 120 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 150 : (FAST_PREVIEW_ENABLED ? 160 : 250));
@@ -11932,6 +11932,9 @@ body.inline-game-over .roll-panel {
   let titleRoundWinTimer = null;
   let titleRoundWinStageTimer = null;
   let benchCelebrateTimer = null;
+  let benchCelebrateActive = false;
+  let benchCelebratePlayer = 'p1';
+  let benchCelebrateText = '';
   let terminalDiceCelebrateTimer = null;
   let terminalDiceCelebrateRun = 0;
   let playerPayoutFanfareTimer = null;
@@ -12322,6 +12325,9 @@ body.inline-game-over .roll-panel {
     titleRoundWinTimer = null;
     titleRoundWinStageTimer = null;
     benchCelebrateTimer = null;
+    benchCelebrateActive = false;
+    benchCelebratePlayer = 'p1';
+    benchCelebrateText = '';
     terminalDiceCelebrateTimer = null;
     terminalDiceCelebrateRun++;
     inlineRoundWinsWindupTimer = null;
@@ -15307,13 +15313,17 @@ body.inline-game-over .roll-panel {
       cancelRuntimeTimer(benchCelebrateTimer);
       benchCelebrateTimer = null;
     }
+    const activePlayer = benchCelebratePlayer;
+    benchCelebrateActive = false;
+    benchCelebratePlayer = 'p1';
+    benchCelebrateText = '';
     ['p1', 'p2'].forEach(player => {
       const ui = getPlayerUi(player);
       if (ui.panel) ui.panel.classList.remove('bench-celebrate');
       if (ui.inventory) ui.inventory.classList.remove('bench-celebrate');
       if (ui.statusBar) ui.statusBar.classList.remove('bench-praise');
     });
-    if (resetStatus && p1StatusText) p1StatusText.textContent = 'YOUR TURN';
+    if (resetStatus) restorePayoutStatusText(activePlayer);
     document.querySelectorAll('.bench-cheer-die').forEach(die => {
       die.classList.remove('bench-cheer-die');
       die.style.removeProperty('--bench-delay');
@@ -15327,7 +15337,7 @@ body.inline-game-over .roll-panel {
   function benchCelebrationCycleMs(diceCount) {
     return Math.max(
       Math.min(1560, 980 + diceCount * 24),
-      PLAYER_PLACE_CELEBRATE_HANDOFF_MS + 80
+      PLAYER_HIT_PRAISE_VISIBLE_MS + 80
     );
   }
 
@@ -15407,9 +15417,10 @@ body.inline-game-over .roll-panel {
       ui.panel.classList.add('bench-celebrate');
     }
     ui.inventory.classList.add('bench-celebrate');
-    if (ui.statusText) {
-      ui.statusText.textContent = choosePlayerHitPraise(isRoundWin);
-    }
+    benchCelebrateActive = true;
+    benchCelebratePlayer = ui.player;
+    benchCelebrateText = choosePlayerHitPraise(isRoundWin);
+    if (ui.statusText) ui.statusText.textContent = benchCelebrateText;
     if (ui.statusBar) {
       ui.statusBar.classList.remove('bench-praise');
       void ui.statusBar.offsetWidth;
@@ -15420,7 +15431,7 @@ body.inline-game-over .roll-panel {
     const clearDelay = benchCelebrationCycleMs(diceCount);
     benchCelebrateTimer = runLater(() => {
       benchCelebrateTimer = null;
-      clearBenchCelebration(current === 'p1');
+      clearBenchCelebration(true);
     }, clearDelay);
   }
 
@@ -17343,13 +17354,21 @@ body.inline-game-over .roll-panel {
       }
       if (payoutUi.statusText) payoutUi.statusText.textContent = playerPayoutFanfareText;
     }
+    if (benchCelebrateActive) {
+      const benchUi = getPlayerUi(benchCelebratePlayer);
+      if (benchUi.inventory) benchUi.inventory.classList.add('has-status');
+      if (benchUi.statusBar) benchUi.statusBar.classList.add('active', 'bench-praise');
+      if (benchUi.statusText) benchUi.statusText.textContent = benchCelebrateText;
+    }
     applyRoundWinnerStatus();
     updatePlayerStatusChaseDie();
     const p1StatusLocked =
       (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p1') ||
+      (benchCelebrateActive && benchCelebratePlayer === 'p1') ||
       (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p1');
     const p2StatusLocked =
       (playerPayoutFanfareActive && playerPayoutFanfarePlayer === 'p2') ||
+      (benchCelebrateActive && benchCelebratePlayer === 'p2') ||
       (roundWinnerStatusActive && roundWinnerStatusPlayer === 'p2');
     if (!p1StatusLocked && p1StatusText) {
       p1StatusText.textContent = isP1 ? 'YOUR TURN' : 'PLAYER';
@@ -17373,7 +17392,7 @@ body.inline-game-over .roll-panel {
     firstRollPromptActive = show;
     document.body.classList.toggle('first-roll-prompt-active', show);
     rollBtn.classList.toggle('first-roll-prompt', show);
-    rollBtn.classList.toggle('long-roll-copy', !rollBtn.classList.contains('inline-play-again'));
+    rollBtn.classList.toggle('long-roll-copy', show && !rollBtn.classList.contains('inline-play-again'));
     if (rollBtn.classList.contains('inline-play-again')) return;
     if (rollBtnLabel) rollBtnLabel.textContent = show ? FIRST_ROLL_PROMPT_LABEL : ROLL_BUTTON_DEFAULT_LABEL;
     rollBtn.setAttribute('aria-label', show ? FIRST_ROLL_PROMPT_ARIA_LABEL : ROLL_BUTTON_DEFAULT_ARIA_LABEL);
@@ -18505,7 +18524,7 @@ body.inline-game-over .roll-panel {
       runLater(() => gameOverFromDiceExhaustion(winner, 'place-empty'), 520);
     } else {
       if (maybeEndMathematicalGame('post-place-insufficient-dice')) return;
-      const handoffDelay = current === 'p1' ? PLAYER_PLACE_CELEBRATE_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
+      const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
       scheduleProgressionWatchdog('post-place', handoffDelay + 4200);
       runLater(nextTurn, handoffDelay);
     }
@@ -20325,6 +20344,91 @@ body.inline-game-over .roll-panel {
           doRoll();
         });
       },
+      playerHandoffProbe(value = 1, mode = 'place') {
+        ensureQaGame();
+        clearRuntimeTimers();
+        cancelProgressionWatchdog();
+        clearBenchCelebration(false);
+        clearInventoryMischief();
+        clearDie(null);
+        document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
+        const rollValue = clamp(Math.floor(Number(value) || 1), 1, 6);
+        const shouldTrash = String(mode || '').toLowerCase() === 'trash';
+        board = Array(6).fill(null);
+        if (shouldTrash) {
+          board[rollValue - 1] = { player: 'p2', color: 'green', value: rollValue };
+        }
+        pools = { p1: { yellow: 20, green: 0 }, p2: { yellow: 0, green: 20 } };
+        resetPoolFaces();
+        trashDice = [];
+        trashed = { p1: 0, p2: 0 };
+        current = 'p1';
+        busy = false;
+        forcedRolls = [rollValue];
+        buildSlots();
+        board.forEach((die, i) => {
+          if (die) paintSlot(i, die);
+        });
+        syncUI();
+        rollBtn.disabled = false;
+        setMsg('PLAYER ROLL');
+
+        return new Promise((resolve, reject) => {
+          const runStart = performance.now();
+          const startingRolls = totalRolls;
+          let playerCompletedAt = null;
+          let cpuHandoffAt = null;
+          let completionMessage = '';
+          const events = [];
+          let lastSnapshot = '';
+          const timeout = runLater(() => {
+            reject(new Error(`timeout CPU roll start after player ${JSON.stringify({ current, busy, rollDisabled: rollBtn.disabled, totalRolls, playerCompleted: !!playerCompletedAt, cpuHandoff: !!cpuHandoffAt, completionMessage, events: events.slice(-18) })}`));
+          }, 7000);
+          const tick = () => {
+            const message = document.getElementById('message').textContent.trim();
+            const snapshot = `${current}|${busy}|${rollBtn.disabled}|${totalRolls}|${message}`;
+            if (snapshot !== lastSnapshot) {
+              lastSnapshot = snapshot;
+              events.push({
+                t: Math.round(performance.now() - runStart),
+                current,
+                busy,
+                rollDisabled: rollBtn.disabled,
+                totalRolls,
+                message
+              });
+            }
+            if (!playerCompletedAt && current === 'p1' && busy && /^(LID|TRASH)\b/.test(message)) {
+              playerCompletedAt = performance.now();
+              completionMessage = message;
+            }
+            if (playerCompletedAt && !cpuHandoffAt && current === 'p2' && totalRolls === startingRolls + 1) {
+              cpuHandoffAt = performance.now();
+            }
+            if (cpuHandoffAt && current === 'p2' && busy && totalRolls >= startingRolls + 2) {
+              cancelRuntimeTimer(timeout);
+              resolve({
+                current,
+                busy,
+                rollDisabled: rollBtn.disabled,
+                completionMessage,
+                expectedHandoffMs: PLAYER_TO_CPU_HANDOFF_MS,
+                expectedCpuResponseMs: CPU_RESPONSE_MS,
+                totalToCpuRollMs: Math.round(performance.now() - playerCompletedAt),
+                handoffMs: Math.round(cpuHandoffAt - playerCompletedAt),
+                cpuResponseMs: Math.round(performance.now() - cpuHandoffAt),
+                praiseActive: benchCelebrateActive,
+                praiseText: benchCelebrateText,
+                events: events.slice(-18)
+              });
+              return;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          doRoll();
+        });
+      },
       fullBoardGuardProbe(mode = 'doRoll', winner = 'p1') {
         ensureQaGame();
         clearRuntimeTimers();
@@ -20501,7 +20605,8 @@ body.inline-game-over .roll-panel {
             cpuResponseMs: CPU_RESPONSE_MS,
             cpuToPlayerHandoffMs: CPU_TO_PLAYER_HANDOFF_MS,
             playerToCpuHandoffMs: PLAYER_TO_CPU_HANDOFF_MS,
-            playerPlaceCelebrateHandoffMs: PLAYER_PLACE_CELEBRATE_HANDOFF_MS
+            playerPlaceCelebrateHandoffMs: PLAYER_TO_CPU_HANDOFF_MS,
+            playerHitPraiseVisibleMs: PLAYER_HIT_PRAISE_VISIBLE_MS
           },
           p0ButtonVisible: !!devP0Btn && getComputedStyle(devP0Btn).display !== 'none',
           p1AutoButtonVisible: !!devP1AutoBtn && getComputedStyle(devP1AutoBtn).display !== 'none',
@@ -20530,7 +20635,6 @@ body.inline-game-over .roll-panel {
 
   // ── NEXT TURN ────────────────────────────────────────────────
   function nextTurn() {
-    clearBenchCelebration(false);
     if (maybeEndMathematicalGame('pre-next-turn-insufficient-dice')) return;
     if (resolveFullBoardIfNeeded(current)) return;
     current = current === 'p1' ? 'p2' : 'p1';

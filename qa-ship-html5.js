@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.12';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.12';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.13';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.13';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1491,7 +1491,8 @@ async function main() {
       assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
       assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true && initial.titleLayout.buildVersionBelowStartCard === true, `${viewport.name}: title build version should stay in the lower-left footer zone without touching the hero die panel ${JSON.stringify(initial.titleLayout)}`);
-      assert(initial.timings && initial.timings.playerPlaceCelebrateHandoffMs >= 900 && initial.timings.playerPlaceCelebrateHandoffMs >= initial.timings.playerToCpuHandoffMs + 700, `${viewport.name}: player hit praise needs a readable hold before CPU handoff ${JSON.stringify(initial.timings)}`);
+      assert(initial.timings && initial.timings.playerToCpuHandoffMs <= 180 && initial.timings.playerPlaceCelebrateHandoffMs === initial.timings.playerToCpuHandoffMs, `${viewport.name}: manual player-to-CPU handoff should stay tight after a player hit ${JSON.stringify(initial.timings)}`);
+      assert(initial.timings && initial.timings.playerHitPraiseVisibleMs >= 900 && initial.timings.playerHitPraiseVisibleMs >= initial.timings.playerToCpuHandoffMs + 700, `${viewport.name}: player hit praise should stay readable without lengthening CPU handoff ${JSON.stringify(initial.timings)}`);
       assert(initial.orientationLock.bodyBlocked === false && initial.orientationLock.datasetBlocked === 'false' && initial.orientationLock.hidden === true && initial.orientationLock.ariaHidden === 'true', `${viewport.name}: portrait/desktop gameplay viewport should not show rotate blocker ${JSON.stringify(initial.orientationLock)}`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
@@ -1885,14 +1886,16 @@ async function main() {
         };
       })()`);
       assert(rollPanelHit.start.hadTagline === true && rollPanelHit.start.hadPanel === true && rollPanelHit.start.rollDisabledBefore === false && rollPanelHit.totalRolls === rollPanelHit.start.totalRollsBefore + 1 && rollPanelHit.events.includes('td_first_roll'), `${viewport.name}: tapping roll tagline should trigger exactly one valid roll ${JSON.stringify(rollPanelHit)}`);
-      assert(rollPanelHit.start.rollTextBefore === 'TAP TO START!' && rollPanelHit.start.rollAriaBefore === 'Tap to start rolling' && rollPanelHit.start.promptBefore && rollPanelHit.start.promptBefore.active === true && rollPanelHit.start.promptBefore.seenThisSession === false && rollPanelHit.promptAfter.active === false && rollPanelHit.promptAfter.text === 'TAP TO ROLL!' && rollPanelHit.promptAfter.ariaLabel === 'Tap to roll yellow die' && rollPanelHit.promptAfter.seenThisSession === true && rollPanelHit.promptAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
+      assert(rollPanelHit.start.rollTextBefore === 'TAP TO START!' && rollPanelHit.start.rollAriaBefore === 'Tap to start rolling' && rollPanelHit.start.promptBefore && rollPanelHit.start.promptBefore.active === true && rollPanelHit.start.promptBefore.seenThisSession === false && rollPanelHit.promptAfter.active === false && rollPanelHit.promptAfter.text === 'ROLL!' && rollPanelHit.promptAfter.ariaLabel === 'Roll yellow die' && rollPanelHit.promptAfter.seenThisSession === true && rollPanelHit.promptAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should dismiss back to ROLL on the first user roll ${JSON.stringify(rollPanelHit)}`);
       await evalValue(rollPanelHitPage, `window.TrashDiceDebug.gameStart(); true`);
       await waitEval(rollPanelHitPage, `(() => {
         const state = window.TrashDiceQA.state();
         return state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
       })()`, `${viewport.name} first-roll prompt same-session reset`);
       const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollPrompt`);
-      assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'TAP TO ROLL!' && rollPanelHitReset.ariaLabel === 'Tap to roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
+      assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.ariaLabel === 'Roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
+      const manualPlaceHandoff = await evalValue(rollPanelHitPage, `window.TrashDiceQA.playerHandoffProbe(2, 'place')`);
+      assert(manualPlaceHandoff.expectedHandoffMs <= 180 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hand off to CPU promptly while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
