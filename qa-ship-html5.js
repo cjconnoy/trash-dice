@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.16';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.16';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.17';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.17';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -2026,10 +2026,12 @@ async function main() {
             animationDuration: colorFieldStyle.animationDuration || '',
             animationDelay: colorFieldStyle.animationDelay || '',
             beforeBackground: colorFieldBefore.backgroundImage || '',
+            beforeDisplay: colorFieldBefore.display || '',
             beforeAnimationName: colorFieldBefore.animationName || '',
             beforeAnimationDuration: colorFieldBefore.animationDuration || '',
             beforeAnimationDelay: colorFieldBefore.animationDelay || '',
             afterBackground: colorFieldAfter.backgroundImage || '',
+            afterDisplay: colorFieldAfter.display || '',
             afterAnimationName: colorFieldAfter.animationName || '',
             afterAnimationDuration: colorFieldAfter.animationDuration || '',
             afterAnimationDelay: colorFieldAfter.animationDelay || '',
@@ -2043,8 +2045,10 @@ async function main() {
             animationName: cosmicStyle.animationName || '',
             animationDuration: cosmicStyle.animationDuration || '',
             beforeBackground: cosmicBefore.backgroundImage || '',
+            beforeDisplay: cosmicBefore.display || '',
             beforeAnimationName: cosmicBefore.animationName || '',
             afterBackground: cosmicAfter.backgroundImage || '',
+            afterDisplay: cosmicAfter.display || '',
             afterAnimationName: cosmicAfter.animationName || '',
             afterAnimationDuration: cosmicAfter.animationDuration || '',
             afterOpacity: cosmicAfter.opacity || '',
@@ -2085,12 +2089,25 @@ async function main() {
       const colorFieldBeforeDelay = parseFloat(discoDebug.colorField ? discoDebug.colorField.beforeAnimationDelay || '0' : '0');
       const colorFieldAfterDelay = parseFloat(discoDebug.colorField ? discoDebug.colorField.afterAnimationDelay || '0' : '0');
       assert(discoDebug.bodyVip === true && discoDebug.bodyVipDataset === 'true' && discoDebug.discoOverlayAnimation === 'none' && discoOverlayDuration === 0 && !discoOverlayOldAnchors && discoOverlayZIndex <= 0 && Number(discoDebug.discoVenueWashZIndex) <= 0 && Number(discoDebug.discoOverlayOpacity) >= 0.35 && Number(discoDebug.discoVenueWashOpacity) >= 0.55 && discoDebug.discoOverlayPointerEvents === 'none' && discoDebug.discoOverlayBlend === 'normal' && discoDebug.discoOverlayFilter === 'none' && discoOverlayConics === 0 && discoOverlayRadials >= 3 && discoOverlayRadials <= 4 && discoOverlayLinears >= 3 && discoOverlayLinears <= 5 && discoVenueRadials >= 5 && discoVenueRadials <= 7 && discoVenueLinears >= 2 && discoVenueLinears <= 3, `${viewport.name}: DISCO debug button should activate visible low-layer perf-safe static color lighting behind stronger moving dot layers ${JSON.stringify({ discoDebug, discoOverlayConics, discoOverlayRadials, discoOverlayLinears, discoVenueRadials, discoVenueLinears, discoOverlayDuration, discoOverlayDelay, discoOverlayOldAnchors, discoOverlayZIndex })}`);
-      assert(discoDebug.colorField && discoDebug.colorField.display !== 'none' && Number(discoDebug.colorField.zIndex) <= 1 && Number(discoDebug.colorField.opacity) >= 0.45 && discoDebug.colorField.pointerEvents === 'none' && discoDebug.colorField.animationName === 'vipCosmicDotDriftA' && discoDebug.colorField.beforeAnimationName === 'vipCosmicDotDriftB' && discoDebug.colorField.afterAnimationName === 'vipCosmicDotDriftC' && colorFieldDuration >= 20 && colorFieldDuration <= 34 && colorFieldBeforeDuration >= 28 && colorFieldBeforeDuration <= 48 && colorFieldAfterDuration >= 34 && colorFieldAfterDuration <= 54 && colorFieldDelay < 0 && colorFieldBeforeDelay < 0 && colorFieldAfterDelay < 0 && colorFieldRadials >= 5 && colorFieldRadials <= 7, `${viewport.name}: DISCO color dots should split across stronger non-unison drift layers ${JSON.stringify({ colorField: discoDebug.colorField, colorFieldRadials, colorFieldDuration, colorFieldBeforeDuration, colorFieldAfterDuration, colorFieldDelay, colorFieldBeforeDelay, colorFieldAfterDelay })}`);
-      assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && cosmicSkyZIndex > discoOverlayZIndex && cosmicSkyZIndex <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.45 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'none' && discoDebug.cosmicSky.beforeAnimationName === 'none' && discoDebug.cosmicSky.afterAnimationName === 'none' && Number(discoDebug.cosmicSky.afterOpacity) >= 0.24 && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7 && cosmicAfterLinears >= 2 && cosmicAfterLinears <= 3, `${viewport.name}: VIP future reward background should render static galaxy ambience behind perf-safe moving color dots ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears, discoOverlayZIndex, cosmicSkyZIndex })}`);
+      const expectMobileStaticCosmic = viewport.mobile;
+      if (expectMobileStaticCosmic) {
+        assert(discoDebug.colorField && discoDebug.colorField.display !== 'none' && Number(discoDebug.colorField.zIndex) <= 1 && Number(discoDebug.colorField.opacity) >= 0.35 && discoDebug.colorField.pointerEvents === 'none' && discoDebug.colorField.animationName === 'none' && discoDebug.colorField.beforeAnimationName === 'none' && discoDebug.colorField.afterAnimationName === 'none' && discoDebug.colorField.afterDisplay === 'none' && colorFieldRadials >= 5 && colorFieldRadials <= 7, `${viewport.name}: mobile COSMIC color field should stay visible but static during gameplay ${JSON.stringify({ colorField: discoDebug.colorField, colorFieldRadials })}`);
+      } else {
+        assert(discoDebug.colorField && discoDebug.colorField.display !== 'none' && Number(discoDebug.colorField.zIndex) <= 1 && Number(discoDebug.colorField.opacity) >= 0.45 && discoDebug.colorField.pointerEvents === 'none' && discoDebug.colorField.animationName === 'vipCosmicDotDriftA' && discoDebug.colorField.beforeAnimationName === 'vipCosmicDotDriftB' && discoDebug.colorField.afterAnimationName === 'vipCosmicDotDriftC' && colorFieldDuration >= 20 && colorFieldDuration <= 34 && colorFieldBeforeDuration >= 28 && colorFieldBeforeDuration <= 48 && colorFieldAfterDuration >= 34 && colorFieldAfterDuration <= 54 && colorFieldDelay < 0 && colorFieldBeforeDelay < 0 && colorFieldAfterDelay < 0 && colorFieldRadials >= 5 && colorFieldRadials <= 7, `${viewport.name}: DISCO color dots should split across stronger non-unison drift layers ${JSON.stringify({ colorField: discoDebug.colorField, colorFieldRadials, colorFieldDuration, colorFieldBeforeDuration, colorFieldAfterDuration, colorFieldDelay, colorFieldBeforeDelay, colorFieldAfterDelay })}`);
+      }
+      if (expectMobileStaticCosmic) {
+        assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && cosmicSkyZIndex > discoOverlayZIndex && cosmicSkyZIndex <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.3 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'none' && discoDebug.cosmicSky.beforeAnimationName === 'none' && discoDebug.cosmicSky.afterAnimationName === 'none' && discoDebug.cosmicSky.afterDisplay === 'none' && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7, `${viewport.name}: mobile COSMIC sky should keep static stars but drop the extra wash layer ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears, discoOverlayZIndex, cosmicSkyZIndex })}`);
+      } else {
+        assert(discoDebug.cosmicSky && discoDebug.cosmicSky.display !== 'none' && cosmicSkyZIndex > discoOverlayZIndex && cosmicSkyZIndex <= 1 && Number(discoDebug.cosmicSky.opacity) >= 0.45 && discoDebug.cosmicSky.pointerEvents === 'none' && discoDebug.cosmicSky.animationName === 'none' && discoDebug.cosmicSky.beforeAnimationName === 'none' && discoDebug.cosmicSky.afterAnimationName === 'none' && Number(discoDebug.cosmicSky.afterOpacity) >= 0.24 && cosmicBeforeRadials >= 5 && cosmicBeforeRadials <= 7 && cosmicAfterLinears >= 2 && cosmicAfterLinears <= 3, `${viewport.name}: VIP future reward background should render static galaxy ambience behind perf-safe moving color dots ${JSON.stringify({ cosmicSky: discoDebug.cosmicSky, cosmicBeforeRadials, cosmicAfterLinears, discoOverlayZIndex, cosmicSkyZIndex })}`);
+      }
       const cosmicPerf = await evalValue(page, cosmicAmbientPerfProbeScript(1200));
       const cosmicPerfOver50Limit = Math.max(2, Math.ceil(cosmicPerf.frames * 0.07));
       const cosmicAnimationNames = (cosmicPerf.cosmicLayerAnimations || []).map(item => item.name || '');
-      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === true && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === false && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === true && cosmicPerf.colorFieldMotion.layered === true && Number(cosmicPerf.colorFieldMotion.maxDeltaPx || 0) >= 0.5 && cosmicPerf.cosmicLayerAnimationCount === 3 && cosmicAnimationNames.includes('vipCosmicDotDriftA') && cosmicAnimationNames.includes('vipCosmicDotDriftB') && cosmicAnimationNames.includes('vipCosmicDotDriftC') && !cosmicAnimationNames.includes('vipCosmicStarDrift') && !cosmicAnimationNames.includes('vipCosmicTwinkle') && !cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should visibly move colored dots in stronger non-unison layers and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      if (expectMobileStaticCosmic) {
+        assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === false && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === false && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === false && cosmicPerf.cosmicLayerAnimationCount === 0 && !cosmicAnimationNames.includes('vipCosmicDotDriftA') && !cosmicAnimationNames.includes('vipCosmicDotDriftB') && !cosmicAnimationNames.includes('vipCosmicDotDriftC') && !cosmicAnimationNames.includes('vipCosmicStarDrift') && !cosmicAnimationNames.includes('vipCosmicTwinkle') && !cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: mobile COSMIC ambient background should stay static and perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      } else {
+        assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === true && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === false && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === true && cosmicPerf.colorFieldMotion.layered === true && Number(cosmicPerf.colorFieldMotion.maxDeltaPx || 0) >= 0.5 && cosmicPerf.cosmicLayerAnimationCount === 3 && cosmicAnimationNames.includes('vipCosmicDotDriftA') && cosmicAnimationNames.includes('vipCosmicDotDriftB') && cosmicAnimationNames.includes('vipCosmicDotDriftC') && !cosmicAnimationNames.includes('vipCosmicStarDrift') && !cosmicAnimationNames.includes('vipCosmicTwinkle') && !cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: COSMIC ambient background should visibly move colored dots in stronger non-unison layers and stay perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      }
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
@@ -3302,6 +3319,69 @@ async function main() {
         fullBoardDoRollGuard,
         fullBoardNextTurnGuard
       }
+    });
+
+    const productionIphoneViewport = {
+      ...viewports.find(viewport => viewport.name === 'iphone-13-safari'),
+      name: 'iphone-13-ios18-production-like',
+      userAgent: IPHONE_OS18_USER_AGENT,
+      platform: 'iPhone'
+    };
+    const productionIphone = await openPage(`${productionLikeBaseUrl}?source=qa&qa-hooks=1&iphone-cosmic-perf=1`, productionIphoneViewport);
+    await waitEval(productionIphone, `!!window.TrashDiceQA && window.TrashDiceQA.state().qaHooks === true`, 'production-like iPhone QA hooks');
+    await evalValue(productionIphone, `document.getElementById('startBtn').click(); true`);
+    await waitEval(productionIphone, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'production-like iPhone game start');
+    await evalValue(productionIphone, `window.TrashDiceQA.setRewardWins(${JSON.stringify(Math.max(0, rewardPrism.minWins - 1))}); true`);
+    await waitEval(productionIphone, `document.body.classList.contains('vip-disco-party')`, 'production-like iPhone COSMIC unlock');
+    const productionIphoneCosmic = await evalValue(productionIphone, `(() => {
+      const state = window.TrashDiceQA.state();
+      const colorField = document.querySelector('.vip-cosmic-color-field');
+      const cosmic = document.querySelector('.vip-cosmic-sky');
+      const colorStyle = colorField ? getComputedStyle(colorField) : null;
+      const colorBefore = colorField ? getComputedStyle(colorField, '::before') : null;
+      const colorAfter = colorField ? getComputedStyle(colorField, '::after') : null;
+      const cosmicStyle = cosmic ? getComputedStyle(cosmic) : null;
+      const cosmicAfter = cosmic ? getComputedStyle(cosmic, '::after') : null;
+      const activeAnimations = document.getAnimations()
+        .filter(animation => animation.playState === 'running')
+        .map(animation => animation.animationName || '')
+        .filter(Boolean);
+      return {
+        state,
+        bodyClasses: document.body.className,
+        bodyVip: document.body.classList.contains('vip-disco-party'),
+        activeAnimationCount: activeAnimations.length,
+        vipCosmicAnimations: activeAnimations.filter(name => /^vip(?:Disco|Cosmic)/.test(name)),
+        colorField: colorField ? {
+          display: colorStyle.display || '',
+          opacity: colorStyle.opacity || '',
+          animationName: colorStyle.animationName || '',
+          beforeAnimationName: colorBefore.animationName || '',
+          afterDisplay: colorAfter.display || '',
+          afterAnimationName: colorAfter.animationName || ''
+        } : null,
+        cosmicSky: cosmic ? {
+          display: cosmicStyle.display || '',
+          opacity: cosmicStyle.opacity || '',
+          animationName: cosmicStyle.animationName || '',
+          afterDisplay: cosmicAfter.display || '',
+          afterAnimationName: cosmicAfter.animationName || ''
+        } : null
+      };
+    })()`);
+    assert(productionIphoneCosmic.state.fastPreview === false && productionIphoneCosmic.state.deviceProfile.isIphone === true && productionIphoneCosmic.bodyClasses.includes('mobile-roll-smoothing'), `production-like iPhone should use the real mobile gameplay path ${JSON.stringify(productionIphoneCosmic)}`);
+    assert(productionIphoneCosmic.bodyVip === true && productionIphoneCosmic.colorField && productionIphoneCosmic.colorField.display !== 'none' && productionIphoneCosmic.colorField.animationName === 'none' && productionIphoneCosmic.colorField.beforeAnimationName === 'none' && productionIphoneCosmic.colorField.afterAnimationName === 'none' && productionIphoneCosmic.colorField.afterDisplay === 'none', `production-like iPhone COSMIC color dots should be static and lighter after unlock ${JSON.stringify(productionIphoneCosmic)}`);
+    assert(productionIphoneCosmic.cosmicSky && productionIphoneCosmic.cosmicSky.display !== 'none' && productionIphoneCosmic.cosmicSky.animationName === 'none' && productionIphoneCosmic.cosmicSky.afterAnimationName === 'none' && productionIphoneCosmic.cosmicSky.afterDisplay === 'none', `production-like iPhone COSMIC sky should drop the extra wash layer ${JSON.stringify(productionIphoneCosmic)}`);
+    assert(productionIphoneCosmic.vipCosmicAnimations.length === 0, `production-like iPhone should not run COSMIC background animations during gameplay ${JSON.stringify(productionIphoneCosmic)}`);
+    const productionIphoneCosmicPerf = await evalValue(productionIphone, cosmicAmbientPerfProbeScript(900));
+    const productionIphoneOver50Limit = Math.max(2, Math.ceil(productionIphoneCosmicPerf.frames * 0.07));
+    assert(productionIphoneCosmicPerf.bodyVip === true && productionIphoneCosmicPerf.cosmicLayerAnimationCount === 0 && productionIphoneCosmicPerf.cosmicMotion && productionIphoneCosmicPerf.cosmicMotion.changed === false && productionIphoneCosmicPerf.colorFieldMotion && productionIphoneCosmicPerf.colorFieldMotion.changed === false && productionIphoneCosmicPerf.p95FrameMs <= 55 && productionIphoneCosmicPerf.over50Frames <= productionIphoneOver50Limit, `production-like iPhone COSMIC background should remain static under frame sampling ${JSON.stringify({ productionIphoneCosmicPerf, productionIphoneOver50Limit })}`);
+    reports.push({
+      viewport: 'iphone-13-ios18-production-like',
+      status: 'ok',
+      deviceProfile: productionIphoneCosmic.state.deviceProfile,
+      activeAnimationCount: productionIphoneCosmic.activeAnimationCount,
+      cosmicPerf: productionIphoneCosmicPerf
     });
 
     const modernIpadViewport = {
