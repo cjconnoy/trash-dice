@@ -550,10 +550,11 @@ function preShipPerfLeakProbeScript(options = {}) {
           const frames = deltas.slice(1);
           const sorted = frames.slice().sort((a, b) => a - b);
           const avg = frames.reduce((sum, value) => sum + value, 0) / Math.max(1, frames.length);
+          const p95Index = sorted.length ? Math.floor((sorted.length - 1) * 0.95) : 0;
           resolve({
             frames: frames.length,
             avgFrameMs: Number(avg.toFixed(2)),
-            p95FrameMs: Number((sorted[Math.floor(sorted.length * 0.95)] || 0).toFixed(2)),
+            p95FrameMs: Number((sorted[p95Index] || 0).toFixed(2)),
             maxFrameMs: Number((sorted[sorted.length - 1] || 0).toFixed(2)),
             over34Frames: frames.filter(value => value > 34).length,
             over50Frames: frames.filter(value => value > 50).length
@@ -743,8 +744,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260630.6';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260630.6';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.1';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1127,6 +1128,7 @@ async function main() {
         ipadTitleCanHidden: document.body.classList.contains('ipad-title-can-hidden'),
         version: document.body.dataset.trashDiceVersion || '',
         versionLabel: document.body.dataset.trashDiceVersionLabel || '',
+        timings: window.TrashDiceQA ? window.TrashDiceQA.state().timings : null,
         orientationLock: (() => {
           const gate = document.getElementById('orientationLockScreen');
           return {
@@ -1302,6 +1304,7 @@ async function main() {
       assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
       assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true && initial.titleLayout.buildVersionBelowStartCard === true, `${viewport.name}: title build version should stay in the lower-left footer zone without touching the hero die panel ${JSON.stringify(initial.titleLayout)}`);
+      assert(initial.timings && initial.timings.playerPlaceCelebrateHandoffMs >= 900 && initial.timings.playerPlaceCelebrateHandoffMs >= initial.timings.playerToCpuHandoffMs + 700, `${viewport.name}: player hit praise needs a readable hold before CPU handoff ${JSON.stringify(initial.timings)}`);
       assert(initial.orientationLock.bodyBlocked === false && initial.orientationLock.datasetBlocked === 'false' && initial.orientationLock.hidden === true && initial.orientationLock.ariaHidden === 'true', `${viewport.name}: portrait/desktop gameplay viewport should not show rotate blocker ${JSON.stringify(initial.orientationLock)}`);
       assert(initial.hiddenGameSceneAnimationsPaused === true, `${viewport.name}: hidden game-scene animations should pause behind title overlay ${JSON.stringify(initial)}`);
       if (viewport.mobile && viewport.width > 720) {
