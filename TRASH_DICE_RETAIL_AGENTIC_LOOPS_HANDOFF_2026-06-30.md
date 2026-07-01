@@ -17,11 +17,13 @@ The mission is not to add process. The mission is to finish the Retail candidate
 ## Read First
 
 - `TRASH_DICE_RETAIL_HANDOFF.md`
+- `TRASH_DICE_RETAIL_DYNAMIC_WORKFLOWS_HANDOFF_2026-06-30.md`
 - `TRASH_DICE_RETAIL_APPROVAL_PACKET.md`
 - `ship-html5/README.md`
 - `CJ_REVIEW_WORKFLOW.md`
 - `CLAUDE.md`
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\ODG_AGENTIC_LOOPS.md`
+- `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\ODG_DYNAMIC_WORKFLOWS.md`
 - `C:\Users\shove\OneDrive\Desktop\OneDayGames\odg-pipeline\TRASH_DICE_RETAIL_LIVE_OPERATIONS.md`
 
 ## Session Boundary
@@ -135,6 +137,13 @@ Use Claude/Codex sidecar work only with bounded packets:
 - good: audit telemetry event map, inspect stale docs, propose narrow report script, second-pass review
 - bad: decide launch readiness, flip routes, post Slack, change agreement scope, add richer analytics than promised
 
+Use dynamic workflows only for high-value uncertainty:
+
+- good: launch adversarial review, telemetry promise verification, flaky/race root-cause, device evidence fan-out
+- bad: single-line fixes, routine deterministic QA, public route flips, deploys, Slack posts, Alpha Complete edits
+
+When using a dynamic workflow, name the pattern, budget/pass cap, forbidden surfaces, Codex judge criteria, and stop condition. See `TRASH_DICE_RETAIL_DYNAMIC_WORKFLOWS_HANDOFF_2026-06-30.md`.
+
 ## Current Startup Commands
 
 Run these before changing anything:
@@ -158,4 +167,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\shove\OneDrive\Desk
 Under-promise, over-deliver.
 
 Trash Dice Retail Phase 1 is a browser/HTML launch for desktop, iPhone, and iPad. Do not turn it into native app shipping, partner checkout, store analytics, or a broad marketing-funnel product unless CJ explicitly scopes that work.
-

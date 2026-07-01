@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-20
 
+2026-06-30 dynamic-workflows addendum: read `TRASH_DICE_RETAIL_DYNAMIC_WORKFLOWS_HANDOFF_2026-06-30.md` with the agentic loops addendum. Use dynamic workflows only for high-value uncertainty such as launch red-team review, telemetry promise verification, flaky bug root-cause, and device evidence fan-out. Do not use them for route flips, deploys, Slack posts, Alpha Complete work, or client analytics scope expansion.
+
 2026-06-30 addendum: read `TRASH_DICE_RETAIL_AGENTIC_LOOPS_HANDOFF_2026-06-30.md` before acting on this file. The new addendum carries the current ODG loop model, the lighter client telemetry promise, and the Studio Ops versus Retail-session boundary for launch promotion.
 
 This handoff starts the next session: `Trash Dice Retail`.
