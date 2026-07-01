@@ -12023,6 +12023,14 @@ body.inline-game-over .roll-panel {
   const TD_COMPLETED_GAMES_STORAGE_KEY = 'trashDiceHtml5CompletedGames';
   const TD_SOURCE = cleanAnalyticsValue(TD_LAUNCH_SOURCE || URL_OPTIONS.get('source') || URL_OPTIONS.get('utm_source') || (document.referrer ? 'referral' : 'direct'));
   const TD_REFERRER_HOST = getReferrerHost();
+  const TD_FIRST_PARTY_TELEMETRY_URL = 'https://odg-intake.play-onedaygames.workers.dev/api/telemetry/event';
+  const TD_FIRST_PARTY_TELEMETRY_EVENTS = new Set([
+    'td_session_start',
+    'td_return_visit',
+    'td_game_start',
+    'td_game_complete',
+    'td_play_again'
+  ]);
   const TD_VISIT_INFO = getVisitInfo();
   let tdCompletedGames = getCompletedGameCount();
   const TD_SESSION_STARTED_AT = performance.now();
@@ -12069,11 +12077,21 @@ body.inline-game-over .roll-panel {
   }
 
   function getCompletedGameCount() {
-    return 0;
+    if (QA_ENABLED) return 0;
+    try {
+      return normalizeCounter(window.localStorage.getItem(TD_COMPLETED_GAMES_STORAGE_KEY));
+    } catch (_) {
+      return 0;
+    }
   }
 
   function writeCompletedGameCount(count) {
     tdCompletedGames = normalizeCounter(count);
+    if (!QA_ENABLED) {
+      try {
+        window.localStorage.setItem(TD_COMPLETED_GAMES_STORAGE_KEY, String(tdCompletedGames));
+      } catch (_) {}
+    }
     return tdCompletedGames;
   }
 
@@ -12136,6 +12154,34 @@ body.inline-game-over .roll-panel {
     return false;
   }
 
+  function sendFirstPartyTelemetry(eventName, payload) {
+    if (!TD_FIRST_PARTY_TELEMETRY_EVENTS.has(eventName) || QA_ENABLED) return false;
+    const body = JSON.stringify({
+      game: 'trash-dice',
+      eventName,
+      payload
+    });
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: 'text/plain;charset=UTF-8' });
+        if (navigator.sendBeacon(TD_FIRST_PARTY_TELEMETRY_URL, blob)) return true;
+      }
+    } catch (_) {}
+    try {
+      fetch(TD_FIRST_PARTY_TELEMETRY_URL, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
+        keepalive: true,
+        headers: { 'content-type': 'application/json' },
+        body
+      }).catch(() => {});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function flushAnalyticsQueue() {
     while (tdAnalyticsQueue.length) {
       const item = tdAnalyticsQueue[0];
@@ -12152,6 +12198,7 @@ body.inline-game-over .roll-panel {
     };
     tdAnalyticsLog.push(item);
     if (tdAnalyticsLog.length > TD_ANALYTICS_LOG_LIMIT) tdAnalyticsLog.shift();
+    item.firstPartyQueued = sendFirstPartyTelemetry(item.eventName, item.payload);
     if (!sendUmamiEvent(item.eventName, item.payload)) {
       tdAnalyticsQueue.push(item);
       while (tdAnalyticsQueue.length > TD_ANALYTICS_QUEUE_LIMIT) tdAnalyticsQueue.shift();
@@ -12260,9 +12307,11 @@ body.inline-game-over .roll-panel {
   window.TrashDiceAnalyticsDebug = {
     version: TD_SHIP_VERSION,
     source: TD_SOURCE,
+    firstPartyEndpoint: TD_FIRST_PARTY_TELEMETRY_URL,
     queue: tdAnalyticsQueue,
     log: tdAnalyticsLog,
-    flush: flushAnalyticsQueue
+    flush: flushAnalyticsQueue,
+    getCompletedGames: () => tdCompletedGames
   };
 
   installQuitReturnControls();

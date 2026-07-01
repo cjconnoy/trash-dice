@@ -1669,7 +1669,10 @@ async function main() {
       const titleQuit = await evalValue(page, `(() => ({
         sheetVisible: !document.getElementById('quitReturnSheet').hidden,
         copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
-        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
+        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName),
+        analyticsSource: window.TrashDiceAnalyticsDebug.source,
+        firstPartyEndpoint: window.TrashDiceAnalyticsDebug.firstPartyEndpoint,
+        completedGames: window.TrashDiceAnalyticsDebug.getCompletedGames()
       }))()`);
       assert(titleQuit.sheetVisible === true, `${viewport.name}: title quit fallback did not show`);
       assert(titleQuit.copy.length > 20, `${viewport.name}: title quit fallback copy missing`);
@@ -2743,7 +2746,10 @@ async function main() {
           };
         })(),
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
-        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
+        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName),
+        analyticsSource: window.TrashDiceAnalyticsDebug.source,
+        firstPartyEndpoint: window.TrashDiceAnalyticsDebug.firstPartyEndpoint,
+        completedGames: window.TrashDiceAnalyticsDebug.getCompletedGames()
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
@@ -2874,6 +2880,9 @@ async function main() {
       ['td_session_start', 'td_game_start', 'td_first_roll', 'td_game_complete', 'td_game_win'].forEach(eventName => {
         assert(terminal.events.includes(eventName), `${viewport.name}: missing analytics event ${eventName}`);
       });
+      assert(terminal.analyticsSource === 'qa', `${viewport.name}: QA source attribution drifted ${JSON.stringify(terminal)}`);
+      assert(/^https:\/\/odg-intake\.play-onedaygames\.workers\.dev\/api\/telemetry\/event$/.test(terminal.firstPartyEndpoint), `${viewport.name}: first-party telemetry endpoint missing or unsafe ${JSON.stringify(terminal)}`);
+      assert(terminal.completedGames >= 1, `${viewport.name}: completed-game counter did not persist past zero ${JSON.stringify(terminal)}`);
 
       await evalValue(page, `window.TrashDiceQA.setRewardWins(10); true`);
       const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
