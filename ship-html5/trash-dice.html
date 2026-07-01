@@ -1556,30 +1556,6 @@ body.inline-game-over .roll-panel {
     filter: brightness(1.03) saturate(1.04);
   }
 }
-@keyframes firstRollCoachEnter {
-  0% {
-    opacity: 0;
-    transform: translate3d(-50%, 8px, 0) scale(0.9) rotate(-2deg);
-  }
-  66% {
-    opacity: 1;
-    transform: translate3d(-50%, -2px, 0) scale(1.035) rotate(1deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(-50%, 0, 0) scale(1) rotate(0deg);
-  }
-}
-@keyframes firstRollCoachArrowTap {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) scaleY(1);
-    filter: drop-shadow(0 5px 0 rgba(5,48,56,0.22));
-  }
-  45% {
-    transform: translate3d(0, 5px, 0) scaleY(1.12);
-    filter: drop-shadow(0 7px 0 rgba(5,48,56,0.2));
-  }
-}
 @keyframes firstRollButtonSpotlight {
   0%, 100% {
     transform: translate3d(0,0,0) scale(1);
@@ -3905,7 +3881,7 @@ body.inline-game-over .roll-panel {
   transition: transform 0.1s ease, filter 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
   touch-action: manipulation;
 }
-body.first-roll-coach-active .roll-btn.p1:not(:disabled) {
+body.first-roll-prompt-active .roll-btn.p1:not(:disabled) {
   outline: 4px solid rgba(43,219,255,0.94);
   outline-offset: 4px;
   box-shadow:
@@ -3918,7 +3894,7 @@ body.first-roll-coach-active .roll-btn.p1:not(:disabled) {
     0 0 48px rgba(255,242,122,0.52);
   animation: firstRollButtonSpotlight 1.08s cubic-bezier(.16,.82,.18,1) 4;
 }
-body.first-roll-coach-active .roll-btn.p1:not(:disabled)::after {
+body.first-roll-prompt-active .roll-btn.p1:not(:disabled)::after {
   content: '';
   position: absolute;
   inset: -12px;
@@ -3928,75 +3904,15 @@ body.first-roll-coach-active .roll-btn.p1:not(:disabled)::after {
   pointer-events: none;
   animation: firstRollButtonRing 1.08s ease-out 4;
 }
-.first-roll-coach[hidden] {
-  display: none !important;
-}
-.first-roll-coach {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + clamp(8px, 2.1vw, 17px));
-  z-index: 16;
-  display: grid;
-  justify-items: center;
-  width: min(88vw, 430px);
-  pointer-events: none;
-  color: #07323a;
-  text-align: center;
-  transform: translate3d(-50%, 0, 0);
-  animation: firstRollCoachEnter 0.42s cubic-bezier(.16,.9,.18,1.08) both;
-}
-.first-roll-coach-card {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: clamp(3px, 1vw, 6px);
-  width: 100%;
-  padding: clamp(9px, 2.6vw, 16px) clamp(14px, 4.4vw, 24px) clamp(8px, 2.2vw, 13px);
-  border: 3px solid rgba(43,219,255,0.95);
-  border-radius: 8px;
-  background:
-    radial-gradient(ellipse at 22% 0%, rgba(255,255,255,0.88), rgba(255,255,255,0.28) 42%, transparent 68%),
-    linear-gradient(180deg, rgba(233,254,255,0.98), rgba(174,244,255,0.96));
-  box-shadow:
-    0 5px 0 rgba(5,86,104,0.58),
-    0 12px 24px rgba(5,37,45,0.26),
-    0 0 22px rgba(43,219,255,0.36),
-    inset 0 0 0 2px rgba(255,255,255,0.62);
-}
-.first-roll-coach-title {
-  font-family: 'Bangers', 'Arial Black', system-ui, sans-serif;
-  font-size: clamp(2.05rem, 7.5vw, 4rem);
-  line-height: 0.86;
-  color: #e3271f;
-  letter-spacing: 0.02em;
-  text-shadow:
-    -1px -1px 0 rgba(255,244,122,0.78),
-    1.5px 2px 0 #711006,
-    3px 3.5px 0 rgba(5,86,104,0.26);
-  -webkit-text-stroke: 0.5px rgba(88,0,0,0.28);
-}
-.first-roll-coach-sub {
-  font-family: 'Fredoka One', system-ui, sans-serif;
-  font-size: clamp(0.92rem, 3.2vw, 1.34rem);
-  line-height: 1.02;
-  color: #075b36;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.84);
-}
-.first-roll-coach-arrow {
-  width: 0;
-  height: 0;
-  border-left: clamp(15px, 4vw, 22px) solid transparent;
-  border-right: clamp(15px, 4vw, 22px) solid transparent;
-  border-top: clamp(20px, 5vw, 30px) solid rgba(43,219,255,0.96);
-  filter: drop-shadow(0 5px 0 rgba(5,48,56,0.22));
-  animation: firstRollCoachArrowTap 0.96s ease-in-out 4;
+.roll-btn.first-roll-prompt .roll-btn-label {
+  white-space: nowrap;
+  font-size: clamp(1.42rem, 4.1vw, 2.35rem);
+  letter-spacing: 0.012em;
+  transform: translateX(-1%) rotate(-5deg) skewX(-7deg) scale(0.94, 0.82);
 }
 @media (prefers-reduced-motion: reduce) {
-  .first-roll-coach,
-  .first-roll-coach-arrow,
-  body.first-roll-coach-active .roll-btn.p1:not(:disabled),
-  body.first-roll-coach-active .roll-btn.p1:not(:disabled)::after {
+  body.first-roll-prompt-active .roll-btn.p1:not(:disabled),
+  body.first-roll-prompt-active .roll-btn.p1:not(:disabled)::after {
     animation: none !important;
   }
 }
@@ -6661,16 +6577,14 @@ body.tablet-effects-lite.inline-game-over.inline-game-win .inline-result-banner 
   animation: terminalWinStamp 0.68s cubic-bezier(.12,.9,.13,1.12) both;
 }
 body.tablet-effects-lite .roll-panel,
-body.tablet-effects-lite .first-roll-coach,
-body.tablet-effects-lite .first-roll-coach-arrow,
 body.tablet-effects-lite .roll-btn-label,
 body.tablet-effects-lite .panel-pile .mini-die.bench-cheer-die {
   animation: none !important;
   filter: none !important;
   will-change: auto;
 }
-body.tablet-effects-lite.first-roll-coach-active .roll-btn.p1:not(:disabled),
-body.tablet-effects-lite.first-roll-coach-active .roll-btn.p1:not(:disabled)::after {
+body.tablet-effects-lite.first-roll-prompt-active .roll-btn.p1:not(:disabled),
+body.tablet-effects-lite.first-roll-prompt-active .roll-btn.p1:not(:disabled)::after {
   animation: none !important;
   will-change: auto;
 }
@@ -11478,13 +11392,6 @@ body.inline-game-over .roll-panel {
       </div>
     </div>
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
-    <div class="first-roll-coach" id="firstRollCoach" hidden aria-live="polite" aria-atomic="true" aria-hidden="true">
-      <div class="first-roll-coach-card">
-        <div class="first-roll-coach-title">LET'S ROLL!</div>
-        <div class="first-roll-coach-sub">TAP/CLICK THE ROLL! BUTTON</div>
-      </div>
-      <div class="first-roll-coach-arrow" aria-hidden="true"></div>
-    </div>
     <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash."><strong>ROLL.</strong> COLLECT. AVOID THE TRASH.</div>
   </div>
 
@@ -11681,7 +11588,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260701.8';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260701.9';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11691,6 +11598,8 @@ body.inline-game-over .roll-panel {
     return String(version || '');
   }
   const TD_SHIP_VERSION_LABEL = formatTrashDiceVersion(TD_SHIP_VERSION);
+  const ROLL_BUTTON_DEFAULT_LABEL = 'ROLL!';
+  const FIRST_ROLL_PROMPT_LABEL = 'TAP TO START!';
   const TWO_PLAYER_ENABLED = false;
   const PWA_ENABLED = false;
   const PUBLIC_BETA_WS_URL = '';
@@ -11989,9 +11898,9 @@ body.inline-game-over .roll-panel {
   let p0Autoplay = false;
   let p0ReviewMode = false;
   let p1Autoplay = false;
-  let firstRollCoachSeenThisSession = false;
-  let firstRollCoachVisible = false;
-  let firstRollCoachDismissReason = '';
+  let firstRollPromptSeenThisSession = false;
+  let firstRollPromptActive = false;
+  let firstRollPromptDismissReason = '';
   let p0Timer = null;
   let p1AutoTimer = null;
   let titleRoundWinTimer = null;
@@ -13051,7 +12960,6 @@ body.inline-game-over .roll-panel {
   const p2DieStage  = document.getElementById('p2DieStage');
   const rollBtn     = document.getElementById('rollBtn');
   const rollPanel   = document.querySelector('.roll-panel');
-  const firstRollCoach = document.getElementById('firstRollCoach');
   function getDie(p) { return p === 'p1' ? p1Die : p2Die; }
   function getDieStage(p) { return p === 'p1' ? p1DieStage : p2DieStage; }
   const msgEl       = document.getElementById('message');
@@ -16664,9 +16572,14 @@ body.inline-game-over .roll-panel {
   }
 
   function setRollButtonPlayAgainMode(enabled) {
-    if (rollBtnLabel) rollBtnLabel.textContent = enabled ? 'KEEP PLAYING!' : 'ROLL!';
-    rollBtn.setAttribute('aria-label', enabled ? 'Start a fresh game' : 'Roll yellow die');
     rollBtn.classList.toggle('inline-play-again', !!enabled);
+    if (enabled) {
+      setFirstRollPromptActive(false);
+      if (rollBtnLabel) rollBtnLabel.textContent = 'KEEP PLAYING!';
+      rollBtn.setAttribute('aria-label', 'Start a fresh game');
+    } else {
+      syncFirstRollPrompt();
+    }
   }
 
   function clearInlineRoundWinsWindupTimer() {
@@ -17367,16 +17280,17 @@ body.inline-game-over .roll-panel {
     updateDevDiscoButtonState();
   }
 
-  function setFirstRollCoachVisible(visible) {
-    const show = !!(visible && firstRollCoach);
-    firstRollCoachVisible = show;
-    document.body.classList.toggle('first-roll-coach-active', show);
-    if (!firstRollCoach) return;
-    firstRollCoach.hidden = !show;
-    firstRollCoach.setAttribute('aria-hidden', show ? 'false' : 'true');
+  function setFirstRollPromptActive(active) {
+    const show = !!active;
+    firstRollPromptActive = show;
+    document.body.classList.toggle('first-roll-prompt-active', show);
+    rollBtn.classList.toggle('first-roll-prompt', show);
+    if (rollBtn.classList.contains('inline-play-again')) return;
+    if (rollBtnLabel) rollBtnLabel.textContent = show ? FIRST_ROLL_PROMPT_LABEL : ROLL_BUTTON_DEFAULT_LABEL;
+    rollBtn.setAttribute('aria-label', show ? 'Tap to start rolling' : 'Roll yellow die');
   }
 
-  function shouldShowFirstRollCoach(readyForPlayerRoll = null) {
+  function shouldShowFirstRollPrompt(readyForPlayerRoll = null) {
     const ready = readyForPlayerRoll === null
       ? (
         gameStarted &&
@@ -17387,7 +17301,7 @@ body.inline-game-over .roll-panel {
         !isInlineGameOverActive()
       )
       : !!readyForPlayerRoll;
-    return !firstRollCoachSeenThisSession &&
+    return !firstRollPromptSeenThisSession &&
       ready &&
       totalRolls === 0 &&
       !p1Autoplay &&
@@ -17396,30 +17310,28 @@ body.inline-game-over .roll-panel {
       !betaMultiplayerActive;
   }
 
-  function syncFirstRollCoach(readyForPlayerRoll = null) {
-    setFirstRollCoachVisible(shouldShowFirstRollCoach(readyForPlayerRoll));
+  function syncFirstRollPrompt(readyForPlayerRoll = null) {
+    setFirstRollPromptActive(shouldShowFirstRollPrompt(readyForPlayerRoll));
   }
 
-  function dismissFirstRollCoach(reason = 'dismiss') {
-    if (!firstRollCoachSeenThisSession) {
-      firstRollCoachSeenThisSession = true;
-      firstRollCoachDismissReason = reason;
+  function dismissFirstRollPrompt(reason = 'dismiss') {
+    if (!firstRollPromptSeenThisSession) {
+      firstRollPromptSeenThisSession = true;
+      firstRollPromptDismissReason = reason;
     }
-    setFirstRollCoachVisible(false);
+    setFirstRollPromptActive(false);
   }
 
-  function snapshotFirstRollCoach() {
-    const style = firstRollCoach ? getComputedStyle(firstRollCoach) : null;
+  function snapshotFirstRollPrompt() {
     return {
-      present: !!firstRollCoach,
-      visible: !!(firstRollCoach && !firstRollCoach.hidden && style && style.display !== 'none'),
-      visibleFlag: firstRollCoachVisible,
-      hidden: firstRollCoach ? !!firstRollCoach.hidden : true,
-      text: firstRollCoach ? firstRollCoach.textContent.replace(/\s+/g, ' ').trim() : '',
-      seenThisSession: firstRollCoachSeenThisSession,
-      bodyActive: document.body.classList.contains('first-roll-coach-active'),
-      eligible: shouldShowFirstRollCoach(),
-      dismissReason: firstRollCoachDismissReason
+      active: firstRollPromptActive,
+      text: rollBtnLabel ? rollBtnLabel.textContent.trim() : '',
+      ariaLabel: rollBtn.getAttribute('aria-label') || '',
+      seenThisSession: firstRollPromptSeenThisSession,
+      bodyActive: document.body.classList.contains('first-roll-prompt-active'),
+      buttonActive: rollBtn.classList.contains('first-roll-prompt'),
+      eligible: shouldShowFirstRollPrompt(),
+      dismissReason: firstRollPromptDismissReason
     };
   }
 
@@ -17432,7 +17344,7 @@ body.inline-game-over .roll-panel {
       !overlay.classList.contains('show') &&
       !isInlineGameOverActive();
     document.body.classList.toggle('player-roll-ready', readyForPlayerRoll);
-    syncFirstRollCoach(readyForPlayerRoll);
+    syncFirstRollPrompt(readyForPlayerRoll);
     if (readyForPlayerRoll) {
       scheduleInventoryMischief();
       scheduleP1Autoplay();
@@ -18118,14 +18030,14 @@ body.inline-game-over .roll-panel {
     document.body.classList.toggle('debug-p1-auto', p1Autoplay);
     document.body.classList.toggle('auto-play-active', p1Autoplay);
     if (p1Autoplay) {
-      dismissFirstRollCoach('auto-play');
+      dismissFirstRollPrompt('auto-play');
       if (announce && gameStarted) setMsg('AUTO ON');
       scheduleP1Autoplay();
     } else {
       clearP1AutoplayTimer();
       cancelInlineGameOverAutoAdvance();
       if (announce && gameStarted && current === 'p1' && !busy) setMsg('PLAYER ROLL');
-      syncFirstRollCoach();
+      syncFirstRollPrompt();
     }
     updateP0ReviewControl();
     return p1Autoplay;
@@ -18141,13 +18053,13 @@ body.inline-game-over .roll-panel {
     p0Autoplay = !!enabled;
     document.body.classList.toggle('debug-p0', p0Autoplay);
     if (p0Autoplay) {
-      dismissFirstRollCoach('p0-autoplay');
+      dismissFirstRollPrompt('p0-autoplay');
       if (announce && gameStarted) setMsg('AUTOPLAY ON');
       scheduleP0Autoplay();
     } else {
       clearP0Timer();
       if (announce && gameStarted && current === 'p1') setMsg('PLAYER ROLL');
-      syncFirstRollCoach();
+      syncFirstRollPrompt();
     }
     updateP0ReviewControl();
     return p0Autoplay;
@@ -18241,7 +18153,7 @@ body.inline-game-over .roll-panel {
     clearInlineGameOverUi();
     stopTitleRoundWinFanfare();
     document.body.classList.remove('player-roll-ready', 'beta-room-recovery');
-    setFirstRollCoachVisible(false);
+    setFirstRollPromptActive(false);
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     clearPlayerPayoutFanfare(false);
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
@@ -18400,7 +18312,7 @@ body.inline-game-over .roll-panel {
     if (current === 'p1' && rollBtn.disabled && !betaApplyingRemoteRoll) return; // only block human; green rolls freely
     if (resolveFullBoardIfNeeded(current)) return;
     const humanGestureRoll = current === 'p1' && !p1Autoplay && !p0Autoplay && !p0ReviewMode && !betaApplyingRemoteRoll;
-    if (humanGestureRoll) dismissFirstRollCoach('first-user-roll');
+    if (humanGestureRoll) dismissFirstRollPrompt('first-user-roll');
     clearRollGatedRewardUi();
     busy = true;
     rollBtn.disabled = true;
@@ -20429,7 +20341,7 @@ body.inline-game-over .roll-panel {
           p0ReviewMode,
           p0Autoplay,
           p1Autoplay,
-          firstRollCoach: snapshotFirstRollCoach(),
+          firstRollPrompt: snapshotFirstRollPrompt(),
           openingComebackAssistActive: isOpeningComebackAssistActive(),
           openingComebackAssistRolls,
           qaHooks: QA_HOOKS_ENABLED,
@@ -20760,7 +20672,7 @@ body.inline-game-over .roll-panel {
         busy,
         round,
         roundWins: { ...roundWins },
-        firstRollCoach: snapshotFirstRollCoach(),
+        firstRollPrompt: snapshotFirstRollPrompt(),
         completedGames: tdCompletedGames,
         playerGameWins: sessionPlayerGameWins,
         firstGameAssist: {

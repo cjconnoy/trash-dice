@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.8';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.8';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.9';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.9';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1219,9 +1219,10 @@ async function main() {
       const shortRestart = await evalValue(page, `(() => ({
         scrollTop: Math.round(document.body.scrollTop || document.documentElement.scrollTop || 0),
         rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+        firstRollPrompt: window.TrashDiceQA.state().firstRollPrompt,
         inlineGameOver: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active)
       }))()`);
-      assert(shortRestart.scrollTop <= 1 && shortRestart.inlineGameOver === false && shortRestart.rollText.includes('ROLL'), `${viewport.name}: restart should reset desktop scroll and leave game playable ${JSON.stringify(shortRestart)}`);
+      assert(shortRestart.scrollTop <= 1 && shortRestart.inlineGameOver === false && ((shortRestart.firstRollPrompt && shortRestart.firstRollPrompt.active === true && shortRestart.rollText.includes('TAP TO START!')) || shortRestart.rollText.includes('ROLL')), `${viewport.name}: restart should reset desktop scroll and leave game playable ${JSON.stringify(shortRestart)}`);
       reports.push({ viewport: viewport.name, status: 'desktop-scroll-ok', before: shortBeforeScroll.playAgain, after: shortAfterScroll.playAgain });
     }
 
@@ -1688,9 +1689,9 @@ async function main() {
       assert(postStart.bodyGameStarted && !postStart.rollDisabled, `${viewport.name}: game did not start ${JSON.stringify(postStart)}`);
       const activeLayout = await evalValue(page, `(() => {
         const roll = document.getElementById('rollBtn');
+        const rollLabel = roll.querySelector('.roll-btn-label');
         const panel = document.querySelector('.roll-panel');
         const gameTagline = document.querySelector('.game-tagline');
-        const coach = document.getElementById('firstRollCoach');
         const p0Button = document.getElementById('devP0Btn');
         const p1AutoButton = document.getElementById('devP1AutoBtn');
         const rewardButton = document.getElementById('devRewardDieBtn');
@@ -1699,10 +1700,9 @@ async function main() {
         const quitButton = document.getElementById('quitGameBtn');
         const badge = document.querySelector('.milestone-badge');
         const rr = roll.getBoundingClientRect();
+        const rlr = rollLabel ? rollLabel.getBoundingClientRect() : null;
         const pr = panel.getBoundingClientRect();
         const tr = gameTagline ? gameTagline.getBoundingClientRect() : null;
-        const cr = coach ? coach.getBoundingClientRect() : null;
-        const coachStyle = coach ? getComputedStyle(coach) : null;
         const state = window.TrashDiceQA.state();
         const br = p0Button.getBoundingClientRect();
         const p1r = p1AutoButton.getBoundingClientRect();
@@ -1715,6 +1715,20 @@ async function main() {
         const clears = (a, b, gap = 4) => a.bottom <= b.top - gap || a.left >= b.right + gap || a.right <= b.left - gap || a.top >= b.bottom + gap;
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
+          rollText: rollLabel ? rollLabel.textContent.trim() : '',
+          rollAriaLabel: roll.getAttribute('aria-label') || '',
+          rollPromptClass: roll.classList.contains('first-roll-prompt'),
+          rollTextFits: !!(rollLabel && rlr && rlr.left >= rr.left - 1 && rlr.right <= rr.right + 1 && rlr.top >= rr.top - 1 && rlr.bottom <= rr.bottom + 1),
+          rollLabelMetrics: rollLabel && rlr ? {
+            scrollWidth: rollLabel.scrollWidth,
+            clientWidth: rollLabel.clientWidth,
+            scrollHeight: rollLabel.scrollHeight,
+            clientHeight: rollLabel.clientHeight,
+            rect: { top: rlr.top, bottom: rlr.bottom, left: rlr.left, right: rlr.right, width: rlr.width, height: rlr.height }
+          } : null,
+          firstRollPrompt: state.firstRollPrompt,
+          firstRollPromptBodyActive: document.body.classList.contains('first-roll-prompt-active'),
+          firstRollCoachPresent: !!document.getElementById('firstRollCoach'),
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
           gameTagline: gameTagline ? {
             text: gameTagline.textContent.trim(),
@@ -1722,23 +1736,6 @@ async function main() {
             belowRoll: tr.top >= rr.bottom - 1,
             inPanel: tr.left >= pr.left - 1 && tr.right <= pr.right + 1,
             rect: { top: tr.top, bottom: tr.bottom, left: tr.left, right: tr.right, width: tr.width, height: tr.height }
-          } : null,
-          firstRollCoach: coach ? {
-            text: coach.textContent.replace(/\\s+/g, ' ').trim(),
-            title: (coach.querySelector('.first-roll-coach-title') || {}).textContent || '',
-            sub: (coach.querySelector('.first-roll-coach-sub') || {}).textContent || '',
-            visible: !coach.hidden && coachStyle.display !== 'none' && cr.width > 120 && cr.height > 44,
-            hidden: coach.hidden,
-            pointerEvents: coachStyle.pointerEvents,
-            ariaLive: coach.getAttribute('aria-live'),
-            ariaAtomic: coach.getAttribute('aria-atomic'),
-            ariaHidden: coach.getAttribute('aria-hidden'),
-            bodyActive: document.body.classList.contains('first-roll-coach-active'),
-            qaState: state.firstRollCoach,
-            centeredOnRoll: Math.abs(((cr.left + cr.right) / 2) - ((rr.left + rr.right) / 2)) <= Math.max(28, rr.width * 0.28),
-            aboveRoll: cr.bottom <= rr.top + 2,
-            fitsViewport: cr.left >= -1 && cr.right <= window.innerWidth + 1 && cr.top >= -1 && cr.bottom <= window.innerHeight + 1,
-            rect: { top: cr.top, bottom: cr.bottom, left: cr.left, right: cr.right, width: cr.width, height: cr.height }
           } : null,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
@@ -1806,10 +1803,9 @@ async function main() {
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.firstRollCoach && activeLayout.firstRollCoach.visible === true && activeLayout.firstRollCoach.title === "LET'S ROLL!" && activeLayout.firstRollCoach.sub === 'TAP/CLICK THE ROLL! BUTTON', `${viewport.name}: first-roll coach mark should appear with the launch instruction before the first roll ${JSON.stringify(activeLayout.firstRollCoach)}`);
-      assert(activeLayout.firstRollCoach.pointerEvents === 'none' && activeLayout.firstRollCoach.ariaLive === 'polite' && activeLayout.firstRollCoach.ariaAtomic === 'true' && activeLayout.firstRollCoach.ariaHidden === 'false', `${viewport.name}: first-roll coach mark should be non-blocking and announced politely ${JSON.stringify(activeLayout.firstRollCoach)}`);
-      assert(activeLayout.firstRollCoach.bodyActive === true && activeLayout.firstRollCoach.qaState && activeLayout.firstRollCoach.qaState.visible === true && activeLayout.firstRollCoach.qaState.eligible === true && activeLayout.firstRollCoach.qaState.seenThisSession === false, `${viewport.name}: first-roll coach state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollCoach)}`);
-      assert(activeLayout.firstRollCoach.centeredOnRoll === true && activeLayout.firstRollCoach.aboveRoll === true && activeLayout.firstRollCoach.fitsViewport === true, `${viewport.name}: first-roll coach mark should point at the ROLL button without covering it ${JSON.stringify({ coach: activeLayout.firstRollCoach, roll: activeLayout.rollRect })}`);
+      assert(activeLayout.firstRollCoachPresent === false, `${viewport.name}: removed first-roll coach overlay should not be present ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.rollText === 'TAP TO START!' && activeLayout.rollAriaLabel === 'Tap to start rolling' && activeLayout.rollPromptClass === true && activeLayout.rollTextFits === true, `${viewport.name}: first-roll button should be the only launch prompt and fit inside ROLL button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
@@ -1838,20 +1834,25 @@ async function main() {
       assert(activeLayout.panelCursor === 'pointer', `${viewport.name}: roll panel should advertise tappable action surface ${JSON.stringify(activeLayout)}`);
       const rollPanelHitPage = await openPage(`${baseUrl}?source=qa&qa=1&roll-panel-hit=tagline`, viewport);
       await evalValue(rollPanelHitPage, `document.getElementById('startBtn').click(); true`);
-      await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && window.TrashDiceQA.state().firstRollCoach.visible === true`, `${viewport.name} roll panel hit target game start`);
+      await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && window.TrashDiceQA.state().firstRollPrompt.active === true`, `${viewport.name} roll panel hit target game start`);
       const rollPanelHitStart = await evalValue(rollPanelHitPage, `(() => {
         const tagline = document.querySelector('.game-tagline');
         const panel = document.querySelector('.roll-panel');
         const roll = document.getElementById('rollBtn');
+        const rollLabel = roll ? roll.querySelector('.roll-btn-label') : null;
         const state = window.TrashDiceQA.state();
         const rollDisabledBefore = !!(roll && roll.disabled);
+        const rollTextBefore = rollLabel ? rollLabel.textContent.trim() : '';
+        const rollAriaBefore = roll ? roll.getAttribute('aria-label') || '' : '';
         if (tagline) tagline.click();
         return {
           hadTagline: !!tagline,
           hadPanel: !!panel,
           rollDisabledBefore,
+          rollTextBefore,
+          rollAriaBefore,
           totalRollsBefore: state.totalRolls,
-          coachBefore: state.firstRollCoach
+          promptBefore: state.firstRollPrompt
         };
       })()`);
       await waitEval(rollPanelHitPage, `window.TrashDiceQA.state().totalRolls > ${JSON.stringify(rollPanelHitStart.totalRollsBefore)}`, `${viewport.name} roll panel tagline click rolls`);
@@ -1867,19 +1868,19 @@ async function main() {
           rollDisabled: !!(document.getElementById('rollBtn') && document.getElementById('rollBtn').disabled),
           taglineText: tagline ? tagline.textContent.trim() : '',
           panelCursor: panel ? getComputedStyle(panel).cursor : '',
-          coachAfter: state.firstRollCoach,
+          promptAfter: state.firstRollPrompt,
           events: window.TrashDiceAnalyticsDebug ? window.TrashDiceAnalyticsDebug.log.map(item => item.eventName) : []
         };
       })()`);
       assert(rollPanelHit.start.hadTagline === true && rollPanelHit.start.hadPanel === true && rollPanelHit.start.rollDisabledBefore === false && rollPanelHit.totalRolls === rollPanelHit.start.totalRollsBefore + 1 && rollPanelHit.events.includes('td_first_roll'), `${viewport.name}: tapping roll tagline should trigger exactly one valid roll ${JSON.stringify(rollPanelHit)}`);
-      assert(rollPanelHit.start.coachBefore && rollPanelHit.start.coachBefore.visible === true && rollPanelHit.start.coachBefore.seenThisSession === false && rollPanelHit.coachAfter.visible === false && rollPanelHit.coachAfter.seenThisSession === true && rollPanelHit.coachAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll coach should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
+      assert(rollPanelHit.start.rollTextBefore === 'TAP TO START!' && rollPanelHit.start.rollAriaBefore === 'Tap to start rolling' && rollPanelHit.start.promptBefore && rollPanelHit.start.promptBefore.active === true && rollPanelHit.start.promptBefore.seenThisSession === false && rollPanelHit.promptAfter.active === false && rollPanelHit.promptAfter.text === 'ROLL!' && rollPanelHit.promptAfter.seenThisSession === true && rollPanelHit.promptAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
       await evalValue(rollPanelHitPage, `window.TrashDiceDebug.gameStart(); true`);
       await waitEval(rollPanelHitPage, `(() => {
         const state = window.TrashDiceQA.state();
         return state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
-      })()`, `${viewport.name} first-roll coach same-session reset`);
-      const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollCoach`);
-      assert(rollPanelHitReset.visible === false && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll coach should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
+      })()`, `${viewport.name} first-roll prompt same-session reset`);
+      const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollPrompt`);
+      assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
@@ -4188,7 +4189,7 @@ async function main() {
         rollText: (document.getElementById('rollBtn') || {}).textContent || '',
         events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
       }))()`);
-      assert(outcomeAutoAdvance.rollText.includes('ROLL') && !outcomeAutoAdvance.state.inlineGameOver && outcomeAutoAdvance.state.gameStarted === true, `${outcome.label} probe: quiet auto-advance did not leave the next game ready ${JSON.stringify(outcomeAutoAdvance)}`);
+      assert(((outcomeAutoAdvance.state.firstRollPrompt && outcomeAutoAdvance.state.firstRollPrompt.active === true && outcomeAutoAdvance.rollText.includes('TAP TO START!')) || outcomeAutoAdvance.rollText.includes('ROLL')) && !outcomeAutoAdvance.state.inlineGameOver && outcomeAutoAdvance.state.gameStarted === true, `${outcome.label} probe: quiet auto-advance did not leave the next game ready ${JSON.stringify(outcomeAutoAdvance)}`);
       assert(outcomeAutoAdvance.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_game_continue') && outcomeAutoAdvance.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_game_continue'), `${outcome.label} probe: quiet auto-advance analytics missing ${JSON.stringify(outcomeAutoAdvance.events)}`);
     }
 
