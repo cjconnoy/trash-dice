@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.17';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.17';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.18';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.18';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -3376,12 +3376,126 @@ async function main() {
     const productionIphoneCosmicPerf = await evalValue(productionIphone, cosmicAmbientPerfProbeScript(900));
     const productionIphoneOver50Limit = Math.max(2, Math.ceil(productionIphoneCosmicPerf.frames * 0.07));
     assert(productionIphoneCosmicPerf.bodyVip === true && productionIphoneCosmicPerf.cosmicLayerAnimationCount === 0 && productionIphoneCosmicPerf.cosmicMotion && productionIphoneCosmicPerf.cosmicMotion.changed === false && productionIphoneCosmicPerf.colorFieldMotion && productionIphoneCosmicPerf.colorFieldMotion.changed === false && productionIphoneCosmicPerf.p95FrameMs <= 55 && productionIphoneCosmicPerf.over50Frames <= productionIphoneOver50Limit, `production-like iPhone COSMIC background should remain static under frame sampling ${JSON.stringify({ productionIphoneCosmicPerf, productionIphoneOver50Limit })}`);
+    const productionIphoneRoundWinRecovery = await evalValue(productionIphone, `(async () => {
+      const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+      const waitUntil = async (predicate, timeout = 8500) => {
+        const startedAt = performance.now();
+        while (performance.now() - startedAt < timeout) {
+          if (predicate()) return true;
+          await sleep(32);
+        }
+        return false;
+      };
+      const animationNames = () => document.getAnimations()
+        .filter(animation => animation.playState === 'running')
+        .map(animation => animation.animationName || '')
+        .filter(Boolean);
+      const staleNames = names => Array.from(new Set(names.filter(name =>
+        /^inlineRoundWins|^roundWinBurst|^rewardDieWiggle|^rewardPrism|^playerPayout|^canPayout|^lidPayout/i.test(name)
+      ))).sort();
+      const isVisible = el => {
+        const style = el ? getComputedStyle(el) : null;
+        const rect = el ? el.getBoundingClientRect() : null;
+        return !!(el && !el.hidden && style && style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity || '1') > 0.01 && rect && rect.width > 0 && rect.height > 0);
+      };
+      const snapshot = label => {
+        const burst = document.getElementById('roundWinBurst');
+        const reward = document.getElementById('rewardDieUnlock');
+        const panel = document.getElementById('p1Inventory').closest('.player-panel');
+        const names = animationNames();
+        return {
+          label,
+          state: window.TrashDiceQA.state(),
+          rollDisabled: !!document.getElementById('rollBtn').disabled,
+          bodyClasses: document.body.className,
+          activeAnimationCount: names.length,
+          activeAnimationNames: Array.from(new Set(names)).sort(),
+          staleAnimationNames: staleNames(names),
+          burstVisible: isVisible(burst) && burst.classList.contains('show'),
+          burstHidden: !burst || burst.hidden,
+          burstClassName: burst ? burst.className || '' : '',
+          rewardVisible: isVisible(reward) && reward.classList.contains('show'),
+          rewardHidden: !reward || reward.hidden,
+          titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
+          payoutFanfare: !!(panel && panel.classList.contains('player-payout-fanfare')),
+          statusFanfare: document.getElementById('p1StatusBar').classList.contains('round-winner-praise')
+        };
+      };
+      const frameStatsDuring = sampleDurationMs => new Promise(resolve => {
+        const frames = [];
+        const stale = [];
+        const activeCounts = [];
+        let anyRoundWinUiVisible = false;
+        let last = performance.now();
+        const startedAt = last;
+        const tick = now => {
+          const delta = now - last;
+          frames.push(delta);
+          last = now;
+          const names = animationNames();
+          activeCounts.push(names.length);
+          stale.push(...staleNames(names));
+          const snap = snapshot('sample');
+          if (snap.burstVisible || snap.rewardVisible || snap.titleFanfare || snap.payoutFanfare || snap.statusFanfare) {
+            anyRoundWinUiVisible = true;
+          }
+          if (now - startedAt >= sampleDurationMs) {
+            const values = frames.slice(1);
+            const sorted = values.slice().sort((a, b) => a - b);
+            const avg = values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length);
+            const p95Index = sorted.length ? Math.floor((sorted.length - 1) * 0.95) : 0;
+            resolve({
+              frames: values.length,
+              avgFrameMs: Number(avg.toFixed(2)),
+              p95FrameMs: Number((sorted[p95Index] || 0).toFixed(2)),
+              maxFrameMs: Number((sorted[sorted.length - 1] || 0).toFixed(2)),
+              over50Frames: values.filter(value => value > 50).length,
+              maxActiveAnimationCount: Math.max(0, ...activeCounts),
+              staleAnimationNames: Array.from(new Set(stale)).sort(),
+              anyRoundWinUiVisible
+            });
+            return;
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      window.TrashDiceDebug.gameStart();
+      await waitUntil(() => document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && !window.TrashDiceQA.state().inlineGameOver);
+      window.TrashDiceQA.setRewardWins(13);
+      window.TrashDiceQA.setGuidedCompletion({ pending: false, completed: true, reason: 'qa-iphone-round-win-recovery' });
+      const early = await window.TrashDiceDebug.roundWinEventProbe('p1');
+      const readyReached = await waitUntil(() => {
+        const state = window.TrashDiceQA.state();
+        return document.body.dataset.gameStarted === 'true' &&
+          !document.getElementById('rollBtn').disabled &&
+          state.current === 'p1' &&
+          !state.roundResolution;
+      });
+      await sleep(96);
+      const ready = snapshot('ready-after-round-win');
+      window.TrashDiceQA.queueRolls([2, 3, 4, 5]);
+      const sample = frameStatsDuring(2500);
+      document.getElementById('rollBtn').click();
+      const rollStats = await sample;
+      const after = snapshot('after-next-roll-sample');
+      return { early, readyReached, ready, rollStats, after };
+    })()`);
+    const productionIphoneRoundWinOver50Limit = Math.max(2, Math.ceil(productionIphoneRoundWinRecovery.rollStats.frames * 0.07));
+    assert(Number(productionIphoneRoundWinRecovery.early.roundWinBurstEndlessWindupFirstTickDelayMs || 0) <= 600 && Number(productionIphoneRoundWinRecovery.early.roundWinBurstEndlessWindupTickMs || 0) <= 520, `production-like iPhone round-win windup should use the mobile recovery timing budget ${JSON.stringify(productionIphoneRoundWinRecovery.early)}`);
+    assert(productionIphoneRoundWinRecovery.readyReached === true, `production-like iPhone should not expose the next roll before round resolution fully clears ${JSON.stringify(productionIphoneRoundWinRecovery.ready)}`);
+    assert(productionIphoneRoundWinRecovery.ready.burstHidden === true && productionIphoneRoundWinRecovery.ready.rewardHidden === true && productionIphoneRoundWinRecovery.ready.titleFanfare === false && productionIphoneRoundWinRecovery.ready.payoutFanfare === false && productionIphoneRoundWinRecovery.ready.statusFanfare === false && productionIphoneRoundWinRecovery.ready.staleAnimationNames.length === 0, `production-like iPhone should be clean when the next roll becomes available after a round win ${JSON.stringify(productionIphoneRoundWinRecovery.ready)}`);
+    assert(productionIphoneRoundWinRecovery.rollStats.anyRoundWinUiVisible === false && productionIphoneRoundWinRecovery.rollStats.staleAnimationNames.length === 0 && productionIphoneRoundWinRecovery.rollStats.p95FrameMs <= 55 && productionIphoneRoundWinRecovery.rollStats.over50Frames <= productionIphoneRoundWinOver50Limit, `production-like iPhone next roll after round-win windup should not carry stale fanfare animation or frame spikes ${JSON.stringify({ recovery: productionIphoneRoundWinRecovery, productionIphoneRoundWinOver50Limit })}`);
     reports.push({
       viewport: 'iphone-13-ios18-production-like',
       status: 'ok',
       deviceProfile: productionIphoneCosmic.state.deviceProfile,
       activeAnimationCount: productionIphoneCosmic.activeAnimationCount,
-      cosmicPerf: productionIphoneCosmicPerf
+      cosmicPerf: productionIphoneCosmicPerf,
+      roundWinRecovery: {
+        ready: productionIphoneRoundWinRecovery.ready,
+        rollStats: productionIphoneRoundWinRecovery.rollStats
+      }
     });
 
     const modernIpadViewport = {
