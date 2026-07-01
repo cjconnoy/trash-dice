@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.5';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.5';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.6';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.6';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -3952,8 +3952,11 @@ async function main() {
       const nudge = document.getElementById('terminalRewardNudge');
       const chip = document.getElementById('inlineResultChip');
       const chipText = document.getElementById('inlineResultChipText');
+      const roll = document.getElementById('rollBtn');
+      const debugState = window.TrashDiceQA.state();
       return {
-        state: window.TrashDiceQA.state().inlineGameOver,
+        state: debugState.inlineGameOver,
+        p1Autoplay: debugState.p1Autoplay,
         rewardState: window.TrashDiceQA.rewardDieState(),
         bodyGuidedClass: document.body.classList.contains('guided-game-complete'),
         title: (document.getElementById('inlineResultTitle') || {}).textContent.replace(/\\s+/g, ' ').trim(),
@@ -3961,12 +3964,28 @@ async function main() {
         logoVisible: !!(logo && !logo.hidden && logoStyle && logoStyle.display !== 'none' && logoRect && logoRect.width >= 120 && logoRect.height >= 48),
         terminalRewardVisible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none'),
         chipVisible: !!(chip && !chip.hidden && getComputedStyle(chip).display !== 'none'),
-        chipText: chipText ? chipText.textContent.replace(/\\s+/g, ' ').trim() : ''
+        chipText: chipText ? chipText.textContent.replace(/\\s+/g, ' ').trim() : '',
+        rollText: roll ? roll.textContent.replace(/\\s+/g, ' ').trim() : '',
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
       };
     })()`);
     assert(beatGameWinUi.state.guidedCompletionTriggered === true && beatGameWinUi.rewardState.guidedCompletionPending === false && beatGameWinUi.rewardState.guidedGameCompleted === true, `guided complete game-win probe: terminal game win should complete guided state ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.bodyGuidedClass === true && beatGameWinUi.title === 'YOU BEAT THE GAME!' && beatGameWinUi.sub === 'You unlocked every die. How many more rounds can you win?' && beatGameWinUi.logoVisible === true, `guided complete game-win probe: terminal capstone should show headline, logo, and subcopy ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.terminalRewardVisible === false && beatGameWinUi.chipVisible === true && /x12\s+ROUND WINS/.test(beatGameWinUi.chipText) && /x1\s+GAME WIN/.test(beatGameWinUi.chipText) && !/(ROUNDS WON:|GAMES WON:|ROUND WINS:|GAME WINS:)/.test(beatGameWinUi.chipText), `guided complete game-win probe: terminal capstone should suppress reward chase and keep count-first round and game counters ${JSON.stringify(beatGameWinUi)}`);
+    assert(beatGameWinUi.state.autoRestartMs === null && beatGameWinUi.state.autoContinue === false && beatGameWinUi.p1Autoplay === false && beatGameWinUi.rollText.includes('KEEP PLAYING!'), `guided complete game-win probe: terminal capstone should wait for manual KEEP PLAYING instead of auto-advancing ${JSON.stringify(beatGameWinUi)}`);
+    await sleep(5600);
+    const beatGameWinHeld = await evalValue(beatGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        inlineGameOver: state.inlineGameOver,
+        gameStarted: state.gameStarted,
+        totalRolls: state.totalRolls,
+        rollText: (document.getElementById('rollBtn') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        title: (document.getElementById('inlineResultTitle') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(beatGameWinHeld.inlineGameOver && beatGameWinHeld.inlineGameOver.active === true && beatGameWinHeld.inlineGameOver.guidedCompletionTriggered === true && beatGameWinHeld.inlineGameOver.autoRestartMs === null && beatGameWinHeld.title === 'YOU BEAT THE GAME!' && beatGameWinHeld.rollText.includes('KEEP PLAYING!') && !beatGameWinHeld.events.some(item => item.method === 'auto_game_continue' || item.method === 'auto_watch'), `guided complete game-win probe: terminal capstone should still be waiting after the old auto-advance window ${JSON.stringify(beatGameWinHeld)}`);
 
     const discoGameWinLayerProbe = await openPage(`${baseUrl}?source=qa&qa=1&disco-game-win-layer=1`, viewports[0]);
     await evalValue(discoGameWinLayerProbe, `document.getElementById('startBtn').click(); true`);
