@@ -11681,7 +11681,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260701.18';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260701.19';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -14171,6 +14171,7 @@ body.inline-game-over .roll-panel {
 
   function clearRoundWinAfterglowForRoll() {
     clearRollGatedRewardUi();
+    clearPayoutTickAnimations();
     stopTitleRoundWinFanfare();
     clearRoundWinnerStatus(true);
     clearPlayerPayoutFanfare(true);
@@ -15322,6 +15323,17 @@ body.inline-game-over .roll-panel {
     void panel.offsetWidth;
     panel.classList.add('payout-tick');
     panel.addEventListener('animationend', () => panel.classList.remove('payout-tick'), { once: true });
+  }
+
+  function clearPayoutTickAnimations() {
+    [
+      p1PoolEl,
+      p2PoolEl,
+      p1Inventory ? p1Inventory.closest('.player-panel') : null,
+      p2Inventory ? p2Inventory.closest('.player-panel') : null
+    ].forEach(el => {
+      if (el) el.classList.remove('payout-tick');
+    });
   }
 
   function getPlayerUi(player) {
@@ -18986,6 +18998,7 @@ body.inline-game-over .roll-panel {
       hideRoundWinBurst();
       hideRewardDieUnlock();
       hideRoundLossRewardNudge();
+      clearPayoutTickAnimations();
       clearRoundWinnerStatus(false);
       clearPlayerPayoutFanfare(false);
       syncUI();
