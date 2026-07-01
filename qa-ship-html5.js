@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.19';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.19';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.20';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.20';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1156,10 +1156,32 @@ function assertRoundWinRecoveryProbe(label, result, limits = {}) {
   return { over50Limit };
 }
 
+function assertStaticShipSourceScan() {
+  const indexPath = path.join(shipDir, 'index.html');
+  const aliasPath = path.join(shipDir, 'trash-dice.html');
+  assert(fs.existsSync(indexPath), `missing ship source file: ${indexPath}`);
+  assert(fs.existsSync(aliasPath), `missing ship source file: ${aliasPath}`);
+  const indexBytes = fs.readFileSync(indexPath);
+  const aliasBytes = fs.readFileSync(aliasPath);
+  assert(Buffer.compare(indexBytes, aliasBytes) === 0, `ship HTML files must remain byte-identical: index.html=${indexBytes.length}, trash-dice.html=${aliasBytes.length}`);
+
+  const source = indexBytes.toString('utf8');
+  const forbiddenSourcePatterns = [
+    { name: 'manifest link', regex: /<link\b[^>]*\brel=["']manifest["']/i },
+    { name: 'web manifest request', regex: /\bmanifest\.webmanifest\b/i },
+    { name: 'service worker registration', regex: /\bnavigator\.serviceWorker\b|\bserviceWorker\b|\bservice\s+worker\b|\bsw\.js\b/i }
+  ];
+  const hits = forbiddenSourcePatterns
+    .filter(item => item.regex.test(source))
+    .map(item => item.name);
+  assert(hits.length === 0, `forbidden source strings in shipped HTML: ${hits.join(', ')}`);
+}
+
 async function main() {
   if (!fs.existsSync(path.join(shipDir, 'index.html'))) {
     throw new Error(`missing ship build: ${path.join(shipDir, 'index.html')}`);
   }
+  assertStaticShipSourceScan();
 
   const server = await startServer();
   const chrome = spawn(chromePath, [
@@ -4658,6 +4680,7 @@ async function main() {
     assert(fullLogoRequests.length === 0, `full title logo PNG should not be requested in WebP-capable browsers: ${fullLogoRequests.join(', ')}`);
     const titleLogoRequests = requests.filter(url => url.includes('assets/brand/trash-dice-logo-title.webp'));
     assert(titleLogoRequests.length > 0, 'fast title logo WebP was not requested');
+    assert(exceptions.length === 0, `runtime exceptions captured during QA: ${exceptions.join(' | ')}`);
 
     console.log(JSON.stringify({
       status: 'SHIP_HTML5_QA_OK',
