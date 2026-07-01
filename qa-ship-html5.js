@@ -741,11 +741,143 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
   })`;
 }
 
+function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
+  const serializedFixtures = JSON.stringify(fixtures || []);
+  return `(async () => {
+    const fixtures = ${serializedFixtures};
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const waitUntil = async (predicate, timeout = 6500) => {
+      const start = performance.now();
+      while (performance.now() - start < timeout) {
+        if (predicate()) return true;
+        await sleep(32);
+      }
+      return false;
+    };
+    const frameStatsDuring = sampleDurationMs => new Promise(resolve => {
+      const frames = [];
+      const activeFrames = [];
+      const animationNames = [];
+      const activeAnimationNames = [];
+      const animationCounts = [];
+      const activeAnimationCounts = [];
+      const activeClassSamples = [];
+      const dieRects = [];
+      const startedAt = performance.now();
+      let last = startedAt;
+      const summarizeFrames = values => {
+        const sorted = values.slice().sort((a, b) => a - b);
+        const avg = values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length);
+        const p95Index = sorted.length ? Math.floor((sorted.length - 1) * 0.95) : 0;
+        return {
+          frames: values.length,
+          avgFrameMs: Number(avg.toFixed(2)),
+          p95FrameMs: Number((sorted[p95Index] || 0).toFixed(2)),
+          maxFrameMs: Number((sorted[sorted.length - 1] || 0).toFixed(2)),
+          over34Frames: values.filter(value => value > 34).length,
+          over50Frames: values.filter(value => value > 50).length
+        };
+      };
+      const tick = now => {
+        const delta = now - last;
+        frames.push(delta);
+        last = now;
+        const running = document.getAnimations()
+          .filter(animation => animation.playState === 'running')
+          .map(animation => animation.animationName || '')
+          .filter(Boolean);
+        const perfActive = document.body.classList.contains('reward-hero-roll-active');
+        const die = document.getElementById('p1Die');
+        const rect = die ? die.getBoundingClientRect() : null;
+        if (rect) dieRects.push({ width: rect.width, height: rect.height });
+        animationCounts.push(running.length);
+        animationNames.push(...running);
+        activeClassSamples.push(perfActive);
+        if (perfActive) {
+          activeFrames.push(delta);
+          activeAnimationCounts.push(running.length);
+          activeAnimationNames.push(...running);
+        }
+        if (now - startedAt >= sampleDurationMs) {
+          const values = frames.slice(1);
+          const activeValues = activeFrames.slice(activeFrames.length > 1 ? 1 : 0);
+          const allStats = summarizeFrames(values);
+          const activeStats = summarizeFrames(activeValues);
+          resolve({
+            ...allStats,
+            maxActiveAnimationCount: Math.max(0, ...animationCounts),
+            animationNames: Array.from(new Set(animationNames)).sort(),
+            activeFrames: activeStats.frames,
+            activeAvgFrameMs: activeStats.avgFrameMs,
+            activeP95FrameMs: activeStats.p95FrameMs,
+            activeMaxFrameMs: activeStats.maxFrameMs,
+            activeOver34Frames: activeStats.over34Frames,
+            activeOver50Frames: activeStats.over50Frames,
+            activeMaxActiveAnimationCount: Math.max(0, ...activeAnimationCounts),
+            activeAnimationNames: Array.from(new Set(activeAnimationNames)).sort(),
+            perfClassSeen: activeClassSamples.some(Boolean),
+            perfClassStillActive: document.body.classList.contains('reward-hero-roll-active'),
+            maxDieWidth: Number(Math.max(0, ...dieRects.map(rect => rect.width)).toFixed(2))
+          });
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    const results = [];
+    for (const fixture of fixtures) {
+      window.TrashDiceDebug.gameStart();
+      await waitUntil(() => document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && !window.TrashDiceQA.state().inlineGameOver);
+      await sleep(160);
+      if (fixture.wins > 0) {
+        window.TrashDiceQA.rewardSkinFixture(fixture.wins);
+      } else {
+        window.TrashDiceQA.setRewardWins(0);
+        window.TrashDiceQA.rewardSkinFixture(0);
+      }
+      await sleep(80);
+      const before = window.TrashDiceQA.state();
+      const sample = frameStatsDuring(${Number(sampleMs) || 980});
+      window.TrashDiceQA.queueRolls([fixture.roll || 3]);
+      document.getElementById('rollBtn').click();
+      const stats = await sample;
+      await waitUntil(() => !document.body.classList.contains('reward-hero-roll-active'), 5200);
+      const after = window.TrashDiceQA.state();
+      results.push({
+        label: fixture.label || '',
+        wins: fixture.wins,
+        activeName: before.rewardDie.activeName || 'BASE',
+        activeEffect: before.rewardDie.activeDie ? before.rewardDie.activeDie.effect || '' : '',
+        bodyVip: document.body.classList.contains('vip-disco-party'),
+        tabletEffectsLite: before.tabletEffectsLite,
+        iPadGameplayPerformanceMode: before.iPadGameplayPerformanceMode,
+        stats,
+        perfClassCleared: !document.body.classList.contains('reward-hero-roll-active'),
+        afterCurrent: after.current
+      });
+    }
+    const rewardResults = results.filter(result => result.wins > 0);
+    return {
+      version: document.body.dataset.trashDiceVersion,
+      results,
+      summary: {
+        sampleMs: ${Number(sampleMs) || 980},
+        maxRewardP95FrameMs: Math.max(0, ...rewardResults.map(result => result.stats.activeP95FrameMs)),
+        maxRewardFrameMs: Math.max(0, ...rewardResults.map(result => result.stats.activeMaxFrameMs)),
+        maxRewardOver34Frames: Math.max(0, ...rewardResults.map(result => result.stats.activeOver34Frames)),
+        maxRewardOver50Frames: Math.max(0, ...rewardResults.map(result => result.stats.activeOver50Frames)),
+        maxRewardActiveAnimationCount: Math.max(0, ...rewardResults.map(result => result.stats.activeMaxActiveAnimationCount))
+      }
+    };
+  })()`;
+}
+
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.3';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.3';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.4';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.4';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -832,6 +964,41 @@ function assertPreShipPerfLeakProbe(label, result) {
   if (summary.heapGrowthKb !== null && Number.isFinite(summary.heapGrowthKb)) {
     assert(summary.heapGrowthKb <= 8192, `${label}: JS heap grew too much during repeated pre-ship cycles ${JSON.stringify(result)}`);
   }
+}
+
+function assertRewardHeroRollPerfProbe(label, result) {
+  assert(result && !result.error, `${label}: reward hero roll perf probe did not run ${JSON.stringify(result)}`);
+  const results = result.results || [];
+  const rewardResults = results.filter(item => item.wins > 0);
+  const summary = result.summary || {};
+  const expensiveRewardAnimations = new Set([
+    'rewardPrismSpin',
+    'rewardPrismFlash',
+    'rewardLavaFlow',
+    'rewardLavaSurfaceFlow',
+    'rewardDiscoFacetShift',
+    'rewardDiscoSparkle',
+    'slotRewardPrismCycle',
+    'slotRewardLavaGlow',
+    'slotRewardLavaCrack',
+    'slotRewardDiscoMirror',
+    'slotRewardDiscoPipGlow',
+    'slotRewardDiscoRayPulse'
+  ]);
+  const stillRunningExpensive = rewardResults.flatMap(item =>
+    (item.stats && item.stats.activeAnimationNames || [])
+      .filter(name => expensiveRewardAnimations.has(name))
+      .map(name => `${item.label || item.activeName}:${name}`)
+  );
+  const missingActiveFrames = rewardResults.filter(item => !(item.stats && item.stats.activeFrames >= 8));
+  const missingPerfClass = rewardResults.filter(item => !(item.stats && item.stats.perfClassSeen));
+  const unclearedPerfClass = rewardResults.filter(item => item.perfClassCleared !== true || (item.stats && item.stats.perfClassStillActive === true));
+  assert(missingActiveFrames.length === 0, `${label}: reward hero roll perf probe did not sample enough active roll frames ${JSON.stringify({ result, missingActiveFrames })}`);
+  assert(missingPerfClass.length === 0, `${label}: reward hero roll perf class was not active during reward roll ${JSON.stringify({ result, missingPerfClass })}`);
+  assert(unclearedPerfClass.length === 0, `${label}: reward hero roll perf class did not clear after roll ${JSON.stringify({ result, unclearedPerfClass })}`);
+  assert(stillRunningExpensive.length === 0, `${label}: expensive reward skin animations should pause during hero roll ${JSON.stringify({ result, stillRunningExpensive })}`);
+  assert(summary.maxRewardP95FrameMs <= 42 && summary.maxRewardOver50Frames <= 1, `${label}: reward hero roll frame pacing regressed ${JSON.stringify(result)}`);
+  assert(summary.maxRewardActiveAnimationCount <= 24, `${label}: too many animations remained active during reward hero roll ${JSON.stringify(result)}`);
 }
 
 async function main() {
@@ -2081,10 +2248,18 @@ async function main() {
       assert(rewardSkinLadderFixtures.map(item => item.activeName).join('|') === rewardConfigNames.join('|'), `${viewport.name}: all reward ladder skins should activate in active order ${JSON.stringify({ rewardConfig, rewardSkinLadderFixtures })}`);
       assert(rewardSkinLadderFixtures.every(item => item.playerDie.rewardSkinned === true && hasVisibleSeatedRewardAnimation(item)), `${viewport.name}: every reward skin should visibly animate on the player die and seated lid die ${JSON.stringify(rewardSkinLadderFixtures)}`);
       const prismHeroSpin = await evalValue(page, rewardHeroBodySpinProbeScript(rewardPrism.minWins, 3, viewport.mobile ? 900 : 1100, viewport.mobile ? 32 : 40));
-      const expectedPrismHeroRollAnimation = viewport.mobile ? 'rewardDieRollMobile' : 'rewardDieRoll';
+      const expectedPrismHeroRollAnimation = viewport.mobile ? 'rewardDieRollMobile' : 'rewardDieRollPerf';
       assert(prismHeroSpin.firstActive && prismHeroSpin.firstActive.rewardSkinned === true && prismHeroSpin.firstActive.effect === rewardPrism.effect, `${viewport.name}: PRISM hero roll probe did not activate the PRISM reward die ${JSON.stringify({ rewardPrism, prismHeroSpin })}`);
       assert(prismHeroSpin.animationNames.includes(expectedPrismHeroRollAnimation), `${viewport.name}: PRISM hero die should use the platform reward roll animation, not only the prism pip/face cycle ${JSON.stringify({ expectedPrismHeroRollAnimation, prismHeroSpin })}`);
       assert(prismHeroSpin.activeSamples >= 2 && prismHeroSpin.rollKeyframeTransformCount >= 2 && (prismHeroSpin.uniqueTransformCount >= 2 || prismHeroSpin.rollAnimationCurrentTimeDelta >= 40), `${viewport.name}: PRISM reward hero die body should visibly spin during roll ${JSON.stringify(prismHeroSpin)}`);
+      const rewardHeroRollPerf = await evalValue(page, rewardHeroRollPerfProbeScript([
+        { label: 'base', wins: 0 },
+        { label: 'diamond', wins: rewardDiamond.minWins },
+        { label: 'prism', wins: rewardPrism.minWins },
+        { label: 'lava', wins: rewardAtEleven.minWins },
+        { label: 'disco', wins: rewardCapDie.minWins }
+      ], viewport.mobile ? 920 : 1120));
+      assertRewardHeroRollPerfProbe(viewport.name, rewardHeroRollPerf);
       const liveRewardDieEdge = await evalValue(page, `(() => {
         const fixture = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify(rewardCapDie.minWins)});
         const stage = document.getElementById('p1DieStage');
