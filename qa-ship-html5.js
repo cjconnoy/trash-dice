@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.13';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.13';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.14';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.14';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1765,10 +1765,8 @@ async function main() {
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
             (p1r.bottom <= qr.top - 4 || p1r.left >= qr.right + 4 || p1r.right <= qr.left - 4 || p1r.top >= qr.bottom + 4) &&
-            (rbr.bottom <= qr.top - 4 || rbr.left >= qr.right + 4 || rbr.right <= qr.left - 4 || rbr.top >= qr.bottom + 4) &&
-            (dr.bottom <= qr.top - 4 || dr.left >= qr.right + 4 || dr.right <= qr.left - 4 || dr.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
-          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && rbr.left >= window.innerWidth * 0.62 && dr.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && rbr.top >= window.innerHeight * 0.42 && dr.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -1821,10 +1819,8 @@ async function main() {
       assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.discoClearsRoll && activeLayout.discoClearsRollPanel, `${viewport.name}: DISCO debug button overlaps Roll action area ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.rewardButtonVisible === false, `${viewport.name}: DIE debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.discoButtonVisible === false, `${viewport.name}: DISCO debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
@@ -2060,7 +2056,7 @@ async function main() {
           }
         };
       })()`);
-      assert(discoDebug.buttonVisible === true && discoDebug.pressed === 'true' && discoDebug.label === 'DISCO die active', `${viewport.name}: DISCO button active state wrong ${JSON.stringify(discoDebug)}`);
+      assert(discoDebug.buttonVisible === false && discoDebug.pressed === 'true' && discoDebug.label === 'DISCO die active', `${viewport.name}: hidden DISCO debug hook active state wrong ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.state.totalWins === rewardCapDie.minWins && discoDebug.state.activeName === rewardCapDie.name && discoDebug.state.activeDie && discoDebug.state.activeDie.effect === 'discoBall' && discoDebug.state.capped === true, `${viewport.name}: DISCO debug button should jump to VIP reward state ${JSON.stringify({ rewardCapDie, discoDebug })}`);
       const discoOverlayConics = (discoDebug.discoOverlayBackground.match(/conic-gradient/g) || []).length;
       const discoOverlayRadials = (discoDebug.discoOverlayBackground.match(/radial-gradient/g) || []).length;
@@ -3627,7 +3623,7 @@ async function main() {
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: AUTO PLAY and reward review should show during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === false && publicActive.discoButtonVisible === false && publicActive.outcomeButtonsHidden === true, `public probe: AUTO PLAY should show while DIE/DISCO debug buttons stay hidden during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
