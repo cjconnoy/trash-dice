@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-20
 
+2026-06-30 addendum: read `TRASH_DICE_RETAIL_AGENTIC_LOOPS_HANDOFF_2026-06-30.md` before acting on this file. The new addendum carries the current ODG loop model, the lighter client telemetry promise, and the Studio Ops versus Retail-session boundary for launch promotion.
+
 This handoff starts the next session: `Trash Dice Retail`.
 
 CJ is Creative/Product. Codex is Dev Lead, Studio Ops technical owner, QA owner, release owner, Slack comms owner, and continuity owner. Beta is complete. The next session should not reopen Beta polish unless CJ explicitly changes the call. The mission is to turn the accepted Beta build into the final retail/live web release.
