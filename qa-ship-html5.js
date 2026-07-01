@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.9';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.9';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.10';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.10';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1718,6 +1718,7 @@ async function main() {
           rollText: rollLabel ? rollLabel.textContent.trim() : '',
           rollAriaLabel: roll.getAttribute('aria-label') || '',
           rollPromptClass: roll.classList.contains('first-roll-prompt'),
+          rollLongCopyClass: roll.classList.contains('long-roll-copy'),
           rollTextFits: !!(rollLabel && rlr && rlr.left >= rr.left - 1 && rlr.right <= rr.right + 1 && rlr.top >= rr.top - 1 && rlr.bottom <= rr.bottom + 1),
           rollLabelMetrics: rollLabel && rlr ? {
             scrollWidth: rollLabel.scrollWidth,
@@ -1804,7 +1805,7 @@ async function main() {
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.firstRollCoachPresent === false, `${viewport.name}: removed first-roll coach overlay should not be present ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.rollText === 'TAP TO START!' && activeLayout.rollAriaLabel === 'Tap to start rolling' && activeLayout.rollPromptClass === true && activeLayout.rollTextFits === true, `${viewport.name}: first-roll button should be the only launch prompt and fit inside ROLL button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.rollText === 'TAP TO START!' && activeLayout.rollAriaLabel === 'Tap to start rolling' && activeLayout.rollPromptClass === true && activeLayout.rollLongCopyClass === true && activeLayout.rollTextFits === true, `${viewport.name}: first-roll button should be the only launch prompt and fit inside ROLL button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
@@ -1873,14 +1874,14 @@ async function main() {
         };
       })()`);
       assert(rollPanelHit.start.hadTagline === true && rollPanelHit.start.hadPanel === true && rollPanelHit.start.rollDisabledBefore === false && rollPanelHit.totalRolls === rollPanelHit.start.totalRollsBefore + 1 && rollPanelHit.events.includes('td_first_roll'), `${viewport.name}: tapping roll tagline should trigger exactly one valid roll ${JSON.stringify(rollPanelHit)}`);
-      assert(rollPanelHit.start.rollTextBefore === 'TAP TO START!' && rollPanelHit.start.rollAriaBefore === 'Tap to start rolling' && rollPanelHit.start.promptBefore && rollPanelHit.start.promptBefore.active === true && rollPanelHit.start.promptBefore.seenThisSession === false && rollPanelHit.promptAfter.active === false && rollPanelHit.promptAfter.text === 'ROLL!' && rollPanelHit.promptAfter.seenThisSession === true && rollPanelHit.promptAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
+      assert(rollPanelHit.start.rollTextBefore === 'TAP TO START!' && rollPanelHit.start.rollAriaBefore === 'Tap to start rolling' && rollPanelHit.start.promptBefore && rollPanelHit.start.promptBefore.active === true && rollPanelHit.start.promptBefore.seenThisSession === false && rollPanelHit.promptAfter.active === false && rollPanelHit.promptAfter.text === 'TAP TO ROLL!' && rollPanelHit.promptAfter.ariaLabel === 'Tap to roll yellow die' && rollPanelHit.promptAfter.seenThisSession === true && rollPanelHit.promptAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
       await evalValue(rollPanelHitPage, `window.TrashDiceDebug.gameStart(); true`);
       await waitEval(rollPanelHitPage, `(() => {
         const state = window.TrashDiceQA.state();
         return state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
       })()`, `${viewport.name} first-roll prompt same-session reset`);
       const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollPrompt`);
-      assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
+      assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'TAP TO ROLL!' && rollPanelHitReset.ariaLabel === 'Tap to roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
