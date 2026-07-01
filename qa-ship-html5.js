@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.11';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.11';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.12';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.12';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -2151,6 +2151,61 @@ async function main() {
       assert(rewardMissingBaseNames.length === 0 && rewardConfig.every(item => item.sessionVariant === false && item.replacementFor === ''), `${viewport.name}: reward ladder should not replace base rungs while branded dice are parked ${JSON.stringify({ rewardConfig, rewardMissingBaseNames, rewardSpecials })}`);
       assert(rewardConfig.every(item => REWARD_EFFECTS_BY_NAME[item.name] === item.effect), `${viewport.name}: reward die pattern effects missing ${JSON.stringify(rewardConfig)}`);
       assert(rewardConfig.filter(item => REWARD_OUTLINED_BASE_NAMES.includes(item.name)).every(item => item.pipOutline === true), `${viewport.name}: outlined base reward dice should keep pip outlines ${JSON.stringify(rewardConfig)}`);
+      const postBeatRandomBefore = await evalValue(page, `(() => {
+        window.TrashDiceQA.setRewardWins(0);
+        window.TrashDiceQA.setGuidedCompletion({ pending: false, completed: false, reason: 'qa-post-beat-rng-reset' });
+        window.TrashDiceQA.gameStart();
+        return {
+          state: window.TrashDiceQA.rewardDieState(),
+          skin: window.TrashDiceQA.rewardSkinProbe()
+        };
+      })()`);
+      await evalValue(page, `(() => {
+        window.TrashDiceQA.setRewardWins(${rewardCapDie.minWins + 1});
+        window.TrashDiceQA.setGuidedCompletion({ pending: false, completed: true, reason: 'qa-post-beat-rng' });
+        window.TrashDiceQA.gameStart();
+        return true;
+      })()`);
+      await sleep(90);
+      const postBeatRandomFirst = await evalValue(page, `(() => ({
+        state: window.TrashDiceQA.rewardDieState(),
+        skin: window.TrashDiceQA.rewardSkinProbe(),
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          tier: document.body.dataset.postBeatRandomDieTier || '',
+          roll: document.body.dataset.postBeatRandomDieRoll || ''
+        }
+      }))()`);
+      await evalValue(page, `window.TrashDiceQA.gameStart(); true`);
+      await sleep(90);
+      const postBeatRandomSecond = await evalValue(page, `(() => ({
+        state: window.TrashDiceQA.rewardDieState(),
+        skin: window.TrashDiceQA.rewardSkinProbe(),
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          tier: document.body.dataset.postBeatRandomDieTier || '',
+          roll: document.body.dataset.postBeatRandomDieRoll || ''
+        }
+      }))()`);
+      const postBeatRandomReset = await evalValue(page, `(() => {
+        window.TrashDiceQA.setRewardWins(2);
+        window.TrashDiceQA.setGuidedCompletion({ pending: false, completed: false, reason: 'qa-post-beat-rng-clear' });
+        window.TrashDiceQA.gameStart();
+        return {
+          state: window.TrashDiceQA.rewardDieState(),
+          skin: window.TrashDiceQA.rewardSkinProbe(),
+          dataset: {
+            name: document.body.dataset.postBeatRandomDie || '',
+            tier: document.body.dataset.postBeatRandomDieTier || '',
+            roll: document.body.dataset.postBeatRandomDieRoll || ''
+          }
+        };
+      })()`);
+      const randomEligibleNames = new Set(rewardConfig.filter(item => item.minWins <= rewardCapDie.minWins + 1).map(item => item.name));
+      assert(postBeatRandomBefore.state.postBeatRandomActive === false && postBeatRandomBefore.state.postBeatRandomDie === null && postBeatRandomBefore.skin.activePlayerDie === null, `${viewport.name}: post-beat RNG die should not arm before beat-game completion ${JSON.stringify(postBeatRandomBefore)}`);
+      assert(postBeatRandomFirst.state.totalWins === rewardCapDie.minWins + 1 && postBeatRandomFirst.state.guidedGameCompleted === true && postBeatRandomFirst.state.postBeatRandomActive === true && postBeatRandomFirst.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomFirst.state.postBeatRandomDie.name) && postBeatRandomFirst.skin.activePlayerDie && postBeatRandomFirst.skin.activePlayerDie.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.roll === '1', `${viewport.name}: first post-beat new game should start with a session RNG reward die ${JSON.stringify(postBeatRandomFirst)}`);
+      assert(postBeatRandomSecond.state.postBeatRandomActive === true && postBeatRandomSecond.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomSecond.state.postBeatRandomDie.name) && postBeatRandomSecond.skin.activePlayerDie && postBeatRandomSecond.skin.activePlayerDie.name === postBeatRandomSecond.state.postBeatRandomDie.name && postBeatRandomSecond.state.postBeatRandomRoll === 2 && postBeatRandomSecond.dataset.roll === '2' && postBeatRandomSecond.state.postBeatRandomDie.name !== postBeatRandomFirst.state.postBeatRandomDie.name, `${viewport.name}: each post-beat new game should reroll the session reward die without immediate repeats ${JSON.stringify({ first: postBeatRandomFirst, second: postBeatRandomSecond })}`);
+      assert(postBeatRandomReset.state.totalWins === 2 && postBeatRandomReset.state.guidedGameCompleted === false && postBeatRandomReset.state.postBeatRandomActive === false && postBeatRandomReset.state.postBeatRandomDie === null && postBeatRandomReset.dataset.name === '' && postBeatRandomReset.skin.activePlayerDie && postBeatRandomReset.skin.activePlayerDie.name === rewardConfig.find(item => item.minWins === 2).name, `${viewport.name}: post-beat RNG die should clear with session guided-completion reset ${JSON.stringify(postBeatRandomReset)}`);
       const rewardSkinFixture = await evalValue(page, `(() => {
         const outlined = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => item.pipOutline) || rewardFirst).minWins)});
         const animated = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => rewardSlotAnimation(item.effect)) || rewardFirst).minWins)});
