@@ -744,8 +744,8 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.2';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.3';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.3';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -3784,6 +3784,59 @@ async function main() {
     assert(beatGameWinUi.state.guidedCompletionTriggered === true && beatGameWinUi.rewardState.guidedCompletionPending === false && beatGameWinUi.rewardState.guidedGameCompleted === true, `guided complete game-win probe: terminal game win should complete guided state ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.bodyGuidedClass === true && beatGameWinUi.title === 'YOU BEAT THE GAME!' && beatGameWinUi.sub === 'You unlocked every die. How many more rounds can you win?' && beatGameWinUi.logoVisible === true, `guided complete game-win probe: terminal capstone should show headline, logo, and subcopy ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.terminalRewardVisible === false && beatGameWinUi.chipVisible === true && /ROUNDS WON:\s*x12/.test(beatGameWinUi.chipText) && /GAMES WON:\s*1/.test(beatGameWinUi.chipText), `guided complete game-win probe: terminal capstone should suppress reward chase and keep round and game counters ${JSON.stringify(beatGameWinUi)}`);
+
+    const discoGameWinLayerProbe = await openPage(`${baseUrl}?source=qa&qa=1&disco-game-win-layer=1`, viewports[0]);
+    await evalValue(discoGameWinLayerProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(discoGameWinLayerProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `DISCO game-win layer probe game start`);
+    await evalValue(discoGameWinLayerProbe, `window.TrashDiceQA.setRewardWins(${JSON.stringify(rewardCapDie.minWins)}); window.TrashDiceQA.gameWin('p1'); true`);
+    await waitEval(discoGameWinLayerProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active && document.body.classList.contains('vip-disco-party')`, `DISCO game-win layer probe terminal`);
+    await waitEval(discoGameWinLayerProbe, `(() => {
+      const card = document.getElementById('inlineResultBanner');
+      const title = document.getElementById('inlineResultTitle');
+      if (!card || !title) return false;
+      const style = getComputedStyle(card);
+      return style.visibility !== 'hidden' && Number.parseFloat(style.opacity || '0') > 0.9 && title.textContent.replace(/\\s+/g, ' ').trim() === 'YOU TRASHED THE CPU!';
+    })()`, `DISCO game-win layer probe visible title`);
+    const discoGameWinLayer = await evalValue(discoGameWinLayerProbe, `(() => {
+      const gameArea = document.querySelector('.game-area');
+      const card = document.getElementById('inlineResultBanner');
+      const title = document.getElementById('inlineResultTitle');
+      const previousPointerEvents = card ? card.style.pointerEvents : '';
+      if (card) card.style.pointerEvents = 'auto';
+      const titleRect = title ? title.getBoundingClientRect() : null;
+      const centerX = titleRect ? Math.min(window.innerWidth - 1, Math.max(1, titleRect.left + titleRect.width / 2)) : 1;
+      const centerY = titleRect ? Math.min(window.innerHeight - 1, Math.max(1, titleRect.top + titleRect.height / 2)) : 1;
+      const stack = document.elementsFromPoint(centerX, centerY).map(el => {
+        const resultAncestor = el.closest ? el.closest('#inlineResultTitle,#inlineResultBanner') : null;
+        return {
+          id: el.id || '',
+          className: typeof el.className === 'string' ? el.className : '',
+          tag: el.tagName,
+          resultAncestorId: resultAncestor ? resultAncestor.id || '' : ''
+        };
+      }).slice(0, 8);
+      if (card) card.style.pointerEvents = previousPointerEvents;
+      const bodyDimZ = Number.parseInt(getComputedStyle(document.body, '::before').zIndex, 10);
+      const gameAreaZRaw = gameArea ? getComputedStyle(gameArea).zIndex : '';
+      const gameAreaZ = Number.parseInt(gameAreaZRaw, 10);
+      const cardZ = Number.parseInt(card ? getComputedStyle(card).zIndex : '', 10);
+      const top = stack[0] || {};
+      return {
+        bodyVip: document.body.classList.contains('vip-disco-party'),
+        inlineGameOver: document.body.classList.contains('inline-game-over'),
+        title: title ? title.textContent.replace(/\\s+/g, ' ').trim() : '',
+        cardVisible: !!(card && getComputedStyle(card).visibility !== 'hidden' && Number.parseFloat(getComputedStyle(card).opacity || '0') > 0.9),
+        bodyDimZ,
+        gameAreaZRaw,
+        gameAreaZ: Number.isFinite(gameAreaZ) ? gameAreaZ : null,
+        cardZ: Number.isFinite(cardZ) ? cardZ : null,
+        stack,
+        titleAtTop: top.id === 'inlineResultTitle' || top.id === 'inlineResultBanner' || top.resultAncestorId === 'inlineResultTitle' || top.resultAncestorId === 'inlineResultBanner' || /inline-result-title|inline-result-banner/.test(top.className || '')
+      };
+    })()`);
+    assert(discoGameWinLayer.bodyVip === true && discoGameWinLayer.inlineGameOver === true && discoGameWinLayer.title === 'YOU TRASHED THE CPU!' && discoGameWinLayer.cardVisible === true, `DISCO game-win layer probe: expected terminal outcome card missing ${JSON.stringify(discoGameWinLayer)}`);
+    assert(discoGameWinLayer.bodyDimZ === 142 && discoGameWinLayer.cardZ > discoGameWinLayer.bodyDimZ && discoGameWinLayer.gameAreaZRaw === 'auto', `DISCO game-win layer probe: outcome card should escape the dim-screen stacking layer ${JSON.stringify(discoGameWinLayer)}`);
+    assert(discoGameWinLayer.titleAtTop === true, `DISCO game-win layer probe: YOU TRASHED THE CPU title should be topmost at its center ${JSON.stringify(discoGameWinLayer)}`);
 
     for (const outcome of [
       { id: 'devWinBtn', winner: 'p1', label: 'win' },
