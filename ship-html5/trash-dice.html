@@ -777,7 +777,7 @@ body.quit-return-open .audio-mute-btn {
 
 .auto-play-btn {
   bottom: calc(env(safe-area-inset-bottom, 0px) + 122px);
-  min-width: 58px;
+  min-width: 82px;
   background: rgba(17,96,168,0.86);
 }
 
@@ -9187,7 +9187,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   .auto-play-btn {
     right: calc(env(safe-area-inset-right, 0px) + 8px);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 174px);
-    min-width: 54px;
+    min-width: 78px;
     min-height: 30px;
     padding-left: 0.36rem;
     padding-right: 0.36rem;
@@ -9646,7 +9646,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
 
   .auto-play-btn {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
-    min-width: 50px;
+    min-width: 74px;
     min-height: 28px;
   }
 
@@ -10993,7 +10993,7 @@ body.inline-game-over .roll-panel {
     <path d="M22 8l-5 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
   </svg>
 </button>
-<button class="auto-play-btn" id="devP1AutoBtn" type="button" aria-label="Autoplay your turns" aria-pressed="false">AUTO</button>
+<button class="auto-play-btn" id="devP1AutoBtn" type="button" aria-label="Watch autoplay" aria-pressed="false">AUTO PLAY</button>
 <button class="debug-p0-btn" id="devP0Btn" type="button" aria-label="Start Player 0 autoplay" aria-pressed="false">P-0</button>
 <button class="debug-disco-btn" id="devDiscoBtn" type="button" aria-label="Activate DISCO reward die" aria-pressed="false">DISCO</button>
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
@@ -11427,7 +11427,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260701.1';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260701.2';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -17021,8 +17021,8 @@ body.inline-game-over .roll-panel {
     document.body.classList.toggle('auto-play-active', p1Autoplay);
     if (devCheatBar) devCheatBar.hidden = !DEV_CHEATS_ENABLED;
     if (devP1AutoBtn) {
-      devP1AutoBtn.textContent = p1Autoplay ? 'AUTO ON' : 'AUTO';
-      devP1AutoBtn.setAttribute('aria-label', p1Autoplay ? 'Stop autoplay' : 'Autoplay your turns');
+      devP1AutoBtn.textContent = p1Autoplay ? 'AUTO ON' : 'AUTO PLAY';
+      devP1AutoBtn.setAttribute('aria-label', p1Autoplay ? 'Stop autoplay' : 'Watch autoplay');
       devP1AutoBtn.setAttribute('aria-pressed', String(p1Autoplay));
     }
     if (devP0Btn) {

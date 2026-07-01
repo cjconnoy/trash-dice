@@ -744,8 +744,10 @@ function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, in
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.2';
+const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
+const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -1264,9 +1266,9 @@ async function main() {
       assert(initial.devControls === false, `${viewport.name}: dev controls present`);
       assert(initial.p0Button === true, `${viewport.name}: P-0 debug button missing`);
       assert(initial.p0ButtonHidden === true, `${viewport.name}: P-0 debug button should hide on title screen`);
-      assert(initial.p1AutoButton === true, `${viewport.name}: AUTO button missing`);
-      assert(initial.p1AutoButtonHidden === true, `${viewport.name}: AUTO button should hide on title screen`);
-      assert(initial.p1AutoButtonText === 'AUTO' && initial.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button should ship as audience-facing copy/class ${JSON.stringify(initial)}`);
+      assert(initial.p1AutoButton === true, `${viewport.name}: AUTO PLAY button missing`);
+      assert(initial.p1AutoButtonHidden === true, `${viewport.name}: AUTO PLAY button should hide on title screen`);
+      assert(initial.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && initial.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button should ship as audience-facing copy/class ${JSON.stringify(initial)}`);
       assert(initial.rewardReviewButton === true, `${viewport.name}: reward review button missing`);
       assert(initial.rewardReviewButtonHidden === true, `${viewport.name}: reward review button should hide on title screen`);
       assert(initial.discoButton === true, `${viewport.name}: DISCO debug button missing`);
@@ -1545,6 +1547,7 @@ async function main() {
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
           p1AutoButtonText: p1AutoButton.textContent.trim(),
+          p1AutoButtonTextFits: p1AutoButton.scrollWidth <= p1AutoButton.clientWidth + 1 && p1AutoButton.scrollHeight <= p1AutoButton.clientHeight + 1,
           p1AutoButtonAudienceClass: p1AutoButton.classList.contains('auto-play-btn'),
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           discoButtonVisible: getComputedStyle(discoButton).display !== 'none' && dr.width > 42 && dr.height > 24 && dr.right <= window.innerWidth + 1 && dr.top >= -1,
@@ -1608,7 +1611,7 @@ async function main() {
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === 'AUTO' && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO button not visible or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoButtonVisible, `${viewport.name}: DISCO debug button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoClearsRewardButton, `${viewport.name}: DISCO debug button overlaps reward DIE button ${JSON.stringify(activeLayout)}`);
@@ -3242,7 +3245,7 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.p1AutoButtonText === 'AUTO' && publicInitial.p1AutoButtonAudienceClass === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: hidden pre-play controls should include the audience-facing AUTO control while reward review is armed ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicInitial.p1AutoButtonAudienceClass === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: hidden pre-play controls should include the audience-facing AUTO PLAY control while reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
@@ -3260,7 +3263,7 @@ async function main() {
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === 'AUTO' && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: AUTO and reward review should show during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === true && publicActive.discoButtonVisible === true && publicActive.outcomeButtonsHidden === true, `public probe: AUTO PLAY and reward review should show during public play ${JSON.stringify(publicActive)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
@@ -3331,7 +3334,7 @@ async function main() {
       };
     })()`);
     assert(p1AutoOn.before.firstGameAssist.active === true, `AUTO probe: first-game assists should be eligible before autoplay starts ${JSON.stringify(p1AutoOn)}`);
-    assert(p1AutoOn.buttonText === 'AUTO ON' && p1AutoOn.ariaPressed === 'true', `AUTO probe: button did not switch on ${JSON.stringify(p1AutoOn)}`);
+    assert(p1AutoOn.buttonText === AUTO_PLAY_ON_LABEL && p1AutoOn.ariaPressed === 'true', `AUTO probe: button did not switch on ${JSON.stringify(p1AutoOn)}`);
     assert(p1AutoOn.p1Autoplay === true && p1AutoOn.p0Autoplay === false && p1AutoOn.p0ReviewMode === false, `AUTO probe: wrong autoplay mode after enabling ${JSON.stringify(p1AutoOn)}`);
     assert(p1AutoOn.p1AutoButtonVisible === true && p1AutoOn.bodyP1Auto === true && p1AutoOn.bodyAutoActive === true, `AUTO probe: button/body state missing after enable ${JSON.stringify(p1AutoOn)}`);
     await waitEval(p1AutoProbe, `window.TrashDiceQA.state().totalRolls >= 3`, 'P1 auto probe natural game rolls', 12000);
@@ -3371,7 +3374,7 @@ async function main() {
       };
     })()`);
     assert(p1AutoTerminal.p1Autoplay === true && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: terminal screen should preserve AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
-    assert(p1AutoTerminal.buttonText === 'AUTO ON' && p1AutoTerminal.ariaPressed === 'true' && p1AutoTerminal.bodyAutoActive === true, `AUTO probe: terminal screen should keep AUTO armed visually ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.buttonText === AUTO_PLAY_ON_LABEL && p1AutoTerminal.ariaPressed === 'true' && p1AutoTerminal.bodyAutoActive === true, `AUTO probe: terminal screen should keep AUTO armed visually ${JSON.stringify(p1AutoTerminal)}`);
     assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === true && p1AutoTerminal.inlineGameOver.autoRestartMs > 0, `AUTO probe: terminal screen did not arm auto-continue restart ${JSON.stringify(p1AutoTerminal)}`);
     await waitEval(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
@@ -3395,7 +3398,7 @@ async function main() {
       };
     })()`);
     assert(p1AutoAfterContinue.p1Autoplay === true && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: auto-continue did not restart cleanly ${JSON.stringify(p1AutoAfterContinue)}`);
-    assert(p1AutoAfterContinue.totalRolls >= 1 && p1AutoAfterContinue.buttonText === 'AUTO ON' && p1AutoAfterContinue.ariaPressed === 'true' && p1AutoAfterContinue.bodyAutoActive === true, `AUTO probe: autoplay did not resume after auto-continue restart ${JSON.stringify(p1AutoAfterContinue)}`);
+    assert(p1AutoAfterContinue.totalRolls >= 1 && p1AutoAfterContinue.buttonText === AUTO_PLAY_ON_LABEL && p1AutoAfterContinue.ariaPressed === 'true' && p1AutoAfterContinue.bodyAutoActive === true, `AUTO probe: autoplay did not resume after auto-continue restart ${JSON.stringify(p1AutoAfterContinue)}`);
     const p1AutoOff = await evalValue(p1AutoProbe, `(() => {
       const btn = document.getElementById('devP1AutoBtn');
       btn.click();
@@ -3409,7 +3412,7 @@ async function main() {
         bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoOff.buttonText === 'AUTO' && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true && p1AutoOff.bodyAutoActive === false, `AUTO probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
+    assert(p1AutoOff.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true && p1AutoOff.bodyAutoActive === false, `AUTO probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
 
     const p1AutoBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe()`);
     const p1AutoBuffCases = [
