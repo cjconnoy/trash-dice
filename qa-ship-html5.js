@@ -876,8 +876,8 @@ function rewardHeroRollPerfProbeScript(fixtures, sampleMs = 980) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.7';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.7';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.8';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.8';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -1690,6 +1690,7 @@ async function main() {
         const roll = document.getElementById('rollBtn');
         const panel = document.querySelector('.roll-panel');
         const gameTagline = document.querySelector('.game-tagline');
+        const coach = document.getElementById('firstRollCoach');
         const p0Button = document.getElementById('devP0Btn');
         const p1AutoButton = document.getElementById('devP1AutoBtn');
         const rewardButton = document.getElementById('devRewardDieBtn');
@@ -1700,6 +1701,9 @@ async function main() {
         const rr = roll.getBoundingClientRect();
         const pr = panel.getBoundingClientRect();
         const tr = gameTagline ? gameTagline.getBoundingClientRect() : null;
+        const cr = coach ? coach.getBoundingClientRect() : null;
+        const coachStyle = coach ? getComputedStyle(coach) : null;
+        const state = window.TrashDiceQA.state();
         const br = p0Button.getBoundingClientRect();
         const p1r = p1AutoButton.getBoundingClientRect();
         const rbr = rewardButton.getBoundingClientRect();
@@ -1718,6 +1722,23 @@ async function main() {
             belowRoll: tr.top >= rr.bottom - 1,
             inPanel: tr.left >= pr.left - 1 && tr.right <= pr.right + 1,
             rect: { top: tr.top, bottom: tr.bottom, left: tr.left, right: tr.right, width: tr.width, height: tr.height }
+          } : null,
+          firstRollCoach: coach ? {
+            text: coach.textContent.replace(/\\s+/g, ' ').trim(),
+            title: (coach.querySelector('.first-roll-coach-title') || {}).textContent || '',
+            sub: (coach.querySelector('.first-roll-coach-sub') || {}).textContent || '',
+            visible: !coach.hidden && coachStyle.display !== 'none' && cr.width > 120 && cr.height > 44,
+            hidden: coach.hidden,
+            pointerEvents: coachStyle.pointerEvents,
+            ariaLive: coach.getAttribute('aria-live'),
+            ariaAtomic: coach.getAttribute('aria-atomic'),
+            ariaHidden: coach.getAttribute('aria-hidden'),
+            bodyActive: document.body.classList.contains('first-roll-coach-active'),
+            qaState: state.firstRollCoach,
+            centeredOnRoll: Math.abs(((cr.left + cr.right) / 2) - ((rr.left + rr.right) / 2)) <= Math.max(28, rr.width * 0.28),
+            aboveRoll: cr.bottom <= rr.top + 2,
+            fitsViewport: cr.left >= -1 && cr.right <= window.innerWidth + 1 && cr.top >= -1 && cr.bottom <= window.innerHeight + 1,
+            rect: { top: cr.top, bottom: cr.bottom, left: cr.left, right: cr.right, width: cr.width, height: cr.height }
           } : null,
           p0ButtonVisible: getComputedStyle(p0Button).display !== 'none' && br.width > 32 && br.height > 24 && br.right <= window.innerWidth + 1 && br.top >= -1,
           p1AutoButtonVisible: getComputedStyle(p1AutoButton).display !== 'none' && p1r.width > 48 && p1r.height > 24 && p1r.right <= window.innerWidth + 1 && p1r.top >= -1,
@@ -1785,6 +1806,10 @@ async function main() {
       assert(activeLayout.rollVisible, `${viewport.name}: roll button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.panelVisible, `${viewport.name}: roll panel not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.firstRollCoach && activeLayout.firstRollCoach.visible === true && activeLayout.firstRollCoach.title === "LET'S ROLL!" && activeLayout.firstRollCoach.sub === 'TAP/CLICK THE ROLL! BUTTON', `${viewport.name}: first-roll coach mark should appear with the launch instruction before the first roll ${JSON.stringify(activeLayout.firstRollCoach)}`);
+      assert(activeLayout.firstRollCoach.pointerEvents === 'none' && activeLayout.firstRollCoach.ariaLive === 'polite' && activeLayout.firstRollCoach.ariaAtomic === 'true' && activeLayout.firstRollCoach.ariaHidden === 'false', `${viewport.name}: first-roll coach mark should be non-blocking and announced politely ${JSON.stringify(activeLayout.firstRollCoach)}`);
+      assert(activeLayout.firstRollCoach.bodyActive === true && activeLayout.firstRollCoach.qaState && activeLayout.firstRollCoach.qaState.visible === true && activeLayout.firstRollCoach.qaState.eligible === true && activeLayout.firstRollCoach.qaState.seenThisSession === false, `${viewport.name}: first-roll coach state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollCoach)}`);
+      assert(activeLayout.firstRollCoach.centeredOnRoll === true && activeLayout.firstRollCoach.aboveRoll === true && activeLayout.firstRollCoach.fitsViewport === true, `${viewport.name}: first-roll coach mark should point at the ROLL button without covering it ${JSON.stringify({ coach: activeLayout.firstRollCoach, roll: activeLayout.rollRect })}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rewardButtonVisible, `${viewport.name}: reward review button not visible in viewport ${JSON.stringify(activeLayout)}`);
@@ -1813,7 +1838,7 @@ async function main() {
       assert(activeLayout.panelCursor === 'pointer', `${viewport.name}: roll panel should advertise tappable action surface ${JSON.stringify(activeLayout)}`);
       const rollPanelHitPage = await openPage(`${baseUrl}?source=qa&qa=1&roll-panel-hit=tagline`, viewport);
       await evalValue(rollPanelHitPage, `document.getElementById('startBtn').click(); true`);
-      await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${viewport.name} roll panel hit target game start`);
+      await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && window.TrashDiceQA.state().firstRollCoach.visible === true`, `${viewport.name} roll panel hit target game start`);
       const rollPanelHitStart = await evalValue(rollPanelHitPage, `(() => {
         const tagline = document.querySelector('.game-tagline');
         const panel = document.querySelector('.roll-panel');
@@ -1825,7 +1850,8 @@ async function main() {
           hadTagline: !!tagline,
           hadPanel: !!panel,
           rollDisabledBefore,
-          totalRollsBefore: state.totalRolls
+          totalRollsBefore: state.totalRolls,
+          coachBefore: state.firstRollCoach
         };
       })()`);
       await waitEval(rollPanelHitPage, `window.TrashDiceQA.state().totalRolls > ${JSON.stringify(rollPanelHitStart.totalRollsBefore)}`, `${viewport.name} roll panel tagline click rolls`);
@@ -1841,10 +1867,19 @@ async function main() {
           rollDisabled: !!(document.getElementById('rollBtn') && document.getElementById('rollBtn').disabled),
           taglineText: tagline ? tagline.textContent.trim() : '',
           panelCursor: panel ? getComputedStyle(panel).cursor : '',
+          coachAfter: state.firstRollCoach,
           events: window.TrashDiceAnalyticsDebug ? window.TrashDiceAnalyticsDebug.log.map(item => item.eventName) : []
         };
       })()`);
       assert(rollPanelHit.start.hadTagline === true && rollPanelHit.start.hadPanel === true && rollPanelHit.start.rollDisabledBefore === false && rollPanelHit.totalRolls === rollPanelHit.start.totalRollsBefore + 1 && rollPanelHit.events.includes('td_first_roll'), `${viewport.name}: tapping roll tagline should trigger exactly one valid roll ${JSON.stringify(rollPanelHit)}`);
+      assert(rollPanelHit.start.coachBefore && rollPanelHit.start.coachBefore.visible === true && rollPanelHit.start.coachBefore.seenThisSession === false && rollPanelHit.coachAfter.visible === false && rollPanelHit.coachAfter.seenThisSession === true && rollPanelHit.coachAfter.dismissReason === 'first-user-roll', `${viewport.name}: first-roll coach should dismiss on the first user roll ${JSON.stringify(rollPanelHit)}`);
+      await evalValue(rollPanelHitPage, `window.TrashDiceDebug.gameStart(); true`);
+      await waitEval(rollPanelHitPage, `(() => {
+        const state = window.TrashDiceQA.state();
+        return state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
+      })()`, `${viewport.name} first-roll coach same-session reset`);
+      const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollCoach`);
+      assert(rollPanelHitReset.visible === false && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll coach should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
