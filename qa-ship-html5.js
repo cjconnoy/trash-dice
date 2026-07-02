@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.31';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.31';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.32';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.32';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -4372,6 +4372,7 @@ async function main() {
         assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === rewardFirst.name && roundWinEarly.roundWinBurstDieEffect === rewardFirst.effect, `yellow round-win probe: ROUND WINNER burst should show the reward die visual ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundWinBurstPreviewTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstPreviewName === rewardFirst.name, `yellow round-win probe: ROUND WINNER burst preview metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundWinBurstClassName.includes('is-endless-windup') && roundWinEarly.roundWinBurstEndlessRoundWins === '1' && roundWinEarly.roundWinBurstEndlessWindupStart === '0' && roundWinEarly.roundWinBurstEndlessWindupCurrent === '0' && roundWinEarly.roundWinBurstEndlessWindupComplete === 'false' && /x0\s+ROUND WIN/.test(roundWinEarly.roundWinBurstText), `yellow round-win probe: reward burst should start the round-wins fanfare from zero ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstCountText === 'x0' && /11,\s*92,\s*49/.test(roundWinEarly.roundWinBurstCountColor) && !/255,\s*255,\s*255/.test(roundWinEarly.roundWinBurstCountColor) && parseFloat(roundWinEarly.roundWinBurstCountFontSize || '0') >= 20 && parseFloat(roundWinEarly.roundWinBurstCountStrokeWidth || '0') > 0 && roundWinEarly.roundWinBurstCountTextShadow !== 'none', `yellow round-win probe: round-win count should stay high-contrast on the cream pill ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should preserve die skin unlock copy alongside the round-wins fanfare ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieVisible === false, `yellow round-win probe: reward die reveal should wait until ROUND WIN reads ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.rewardDieState.totalWins === 1 && roundWinEarly.rewardDieState.activeTier === 1 && roundWinEarly.rewardDieState.nextDie && roundWinEarly.rewardDieState.nextDie.minWins === 2, `yellow round-win probe: reward state should advance on player round win ${JSON.stringify(roundWinEarly.rewardDieState)}`);
