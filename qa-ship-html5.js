@@ -1002,13 +1002,14 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.24';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.24';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.25';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.25';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
+const ROUND_WIN_BURST_FULL_COUNT_MAX = 18;
 const HERO_ROLL_VISUAL_EXPECTATIONS = {
   desktop: { stageMin: 360, stageMax: 390, dotCssMin: 56 },
   'iphone-se-visible': { stageMin: 178, stageMax: 195, dotCssMin: 24 },
@@ -1142,12 +1143,19 @@ function assertRoundWinRecoveryProbe(label, result, limits = {}) {
   const over50Limit = Math.max(2, Math.ceil(Number(rollStats.frames || 0) * over50Ratio));
   const firstTickMs = Number(early.roundWinBurstEndlessWindupFirstTickDelayMs || 0);
   const tickMs = Number(early.roundWinBurstEndlessWindupTickMs || 0);
+  const finalWins = Number(early.roundWinBurstEndlessRoundWins || 0);
+  const startWins = Number(early.roundWinBurstEndlessWindupStart || 0);
+  const step = Number(early.roundWinBurstEndlessWindupStep || 0);
+  const remainingWins = Math.max(0, finalWins - startWins);
 
   assert(result.startReady === true, `${label}: probe could not reach a clean starting roll state ${JSON.stringify(result)}`);
   if (minFirstTickMs !== null) {
     assert(firstTickMs >= minFirstTickMs, `${label}: round-win windup first tick became too short for this surface ${JSON.stringify(early)}`);
   }
   assert(firstTickMs > 0 && firstTickMs <= maxFirstTickMs && tickMs >= 0 && tickMs <= maxTickMs, `${label}: round-win windup timing escaped its budget ${JSON.stringify({ early, limits })}`);
+  if (remainingWins > 0 && remainingWins <= ROUND_WIN_BURST_FULL_COUNT_MAX) {
+    assert(step === 1, `${label}: round-win windup should count every number through normal/endless mobile totals ${JSON.stringify({ early, remainingWins, step })}`);
+  }
   assert(result.readyReached === true, `${label}: next roll was not exposed only after round resolution fully cleared ${JSON.stringify(ready)}`);
   assert(ready.rollDisabled === false && ready.roundResolutionActive === false && ready.state && ready.state.current === 'p1', `${label}: ready state is not truly ready for the player's next roll ${JSON.stringify(ready)}`);
   assert(ready.burstHidden === true && ready.rewardHidden === true && ready.titleFanfare === false && ready.payoutFanfare === false && ready.statusFanfare === false && ready.staleAnimationNames.length === 0, `${label}: stale round-win UI remained when the next roll became available ${JSON.stringify(ready)}`);
