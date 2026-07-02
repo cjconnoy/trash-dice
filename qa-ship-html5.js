@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.27';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.27';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.28';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.28';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -3275,6 +3275,7 @@ async function main() {
             present: !!nudge,
             visible: !!(nudge && !nudge.hidden && getComputedStyle(nudge).display !== 'none'),
             kicker: nudgeKicker ? nudgeKicker.textContent || '' : '',
+            kickerDisplay: nudgeKicker ? getComputedStyle(nudgeKicker).display || '' : '',
             line: nudgeLine ? nudgeLine.textContent || '' : '',
             unlockLine: nudgeUnlock ? nudgeUnlock.textContent || '' : '',
             copyMode: nudge ? nudge.dataset.copyMode || '' : ''
@@ -3287,7 +3288,7 @@ async function main() {
       assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation === 'none' && Number(vipDiscoUi.discoOverlayZIndex) <= 1 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP DISCO lighting should be visible, non-blocking, static under the outcome UI, and behind the game UI ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '12' && /x12\s+ROUND WINS/.test(vipDiscoUi.chip.text) && !/(ROUNDS WON:|ROUND WINS:)/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('TRASH VIBES') && !vipDiscoUi.chip.text.includes(RETIRED_VIBES_COPY), `${viewport.name}: VIP game-win chip should wind up to x12 count-first and show the trash vibes badge ${JSON.stringify(vipDiscoUi.chip)}`);
       assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
-      assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped DISCO skin while beat-the-game is pending ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
+      assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === '' && vipDiscoUi.terminalRewardNudge.kickerDisplay === 'none' && vipDiscoUi.terminalRewardNudge.line === 'FINAL SKIN UNLOCKED' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show a simplified capped DISCO skin message while beat-the-game is pending ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
       await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after VIP DISCO win`);
 
