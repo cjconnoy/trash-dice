@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.32';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.32';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.33';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.33';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -3151,6 +3151,48 @@ async function main() {
       assert(/^https:\/\/odg-intake\.play-onedaygames\.workers\.dev\/api\/telemetry\/event$/.test(terminal.firstPartyEndpoint), `${viewport.name}: first-party telemetry endpoint missing or unsafe ${JSON.stringify(terminal)}`);
       assert(terminal.completedGames >= 1, `${viewport.name}: completed-game counter did not persist past zero ${JSON.stringify(terminal)}`);
 
+      await evalValue(page, `window.TrashDiceQA.setRewardWins(${JSON.stringify(Math.max(0, rewardAtSix.minWins - 1))}); true`);
+      const sunriseTerminalCredit = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} terminal reward credit unlock complete`);
+      await waitEval(page, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === ${JSON.stringify(rewardAtSix.minWins)}`, `${viewport.name} terminal reward credit round counter`, 5000);
+      const sunriseTerminalCreditUi = await evalValue(page, `(() => {
+        const nudge = document.getElementById('terminalRewardNudge');
+        const nudgeDie = document.getElementById('terminalRewardNudgeDie');
+        const nudgeLine = document.getElementById('terminalRewardNudgeLine');
+        const nudgeUnlock = document.getElementById('terminalRewardNudgeUnlock');
+        const nudgeKicker = document.getElementById('terminalRewardNudgeKicker');
+        const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
+        const nudgeRect = nudge ? nudge.getBoundingClientRect() : null;
+        return {
+          rewardState: window.TrashDiceQA.rewardDieState(),
+          terminalRewardNudge: {
+            present: !!nudge,
+            visible: !!(nudge && nudgeStyle && !nudge.hidden && nudgeStyle.display !== 'none' && nudgeRect && nudgeRect.width >= 120 && nudgeRect.height >= 28),
+            text: nudge ? nudge.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: nudgeKicker ? nudgeKicker.textContent || '' : '',
+            line: nudgeLine ? nudgeLine.textContent || '' : '',
+            unlockLine: nudgeUnlock ? nudgeUnlock.textContent || '' : '',
+            nextName: nudge ? nudge.dataset.nextName || '' : '',
+            roundsNeeded: nudge ? nudge.dataset.roundsNeeded || '' : '',
+            targetWins: nudge ? nudge.dataset.targetWins || '' : '',
+            copyMode: nudge ? nudge.dataset.copyMode || '' : '',
+            preview: nudge ? nudge.dataset.preview || '' : '',
+            dieRewardSkinned: !!(nudgeDie && nudgeDie.classList.contains('reward-skinned')),
+            dieName: nudgeDie ? nudgeDie.dataset.rewardName || '' : '',
+            dieEffect: nudgeDie ? nudgeDie.dataset.rewardEffect || '' : ''
+          }
+        };
+      })()`);
+      assert(sunriseTerminalCredit.passed === true, `${viewport.name}: terminal reward credit unlock proof failed ${JSON.stringify(sunriseTerminalCredit)}`);
+      assert(sunriseTerminalCredit.inlineGameOver.finalRewardRoundCredited === true && sunriseTerminalCredit.inlineGameOver.rewardDie && sunriseTerminalCredit.inlineGameOver.rewardDie.totalWins === rewardAtSix.minWins && sunriseTerminalCredit.inlineGameOver.rewardDie.unlockedDie && sunriseTerminalCredit.inlineGameOver.rewardDie.unlockedDie.name === rewardAtSix.name, `${viewport.name}: terminal reward credit should unlock the just-earned skin ${JSON.stringify({ rewardAtSix, sunriseTerminalCredit })}`);
+      assert(sunriseTerminalCreditUi.rewardState.totalWins === rewardAtSix.minWins && sunriseTerminalCreditUi.rewardState.activeName === rewardAtSix.name, `${viewport.name}: terminal reward credit should advance to the newly unlocked skin ${JSON.stringify({ rewardAtSix, rewardState: sunriseTerminalCreditUi.rewardState })}`);
+      assert(sunriseTerminalCreditUi.terminalRewardNudge.visible === true && sunriseTerminalCreditUi.terminalRewardNudge.kicker === '' && sunriseTerminalCreditUi.terminalRewardNudge.line === 'DIE SKIN UNLOCKED' && sunriseTerminalCreditUi.terminalRewardNudge.unlockLine === `${rewardAtSix.name} DIE SKIN`, `${viewport.name}: terminal reward credit should announce the unlocked skin before teasing the next one ${JSON.stringify({ rewardAtSix, rewardNextAfterSix, terminalRewardNudge: sunriseTerminalCreditUi.terminalRewardNudge })}`);
+      assert(sunriseTerminalCreditUi.terminalRewardNudge.nextName === '' && sunriseTerminalCreditUi.terminalRewardNudge.roundsNeeded === '0' && sunriseTerminalCreditUi.terminalRewardNudge.targetWins === String(rewardAtSix.minWins) && sunriseTerminalCreditUi.terminalRewardNudge.copyMode === 'terminal-unlock' && sunriseTerminalCreditUi.terminalRewardNudge.preview === 'unlocked', `${viewport.name}: terminal reward credit metadata should stay on the just-unlocked skin ${JSON.stringify(sunriseTerminalCreditUi.terminalRewardNudge)}`);
+      assert(sunriseTerminalCreditUi.terminalRewardNudge.dieRewardSkinned === true && sunriseTerminalCreditUi.terminalRewardNudge.dieName === rewardAtSix.name && sunriseTerminalCreditUi.terminalRewardNudge.dieEffect === rewardAtSix.effect, `${viewport.name}: terminal reward credit thumbnail should show the newly unlocked skin ${JSON.stringify({ rewardAtSix, terminalRewardNudge: sunriseTerminalCreditUi.terminalRewardNudge })}`);
+      assert(!sunriseTerminalCreditUi.terminalRewardNudge.text.includes('CURRENT SKIN:') && (!rewardNextAfterSix || !sunriseTerminalCreditUi.terminalRewardNudge.text.includes(rewardNextAfterSix.name)), `${viewport.name}: terminal reward credit should not rush ahead to the next skin ${JSON.stringify({ rewardNextAfterSix, terminalRewardNudge: sunriseTerminalCreditUi.terminalRewardNudge })}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(page, `!window.TrashDiceQA.state().inlineGameOver && document.body.dataset.gameStarted === 'true'`, `${viewport.name} restart after terminal reward credit unlock`);
+
       await evalValue(page, `window.TrashDiceQA.setRewardWins(10); true`);
       const mathPlayerWin = await evalValue(page, `window.TrashDiceQA.mathematicalEndProof('p1', 16, 1, 0, 'p2')`);
       await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `${viewport.name} mathematical player win complete`);
@@ -3241,9 +3283,9 @@ async function main() {
       assert(mathPlayerWinUi.rewardState.totalWins === 11 && mathPlayerWinUi.rewardState.activeName === rewardAtEleven.name, `${viewport.name}: mathematical player win should advance reward state before terminal nudge ${JSON.stringify({ rewardAtEleven, rewardState: mathPlayerWinUi.rewardState })}`);
       assert(mathPlayerWinUi.roundWins && mathPlayerWinUi.roundWins.p1 >= 1, `${viewport.name}: mathematical player win should count as a player round win ${JSON.stringify(mathPlayerWinUi.roundWins)}`);
       assert(mathPlayerWinUi.terminalRewardNudge.present === true && mathPlayerWinUi.terminalRewardNudge.visible === true, `${viewport.name}: mathematical player win terminal reward nudge missing ${JSON.stringify(mathPlayerWinUi.terminalRewardNudge)}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.kicker === `CURRENT SKIN: ${rewardAtEleven.name}` && mathPlayerWinUi.terminalRewardNudge.line === expectedRewardCountdownLine(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.unlockLine === 'MYSTERY FINAL SKIN', `${viewport.name}: mathematical player win terminal nudge should tease the final mystery skin ${JSON.stringify({ rewardAtEleven, rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.nextName === rewardNextAfterEleven.name && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === String(rewardNextAfterEleven.minWins - 11) && mathPlayerWinUi.terminalRewardNudge.targetWins === String(rewardNextAfterEleven.minWins) && mathPlayerWinUi.terminalRewardNudge.copyMode === 'close' && mathPlayerWinUi.terminalRewardNudge.preview === 'current', `${viewport.name}: mathematical player win terminal nudge metadata wrong ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
-      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardAtEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardAtEleven.effect, `${viewport.name}: mathematical player win should keep the current die visible while teasing the final mystery skin ${JSON.stringify({ rewardAtEleven, rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.kicker === '' && mathPlayerWinUi.terminalRewardNudge.line === 'DIE SKIN UNLOCKED' && mathPlayerWinUi.terminalRewardNudge.unlockLine === `${rewardAtEleven.name} DIE SKIN`, `${viewport.name}: mathematical player win terminal nudge should announce the credited unlock before teasing the next skin ${JSON.stringify({ rewardAtEleven, rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.nextName === '' && mathPlayerWinUi.terminalRewardNudge.roundsNeeded === '0' && mathPlayerWinUi.terminalRewardNudge.targetWins === '11' && mathPlayerWinUi.terminalRewardNudge.copyMode === 'terminal-unlock' && mathPlayerWinUi.terminalRewardNudge.preview === 'unlocked', `${viewport.name}: mathematical player win terminal nudge metadata should stay on the credited unlock ${JSON.stringify({ rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
+      assert(mathPlayerWinUi.terminalRewardNudge.dieRewardSkinned === true && mathPlayerWinUi.terminalRewardNudge.dieName === rewardAtEleven.name && mathPlayerWinUi.terminalRewardNudge.dieEffect === rewardAtEleven.effect, `${viewport.name}: mathematical player win should show the newly unlocked die instead of rushing to the final mystery tease ${JSON.stringify({ rewardAtEleven, rewardNextAfterEleven, terminalRewardNudge: mathPlayerWinUi.terminalRewardNudge })}`);
       assert(mathPlayerWinUi.title === 'YOU TRASHED THE CPU!' && mathPlayerWinUi.sub === '' && mathPlayerWinUi.chip.visible === true && /x11\s+ROUND WINS/.test(mathPlayerWinUi.chip.text) && !/(ROUNDS WON:|ROUND WINS:)/.test(mathPlayerWinUi.chip.text) && !mathPlayerWinUi.chip.text.includes('DICE SECURED'), `${viewport.name}: player-win banner should remove the subline and emphasize the count-first round counter ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.sub.includes(MATHEMATICAL_ELIMINATION_STATUS), `${viewport.name}: mathematical reason should not appear under game winner ${JSON.stringify(mathPlayerWinUi)}`);
       assert(!mathPlayerWinUi.p1Text.includes(MATHEMATICAL_ELIMINATION_STATUS) && mathPlayerWinUi.p1LoserReason === false, `${viewport.name}: winning player should not carry mathematical loser copy ${JSON.stringify(mathPlayerWinUi)}`);

@@ -11718,7 +11718,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260702.32';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.33';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -13751,6 +13751,49 @@ body.inline-game-over .roll-panel {
     };
   }
 
+  function terminalRewardCreditNudgeModel(rewardState) {
+    if (!rewardState) return null;
+    const wins = normalizeRewardWins(rewardState.totalWins);
+    const unlockedDie = rewardState.unlockedDie || null;
+    if (unlockedDie) {
+      const finalUnlock = isFinalRewardDie(unlockedDie);
+      return {
+        totalWins: wins,
+        activeDie: rewardDieSnapshot(activeRewardDie(wins)),
+        nextDie: null,
+        previewDie: unlockedDie,
+        previewKind: 'unlocked',
+        copyMode: finalUnlock ? 'capped' : 'terminal-unlock',
+        roundsNeeded: 0,
+        targetWins: wins,
+        terminalKicker: '',
+        roundLossKicker: '',
+        line: finalUnlock ? 'FINAL SKIN UNLOCKED' : 'DIE SKIN UNLOCKED',
+        burstLine: formatRoundWinsCounterCopy(wins),
+        unlockLine: `${unlockedDie.name} DIE SKIN`
+      };
+    }
+    if (rewardState.cosmicAmbientUnlocked) {
+      const active = activeRewardDie(wins);
+      return {
+        totalWins: wins,
+        activeDie: rewardDieSnapshot(active),
+        nextDie: null,
+        previewDie: active,
+        previewKind: 'current',
+        copyMode: 'terminal-ambient-unlock',
+        roundsNeeded: 0,
+        targetWins: wins,
+        terminalKicker: '',
+        roundLossKicker: '',
+        line: `${COSMIC_AMBIENT_COPY} UNLOCKED`,
+        burstLine: formatRoundWinsCounterCopy(wins),
+        unlockLine: 'BACKGROUND UNLOCKED'
+      };
+    }
+    return null;
+  }
+
   function renderRewardNudgeDie(el, die) {
     if (!el) return;
     renderPipsIntoDieElement(el, REWARD_DIE_DISPLAY_VALUE);
@@ -13859,7 +13902,10 @@ body.inline-game-over .roll-panel {
     if (terminalRewardNudge.parentElement !== document.body) {
       document.body.appendChild(terminalRewardNudge);
     }
-    const model = rewardNudgeModel();
+    const creditedReward = inlineGameOverState && inlineGameOverState.finalRewardRoundCredited
+      ? inlineGameOverState.rewardDie
+      : null;
+    const model = terminalRewardCreditNudgeModel(creditedReward) || rewardNudgeModel();
     if (terminalRewardNudgeKicker) terminalRewardNudgeKicker.textContent = model.terminalKicker;
     if (terminalRewardNudgeLine) terminalRewardNudgeLine.textContent = model.line;
     if (terminalRewardNudgeUnlock) terminalRewardNudgeUnlock.textContent = model.unlockLine;
