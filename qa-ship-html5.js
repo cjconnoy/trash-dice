@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.30';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.30';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.31';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.31';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -1319,6 +1319,7 @@ async function main() {
       const page = await openPage(`${baseUrl}?source=qa&qa=1`, viewport);
       await evalValue(page, `document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true`);
       await waitEval(page, `document.body.dataset.orientationBlocked === 'true'`, `${viewport.name} portrait gate`);
+      await waitEval(page, `!!window.TrashDiceQA && window.TrashDiceQA.state().orientationBlocked === true`, `${viewport.name} QA orientation state`);
       const orientationGate = await evalValue(page, `(() => {
         const gate = document.getElementById('orientationLockScreen');
         const card = gate ? gate.querySelector('.orientation-lock-card') : null;
@@ -1949,6 +1950,8 @@ async function main() {
           p1AutoButtonText: p1AutoButton.textContent.trim(),
           p1AutoButtonTextFits: p1AutoButton.scrollWidth <= p1AutoButton.clientWidth + 1 && p1AutoButton.scrollHeight <= p1AutoButton.clientHeight + 1,
           p1AutoButtonAudienceClass: p1AutoButton.classList.contains('auto-play-btn'),
+          p1AutoClearsRoll: clears(p1r, rr, 6),
+          p1AutoClearsRollPanel: clears(p1r, pr, 6),
           rewardButtonVisible: getComputedStyle(rewardButton).display !== 'none' && rbr.width > 32 && rbr.height > 24 && rbr.right <= window.innerWidth + 1 && rbr.top >= -1,
           discoButtonVisible: getComputedStyle(discoButton).display !== 'none' && dr.width > 42 && dr.height > 24 && dr.right <= window.innerWidth + 1 && dr.top >= -1,
           discoClearsRewardButton: dr.right <= rbr.left - 3 || dr.bottom <= rbr.top - 3 || dr.top >= rbr.bottom + 3,
@@ -2013,6 +2016,9 @@ async function main() {
       assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
+      if (viewport.mobile && viewport.width <= 720) {
+        assert(activeLayout.p1AutoClearsRoll && activeLayout.p1AutoClearsRollPanel, `${viewport.name}: AUTO PLAY button overlaps the Tap to Start/ROLL action ${JSON.stringify(activeLayout)}`);
+      }
       assert(activeLayout.rewardButtonVisible === false, `${viewport.name}: DIE debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.discoButtonVisible === false, `${viewport.name}: DISCO debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);

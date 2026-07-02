@@ -8613,6 +8613,13 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
     gap: clamp(0.08rem, 0.62vh, 0.22rem);
   }
 
+  .auto-play-btn {
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(218px, 36dvh, 260px));
+    min-width: 78px;
+    min-height: 30px;
+  }
+
   .quit-game-btn {
     top: calc(env(safe-area-inset-top, 0px) + 0.58rem);
     right: auto;
@@ -9926,7 +9933,7 @@ body.mobile-roll-smoothing .victory-rain-die-lite.is-green {
   }
 
   .auto-play-btn {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 206px);
     min-width: 74px;
     min-height: 28px;
   }
@@ -11708,7 +11715,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260702.30';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.31';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
