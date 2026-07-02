@@ -3967,14 +3967,14 @@ body.vip-disco-party[data-game-started="true"]:not(.inline-game-over)::before {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 9% 104%, rgba(255,238,43,0.24), rgba(255,0,202,0.08) 28%, transparent 52%),
-    radial-gradient(ellipse at 92% 104%, rgba(0,255,184,0.2), rgba(42,66,255,0.09) 30%, transparent 54%),
-    linear-gradient(118deg, transparent 0 19%, rgba(255,255,255,0.12) 32%, rgba(0,255,184,0.07) 49%, transparent 70%),
-    radial-gradient(ellipse at 66% 54%, rgba(255,255,255,0.11), rgba(126,255,226,0.07) 18%, transparent 40%),
-    radial-gradient(circle at 18% 17%, rgba(255,0,202,0.19), transparent 34%),
-    radial-gradient(circle at 82% 15%, rgba(42,66,255,0.17), transparent 33%),
-    linear-gradient(180deg, rgba(28,0,54,0.38), rgba(92,0,86,0.18) 46%, rgba(26,0,42,0.34));
-  opacity: 0.82;
+    radial-gradient(ellipse at 8% 102%, rgba(245,200,0,0.3), rgba(245,200,0,0.1) 28%, transparent 52%),
+    radial-gradient(ellipse at 94% 101%, rgba(94,232,94,0.26), rgba(0,96,58,0.11) 31%, transparent 56%),
+    radial-gradient(ellipse at 66% 52%, rgba(255,244,108,0.13), rgba(94,232,94,0.08) 20%, transparent 43%),
+    radial-gradient(ellipse at 18% 16%, rgba(245,200,0,0.22) 0 8%, transparent 30%),
+    radial-gradient(ellipse at 83% 17%, rgba(94,232,94,0.2) 0 7%, transparent 31%),
+    linear-gradient(118deg, transparent 0 19%, rgba(255,255,220,0.12) 32%, rgba(94,232,94,0.08) 49%, transparent 70%),
+    linear-gradient(180deg, rgba(114,137,0,0.32), rgba(202,217,0,0.12) 46%, rgba(46,86,32,0.3));
+  opacity: 0.78;
 }
 body.vip-disco-party[data-game-started="true"]::after {
   content: '';
@@ -3983,12 +3983,12 @@ body.vip-disco-party[data-game-started="true"]::after {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(54deg, transparent 0 12%, rgba(255,0,208,0.24) 24%, rgba(255,0,208,0.09) 40%, transparent 65%),
-    linear-gradient(108deg, transparent 0 9%, rgba(47,180,255,0.22) 22%, rgba(47,180,255,0.09) 39%, transparent 64%),
-    linear-gradient(145deg, transparent 0 48%, rgba(255,224,40,0.18) 60%, rgba(255,128,48,0.08) 73%, transparent 92%),
-    radial-gradient(circle at 16% 24%, rgba(255,0,202,0.26) 0 4%, transparent 18%),
-    radial-gradient(circle at 86% 22%, rgba(0,221,255,0.24) 0 5%, transparent 20%),
-    radial-gradient(ellipse at 69% 64%, rgba(255,255,255,0.14) 0 6%, rgba(171,255,228,0.08) 17%, transparent 36%);
+    linear-gradient(54deg, transparent 0 12%, rgba(245,200,0,0.2) 24%, rgba(245,200,0,0.08) 40%, transparent 65%),
+    linear-gradient(108deg, transparent 0 9%, rgba(94,232,94,0.18) 22%, rgba(0,83,45,0.08) 39%, transparent 64%),
+    linear-gradient(145deg, transparent 0 48%, rgba(255,244,108,0.14) 60%, rgba(0,75,42,0.08) 73%, transparent 92%),
+    radial-gradient(ellipse at 16% 24%, rgba(245,200,0,0.27) 0 5%, transparent 19%),
+    radial-gradient(ellipse at 86% 22%, rgba(94,232,94,0.24) 0 5%, transparent 20%),
+    radial-gradient(ellipse at 69% 64%, rgba(255,244,108,0.12) 0 6%, rgba(94,232,94,0.07) 17%, transparent 36%);
   background-size:
     120% 120%,
     118% 118%,
@@ -4004,7 +4004,7 @@ body.vip-disco-party[data-game-started="true"]::after {
     86% 22%,
     69% 64%;
   mix-blend-mode: normal;
-  opacity: 0.58;
+  opacity: 0.54;
   transform-origin: 50% 58%;
   transform: translate3d(0, 0, 0);
 }
@@ -4018,21 +4018,24 @@ body.vip-disco-party[data-game-started="true"]::after {
   opacity: 0;
   contain: paint;
   background:
-    radial-gradient(circle, rgba(0,255,172,0.62) 0 1.8px, transparent 3.4px),
-    radial-gradient(circle, rgba(255,238,43,0.62) 0 1.9px, transparent 3.7px);
+    radial-gradient(ellipse at 11% 19%, rgba(245,200,0,0.58) 0 5.2%, transparent 15%),
+    radial-gradient(ellipse at 83% 23%, rgba(94,232,94,0.48) 0 4.4%, transparent 14%),
+    radial-gradient(ellipse at 74% 72%, rgba(245,200,0,0.34) 0 5.8%, transparent 17%);
   background-size:
-    92px 68px,
-    132px 108px;
+    100% 100%,
+    100% 100%,
+    100% 100%;
   background-position:
     0 0,
-    42px 20px;
+    0 0,
+    0 0;
   transform: translate3d(0, 0, 0);
 }
 body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
   display: block;
-  opacity: 0.62;
-  will-change: transform;
-  animation: vipCosmicDotDriftA 26s ease-in-out -7s infinite;
+  opacity: 0.48;
+  will-change: auto;
+  animation: none;
 }
 .vip-cosmic-color-field::before,
 .vip-cosmic-color-field::after {
@@ -4044,31 +4047,31 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
 }
 .vip-cosmic-color-field::before {
   background:
-    radial-gradient(circle, rgba(255,44,211,0.58) 0 2px, transparent 3.8px),
-    radial-gradient(circle, rgba(47,180,255,0.42) 0 1.6px, transparent 3.2px);
+    radial-gradient(ellipse at 23% 72%, rgba(94,232,94,0.34) 0 4.6%, transparent 15%),
+    radial-gradient(ellipse at 55% 14%, rgba(0,75,42,0.18) 0 3.8%, transparent 13%);
   background-size:
-    118px 86px,
-    166px 122px;
+    100% 100%,
+    100% 100%;
   background-position:
-    28px 10px,
-    72px 46px;
-  opacity: 0.74;
-  will-change: transform;
-  animation: vipCosmicDotDriftB 34s ease-in-out -17s infinite;
+    0 0,
+    0 0;
+  opacity: 0.7;
+  will-change: auto;
+  animation: none;
 }
 .vip-cosmic-color-field::after {
   background:
-    radial-gradient(circle, rgba(255,238,43,0.42) 0 1.4px, transparent 3.2px),
-    radial-gradient(circle, rgba(0,255,172,0.36) 0 1.4px, transparent 3px);
+    radial-gradient(ellipse at 42% 84%, rgba(245,200,0,0.22) 0 3.6%, transparent 13%),
+    radial-gradient(ellipse at 91% 56%, rgba(94,232,94,0.26) 0 4.2%, transparent 14%);
   background-size:
-    174px 142px,
-    214px 168px;
+    100% 100%,
+    100% 100%;
   background-position:
-    78px 64px,
-    18px 112px;
-  opacity: 0.58;
-  will-change: transform;
-  animation: vipCosmicDotDriftC 40s ease-in-out -23s infinite;
+    0 0,
+    0 0;
+  opacity: 0.52;
+  will-change: auto;
+  animation: none;
 }
 .vip-cosmic-sky {
   display: none;
@@ -4079,11 +4082,11 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
   overflow: hidden;
   opacity: 0;
   contain: paint;
-  transform: translate3d(0, 0, 0) scale(1.04);
+  transform: translate3d(0, 0, 0);
 }
 body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
   display: block;
-  opacity: 0.64;
+  opacity: 0.52;
 }
 .vip-cosmic-sky::before,
 .vip-cosmic-sky::after {
@@ -4094,35 +4097,35 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
 }
 .vip-cosmic-sky::before {
   background:
-    radial-gradient(ellipse at 58% 52%, rgba(255,255,255,0.13) 0 8%, rgba(168,224,255,0.08) 19%, transparent 40%),
-    radial-gradient(ellipse at 45% 47%, rgba(255,176,244,0.08) 0 7%, transparent 34%),
-    radial-gradient(circle, rgba(255,255,255,0.82) 0 0.8px, transparent 1.7px),
-    radial-gradient(circle, rgba(172,245,255,0.7) 0 1px, transparent 2.1px),
-    radial-gradient(circle, rgba(255,235,132,0.62) 0 0.9px, transparent 2px),
-    radial-gradient(circle, rgba(255,114,224,0.44) 0 1.1px, transparent 2.4px);
+    radial-gradient(ellipse at 58% 52%, rgba(255,244,108,0.12) 0 8%, rgba(94,232,94,0.07) 19%, transparent 40%),
+    radial-gradient(ellipse at 45% 47%, rgba(0,75,42,0.08) 0 7%, transparent 34%),
+    radial-gradient(ellipse at 18% 31%, rgba(0,80,45,0.22) 0 2.8%, transparent 10%),
+    radial-gradient(ellipse at 32% 61%, rgba(245,200,0,0.18) 0 2.2%, transparent 9%),
+    radial-gradient(ellipse at 78% 39%, rgba(94,232,94,0.2) 0 2.5%, transparent 10%),
+    radial-gradient(ellipse at 64% 82%, rgba(0,75,42,0.16) 0 2.4%, transparent 10%);
   background-size:
     100% 100%,
     100% 100%,
-    113px 97px,
-    157px 131px,
-    199px 149px,
-    241px 181px;
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%;
   background-position:
     0 0,
     0 0,
-    8px 18px,
-    31px 6px,
-    67px 43px,
-    12px 88px;
-  opacity: 0.82;
+    0 0,
+    0 0,
+    0 0,
+    0 0;
+  opacity: 0.76;
 }
 .vip-cosmic-sky::after {
   display: block;
   inset: -8%;
   background:
-    linear-gradient(118deg, transparent 0 16%, rgba(255,72,219,0.22) 31%, rgba(0,255,220,0.13) 43%, transparent 63%),
-    linear-gradient(64deg, transparent 0 10%, rgba(95,154,255,0.2) 28%, rgba(255,239,91,0.11) 46%, transparent 70%),
-    radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.14) 0 7%, rgba(135,255,230,0.08) 18%, transparent 42%);
+    linear-gradient(118deg, transparent 0 16%, rgba(245,200,0,0.14) 31%, rgba(94,232,94,0.09) 43%, transparent 63%),
+    linear-gradient(64deg, transparent 0 10%, rgba(0,75,42,0.14) 28%, rgba(255,244,108,0.08) 46%, transparent 70%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,244,108,0.1) 0 7%, rgba(94,232,94,0.06) 18%, transparent 42%);
   background-size:
     118% 118%,
     122% 122%,
@@ -4133,9 +4136,9 @@ body.vip-disco-party[data-game-started="true"] .vip-cosmic-sky {
     50% 50%;
   box-shadow: none;
   mix-blend-mode: normal;
-  opacity: 0.36;
+  opacity: 0.3;
   transform-origin: 50% 50%;
-  transform: translate3d(-4%, -2%, 0) rotate(-1deg) scale(1.04);
+  transform: translate3d(0, 0, 0);
 }
 body.vip-disco-party.inline-game-over::after {
   z-index: 1;
@@ -4165,20 +4168,20 @@ body.legacy-ipad-performance.vip-disco-party[data-game-started="true"]::after {
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
-  opacity: 0.5;
-  animation-duration: 34s;
+  opacity: 0.44;
+  animation: none;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before {
-  opacity: 0.62;
-  animation-duration: 46s;
+  opacity: 0.58;
+  animation: none;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after,
 body.legacy-ipad-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::after {
-  opacity: 0.48;
-  animation-duration: 52s;
+  opacity: 0.42;
+  animation: none;
 }
 body.tablet-effects-lite.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
 body.ipad-gameplay-performance.vip-disco-party[data-game-started="true"] .vip-cosmic-sky,
@@ -4216,8 +4219,9 @@ body.mobile-roll-smoothing.vip-disco-party[data-game-started="true"] .vip-cosmic
 body.mobile-roll-smoothing.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field {
   opacity: 0.42;
   background-size:
-    124px 94px,
-    164px 136px;
+    100% 100%,
+    100% 100%,
+    100% 100%;
 }
 body.mobile-roll-smoothing.vip-disco-party[data-game-started="true"] .vip-cosmic-color-field::before {
   opacity: 0.42;
@@ -11695,7 +11699,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260702.23';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.24';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
