@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.25';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.25';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.26';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.26';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -3294,6 +3294,42 @@ async function main() {
       assert(beatGameRoundWin.rewardDieState.totalWins === 13 && beatGameRoundWin.rewardDieState.activeName === 'DISCO' && beatGameRoundWin.rewardDieState.guidedCompletionPending === false && beatGameRoundWin.rewardDieState.guidedGameCompleted === true, `${viewport.name}: beat-the-game round win should complete the guided path ${JSON.stringify(beatGameRoundWin.rewardDieState)}`);
       assert(beatGameRoundWin.roundWinBurstGuidedComplete === true && beatGameRoundWin.roundWinCapstoneLogoVisible === true && beatGameRoundWin.roundWinBurstText.includes('YOU BEAT THE GAME!') && beatGameRoundWin.roundWinBurstText.includes('You unlocked every die. How many more rounds can you win?'), `${viewport.name}: beat-the-game capstone round-win card missing headline, logo, or subcopy ${JSON.stringify(beatGameRoundWin)}`);
       assert(beatGameRoundWin.roundWinBurstRewardName === '' && beatGameRoundWin.roundWinBurstPreviewName === '' && beatGameRoundWin.roundWinBurstDieVisible === false && beatGameRoundWin.rewardDieVisible === false, `${viewport.name}: beat-the-game capstone should not show another unlock/chase die ${JSON.stringify(beatGameRoundWin)}`);
+      await sleep(Math.max(4200, Number(beatGameRoundWin.spillDuration || 0) + 1200));
+      const beatGameRoundWinHeld = await evalValue(page, `(() => {
+        const burst = document.getElementById('roundWinBurst');
+        const roll = document.getElementById('rollBtn');
+        const style = burst ? getComputedStyle(burst) : null;
+        const state = window.TrashDiceQA.state();
+        return {
+          guidedRoundWinHold: state.guidedRoundWinHold,
+          roundResolution: state.roundResolution,
+          busy: state.busy,
+          current: state.current,
+          rollDisabled: !!(roll && roll.disabled),
+          rollText: roll ? roll.textContent.replace(/\\s+/g, ' ').trim() : '',
+          bodyHold: document.body.classList.contains('guided-round-win-hold'),
+          burstVisible: !!(burst && !burst.hidden && burst.classList.contains('show') && burst.classList.contains('is-guided-complete') && style && style.display !== 'none' && parseFloat(style.opacity || '0') > 0),
+          burstText: burst ? burst.textContent.replace(/\\s+/g, ' ').trim() : ''
+        };
+      })()`);
+      assert(beatGameRoundWinHeld.guidedRoundWinHold && beatGameRoundWinHeld.guidedRoundWinHold.active === true && beatGameRoundWinHeld.roundResolution === null && beatGameRoundWinHeld.bodyHold === true && beatGameRoundWinHeld.burstVisible === true && beatGameRoundWinHeld.burstText.includes('YOU BEAT THE GAME!') && beatGameRoundWinHeld.rollDisabled === false && beatGameRoundWinHeld.rollText.includes('KEEP PLAYING!'), `${viewport.name}: beat-the-game round-win capstone should hold for manual KEEP PLAYING after the old timeout window ${JSON.stringify(beatGameRoundWinHeld)}`);
+      await evalValue(page, `document.getElementById('rollBtn').click(); true`);
+      const beatGameRoundWinContinued = await waitEval(page, `(() => {
+        const state = window.TrashDiceQA.state();
+        const burst = document.getElementById('roundWinBurst');
+        const roll = document.getElementById('rollBtn');
+        if (state.guidedRoundWinHold || state.roundResolution || state.busy || !roll || roll.disabled || (burst && !burst.hidden && burst.classList.contains('show'))) return false;
+        return {
+          guidedRoundWinHold: state.guidedRoundWinHold,
+          roundResolution: state.roundResolution,
+          busy: state.busy,
+          current: state.current,
+          gameStarted: state.gameStarted,
+          rollDisabled: roll.disabled,
+          rollText: roll.textContent.replace(/\\s+/g, ' ').trim()
+        };
+      })()`, `${viewport.name}: continue after beat-the-game round-win capstone`, 5000);
+      assert(beatGameRoundWinContinued.gameStarted === true && beatGameRoundWinContinued.current === 'p1' && beatGameRoundWinContinued.rollText.includes('ROLL'), `${viewport.name}: KEEP PLAYING should resume endless play after beat-the-game capstone ${JSON.stringify(beatGameRoundWinContinued)}`);
 
       const postBeatGameEndlessRoundWin = await evalValue(page, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
       assert(postBeatGameEndlessRoundWin.rewardDieState.totalWins === 14 && postBeatGameEndlessRoundWin.rewardDieState.activeName === 'DISCO' && postBeatGameEndlessRoundWin.rewardDieState.guidedCompletionPending === false && postBeatGameEndlessRoundWin.rewardDieState.guidedGameCompleted === true, `${viewport.name}: endless round win after beat-the-game should keep counting DISCO wins ${JSON.stringify(postBeatGameEndlessRoundWin.rewardDieState)}`);
