@@ -1002,10 +1002,11 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.26';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.26';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.27';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.27';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
+const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
@@ -3284,7 +3285,7 @@ async function main() {
       assert(vipDiscoWin.inlineGameOver.rewardDie.guidedCompletionPending === true && vipDiscoWin.inlineGameOver.rewardDie.guidedCompletionTriggered === false, `${viewport.name}: DISCO unlock should arm the beat-the-game event without firing it on the same result ${JSON.stringify(vipDiscoWin.inlineGameOver.rewardDie)}`);
       assert(vipDiscoUi.rewardState.totalWins === 12 && vipDiscoUi.rewardState.activeName === 'DISCO' && vipDiscoUi.rewardState.activeDie && vipDiscoUi.rewardState.activeDie.effect === 'discoBall' && vipDiscoUi.rewardState.capped === true && vipDiscoUi.rewardState.guidedCompletionPending === true && vipDiscoUi.rewardState.guidedGameCompleted !== true, `${viewport.name}: VIP DISCO reward state wrong ${JSON.stringify(vipDiscoUi.rewardState)}`);
       assert(vipDiscoUi.bodyVip === true && vipDiscoUi.bodyVipDataset === 'true' && vipDiscoUi.discoOverlayAnimation === 'none' && Number(vipDiscoUi.discoOverlayZIndex) <= 1 && Number(vipDiscoUi.discoOverlayOpacity) >= 0.25 && vipDiscoUi.discoOverlayPointerEvents === 'none', `${viewport.name}: VIP DISCO lighting should be visible, non-blocking, static under the outcome UI, and behind the game UI ${JSON.stringify(vipDiscoUi)}`);
-      assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '12' && /x12\s+ROUND WINS/.test(vipDiscoUi.chip.text) && !/(ROUNDS WON:|ROUND WINS:)/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('COSMIC VIBES'), `${viewport.name}: VIP game-win chip should wind up to x12 count-first and show the cosmic vibes badge ${JSON.stringify(vipDiscoUi.chip)}`);
+      assert(vipDiscoUi.chip.visible === true && vipDiscoUi.chip.vipClass === true && vipDiscoUi.chip.winding === false && vipDiscoUi.chip.roundWins === '12' && /x12\s+ROUND WINS/.test(vipDiscoUi.chip.text) && !/(ROUNDS WON:|ROUND WINS:)/.test(vipDiscoUi.chip.text) && vipDiscoUi.chip.text.includes('TRASH VIBES') && !vipDiscoUi.chip.text.includes(RETIRED_VIBES_COPY), `${viewport.name}: VIP game-win chip should wind up to x12 count-first and show the trash vibes badge ${JSON.stringify(vipDiscoUi.chip)}`);
       assert(vipDiscoUi.rewardUnlockVisible === false, `${viewport.name}: VIP game win should keep the payoff inside the terminal card instead of stacking an unlock card ${JSON.stringify(vipDiscoUi)}`);
       assert(vipDiscoUi.terminalRewardNudge.visible === true && vipDiscoUi.terminalRewardNudge.kicker === 'CURRENT SKIN: DISCO' && vipDiscoUi.terminalRewardNudge.unlockLine === 'DISCO DIE SKIN' && vipDiscoUi.terminalRewardNudge.copyMode === 'capped', `${viewport.name}: VIP game-win continuation nudge should show the capped DISCO skin while beat-the-game is pending ${JSON.stringify(vipDiscoUi.terminalRewardNudge)}`);
       await evalValue(page, `document.getElementById('rollBtn').click(); true`);
@@ -4515,7 +4516,7 @@ async function main() {
     await evalValue(cosmicAmbientRoundWinProbe, `window.TrashDiceQA.setRewardWins(7); true`);
     const cosmicAmbientRoundWin = await evalValue(cosmicAmbientRoundWinProbe, `window.TrashDiceDebug.roundWinEventProbe('p1')`);
     assert(cosmicAmbientRoundWin.rewardDieState.totalWins === 8 && cosmicAmbientRoundWin.rewardDieState.activeName === 'DIAMOND' && cosmicAmbientRoundWin.rewardDieState.cosmicAmbientUnlocked === true && cosmicAmbientRoundWin.rewardDieState.nextDie && cosmicAmbientRoundWin.rewardDieState.nextDie.name === 'PRISM', `COSMIC ambient round-win copy probe: ambient state should unlock without changing die skin ${JSON.stringify(cosmicAmbientRoundWin.rewardDieState)}`);
-    assert(cosmicAmbientRoundWin.roundWinBurstText.includes('COSMIC VIBES') && !cosmicAmbientRoundWin.roundWinBurstText.includes('DIE SKIN'), `COSMIC ambient round-win copy probe: ambient beat should not read like a die skin unlock ${JSON.stringify(cosmicAmbientRoundWin)}`);
+    assert(cosmicAmbientRoundWin.roundWinBurstText.includes('TRASH VIBES') && !cosmicAmbientRoundWin.roundWinBurstText.includes(RETIRED_VIBES_COPY) && !cosmicAmbientRoundWin.roundWinBurstText.includes('DIE SKIN'), `COSMIC ambient round-win copy probe: ambient beat should not read like a die skin unlock ${JSON.stringify(cosmicAmbientRoundWin)}`);
     assert(cosmicAmbientRoundWin.roundWinBurstClassName.includes('is-endless-windup') && cosmicAmbientRoundWin.roundWinBurstEndlessRoundWins === '8' && cosmicAmbientRoundWin.roundWinBurstEndlessWindupStart === '0' && cosmicAmbientRoundWin.roundWinBurstEndlessWindupCurrent === '0' && /x0\s+ROUND WINS/.test(cosmicAmbientRoundWin.roundWinBurstText), `COSMIC ambient round-win copy probe: ambient beat should wind the round-wins fanfare from zero ${JSON.stringify(cosmicAmbientRoundWin)}`);
     assert(cosmicAmbientRoundWin.roundWinBurstRewardName === '' && cosmicAmbientRoundWin.roundWinBurstPreviewName === 'DIAMOND' && cosmicAmbientRoundWin.roundWinBurstDieName === 'DIAMOND' && cosmicAmbientRoundWin.rewardDieVisible === false, `COSMIC ambient round-win copy probe: ambient beat should keep the DIAMOND skin visible and avoid DISCO die reveal ${JSON.stringify(cosmicAmbientRoundWin)}`);
     assert(cosmicAmbientRoundWin.roundWinBurstCopyMode === 'cosmic-ambient' && cosmicAmbientRoundWin.roundWinBurstTargetWins === '8', `COSMIC ambient round-win copy probe: ambient metadata wrong ${JSON.stringify(cosmicAmbientRoundWin)}`);
@@ -4537,7 +4538,7 @@ async function main() {
         rect: rect ? { left: Math.round(rect.left), right: Math.round(rect.right), top: Math.round(rect.top), bottom: Math.round(rect.bottom), width: Math.round(rect.width), height: Math.round(rect.height) } : null
       };
     })()`);
-    assert(cosmicAmbientSettled.visible === true && cosmicAmbientSettled.dieVisible === true && cosmicAmbientSettled.text.includes('COSMIC VIBES') && cosmicAmbientSettled.previewName === 'DIAMOND', `COSMIC ambient round-win copy probe: ambient beat should become visible after its entry animation starts ${JSON.stringify(cosmicAmbientSettled)}`);
+    assert(cosmicAmbientSettled.visible === true && cosmicAmbientSettled.dieVisible === true && cosmicAmbientSettled.text.includes('TRASH VIBES') && !cosmicAmbientSettled.text.includes(RETIRED_VIBES_COPY) && cosmicAmbientSettled.previewName === 'DIAMOND', `COSMIC ambient round-win copy probe: ambient beat should become visible after its entry animation starts ${JSON.stringify(cosmicAmbientSettled)}`);
 
     const cosmicAmbientTerminalProbe = await openPage(`${baseUrl}?source=qa&qa=1&terminal-nudge=cosmic-prism-next`, viewports[0]);
     await evalValue(cosmicAmbientTerminalProbe, `document.getElementById('startBtn').click(); true`);
@@ -4571,7 +4572,7 @@ async function main() {
       };
     })()`);
     assert(cosmicAmbientTerminal.rewardState.totalWins === 8 && cosmicAmbientTerminal.rewardState.activeName === 'DIAMOND' && cosmicAmbientTerminal.rewardState.nextDie && cosmicAmbientTerminal.rewardState.nextDie.name === 'PRISM', `COSMIC ambient terminal nudge probe: reward state wrong ${JSON.stringify(cosmicAmbientTerminal)}`);
-    assert(cosmicAmbientTerminal.visible === true && cosmicAmbientTerminal.kicker === 'CURRENT SKIN: DIAMOND' && cosmicAmbientTerminal.line === 'COSMIC VIBES' && cosmicAmbientTerminal.unlockLine === 'NEXT SKIN IN 1 ROUND WIN: PRISM', `COSMIC ambient terminal nudge probe: copy wrong ${JSON.stringify(cosmicAmbientTerminal)}`);
+    assert(cosmicAmbientTerminal.visible === true && cosmicAmbientTerminal.kicker === 'CURRENT SKIN: DIAMOND' && cosmicAmbientTerminal.line === 'TRASH VIBES' && cosmicAmbientTerminal.unlockLine === 'NEXT SKIN IN 1 ROUND WIN: PRISM', `COSMIC ambient terminal nudge probe: copy wrong ${JSON.stringify(cosmicAmbientTerminal)}`);
     assert(cosmicAmbientTerminal.nextName === 'PRISM' && cosmicAmbientTerminal.roundsNeeded === '1' && cosmicAmbientTerminal.targetWins === '9' && cosmicAmbientTerminal.copyMode === 'cosmic-ambient' && cosmicAmbientTerminal.preview === 'next', `COSMIC ambient terminal nudge probe: metadata should promise PRISM as the next preview ${JSON.stringify(cosmicAmbientTerminal)}`);
     assert(cosmicAmbientTerminal.dieRewardSkinned === true && cosmicAmbientTerminal.dieName === 'PRISM' && cosmicAmbientTerminal.dieEffect === rewardPrism.effect, `COSMIC ambient terminal nudge probe: thumbnail should preview PRISM, not DIAMOND ${JSON.stringify({ rewardPrism, cosmicAmbientTerminal })}`);
 
