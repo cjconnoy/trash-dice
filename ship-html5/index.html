@@ -11695,7 +11695,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260702.22';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.23';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11806,6 +11806,7 @@ body.inline-game-over .roll-panel {
   const FIRST_ROUND_PLAYER_BACKSTOP_OPEN_SLOTS = 2;
   const FIRST_ROUND_PLAYER_DICE_SAFETY_MARGIN = 2;
   const FIRST_ROUND_CPU_BRAKE_CHANCE = 0.38;
+  const FIRST_SESSION_ROUND_ONE_GUARANTEE_KEY = 'trashDiceFirstSessionRoundOneGuaranteeUsedV1';
   const POST_LOSS_COMEBACK_CPU_BRAKE_CHANCE = 0.52;
   const FIRST_GAME_MIRACLE_MAX_PLAYER_DICE = 5;
   const FIRST_GAME_MIRACLE_PANIC_PLAYER_DICE = 3;
@@ -12062,6 +12063,9 @@ body.inline-game-over .roll-panel {
   let firstRoundGuardRolls = 0;
   let lastFirstRoundGuard = null;
   let firstRoundCpuIntroPlaced = false;
+  let firstSessionRoundOneGuaranteeActive = false;
+  let firstSessionRoundOneGuaranteeUsed = false;
+  let lastFirstSessionRoundOneGuarantee = null;
   let postLossComebackRoundPending = false;
   let postLossComebackRoundRolls = 0;
   let postLossComebackRoundConsumed = false;
@@ -12187,6 +12191,67 @@ body.inline-game-over .roll-panel {
     const before = normalizeCounter(tdCompletedGames);
     const after = writeCompletedGameCount(before + 1);
     return { before, after, winner: winner === 'p2' ? 'p2' : 'p1' };
+  }
+
+  function readFirstSessionRoundOneGuaranteeUsed() {
+    try {
+      return window.sessionStorage.getItem(FIRST_SESSION_ROUND_ONE_GUARANTEE_KEY) === '1';
+    } catch (_) {
+      return firstSessionRoundOneGuaranteeUsed;
+    }
+  }
+
+  function writeFirstSessionRoundOneGuaranteeUsed(used = true) {
+    firstSessionRoundOneGuaranteeUsed = !!used;
+    try {
+      if (firstSessionRoundOneGuaranteeUsed) {
+        window.sessionStorage.setItem(FIRST_SESSION_ROUND_ONE_GUARANTEE_KEY, '1');
+      } else {
+        window.sessionStorage.removeItem(FIRST_SESSION_ROUND_ONE_GUARANTEE_KEY);
+      }
+    } catch (_) {}
+    return firstSessionRoundOneGuaranteeUsed;
+  }
+
+  function setFirstSessionRoundOneGuaranteeState(active = false, used = true, reason = 'qa') {
+    firstSessionRoundOneGuaranteeActive = !!active;
+    firstSessionRoundOneGuaranteeUsed = !!used;
+    lastFirstSessionRoundOneGuarantee = {
+      phase: firstSessionRoundOneGuaranteeActive ? 'armed' : 'inactive',
+      reason,
+      round,
+      totalRolls,
+      used: firstSessionRoundOneGuaranteeUsed,
+      at: Date.now()
+    };
+    return firstSessionRoundOneGuaranteeActive;
+  }
+
+  function armFirstSessionRoundOneGuarantee(reason = 'new-session-first-game') {
+    const used = readFirstSessionRoundOneGuaranteeUsed();
+    if (used || betaMultiplayerActive) {
+      setFirstSessionRoundOneGuaranteeState(false, used, used ? 'session-already-used' : 'beta-multiplayer');
+      return false;
+    }
+    writeFirstSessionRoundOneGuaranteeUsed(true);
+    setFirstSessionRoundOneGuaranteeState(true, true, reason);
+    return true;
+  }
+
+  function completeFirstSessionRoundOneGuarantee(reason = 'round-complete', winner = current) {
+    if (!firstSessionRoundOneGuaranteeActive && !lastFirstSessionRoundOneGuarantee) return;
+    firstSessionRoundOneGuaranteeActive = false;
+    firstSessionRoundOneGuaranteeUsed = true;
+    lastFirstSessionRoundOneGuarantee = {
+      phase: 'completed',
+      reason,
+      winner: winner === 'p2' ? 'p2' : 'p1',
+      round,
+      totalRolls,
+      guardRolls: firstRoundGuardRolls,
+      cpuIntroPlaced: firstRoundCpuIntroPlaced,
+      at: Date.now()
+    };
   }
 
   function recordSessionPlayerGameWin(playerWon) {
@@ -17890,9 +17955,9 @@ body.inline-game-over .roll-panel {
   }
 
   function isFirstRoundGuardActive() {
-    return !p0Autoplay &&
+    return firstSessionRoundOneGuaranteeActive &&
+      !p0Autoplay &&
       !betaMultiplayerActive &&
-      tdCompletedGames === 0 &&
       gameStarted &&
       round === 1 &&
       roundWins &&
@@ -18216,20 +18281,23 @@ body.inline-game-over .roll-panel {
 
     if (player === 'p1') {
       const playerPlacements = boardPlacementCount('p1');
+      const cpuPlacements = boardPlacementCount('p2');
       const openingRoll = playerPlacements === 0;
       const lowDiceBackstop = totalDice('p1') <= openSlots.length + FIRST_ROUND_PLAYER_DICE_SAFETY_MARGIN;
       const closingBackstop = openSlots.length <= FIRST_ROUND_PLAYER_BACKSTOP_OPEN_SLOTS;
+      const behindOrTied = playerPlacements <= cpuPlacements;
       const shouldHelp =
         openingRoll ||
         lowDiceBackstop ||
         closingBackstop ||
+        behindOrTied ||
         Math.random() < FIRST_ROUND_PLAYER_HIT_CHANCE;
 
       if (shouldHelp) {
         const face = randomFrom(openSlots);
         const reason = openingRoll
-          ? 'round-one-player-opening-hit'
-          : (closingBackstop || lowDiceBackstop ? 'round-one-player-backstop-hit' : 'round-one-player-weighted-hit');
+          ? 'session-round-one-player-opening-hit'
+          : (closingBackstop || lowDiceBackstop || behindOrTied ? 'session-round-one-player-fail-safe-hit' : 'session-round-one-player-weighted-hit');
         markFirstRoundGuard(reason, face, openSlots);
         return face;
       }
@@ -18241,15 +18309,21 @@ body.inline-game-over .roll-panel {
       if (!firstRoundCpuIntroPlaced && cpuPlacements === 0 && openSlots.length > 1) {
         firstRoundCpuIntroPlaced = true;
         const face = randomFrom(openSlots);
-        markFirstRoundGuard('round-one-cpu-intro-place', face, openSlots);
+        markFirstRoundGuard('session-round-one-cpu-intro-place', face, openSlots);
         return face;
       }
 
       if (takenFaces.length) {
-        const preventCpuClose = openSlots.length <= 1;
-        if (preventCpuClose || Math.random() < FIRST_ROUND_CPU_BRAKE_CHANCE) {
+        const playerPlacements = boardPlacementCount('p1');
+        const preventCpuClose = openSlots.length <= FIRST_ROUND_PLAYER_BACKSTOP_OPEN_SLOTS;
+        const cpuThreatensLead = cpuPlacements >= Math.max(1, playerPlacements);
+        const cpuAlreadyTextured = firstRoundCpuIntroPlaced || cpuPlacements > 0;
+        if (preventCpuClose || cpuThreatensLead || cpuAlreadyTextured || Math.random() < FIRST_ROUND_CPU_BRAKE_CHANCE) {
           const face = randomFrom(takenFaces);
-          markFirstRoundGuard(preventCpuClose ? 'round-one-cpu-close-brake' : 'round-one-cpu-soft-brake', face, openSlots);
+          const reason = preventCpuClose || cpuThreatensLead || cpuAlreadyTextured
+            ? 'session-round-one-cpu-fail-safe-brake'
+            : 'session-round-one-cpu-soft-brake';
+          markFirstRoundGuard(reason, face, openSlots);
           return face;
         }
       }
@@ -18593,6 +18667,7 @@ body.inline-game-over .roll-panel {
     lastFirstGameMiracle = null;
     gameStarted = true;
     document.body.dataset.gameStarted = 'true';
+    armFirstSessionRoundOneGuarantee();
     Audio.setMusicActive(true);
     selectPostBeatRandomRewardDieForNewGame();
 
@@ -19025,11 +19100,15 @@ body.inline-game-over .roll-panel {
 
     const winner = state.winner;
     const postLossComebackRoundWasActive = isPostLossComebackRoundActive();
+    const firstSessionRoundOneGuaranteeWasActive = isFirstRoundGuardActive();
     recordRoundWin(winner);
     const rewardProgress = winner === 'p1' ? recordRewardDiePlayerRoundWin() : null;
     state.rewardDie = rewardProgress;
     if (postLossComebackRoundWasActive) {
       consumePostLossComebackRound('round-complete', winner);
+    }
+    if (firstSessionRoundOneGuaranteeWasActive) {
+      completeFirstSessionRoundOneGuarantee('round-complete', winner);
     }
     const payoutDice = board.filter(Boolean);
     const lostTrashCount = Array.isArray(trashDice) ? trashDice.length : 0;
@@ -19671,6 +19750,18 @@ body.inline-game-over .roll-panel {
       },
       setCompletedGames(count = 0) {
         writeCompletedGameCount(count);
+        if (tdCompletedGames === 0) {
+          if (gameStarted && round === 1) {
+            writeFirstSessionRoundOneGuaranteeUsed(true);
+            setFirstSessionRoundOneGuaranteeState(true, true, 'qa-fresh-session-reset');
+          } else {
+            writeFirstSessionRoundOneGuaranteeUsed(false);
+            setFirstSessionRoundOneGuaranteeState(false, false, 'qa-fresh-session-pending');
+          }
+        } else {
+          writeFirstSessionRoundOneGuaranteeUsed(true);
+          setFirstSessionRoundOneGuaranteeState(false, true, 'qa-completed-session');
+        }
         firstGameAssistUses = 0;
         lastFirstGameAssist = null;
         firstGameMiracleRolls = 0;
@@ -19684,7 +19775,7 @@ body.inline-game-over .roll-panel {
         sessionPlayerGameWins = normalizeCounter(count);
         return sessionPlayerGameWins;
       },
-      firstGameAssistProbe({ completedGames = 0, player = 'p1', filledSlots = 2, p1Dice = 12, p2Dice = 15, p1RoundWins = 0, p2RoundWins = 0, roundNumber = 1, sampleCount = 24 } = {}) {
+      firstGameAssistProbe({ completedGames = 0, player = 'p1', filledSlots = 2, p1Dice = 12, p2Dice = 15, p1RoundWins = 0, p2RoundWins = 0, roundNumber = 1, sampleCount = 24, sessionGuarantee = completedGames === 0 } = {}) {
         ensureQaGame();
         writeCompletedGameCount(completedGames);
         firstGameAssistUses = 0;
@@ -19710,6 +19801,11 @@ body.inline-game-over .roll-panel {
           : null);
         current = player === 'p2' ? 'p2' : 'p1';
         busy = false;
+        setFirstSessionRoundOneGuaranteeState(
+          !!sessionGuarantee && round === 1 && roundWins.p1 === 0 && roundWins.p2 === 0,
+          true,
+          sessionGuarantee ? 'qa-session-round-one-armed' : 'qa-session-round-one-used'
+        );
         buildSlots();
         board.forEach((die, i) => { if (die) paintSlot(i, die); });
         syncUI();
@@ -19745,8 +19841,157 @@ body.inline-game-over .roll-panel {
           openHits,
           takenHits,
           openSlots,
+          sessionGuaranteeActive: firstSessionRoundOneGuaranteeActive,
+          sessionGuaranteeUsed: firstSessionRoundOneGuaranteeUsed,
+          lastFirstSessionRoundOneGuarantee: lastFirstSessionRoundOneGuarantee ? { ...lastFirstSessionRoundOneGuarantee } : null,
           completedGames: tdCompletedGames
         };
+      },
+      firstSessionRoundOneGuaranteeProbe({ completedGames = 7, mode = 'manual', seed = 'first-session-round-one-guarantee' } = {}) {
+        ensureQaGame();
+        const previous = {
+          board: Array.isArray(board) ? board.map(slot => slot ? { ...slot } : null) : board,
+          pools: JSON.parse(JSON.stringify(pools)),
+          trashDice: Array.isArray(trashDice) ? trashDice.map(die => die ? { ...die } : die) : trashDice,
+          trashed: { ...trashed },
+          round,
+          totalRolls,
+          roundWins: { ...roundWins },
+          current,
+          gameStarted,
+          busy,
+          p0Autoplay,
+          p1Autoplay,
+          tdCompletedGames,
+          firstRoundGuardRolls,
+          lastFirstRoundGuard,
+          firstRoundCpuIntroPlaced,
+          firstSessionRoundOneGuaranteeActive,
+          firstSessionRoundOneGuaranteeUsed,
+          lastFirstSessionRoundOneGuarantee,
+          forcedRolls: forcedRolls.slice()
+        };
+        const originalRandom = Math.random;
+        try {
+          Math.random = rewardDiceSeededRandom(String(seed || 'first-session-round-one-guarantee'));
+          writeCompletedGameCount(completedGames);
+          gameStarted = true;
+          document.body.dataset.gameStarted = 'true';
+          busy = false;
+          p0Autoplay = false;
+          p1Autoplay = mode === 'auto';
+          forcedRolls = [];
+          round = 1;
+          totalRolls = 0;
+          roundWins = { p1: 0, p2: 0 };
+          pools = {
+            p1: { yellow: 20, green: 0 },
+            p2: { yellow: 0, green: 20 }
+          };
+          resetPoolFaces();
+          trashDice = [];
+          trashed = { p1: 0, p2: 0 };
+          board = Array(6).fill(null);
+          current = 'p1';
+          firstRoundGuardRolls = 0;
+          lastFirstRoundGuard = null;
+          firstRoundCpuIntroPlaced = false;
+          setFirstSessionRoundOneGuaranteeState(true, true, 'qa-full-round-armed');
+          const activeBefore = isFirstRoundGuardActive();
+          const sequence = [];
+          let winner = null;
+          for (let i = 0; i < 80 && !winner; i++) {
+            current = i % 2 === 0 ? 'p1' : 'p2';
+            const player = current;
+            const openSlots = board.reduce((slots, slot, slotIndex) => {
+              if (slot === null) slots.push(slotIndex + 1);
+              return slots;
+            }, []);
+            const guardRollsBefore = firstRoundGuardRolls;
+            const face = chooseRollValue(player);
+            const open = board[face - 1] === null;
+            if (open) {
+              board[face - 1] = {
+                player,
+                color: player === 'p1' ? 'yellow' : 'green',
+                value: face
+              };
+            } else {
+              trashDice.push({
+                player,
+                color: player === 'p1' ? 'yellow' : 'green',
+                value: face
+              });
+              trashed[player]++;
+            }
+            totalRolls++;
+            sequence.push({
+              player,
+              face,
+              open,
+              openSlots,
+              reason: firstRoundGuardRolls > guardRollsBefore && lastFirstRoundGuard ? lastFirstRoundGuard.reason : ''
+            });
+            if (open && board.every(Boolean)) winner = player;
+          }
+          const guardBeforeComplete = {
+            active: isFirstRoundGuardActive(),
+            rolls: firstRoundGuardRolls,
+            cpuIntroPlaced: firstRoundCpuIntroPlaced,
+            last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
+          };
+          if (winner) completeFirstSessionRoundOneGuarantee('qa-round-complete', winner);
+          const completedSnapshot = lastFirstSessionRoundOneGuarantee ? { ...lastFirstSessionRoundOneGuarantee } : null;
+          round = 2;
+          const nextRoundActive = isFirstRoundGuardActive();
+          const placements = {
+            p1: boardPlacementCount('p1'),
+            p2: boardPlacementCount('p2')
+          };
+          const firstCpuRoll = sequence.find(item => item.player === 'p2') || null;
+          return {
+            completedGames: tdCompletedGames,
+            mode: p1Autoplay ? 'auto' : 'manual',
+            activeBefore,
+            guardBeforeComplete,
+            completedSnapshot,
+            nextRoundActive,
+            winner,
+            placements,
+            firstCpuRoll,
+            sequence,
+            board: board.map(slot => slot ? { ...slot } : null),
+            trashDice: trashDice.map(die => die ? { ...die } : die)
+          };
+        } finally {
+          Math.random = originalRandom;
+          board = previous.board;
+          pools = previous.pools;
+          resetPoolFaces();
+          trashDice = previous.trashDice;
+          trashed = previous.trashed;
+          round = previous.round;
+          totalRolls = previous.totalRolls;
+          roundWins = previous.roundWins;
+          current = previous.current;
+          gameStarted = previous.gameStarted;
+          if (gameStarted) document.body.dataset.gameStarted = 'true';
+          else delete document.body.dataset.gameStarted;
+          busy = previous.busy;
+          p0Autoplay = previous.p0Autoplay;
+          p1Autoplay = previous.p1Autoplay;
+          forcedRolls = previous.forcedRolls;
+          writeCompletedGameCount(previous.tdCompletedGames);
+          firstRoundGuardRolls = previous.firstRoundGuardRolls;
+          lastFirstRoundGuard = previous.lastFirstRoundGuard;
+          firstRoundCpuIntroPlaced = previous.firstRoundCpuIntroPlaced;
+          firstSessionRoundOneGuaranteeActive = previous.firstSessionRoundOneGuaranteeActive;
+          firstSessionRoundOneGuaranteeUsed = previous.firstSessionRoundOneGuaranteeUsed;
+          lastFirstSessionRoundOneGuarantee = previous.lastFirstSessionRoundOneGuarantee;
+          buildSlots();
+          board.forEach((die, i) => { if (die) paintSlot(i, die); });
+          syncUI();
+        }
       },
       postLossComebackProbe() {
         ensureQaGame();
@@ -19760,6 +20005,12 @@ body.inline-game-over .roll-panel {
           p0Autoplay,
           p0ReviewMode,
           p1Autoplay,
+          firstRoundGuardRolls,
+          lastFirstRoundGuard,
+          firstRoundCpuIntroPlaced,
+          firstSessionRoundOneGuaranteeActive,
+          firstSessionRoundOneGuaranteeUsed,
+          lastFirstSessionRoundOneGuarantee,
           postLossComebackRoundPending,
           postLossComebackRoundRolls,
           postLossComebackRoundConsumed,
@@ -19773,6 +20024,10 @@ body.inline-game-over .roll-panel {
         round = 1;
         totalRolls = 0;
         roundWins = { p1: 0, p2: 0 };
+        firstRoundGuardRolls = 0;
+        lastFirstRoundGuard = null;
+        firstRoundCpuIntroPlaced = false;
+        setFirstSessionRoundOneGuaranteeState(false, true, 'qa-post-loss-session-used');
         pools = { p1: { yellow: 12, green: 0 }, p2: { yellow: 0, green: 12 } };
         resetPoolFaces();
         board = [
@@ -19818,6 +20073,12 @@ body.inline-game-over .roll-panel {
         p0Autoplay = previous.p0Autoplay;
         p0ReviewMode = previous.p0ReviewMode;
         p1Autoplay = previous.p1Autoplay;
+        firstRoundGuardRolls = previous.firstRoundGuardRolls;
+        lastFirstRoundGuard = previous.lastFirstRoundGuard;
+        firstRoundCpuIntroPlaced = previous.firstRoundCpuIntroPlaced;
+        firstSessionRoundOneGuaranteeActive = previous.firstSessionRoundOneGuaranteeActive;
+        firstSessionRoundOneGuaranteeUsed = previous.firstSessionRoundOneGuaranteeUsed;
+        lastFirstSessionRoundOneGuarantee = previous.lastFirstSessionRoundOneGuarantee;
         postLossComebackRoundPending = previous.postLossComebackRoundPending;
         postLossComebackRoundRolls = previous.postLossComebackRoundRolls;
         postLossComebackRoundConsumed = previous.postLossComebackRoundConsumed;
@@ -19860,6 +20121,9 @@ body.inline-game-over .roll-panel {
           firstRoundGuardRolls,
           lastFirstRoundGuard,
           firstRoundCpuIntroPlaced,
+          firstSessionRoundOneGuaranteeActive,
+          firstSessionRoundOneGuaranteeUsed,
+          lastFirstSessionRoundOneGuarantee,
           postLossComebackRoundPending,
           postLossComebackRoundRolls,
           postLossComebackRoundConsumed,
@@ -20133,6 +20397,17 @@ body.inline-game-over .roll-panel {
           firstRoundGuardRolls = 0;
           lastFirstRoundGuard = null;
           firstRoundCpuIntroPlaced = !!config.firstRoundCpuIntroPlaced;
+          setFirstSessionRoundOneGuaranteeState(
+            !!config.sessionGuarantee || (
+              config.sessionGuarantee !== false &&
+              round === 1 &&
+              roundWins.p1 === 0 &&
+              roundWins.p2 === 0 &&
+              openSlots.length > 0
+            ),
+            true,
+            config.sessionGuarantee === false ? 'qa-buff-audit-session-used' : 'qa-buff-audit-session-armed'
+          );
           postLossComebackRoundPending = !!config.postLossPending;
           postLossComebackRoundRolls = 0;
           postLossComebackRoundConsumed = false;
@@ -20397,6 +20672,9 @@ body.inline-game-over .roll-panel {
           firstRoundGuardRolls = previous.firstRoundGuardRolls;
           lastFirstRoundGuard = previous.lastFirstRoundGuard;
           firstRoundCpuIntroPlaced = previous.firstRoundCpuIntroPlaced;
+          firstSessionRoundOneGuaranteeActive = previous.firstSessionRoundOneGuaranteeActive;
+          firstSessionRoundOneGuaranteeUsed = previous.firstSessionRoundOneGuaranteeUsed;
+          lastFirstSessionRoundOneGuarantee = previous.lastFirstSessionRoundOneGuarantee;
           postLossComebackRoundPending = previous.postLossComebackRoundPending;
           postLossComebackRoundRolls = previous.postLossComebackRoundRolls;
           postLossComebackRoundConsumed = previous.postLossComebackRoundConsumed;
@@ -20875,6 +21153,9 @@ body.inline-game-over .roll-panel {
             active: isFirstRoundGuardActive(),
             rolls: firstRoundGuardRolls,
             cpuIntroPlaced: firstRoundCpuIntroPlaced,
+            sessionGuaranteeActive: firstSessionRoundOneGuaranteeActive,
+            sessionGuaranteeUsed: firstSessionRoundOneGuaranteeUsed,
+            sessionGuaranteeLast: lastFirstSessionRoundOneGuarantee ? { ...lastFirstSessionRoundOneGuarantee } : null,
             last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
           },
           postLossComebackRound: snapshotPostLossComebackRound(),
@@ -21175,6 +21456,9 @@ body.inline-game-over .roll-panel {
           active: isFirstRoundGuardActive(),
           rolls: firstRoundGuardRolls,
           cpuIntroPlaced: firstRoundCpuIntroPlaced,
+          sessionGuaranteeActive: firstSessionRoundOneGuaranteeActive,
+          sessionGuaranteeUsed: firstSessionRoundOneGuaranteeUsed,
+          sessionGuaranteeLast: lastFirstSessionRoundOneGuarantee ? { ...lastFirstSessionRoundOneGuarantee } : null,
           last: lastFirstRoundGuard ? { ...lastFirstRoundGuard } : null
         },
         postLossComebackRound: snapshotPostLossComebackRound(),
