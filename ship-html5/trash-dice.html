@@ -11708,7 +11708,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260702.29';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.30';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11902,6 +11902,8 @@ body.inline-game-over .roll-panel {
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
   const GAME_RESULT_LOSS_AUTO_ADVANCE_MS = 4000;
+  const AUTO_PLAY_GAME_WIN_CONTINUE_MS = QA_ENABLED ? 5600 : 9500;
+  const AUTO_PLAY_BEAT_GAME_CONTINUE_MS = QA_ENABLED ? 6800 : 14000;
   const INLINE_GAME_OVER_REST_MS = QA_ENABLED ? 3200 : 25000;
   const INLINE_ROUND_WINS_WINDUP_FIRST_TICK_DELAY_MS = MOBILE_ROLL_SMOOTHING ? 1680 : 1480;
   const INLINE_ROUND_WINS_WINDUP_BASE_MS = 560;
@@ -12070,6 +12072,7 @@ body.inline-game-over .roll-panel {
   let roundWinBurstTimer = null;
   let roundWinBurstWindupTimer = null;
   let guidedRoundWinHoldState = null;
+  let guidedRoundWinHoldTimer = null;
   let roundLossRewardNudgeTimer = null;
   let rewardDiePreviewOverride = null;
   let postBeatRandomRewardDie = null;
@@ -12551,6 +12554,7 @@ body.inline-game-over .roll-panel {
     roundWinBurstTimer = null;
     roundWinBurstWindupTimer = null;
     guidedRoundWinHoldState = null;
+    guidedRoundWinHoldTimer = null;
     roundLossRewardNudgeTimer = null;
     playerPayoutFanfareTimer = null;
     playerPayoutFanfareActive = false;
@@ -17256,8 +17260,10 @@ body.inline-game-over .roll-panel {
     return p1Autoplay && !p0Autoplay && !p0ReviewMode && !betaMultiplayerActive;
   }
 
-  function gameResultAutoAdvanceDelay(playerWon) {
-    return playerWon ? null : GAME_RESULT_LOSS_AUTO_ADVANCE_MS;
+  function gameResultAutoAdvanceDelay(playerWon, autoContinue = false, guidedCompletionTriggered = false) {
+    if (!playerWon) return GAME_RESULT_LOSS_AUTO_ADVANCE_MS;
+    if (!autoContinue) return null;
+    return guidedCompletionTriggered ? AUTO_PLAY_BEAT_GAME_CONTINUE_MS : AUTO_PLAY_GAME_WIN_CONTINUE_MS;
   }
 
   function cancelInlineGameOverAutoAdvance() {
@@ -17269,6 +17275,31 @@ body.inline-game-over .roll-panel {
       inlineGameOverState.autoRestartMs = null;
       inlineGameOverState.autoContinue = false;
     }
+  }
+
+  function cancelGuidedRoundWinAutoContinue() {
+    if (guidedRoundWinHoldTimer) {
+      cancelRuntimeTimer(guidedRoundWinHoldTimer);
+      guidedRoundWinHoldTimer = null;
+    }
+    if (guidedRoundWinHoldState) {
+      guidedRoundWinHoldState.autoRestartMs = null;
+      guidedRoundWinHoldState.autoContinue = false;
+    }
+  }
+
+  function scheduleGuidedRoundWinAutoContinue(runId, delay) {
+    if (guidedRoundWinHoldTimer) {
+      cancelRuntimeTimer(guidedRoundWinHoldTimer);
+      guidedRoundWinHoldTimer = null;
+    }
+    if (!delay) return;
+    guidedRoundWinHoldTimer = runLater(() => {
+      guidedRoundWinHoldTimer = null;
+      if (!isGuidedRoundWinHoldActive() || !guidedRoundWinHoldState || guidedRoundWinHoldState.runId !== runId) return;
+      if (guidedRoundWinHoldState.autoContinue && !isAutoContinueModeActive()) return;
+      continueFromGuidedRoundWinHold('auto_watch');
+    }, delay);
   }
 
   function cancelInlineGameOverRestTimer() {
@@ -17350,8 +17381,8 @@ body.inline-game-over .roll-panel {
       sourceReason,
       finalRewardRoundAlreadyRecorded,
       finalRewardRoundCredited: false,
-      autoRestartMs: gameResultAutoAdvanceDelay(playerWon),
-      autoContinue: autoContinueWasActive && !playerWon,
+      autoRestartMs: gameResultAutoAdvanceDelay(playerWon, autoContinueWasActive, false),
+      autoContinue: autoContinueWasActive,
       autoRestartPausedForPwa: false,
       autoRestMs: playerWon ? INLINE_GAME_OVER_REST_MS : null,
       rested: false
@@ -17368,12 +17399,14 @@ body.inline-game-over .roll-panel {
     }
     inlineGameOverState.guidedCompletionTriggered = guidedCompletionTriggered;
     if (guidedCompletionTriggered) {
-      inlineGameOverState.autoRestartMs = null;
-      inlineGameOverState.autoContinue = false;
+      inlineGameOverState.autoRestartMs = gameResultAutoAdvanceDelay(playerWon, autoContinueWasActive, true);
+      inlineGameOverState.autoContinue = autoContinueWasActive;
     }
-    if (playerWon) {
+    if (playerWon && !autoContinueWasActive) {
       p1Autoplay = false;
       clearP1AutoplayTimer();
+      updateP0ReviewControl();
+    } else if (playerWon && autoContinueWasActive) {
       updateP0ReviewControl();
     }
     if (playerWon) {
@@ -18519,6 +18552,7 @@ body.inline-game-over .roll-panel {
     } else {
       clearP1AutoplayTimer();
       cancelInlineGameOverAutoAdvance();
+      cancelGuidedRoundWinAutoContinue();
       if (announce && gameStarted && current === 'p1' && !busy) setMsg('PLAYER ROLL');
       syncFirstRollPrompt();
     }
@@ -19114,14 +19148,18 @@ body.inline-game-over .roll-panel {
   }
 
   function enterGuidedRoundWinHold(runId) {
+    const autoContinueWasActive = isAutoContinueModeActive();
+    const autoRestartMs = autoContinueWasActive ? AUTO_PLAY_BEAT_GAME_CONTINUE_MS : null;
     guidedRoundWinHoldState = {
       active: true,
       runId,
       round,
-      at: Date.now()
+      at: Date.now(),
+      autoRestartMs,
+      autoContinue: autoContinueWasActive
     };
     roundResolutionState = null;
-    p1Autoplay = false;
+    if (!autoContinueWasActive) p1Autoplay = false;
     clearP1AutoplayTimer();
     document.body.classList.add('guided-round-win-hold');
     current = 'p1';
@@ -19136,12 +19174,19 @@ body.inline-game-over .roll-panel {
     setRollButtonPlayAgainMode(true);
     rollBtn.setAttribute('aria-label', 'Keep playing');
     rollBtn.disabled = false;
+    updateP0ReviewControl();
     syncHeroIdleState();
+    scheduleGuidedRoundWinAutoContinue(runId, autoRestartMs);
     return guidedRoundWinHoldState;
   }
 
-  function continueFromGuidedRoundWinHold() {
+  function continueFromGuidedRoundWinHold(source = 'manual') {
     if (!isGuidedRoundWinHoldActive()) return false;
+    const autoContinue = !!(guidedRoundWinHoldState && guidedRoundWinHoldState.autoContinue && p1Autoplay);
+    if (guidedRoundWinHoldTimer) {
+      cancelRuntimeTimer(guidedRoundWinHoldTimer);
+      guidedRoundWinHoldTimer = null;
+    }
     guidedRoundWinHoldState = null;
     document.body.classList.remove('guided-round-win-hold');
     hideRoundWinBurst();
@@ -19158,7 +19203,7 @@ body.inline-game-over .roll-panel {
     if (betaMultiplayerActive) {
       syncBetaTurnState('guided-round-win-continue');
     } else {
-      setMsg('PLAYER ROLL');
+      setMsg(autoContinue || source === 'auto_watch' ? 'AUTO ON' : 'PLAYER ROLL');
       syncHeroIdleState();
       scheduleP0Autoplay();
     }

@@ -1002,14 +1002,16 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.29';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.29';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.30';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.30';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
 const GAME_WIN_ROUND_WINS_FIRST_TICK_DELAY_MIN_MS = { desktop: 1400, mobile: 1600 };
 const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
+const AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS = 5600;
+const AUTO_PLAY_BEAT_GAME_CONTINUE_QA_MS = 6800;
 const ROUND_WIN_BURST_FULL_COUNT_MAX = 18;
 function expectedRewardCountdownLine(roundsNeeded) {
   const count = Math.max(1, Math.floor(Number(roundsNeeded) || 1));
@@ -4161,10 +4163,10 @@ async function main() {
         bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoTerminal.p1Autoplay === false && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: player win terminal screen should pause AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
-    assert(p1AutoTerminal.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoTerminal.ariaPressed === 'false' && p1AutoTerminal.bodyAutoActive === false, `AUTO probe: terminal screen should show AUTO paused while the win recap is held ${JSON.stringify(p1AutoTerminal)}`);
-    assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === false && p1AutoTerminal.inlineGameOver.autoRestartMs === null && p1AutoTerminal.inlineGameOver.autoRestMs >= 3000, `AUTO probe: terminal screen should hold for manual KEEP PLAYING with a rest-state timer ${JSON.stringify(p1AutoTerminal)}`);
-    await sleep(5200);
+    assert(p1AutoTerminal.p1Autoplay === true && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: player win terminal screen should preserve AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.buttonText === AUTO_PLAY_ON_LABEL && p1AutoTerminal.ariaPressed === 'true' && p1AutoTerminal.bodyAutoActive === true, `AUTO probe: terminal screen should show AUTO ON while the win recap dwells ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === true && p1AutoTerminal.inlineGameOver.autoRestartMs === AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS && p1AutoTerminal.inlineGameOver.autoRestMs >= 3000, `AUTO probe: terminal screen should arm auto-watch after a readable win dwell ${JSON.stringify(p1AutoTerminal)}`);
+    await sleep(Math.max(1200, AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS - 1800));
     const p1AutoHeldWin = await evalValue(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
       return {
@@ -4175,13 +4177,13 @@ async function main() {
         events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
       };
     })()`);
-    assert(p1AutoHeldWin.p1Autoplay === false && p1AutoHeldWin.inlineGameOver && p1AutoHeldWin.inlineGameOver.active === true && p1AutoHeldWin.inlineGameOver.rested === true && p1AutoHeldWin.bodyRested === true && p1AutoHeldWin.rollText.includes('KEEP PLAYING!'), `AUTO probe: held win recap should still wait after the old auto-continue window ${JSON.stringify(p1AutoHeldWin)}`);
-    assert(!p1AutoHeldWin.events.some(item => item.method === 'auto_watch' || item.method === 'auto_game_continue'), `AUTO probe: held win recap should not emit auto-continue analytics ${JSON.stringify(p1AutoHeldWin.events)}`);
-    await evalValue(p1AutoProbe, `document.getElementById('rollBtn').click(); true`);
+    assert(p1AutoHeldWin.p1Autoplay === true && p1AutoHeldWin.inlineGameOver && p1AutoHeldWin.inlineGameOver.active === true && p1AutoHeldWin.bodyRested === true && p1AutoHeldWin.rollText.includes('KEEP PLAYING!'), `AUTO probe: held win recap should still be readable before auto-watch continues ${JSON.stringify(p1AutoHeldWin)}`);
+    assert(!p1AutoHeldWin.events.some(item => item.method === 'auto_watch' || item.method === 'auto_game_continue'), `AUTO probe: held win recap should not emit auto-continue analytics before dwell finishes ${JSON.stringify(p1AutoHeldWin.events)}`);
     await waitEval(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
-      return qa.gameStarted === true && !qa.inlineGameOver && qa.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
-    })()`, 'AUTO probe manual continue next game', 3000);
+      const events = window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }));
+      return qa.gameStarted === true && !qa.inlineGameOver && qa.p1Autoplay === true && events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_watch');
+    })()`, 'AUTO probe auto-watch continue next game', AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS + 3200);
     const p1AutoAfterContinue = await evalValue(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
       const btn = document.getElementById('devP1AutoBtn');
@@ -4199,8 +4201,8 @@ async function main() {
         bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoAfterContinue.p1Autoplay === false && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: manual continue from held win should restart cleanly with AUTO off ${JSON.stringify(p1AutoAfterContinue)}`);
-    assert(p1AutoAfterContinue.totalRolls === 0 && p1AutoAfterContinue.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoAfterContinue.ariaPressed === 'false' && p1AutoAfterContinue.bodyAutoActive === false, `AUTO probe: autoplay should remain paused after manual continue ${JSON.stringify(p1AutoAfterContinue)}`);
+    assert(p1AutoAfterContinue.p1Autoplay === true && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: auto-watch continue from held win should restart cleanly with AUTO still on ${JSON.stringify(p1AutoAfterContinue)}`);
+    assert(p1AutoAfterContinue.buttonText === AUTO_PLAY_ON_LABEL && p1AutoAfterContinue.ariaPressed === 'true' && p1AutoAfterContinue.bodyAutoActive === true, `AUTO probe: autoplay should remain on after auto-watch continue ${JSON.stringify(p1AutoAfterContinue)}`);
 
     const p1AutoBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe()`);
     const p1AutoBuffCases = [
@@ -4661,6 +4663,87 @@ async function main() {
       };
     })()`);
     assert(beatGameWinHeld.inlineGameOver && beatGameWinHeld.inlineGameOver.active === true && beatGameWinHeld.inlineGameOver.guidedCompletionTriggered === true && beatGameWinHeld.inlineGameOver.autoRestartMs === null && beatGameWinHeld.title === 'YOU BEAT THE GAME!' && beatGameWinHeld.rollText.includes('KEEP PLAYING!') && !beatGameWinHeld.events.some(item => item.method === 'auto_game_continue' || item.method === 'auto_watch'), `guided complete game-win probe: terminal capstone should still be waiting after the old auto-advance window ${JSON.stringify(beatGameWinHeld)}`);
+
+    const autoGameWinProbe = await openPage(`${baseUrl}?source=qa&qa=1&auto-game-win-continue=1`, viewports[0]);
+    await evalValue(autoGameWinProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(autoGameWinProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `AUTO PLAY game-win continue probe game start`);
+    await evalValue(autoGameWinProbe, `window.TrashDiceDebug.p1Auto(true); window.TrashDiceQA.gameWin('p1'); true`);
+    await waitEval(autoGameWinProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active`, `AUTO PLAY game-win continue probe terminal`);
+    const autoGameWinHeld = await evalValue(autoGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        inlineGameOver: state.inlineGameOver,
+        p1Autoplay: state.p1Autoplay,
+        rollText: (document.getElementById('rollBtn') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(autoGameWinHeld.inlineGameOver && autoGameWinHeld.inlineGameOver.playerWon === true && autoGameWinHeld.inlineGameOver.guidedCompletionTriggered === false && autoGameWinHeld.inlineGameOver.autoContinue === true && autoGameWinHeld.inlineGameOver.autoRestartMs === AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS && autoGameWinHeld.p1Autoplay === true && autoGameWinHeld.rollText.includes('KEEP PLAYING!'), `AUTO PLAY game-win continue probe: held win should preserve AUTO ON and arm a readable dwell ${JSON.stringify(autoGameWinHeld)}`);
+    await sleep(Math.max(1200, AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS - 1800));
+    const autoGameWinStillHeld = await evalValue(autoGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        inlineGameOver: state.inlineGameOver,
+        p1Autoplay: state.p1Autoplay,
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(autoGameWinStillHeld.inlineGameOver && autoGameWinStillHeld.inlineGameOver.active === true && autoGameWinStillHeld.p1Autoplay === true && !autoGameWinStillHeld.events.some(item => item.method === 'auto_watch'), `AUTO PLAY game-win continue probe: auto-watch should not skip the readable win dwell ${JSON.stringify(autoGameWinStillHeld)}`);
+    const autoGameWinRestarted = await waitEval(autoGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      const events = window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }));
+      if (state.inlineGameOver || !state.gameStarted || state.p1Autoplay !== true) return false;
+      return {
+        p1Autoplay: state.p1Autoplay,
+        gameStarted: state.gameStarted,
+        inlineGameOver: state.inlineGameOver,
+        totalRolls: state.totalRolls,
+        events
+      };
+    })()`, `AUTO PLAY game-win auto-watch restart`, AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS + 3200);
+    assert(autoGameWinRestarted.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_watch') && autoGameWinRestarted.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_watch'), `AUTO PLAY game-win continue probe: auto-watch analytics missing after restart ${JSON.stringify(autoGameWinRestarted)}`);
+
+    const autoBeatGameWinProbe = await openPage(`${baseUrl}?source=qa&qa=1&auto-beat-game-continue=1`, viewports[0]);
+    await evalValue(autoBeatGameWinProbe, `document.getElementById('startBtn').click(); true`);
+    await waitEval(autoBeatGameWinProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `AUTO PLAY beat-game continue probe game start`);
+    await evalValue(autoBeatGameWinProbe, `window.TrashDiceQA.setRewardWins(12); window.TrashDiceQA.setGuidedCompletion({ pending: true, completed: false, reason: 'qa-auto-game-win' }); window.TrashDiceDebug.p1Auto(true); window.TrashDiceQA.gameWin('p1'); true`);
+    await waitEval(autoBeatGameWinProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === true`, `AUTO PLAY beat-game continue probe terminal capstone`);
+    const autoBeatGameHeld = await evalValue(autoBeatGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        inlineGameOver: state.inlineGameOver,
+        p1Autoplay: state.p1Autoplay,
+        title: (document.getElementById('inlineResultTitle') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        sub: (document.getElementById('inlineResultSub') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        rollText: (document.getElementById('rollBtn') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(autoBeatGameHeld.inlineGameOver && autoBeatGameHeld.inlineGameOver.guidedCompletionTriggered === true && autoBeatGameHeld.inlineGameOver.autoContinue === true && autoBeatGameHeld.inlineGameOver.autoRestartMs === AUTO_PLAY_BEAT_GAME_CONTINUE_QA_MS && autoBeatGameHeld.p1Autoplay === true && autoBeatGameHeld.title === 'YOU BEAT THE GAME!' && autoBeatGameHeld.sub === 'You unlocked every die. How many more rounds can you win?' && autoBeatGameHeld.rollText.includes('KEEP PLAYING!'), `AUTO PLAY beat-game continue probe: capstone should preserve AUTO ON and use longer dwell ${JSON.stringify(autoBeatGameHeld)}`);
+    await sleep(Math.max(1200, AUTO_PLAY_BEAT_GAME_CONTINUE_QA_MS - 1800));
+    const autoBeatGameStillHeld = await evalValue(autoBeatGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      return {
+        inlineGameOver: state.inlineGameOver,
+        p1Autoplay: state.p1Autoplay,
+        title: (document.getElementById('inlineResultTitle') || {}).textContent.replace(/\\s+/g, ' ').trim(),
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(autoBeatGameStillHeld.inlineGameOver && autoBeatGameStillHeld.inlineGameOver.active === true && autoBeatGameStillHeld.p1Autoplay === true && autoBeatGameStillHeld.title === 'YOU BEAT THE GAME!' && !autoBeatGameStillHeld.events.some(item => item.method === 'auto_watch'), `AUTO PLAY beat-game continue probe: capstone should not skip the readable dwell ${JSON.stringify(autoBeatGameStillHeld)}`);
+    const autoBeatGameRestarted = await waitEval(autoBeatGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      const events = window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }));
+      if (state.inlineGameOver || !state.gameStarted || state.p1Autoplay !== true) return false;
+      return {
+        p1Autoplay: state.p1Autoplay,
+        gameStarted: state.gameStarted,
+        inlineGameOver: state.inlineGameOver,
+        rewardState: window.TrashDiceQA.rewardDieState(),
+        events
+      };
+    })()`, `AUTO PLAY beat-game auto-watch restart`, AUTO_PLAY_BEAT_GAME_CONTINUE_QA_MS + 3400);
+    assert(autoBeatGameRestarted.rewardState.guidedGameCompleted === true && autoBeatGameRestarted.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_watch') && autoBeatGameRestarted.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_watch'), `AUTO PLAY beat-game continue probe: auto-watch should resume endless mode after capstone dwell ${JSON.stringify(autoBeatGameRestarted)}`);
 
     const discoGameWinLayerProbe = await openPage(`${baseUrl}?source=qa&qa=1&disco-game-win-layer=1`, viewports[0]);
     await evalValue(discoGameWinLayerProbe, `document.getElementById('startBtn').click(); true`);
