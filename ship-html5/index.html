@@ -4350,6 +4350,20 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
   padding: clamp(8px, 1.7vw, 12px);
   animation: terminalRewardDieFlash 0.82s steps(2, end) infinite;
 }
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge,
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge::before,
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge::after,
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge *,
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge *::before,
+body.inline-game-over.inline-game-over-rest .terminal-reward-nudge *::after,
+body.inline-game-over.inline-game-over-rest .roll-panel,
+body.inline-game-over.inline-game-over-rest .roll-btn.inline-play-again,
+body.inline-game-over.inline-game-over-rest .roll-btn.inline-play-again *,
+body.inline-game-over.inline-game-over-rest .inline-result-chip::before {
+  animation: none !important;
+  filter: none !important;
+  will-change: auto !important;
+}
 .terminal-reward-copy {
   min-width: 0;
   display: flex;
@@ -11681,7 +11695,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260701.20';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260702.21';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -11874,7 +11888,7 @@ body.inline-game-over .roll-panel {
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
   const GAME_RESULT_LOSS_AUTO_ADVANCE_MS = 4000;
-  const GAME_RESULT_WIN_AUTO_ADVANCE_MS = 5000;
+  const INLINE_GAME_OVER_REST_MS = QA_ENABLED ? 3200 : 25000;
   const INLINE_ROUND_WINS_WINDUP_FIRST_TICK_DELAY_MS = MOBILE_ROLL_SMOOTHING ? 1680 : 1480;
   const INLINE_ROUND_WINS_WINDUP_BASE_MS = 560;
   const INLINE_ROUND_WINS_WINDUP_PER_WIN_MS = 64;
@@ -12031,6 +12045,7 @@ body.inline-game-over .roll-panel {
   let inlineGameOverRunId = 0;
   let inlineGameOverState = null;
   let inlineGameOverTimer = null;
+  let inlineGameOverRestTimer = null;
   let inlineWinAccentTimer = null;
   let inlineRoundWinsWindupTimer = null;
   let guidedGameCompletionPending = false;
@@ -12470,6 +12485,7 @@ body.inline-game-over .roll-panel {
     progressionWatchdogTimer = null;
     progressionWatchdogRun++;
     inlineGameOverTimer = null;
+    inlineGameOverRestTimer = null;
     inlineWinAccentTimer = null;
     inlineGameOverState = null;
     inlineGameOverRunId++;
@@ -12477,6 +12493,7 @@ body.inline-game-over .roll-panel {
     roundResolutionState = null;
     hideTerminalRewardNudge();
     hideRoundLossRewardNudge(false);
+    document.body.classList.remove('inline-game-over-rest');
   }
 
   function totalDice(player) {
@@ -16995,6 +17012,7 @@ body.inline-game-over .roll-panel {
 
   function clearInlineEndingVisuals() {
     clearInlineRoundWinsWindupTimer();
+    document.body.classList.remove('inline-game-over-rest');
     if (inlineResultBanner) {
       inlineResultBanner.setAttribute('aria-hidden', 'true');
       inlineResultBanner.classList.remove('win', 'loss');
@@ -17111,11 +17129,15 @@ body.inline-game-over .roll-panel {
       cancelRuntimeTimer(inlineGameOverTimer);
       inlineGameOverTimer = null;
     }
+    if (inlineGameOverRestTimer) {
+      cancelRuntimeTimer(inlineGameOverRestTimer);
+      inlineGameOverRestTimer = null;
+    }
     if (inlineWinAccentTimer) {
       cancelRuntimeTimer(inlineWinAccentTimer);
       inlineWinAccentTimer = null;
     }
-    document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss', 'guided-game-complete');
+    document.body.classList.remove('inline-game-over', 'inline-game-win', 'inline-game-loss', 'inline-game-over-rest', 'guided-game-complete');
     clearMathematicalLoserStatus();
     hidePwaInstallHint();
     clearTerminalDiceCelebration();
@@ -17153,7 +17175,7 @@ body.inline-game-over .roll-panel {
   }
 
   function gameResultAutoAdvanceDelay(playerWon) {
-    return playerWon ? GAME_RESULT_WIN_AUTO_ADVANCE_MS : GAME_RESULT_LOSS_AUTO_ADVANCE_MS;
+    return playerWon ? null : GAME_RESULT_LOSS_AUTO_ADVANCE_MS;
   }
 
   function cancelInlineGameOverAutoAdvance() {
@@ -17165,6 +17187,37 @@ body.inline-game-over .roll-panel {
       inlineGameOverState.autoRestartMs = null;
       inlineGameOverState.autoContinue = false;
     }
+  }
+
+  function cancelInlineGameOverRestTimer() {
+    if (inlineGameOverRestTimer) {
+      cancelRuntimeTimer(inlineGameOverRestTimer);
+      inlineGameOverRestTimer = null;
+    }
+  }
+
+  function restInlineGameOverVisuals(runId) {
+    inlineGameOverRestTimer = null;
+    if (!isCurrentInlineGameOverRun(runId)) return;
+    document.body.classList.add('inline-game-over-rest');
+    if (inlineGameOverState) inlineGameOverState.rested = true;
+    stopTitleRoundWinFanfare();
+    clearTerminalDiceCelebration();
+    clearPlayerPayoutFanfare(false);
+    if (trashCan) {
+      trashCan.classList.remove('inline-ending-can-dance', 'player-payout-can-dance');
+      trashCan.style.removeProperty('--payout-can-dance-rate');
+    }
+    if (boardWrap) {
+      boardWrap.classList.remove('inline-ending-lid-dance', 'player-payout-lid-dance');
+      boardWrap.style.removeProperty('--payout-lid-dance-rate');
+    }
+  }
+
+  function scheduleInlineGameOverRest(runId, playerWon) {
+    cancelInlineGameOverRestTimer();
+    if (!playerWon) return;
+    inlineGameOverRestTimer = runLater(() => restInlineGameOverVisuals(runId), INLINE_GAME_OVER_REST_MS);
   }
 
   function enterInlineGameOver(winner, options = {}) {
@@ -17216,8 +17269,10 @@ body.inline-game-over .roll-panel {
       finalRewardRoundAlreadyRecorded,
       finalRewardRoundCredited: false,
       autoRestartMs: gameResultAutoAdvanceDelay(playerWon),
-      autoContinue: autoContinueWasActive,
-      autoRestartPausedForPwa: false
+      autoContinue: autoContinueWasActive && !playerWon,
+      autoRestartPausedForPwa: false,
+      autoRestMs: playerWon ? INLINE_GAME_OVER_REST_MS : null,
+      rested: false
     };
     let finalRewardProgress = null;
     let guidedCompletionTriggered = false;
@@ -17233,6 +17288,8 @@ body.inline-game-over .roll-panel {
     if (guidedCompletionTriggered) {
       inlineGameOverState.autoRestartMs = null;
       inlineGameOverState.autoContinue = false;
+    }
+    if (playerWon) {
       p1Autoplay = false;
       clearP1AutoplayTimer();
       updateP0ReviewControl();
@@ -17314,6 +17371,7 @@ body.inline-game-over .roll-panel {
       Audio.megaWinFanfare();
       Audio.gameWinSparkle();
       scheduleInlineWinAccent(runId);
+      scheduleInlineGameOverRest(runId, playerWon);
     } else {
       Audio.trashCrash(Math.max(6, totalTrashedDice()));
     }
@@ -19113,7 +19171,7 @@ body.inline-game-over .roll-panel {
     p0ReviewMode = false;
     p1Autoplay = false;
     updateP0ReviewControl();
-    document.body.classList.remove('player-roll-ready', 'p0-mode', 'debug-p1-auto', 'auto-play-active', 'inline-game-over', 'inline-game-win', 'inline-game-loss');
+    document.body.classList.remove('player-roll-ready', 'p0-mode', 'debug-p1-auto', 'auto-play-active', 'inline-game-over', 'inline-game-win', 'inline-game-loss', 'inline-game-over-rest', 'guided-game-complete');
     clearInlineEndingVisuals();
     document.querySelectorAll('.travelling-die, .can-pour-die, .lid-payout-die, .payout-comet-trail, .lid-place-burst, .claim-badge').forEach(el => el.remove());
     trashCan.classList.remove('flash', 'pour', 'victory-erupt', 'player-payout-can-dance', 'inline-ending-can-dance');
@@ -19181,7 +19239,7 @@ body.inline-game-over .roll-panel {
     const forcedWinner = winner === 'p2' ? 'p2' : 'p1';
     if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) init();
     gameOver(forcedWinner);
-    return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: gameResultAutoAdvanceDelay(forcedWinner === 'p1') };
+    return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: gameResultAutoAdvanceDelay(forcedWinner === 'p1'), autoRestMs: forcedWinner === 'p1' ? INLINE_GAME_OVER_REST_MS : null };
   }
 
   function resetToGameStart() {

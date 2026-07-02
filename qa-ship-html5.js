@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260701.20';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260701.20';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.21';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.21';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -2690,7 +2690,9 @@ async function main() {
       }
       await sleep(1700);
       const terminal = await evalValue(page, `(() => ({
+        state: window.TrashDiceQA.state().inlineGameOver,
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
+        bodyRested: document.body.classList.contains('inline-game-over-rest'),
         pwaVisible: !!document.querySelector('#pwaInstallCard.is-visible'),
         titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
@@ -2944,6 +2946,7 @@ async function main() {
         completedGames: window.TrashDiceAnalyticsDebug.getCompletedGames()
       }))()`);
       assert(terminal.stillComplete, `${viewport.name}: game over auto-reset unexpectedly`);
+      assert(terminal.state && terminal.state.autoRestartMs === null && terminal.state.autoContinue === false && terminal.state.rested === false && terminal.bodyRested === false, `${viewport.name}: player game win should hold without the old auto-advance timer before the rest window ${JSON.stringify(terminal.state)}`);
       assert(terminal.pwaVisible === false, `${viewport.name}: PWA hint became visible`);
       assert(terminal.titleFanfare === true, `${viewport.name}: title fanfare missing on player game win ${JSON.stringify(terminal)}`);
       assert(terminal.outcomeCard.present === true && terminal.outcomeCard.visible === true && terminal.outcomeCard.title === 'YOU TRASHED THE CPU!' && terminal.outcomeCard.sub === '' && terminal.outcomeCard.subHidden === true && terminal.outcomeCard.subDisplay === 'none', `${viewport.name}: game-win outcome card should remove the CPU cannot come back subline ${JSON.stringify(terminal.outcomeCard)}`);
@@ -2988,7 +2991,9 @@ async function main() {
       }
       await sleep(1700);
       const terminalLoop = await evalValue(page, `(() => ({
+        state: window.TrashDiceQA.state().inlineGameOver,
         stillComplete: !!(window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.active),
+        bodyRested: document.body.classList.contains('inline-game-over-rest'),
         titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
         winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
         winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
@@ -3008,16 +3013,68 @@ async function main() {
         activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length
       }))()`);
       assert(terminalLoop.stillComplete, `${viewport.name}: game over cleared before Play Again ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.winnerPanel === true, `${viewport.name}: lower winner panel fanfare should persist during sustained game-win loop ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.winnerStatusLarge === true, `${viewport.name}: large lower winner status should persist during game-win loop ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.winnerLabel === 'GAME WINNER!', `${viewport.name}: game winner label did not persist ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.trashedVisible === false, `${viewport.name}: TRASHED stamp should stay hidden through game-win loop ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop ${JSON.stringify(terminalLoop)}`);
-      assert(terminalLoop.rewardVisible === false, `${viewport.name}: reward unlock should clear before sustained win loop ${JSON.stringify(terminalLoop)}`);
-      if (viewport.mobile && viewport.width > 720) {
-        assert(terminalLoop.activeAnimationCount <= 8, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
+      if (terminalLoop.bodyRested) {
+        assert(terminalLoop.state && terminalLoop.state.rested === true, `${viewport.name}: body rest class should match inline game-over state ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.titleFanfare === false && terminalLoop.winnerPanel === false && terminalLoop.winnerStatusLarge === false && terminalLoop.celebratingDice === 0, `${viewport.name}: rested win loop should already have stopped celebration motion ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.winnerLabel === 'GAME WINNER!', `${viewport.name}: rested win loop should keep the game winner label readable ${JSON.stringify(terminalLoop)}`);
+      } else {
+        assert(terminalLoop.titleFanfare === true, `${viewport.name}: title fanfare did not persist before rest ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.winnerPanel === true, `${viewport.name}: lower winner panel fanfare should persist during sustained game-win loop before rest ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.winnerStatusLarge === true, `${viewport.name}: large lower winner status should persist during game-win loop before rest ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.winnerLabel === 'GAME WINNER!', `${viewport.name}: game winner label did not persist ${JSON.stringify(terminalLoop)}`);
+        assert(terminalLoop.celebratingDice > 0, `${viewport.name}: dice celebration did not loop before rest ${JSON.stringify(terminalLoop)}`);
+        if (viewport.mobile && viewport.width > 720) {
+          assert(terminalLoop.activeAnimationCount <= 8, `${viewport.name}: tablet sustained win state has too many running animations ${JSON.stringify(terminalLoop)}`);
+        }
       }
+      assert(terminalLoop.trashedVisible === false, `${viewport.name}: TRASHED stamp should stay hidden through game-win loop ${JSON.stringify(terminalLoop)}`);
+      assert(terminalLoop.rewardVisible === false, `${viewport.name}: reward unlock should clear before sustained win loop ${JSON.stringify(terminalLoop)}`);
+      await waitEval(page, `(() => {
+        const state = window.TrashDiceQA.state().inlineGameOver;
+        return !!(state && state.active && state.rested === true && document.body.classList.contains('inline-game-over-rest'));
+      })()`, `${viewport.name} held win rest state`, 6000);
+      const terminalRest = await evalValue(page, `(() => {
+        const state = window.TrashDiceQA.state();
+        const nudge = document.getElementById('terminalRewardNudge');
+        const die = document.getElementById('terminalRewardNudgeDie');
+        const unlock = document.getElementById('terminalRewardNudgeUnlock');
+        const roll = document.getElementById('rollBtn');
+        const banner = document.getElementById('inlineResultBanner');
+        const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
+        const nudgeBefore = nudge ? getComputedStyle(nudge, '::before') : null;
+        const dieStyle = die ? getComputedStyle(die) : null;
+        const unlockStyle = unlock ? getComputedStyle(unlock) : null;
+        const rollStyle = roll ? getComputedStyle(roll) : null;
+        const bannerRect = banner ? banner.getBoundingClientRect() : null;
+        return {
+          inlineGameOver: state.inlineGameOver,
+          stillComplete: !!(state.inlineGameOver && state.inlineGameOver.active),
+          bodyRested: document.body.classList.contains('inline-game-over-rest'),
+          titleFanfare: document.getElementById('heroTitle').classList.contains('round-win-title-fanfare') || document.getElementById('heroTitle').classList.contains('round-win-title-sustain'),
+          winnerPanel: document.getElementById('p1Inventory').closest('.player-panel').classList.contains('player-payout-fanfare'),
+          winnerStatusLarge: document.getElementById('p1StatusBar').classList.contains('round-winner-praise'),
+          winnerLabel: (document.getElementById('p1StatusText') || {}).textContent || '',
+          celebratingDice: document.querySelectorAll('#p1Pile .bench-cheer-die').length,
+          boardDancing: document.querySelector('.board-wrap').classList.contains('inline-ending-lid-dance'),
+          trashDancing: document.querySelector('.trash-can').classList.contains('inline-ending-can-dance'),
+          rollText: (roll || {}).textContent || '',
+          rollAnimationName: rollStyle ? rollStyle.animationName || '' : '',
+          rewardVisible: !!(nudge && !nudge.hidden && nudgeStyle && nudgeStyle.display !== 'none'),
+          rewardAnimationName: nudgeStyle ? nudgeStyle.animationName || '' : '',
+          rewardBeforeAnimationName: nudgeBefore ? nudgeBefore.animationName || '' : '',
+          rewardDieAnimationName: dieStyle ? dieStyle.animationName || '' : '',
+          rewardUnlockAnimationName: unlockStyle ? unlockStyle.animationName || '' : '',
+          outcomeVisible: !!(banner && getComputedStyle(banner).visibility !== 'hidden' && parseFloat(getComputedStyle(banner).opacity || '0') > 0.1 && bannerRect && bannerRect.width > 0 && bannerRect.height > 0),
+          activeAnimationCount: document.getAnimations().filter(animation => animation.playState === 'running').length,
+          events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+        };
+      })()`);
+      assert(terminalRest.stillComplete === true && terminalRest.bodyRested === true && terminalRest.inlineGameOver && terminalRest.inlineGameOver.autoRestartMs === null && terminalRest.inlineGameOver.autoContinue === false && terminalRest.inlineGameOver.rested === true, `${viewport.name}: held win rest state should keep the recap without arming restart ${JSON.stringify(terminalRest)}`);
+      assert(terminalRest.titleFanfare === false && terminalRest.winnerPanel === false && terminalRest.winnerStatusLarge === false && terminalRest.celebratingDice === 0 && terminalRest.boardDancing === false && terminalRest.trashDancing === false, `${viewport.name}: held win rest state should stop looping celebration motion ${JSON.stringify(terminalRest)}`);
+      assert(terminalRest.rewardVisible === true && terminalRest.outcomeVisible === true && terminalRest.rollText.includes('KEEP PLAYING!') && terminalRest.winnerLabel === 'GAME WINNER!', `${viewport.name}: held win rest state should keep readable recap UI visible ${JSON.stringify(terminalRest)}`);
+      assert(terminalRest.rewardAnimationName === 'none' && terminalRest.rewardBeforeAnimationName === 'none' && terminalRest.rewardDieAnimationName === 'none' && terminalRest.rewardUnlockAnimationName === 'none' && terminalRest.rollAnimationName === 'none', `${viewport.name}: held win rest state should pause attract-mode and CTA animation ${JSON.stringify(terminalRest)}`);
+      assert(terminalRest.activeAnimationCount <= terminalLoop.activeAnimationCount, `${viewport.name}: held win rest state should not increase running animations ${JSON.stringify({ terminalLoop, terminalRest })}`);
+      assert(!terminalRest.events.some(item => item.method === 'auto_game_continue' || item.method === 'auto_watch'), `${viewport.name}: held win rest state should not emit quiet auto-advance analytics ${JSON.stringify(terminalRest.events)}`);
       const utilityClick = await evalValue(page, `(() => {
         const mute = document.getElementById('audioMuteBtn');
         if (!mute) return { clicked: false, stillComplete: false };
@@ -4057,13 +4114,27 @@ async function main() {
         bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoTerminal.p1Autoplay === true && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: terminal screen should preserve AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
-    assert(p1AutoTerminal.buttonText === AUTO_PLAY_ON_LABEL && p1AutoTerminal.ariaPressed === 'true' && p1AutoTerminal.bodyAutoActive === true, `AUTO probe: terminal screen should keep AUTO armed visually ${JSON.stringify(p1AutoTerminal)}`);
-    assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === true && p1AutoTerminal.inlineGameOver.autoRestartMs > 0, `AUTO probe: terminal screen did not arm auto-continue restart ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.p1Autoplay === false && p1AutoTerminal.p0Autoplay === false && p1AutoTerminal.p0ReviewMode === false, `AUTO probe: player win terminal screen should pause AUTO mode ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoTerminal.ariaPressed === 'false' && p1AutoTerminal.bodyAutoActive === false, `AUTO probe: terminal screen should show AUTO paused while the win recap is held ${JSON.stringify(p1AutoTerminal)}`);
+    assert(p1AutoTerminal.inlineGameOver && p1AutoTerminal.inlineGameOver.active === true && p1AutoTerminal.inlineGameOver.autoContinue === false && p1AutoTerminal.inlineGameOver.autoRestartMs === null && p1AutoTerminal.inlineGameOver.autoRestMs >= 3000, `AUTO probe: terminal screen should hold for manual KEEP PLAYING with a rest-state timer ${JSON.stringify(p1AutoTerminal)}`);
+    await sleep(5200);
+    const p1AutoHeldWin = await evalValue(p1AutoProbe, `(() => {
+      const qa = window.TrashDiceQA.state();
+      return {
+        p1Autoplay: qa.p1Autoplay,
+        inlineGameOver: qa.inlineGameOver,
+        bodyRested: document.body.classList.contains('inline-game-over-rest'),
+        rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+      };
+    })()`);
+    assert(p1AutoHeldWin.p1Autoplay === false && p1AutoHeldWin.inlineGameOver && p1AutoHeldWin.inlineGameOver.active === true && p1AutoHeldWin.inlineGameOver.rested === true && p1AutoHeldWin.bodyRested === true && p1AutoHeldWin.rollText.includes('KEEP PLAYING!'), `AUTO probe: held win recap should still wait after the old auto-continue window ${JSON.stringify(p1AutoHeldWin)}`);
+    assert(!p1AutoHeldWin.events.some(item => item.method === 'auto_watch' || item.method === 'auto_game_continue'), `AUTO probe: held win recap should not emit auto-continue analytics ${JSON.stringify(p1AutoHeldWin.events)}`);
+    await evalValue(p1AutoProbe, `document.getElementById('rollBtn').click(); true`);
     await waitEval(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
-      return qa.gameStarted === true && qa.p1Autoplay === true && !qa.inlineGameOver && qa.totalRolls >= 1;
-    })()`, 'AUTO probe auto-continue next game', 9000);
+      return qa.gameStarted === true && !qa.inlineGameOver && qa.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
+    })()`, 'AUTO probe manual continue next game', 3000);
     const p1AutoAfterContinue = await evalValue(p1AutoProbe, `(() => {
       const qa = window.TrashDiceQA.state();
       const btn = document.getElementById('devP1AutoBtn');
@@ -4081,22 +4152,8 @@ async function main() {
         bodyAutoActive: document.body.classList.contains('auto-play-active')
       };
     })()`);
-    assert(p1AutoAfterContinue.p1Autoplay === true && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: auto-continue did not restart cleanly ${JSON.stringify(p1AutoAfterContinue)}`);
-    assert(p1AutoAfterContinue.totalRolls >= 1 && p1AutoAfterContinue.buttonText === AUTO_PLAY_ON_LABEL && p1AutoAfterContinue.ariaPressed === 'true' && p1AutoAfterContinue.bodyAutoActive === true, `AUTO probe: autoplay did not resume after auto-continue restart ${JSON.stringify(p1AutoAfterContinue)}`);
-    const p1AutoOff = await evalValue(p1AutoProbe, `(() => {
-      const btn = document.getElementById('devP1AutoBtn');
-      btn.click();
-      const qa = window.TrashDiceQA.state();
-      return {
-        buttonText: btn.textContent.trim(),
-        ariaPressed: btn.getAttribute('aria-pressed'),
-        p1Autoplay: qa.p1Autoplay,
-        p0Autoplay: qa.p0Autoplay,
-        p1AutoButtonVisible: qa.p1AutoButtonVisible,
-        bodyAutoActive: document.body.classList.contains('auto-play-active')
-      };
-    })()`);
-    assert(p1AutoOff.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoOff.ariaPressed === 'false' && p1AutoOff.p1Autoplay === false && p1AutoOff.p0Autoplay === false && p1AutoOff.p1AutoButtonVisible === true && p1AutoOff.bodyAutoActive === false, `AUTO probe: button did not stop cleanly ${JSON.stringify(p1AutoOff)}`);
+    assert(p1AutoAfterContinue.p1Autoplay === false && p1AutoAfterContinue.p0Autoplay === false && p1AutoAfterContinue.p0ReviewMode === false && p1AutoAfterContinue.inlineGameOver === false, `AUTO probe: manual continue from held win should restart cleanly with AUTO off ${JSON.stringify(p1AutoAfterContinue)}`);
+    assert(p1AutoAfterContinue.totalRolls === 0 && p1AutoAfterContinue.buttonText === AUTO_PLAY_IDLE_LABEL && p1AutoAfterContinue.ariaPressed === 'false' && p1AutoAfterContinue.bodyAutoActive === false, `AUTO probe: autoplay should remain paused after manual continue ${JSON.stringify(p1AutoAfterContinue)}`);
 
     const p1AutoBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe()`);
     const p1AutoBuffCases = [
@@ -4619,6 +4676,7 @@ async function main() {
           playerGameWins: state.playerGameWins,
           inlinePlayerGameWins: state.inlineGameOver && state.inlineGameOver.playerGameWins,
           autoRestartMs: state.inlineGameOver && state.inlineGameOver.autoRestartMs,
+          autoRestMs: state.inlineGameOver && state.inlineGameOver.autoRestMs,
           autoContinue: state.inlineGameOver && state.inlineGameOver.autoContinue,
           rollButtonText: (roll || {}).textContent || '',
           title: outcomeTitle ? outcomeTitle.textContent.replace(/\s+/g, ' ').trim() : '',
@@ -4649,29 +4707,42 @@ async function main() {
       })()`);
       assert(outcomeState.active === true, `${outcome.label} probe: wrap-up not active ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.winner === outcome.winner, `${outcome.label} probe: wrong winner ${JSON.stringify(outcomeState)}`);
-      assert(outcomeState.autoContinue === false && outcomeState.autoRestartMs >= 3000 && outcomeState.autoRestartMs <= 5000, `${outcome.label} probe: wrap-up should quietly auto-advance after a short result beat ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.rollButtonText.includes('KEEP PLAYING!'), `${outcome.label} probe: keep-playing CTA missing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.terminalRewardNudge.visible === true && outcomeState.terminalRewardNudge.layout === 'player-panel-dock' && outcomeState.terminalRewardNudge.overlapsRoll === false && outcomeState.terminalRewardNudge.dockedToPlayerPanel === true, `${outcome.label} probe: terminal reward nudge should dock to the player pile panel without covering Keep Playing ${JSON.stringify(outcomeState)}`);
       assert(outcomeState.terminalRewardNudge.animationName.includes('terminalRewardDockedAttract') && outcomeState.terminalRewardNudge.beforeAnimationName.includes('terminalRewardAttractSweep'), `${outcome.label} probe: terminal reward nudge should be the animated attract-mode element ${JSON.stringify(outcomeState)}`);
       if (outcome.label === 'win') {
+        assert(outcomeState.autoContinue === false && outcomeState.autoRestartMs === null && outcomeState.autoRestMs >= 3000, `${outcome.label} probe: player win should hold for manual KEEP PLAYING instead of quiet auto-advance ${JSON.stringify(outcomeState)}`);
         assert(outcomeState.playerGameWins === 1 && outcomeState.inlinePlayerGameWins && outcomeState.inlinePlayerGameWins.after === 1 && outcomeState.chip.visible === true && outcomeState.chip.gameWins === 1 && /x1\s+GAME WIN/.test(outcomeState.chip.text) && !/(GAMES WON:|GAME WINS:)/.test(outcomeState.chip.text), `${outcome.label} probe: player game-win should show a count-first session games-won counter ${JSON.stringify(outcomeState)}`);
       }
       if (outcome.label === 'lose') {
+        assert(outcomeState.autoContinue === false && outcomeState.autoRestartMs >= 3000 && outcomeState.autoRestartMs <= 5000, `${outcome.label} probe: loss wrap-up should quietly auto-advance after a short result beat ${JSON.stringify(outcomeState)}`);
         assert(outcomeState.title === 'KEEP TRYING!' && outcomeState.sub === 'CPU WINS' && outcomeState.chip.visible === false && outcomeState.playerGameWins === 0, `${outcome.label} probe: loss should invite retry without counting a game win ${JSON.stringify(outcomeState)}`);
         assert(outcomeState.outcomeCard.visible === true && outcomeState.outcomeCard.animationName === 'none' && outcomeState.outcomeCard.rect.width <= 660, `${outcome.label} probe: KEEP TRYING outcome panel should be static and smaller than the reward chase ${JSON.stringify(outcomeState)}`);
       }
       assert(outcomeState.outcomeVisible === true, `${outcome.label} probe: outcome buttons hidden after wrap-up ${JSON.stringify(outcomeState)}`);
-      await waitEval(outcomeProbe, `(() => {
-        const state = window.TrashDiceQA.state();
-        return !state.inlineGameOver && state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
-      })()`, `${outcome.label} probe quiet auto-advance`, 7000);
-      const outcomeAutoAdvance = await evalValue(outcomeProbe, `(() => ({
-        state: window.TrashDiceQA.state(),
-        rollText: (document.getElementById('rollBtn') || {}).textContent || '',
-        events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
-      }))()`);
-      assert(((outcomeAutoAdvance.state.firstRollPrompt && outcomeAutoAdvance.state.firstRollPrompt.active === true && outcomeAutoAdvance.rollText.includes('TAP TO START!')) || outcomeAutoAdvance.rollText.includes('ROLL')) && !outcomeAutoAdvance.state.inlineGameOver && outcomeAutoAdvance.state.gameStarted === true, `${outcome.label} probe: quiet auto-advance did not leave the next game ready ${JSON.stringify(outcomeAutoAdvance)}`);
-      assert(outcomeAutoAdvance.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_game_continue') && outcomeAutoAdvance.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_game_continue'), `${outcome.label} probe: quiet auto-advance analytics missing ${JSON.stringify(outcomeAutoAdvance.events)}`);
+      if (outcome.label === 'win') {
+        await sleep(5200);
+        const outcomeHeld = await evalValue(outcomeProbe, `(() => ({
+          state: window.TrashDiceQA.state(),
+          rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+          bodyRested: document.body.classList.contains('inline-game-over-rest'),
+          events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+        }))()`);
+        assert(outcomeHeld.state.inlineGameOver && outcomeHeld.state.inlineGameOver.active === true && outcomeHeld.state.inlineGameOver.rested === true && outcomeHeld.bodyRested === true && outcomeHeld.rollText.includes('KEEP PLAYING!'), `${outcome.label} probe: held player win should still be waiting after the old auto-advance window ${JSON.stringify(outcomeHeld)}`);
+        assert(!outcomeHeld.events.some(item => item.method === 'auto_game_continue' || item.method === 'auto_watch'), `${outcome.label} probe: held player win should not emit quiet auto-advance analytics ${JSON.stringify(outcomeHeld.events)}`);
+      } else {
+        await waitEval(outcomeProbe, `(() => {
+          const state = window.TrashDiceQA.state();
+          return !state.inlineGameOver && state.gameStarted === true && state.totalRolls === 0 && !document.getElementById('rollBtn').disabled;
+        })()`, `${outcome.label} probe quiet auto-advance`, 7000);
+        const outcomeAutoAdvance = await evalValue(outcomeProbe, `(() => ({
+          state: window.TrashDiceQA.state(),
+          rollText: (document.getElementById('rollBtn') || {}).textContent || '',
+          events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
+        }))()`);
+        assert(((outcomeAutoAdvance.state.firstRollPrompt && outcomeAutoAdvance.state.firstRollPrompt.active === true && outcomeAutoAdvance.rollText.includes('TAP TO START!')) || outcomeAutoAdvance.rollText.includes('ROLL')) && !outcomeAutoAdvance.state.inlineGameOver && outcomeAutoAdvance.state.gameStarted === true, `${outcome.label} probe: quiet auto-advance did not leave the next game ready ${JSON.stringify(outcomeAutoAdvance)}`);
+        assert(outcomeAutoAdvance.events.some(item => item.eventName === 'td_play_again' && item.method === 'auto_game_continue') && outcomeAutoAdvance.events.some(item => item.eventName === 'td_game_start' && item.method === 'auto_game_continue'), `${outcome.label} probe: quiet auto-advance analytics missing ${JSON.stringify(outcomeAutoAdvance.events)}`);
+      }
     }
 
     const forbiddenHits = requests.filter(url => forbiddenRequests.some(token => url.includes(token)));
