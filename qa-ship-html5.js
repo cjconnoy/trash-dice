@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.21';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.21';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.22';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.22';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const TRASH_DICE_VERSION_PATTERN = /^(td-retail-dev-\d{8}\.\d+|td-retail-live-\d+\.\d+\.\d+\+\d{8}\.\d+)$/;
@@ -4166,8 +4166,40 @@ async function main() {
       p1AutoBuffAudit.lastOpenSlotSpinoff,
       p1AutoBuffAudit.enduranceAssist
     ];
-    assert(p1AutoBuffAudit.p1AutoMode === true && p1AutoBuffAudit.allPlayerBuffs.length === 8, `P1 auto buff audit: missing expected player buff coverage ${JSON.stringify(p1AutoBuffAudit)}`);
+    const p1ManualBuffAudit = await evalValue(p1AutoProbe, `window.TrashDiceQA.p1AutoRollBuffAuditProbe({ mode: 'manual' })`);
+    const p1ManualBuffCases = [
+      p1ManualBuffAudit.firstRoundGuard,
+      p1ManualBuffAudit.firstGameAssist,
+      p1ManualBuffAudit.firstGameMiracle,
+      p1ManualBuffAudit.openingComeback,
+      p1ManualBuffAudit.postLossComeback,
+      p1ManualBuffAudit.lastOpenSlot,
+      p1ManualBuffAudit.lastOpenSlotSpinoff,
+      p1ManualBuffAudit.enduranceAssist
+    ];
+    const normalizeBuffAuditForParity = value => {
+      if (Array.isArray(value)) return value.map(normalizeBuffAuditForParity);
+      if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value)
+          .filter(([key]) => !['p1Autoplay', 'p0Autoplay', 'p0ReviewMode', 'p1AutoMode', 'controlMode', 'at'].includes(key))
+          .map(([key, item]) => [key, normalizeBuffAuditForParity(item)]));
+      }
+      return value;
+    };
+    const buffParityNames = p1AutoBuffAudit.allPlayerBuffs || [];
+    const buffParityMismatches = buffParityNames.filter(name =>
+      JSON.stringify(normalizeBuffAuditForParity(p1AutoBuffAudit[name])) !==
+      JSON.stringify(normalizeBuffAuditForParity(p1ManualBuffAudit[name]))
+    );
+    assert(p1AutoBuffAudit.p1AutoMode === true && p1AutoBuffAudit.controlMode === 'auto' && p1AutoBuffAudit.allPlayerBuffs.length === 8, `P1 auto buff audit: missing expected player buff coverage ${JSON.stringify(p1AutoBuffAudit)}`);
+    assert(p1ManualBuffAudit.p1AutoMode === false && p1ManualBuffAudit.controlMode === 'manual' && p1ManualBuffAudit.allPlayerBuffs.join('|') === p1AutoBuffAudit.allPlayerBuffs.join('|'), `P1 manual buff audit: missing matching player buff coverage ${JSON.stringify({ auto: p1AutoBuffAudit.allPlayerBuffs, manual: p1ManualBuffAudit.allPlayerBuffs, mode: p1ManualBuffAudit.controlMode })}`);
     assert(p1AutoBuffCases.every(item => item && item.p1Autoplay === true && item.p0Autoplay === false && item.p0ReviewMode === false), `P1 auto buff audit: a buff case did not run under P1 Auto-only state ${JSON.stringify(p1AutoBuffAudit)}`);
+    assert(p1ManualBuffCases.every(item => item && item.p1Autoplay === false && item.p0Autoplay === false && item.p0ReviewMode === false), `P1 manual buff audit: a buff case did not run under manual P1 state ${JSON.stringify(p1ManualBuffAudit)}`);
+    assert(buffParityMismatches.length === 0, `P1 manual/auto buff parity drifted for ${buffParityMismatches.join(', ')} ${JSON.stringify({
+      mismatches: buffParityMismatches,
+      auto: Object.fromEntries(buffParityMismatches.map(name => [name, normalizeBuffAuditForParity(p1AutoBuffAudit[name])])),
+      manual: Object.fromEntries(buffParityMismatches.map(name => [name, normalizeBuffAuditForParity(p1ManualBuffAudit[name])]))
+    })}`);
     assert(p1AutoBuffAudit.firstRoundGuard.contexts.firstRoundGuardActive === true && p1AutoBuffAudit.firstRoundGuard.after.firstRoundGuardRolls > p1AutoBuffAudit.firstRoundGuard.before.firstRoundGuardRolls && p1AutoBuffAudit.firstRoundGuard.openHits === p1AutoBuffAudit.firstRoundGuard.samples.length, `P1 auto buff audit: first-round guard did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstRoundGuard)}`);
     assert(p1AutoBuffAudit.firstGameAssist.contexts.firstGameAssist.active === true && p1AutoBuffAudit.firstGameAssist.after.firstGameAssistUses > p1AutoBuffAudit.firstGameAssist.before.firstGameAssistUses && p1AutoBuffAudit.firstGameAssist.openHits > p1AutoBuffAudit.firstGameAssist.takenHits, `P1 auto buff audit: first-game assist did not fire for P1 Auto ${JSON.stringify(p1AutoBuffAudit.firstGameAssist)}`);
     assert(p1AutoBuffAudit.firstGameMiracle.contexts.firstGameMiracle.active === true && p1AutoBuffAudit.firstGameMiracle.after.firstGameMiracleRolls > p1AutoBuffAudit.firstGameMiracle.before.firstGameMiracleRolls && p1AutoBuffAudit.firstGameMiracle.openHits === p1AutoBuffAudit.firstGameMiracle.samples.length, `P1 auto buff audit: first-game miracle did not force P1 Auto open-slot hits ${JSON.stringify(p1AutoBuffAudit.firstGameMiracle)}`);
