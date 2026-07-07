@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.2';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.3';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.3';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -1013,6 +1013,7 @@ const GAME_WIN_ROUND_WINS_TICK_MIN_MS = { desktop: 72, mobile: 84 };
 const AUTO_PLAY_GAME_WIN_CONTINUE_QA_MS = 5600;
 const AUTO_PLAY_BEAT_GAME_CONTINUE_QA_MS = 6800;
 const ROUND_WIN_BURST_FULL_COUNT_MAX = 18;
+const CPU_ROLL_CUE_MIN_WIDTH_PX = { desktop: 500, mobile: 292, ipad: 320, legacyIpad: 300 };
 function expectedRewardCountdownLine(roundsNeeded) {
   const count = Math.max(1, Math.floor(Number(roundsNeeded) || 1));
   return `WIN ${count} MORE ROUND${count === 1 ? '' : 'S'} TO UNLOCK`;
@@ -1191,6 +1192,11 @@ function assertStaticShipSourceScan() {
     .filter(item => item.regex.test(source))
     .map(item => item.name);
   assert(hits.length === 0, `forbidden source strings in shipped HTML: ${hits.join(', ')}`);
+  assert(source.includes("const rollAudioProfile = current === 'p1' ? 'player' : 'cpu';"), 'player and CPU roll audio profiles must stay explicitly split by roller');
+  assert(source.includes('Audio.rollLoop(ROLL_ANIMATION_MS, rollAudioProfile)'), 'roll loop SFX must receive the captured player/CPU profile');
+  assert(source.includes('Audio.rollResolve(value, rollAudioProfile)'), 'roll resolve SFX must receive the captured player/CPU profile');
+  assert(source.includes("sfxCtx(playerRoll ? 'rollLoopPlayer' : 'rollLoop')"), 'player roll loop SFX should use the brighter player profile while CPU keeps the original profile');
+  assert(source.includes("sfxCtx(playerRoll ? 'rollResolvePlayer' : 'rollResolve')"), 'player roll resolve SFX should use the brighter player profile while CPU keeps the original profile');
 }
 
 async function main() {
@@ -2100,6 +2106,7 @@ async function main() {
       const manualPlaceHandoff = await evalValue(rollPanelHitPage, `window.TrashDiceQA.playerHandoffProbe(2, 'place')`);
       assert(manualPlaceHandoff.expectedHandoffMs <= 180 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hand off to CPU promptly while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.cpuRollCueSeen === true && manualPlaceHandoff.cpuRollCueDuringBusy === true && manualPlaceHandoff.cpuRollCueText === 'CPU ROLL', `${viewport.name}: manual player handoff should show the CPU ROLL overlay over the CPU roll ${JSON.stringify(manualPlaceHandoff)}`);
+      assert((manualPlaceHandoff.cpuRollCueSnapshot && manualPlaceHandoff.cpuRollCueSnapshot.rect && manualPlaceHandoff.cpuRollCueSnapshot.rect.width >= (viewport.mobile ? CPU_ROLL_CUE_MIN_WIDTH_PX.mobile : CPU_ROLL_CUE_MIN_WIDTH_PX.desktop)), `${viewport.name}: CPU ROLL overlay should be wide enough to span the board and trash can cluster ${JSON.stringify(manualPlaceHandoff)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
@@ -3654,6 +3661,7 @@ async function main() {
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
     assert(productionIpadHandoff.cpuRollCueSeen === true && productionIpadHandoff.cpuRollCueDuringBusy === true && productionIpadHandoff.cpuRollCueText === 'CPU ROLL', `production-like iPad CPU handoff should show the CPU ROLL overlay during the CPU roll ${JSON.stringify(productionIpadHandoff)}`);
+    assert(productionIpadHandoff.cpuRollCueSnapshot && productionIpadHandoff.cpuRollCueSnapshot.rect && productionIpadHandoff.cpuRollCueSnapshot.rect.width >= CPU_ROLL_CUE_MIN_WIDTH_PX.ipad, `production-like iPad CPU ROLL overlay should span the board and trash can cluster ${JSON.stringify(productionIpadHandoff)}`);
     assert(productionIpadHandoff.totalMs <= 1300, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
     const fullBoardDoRollGuard = await evalValue(productionIpad, `window.TrashDiceQA.fullBoardGuardProbe('doRoll', 'p2')`);
     assert(fullBoardDoRollGuard.after.current === 'p2', `full-board doRoll guard should not flip current ${JSON.stringify(fullBoardDoRollGuard)}`);
@@ -3990,6 +3998,7 @@ async function main() {
     const legacyIpadHandoff = await evalValue(legacyIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(legacyIpadHandoff.expectedHandoffMs <= 130, `legacy iPad CPU handoff constant is too slow ${JSON.stringify(legacyIpadHandoff)}`);
     assert(legacyIpadHandoff.cpuRollCueSeen === true && legacyIpadHandoff.cpuRollCueDuringBusy === true && legacyIpadHandoff.cpuRollCueText === 'CPU ROLL', `legacy iPad CPU handoff should show the CPU ROLL overlay during the CPU roll ${JSON.stringify(legacyIpadHandoff)}`);
+    assert(legacyIpadHandoff.cpuRollCueSnapshot && legacyIpadHandoff.cpuRollCueSnapshot.rect && legacyIpadHandoff.cpuRollCueSnapshot.rect.width >= CPU_ROLL_CUE_MIN_WIDTH_PX.legacyIpad, `legacy iPad CPU ROLL overlay should span the board and trash can cluster ${JSON.stringify(legacyIpadHandoff)}`);
     assert(legacyIpadHandoff.totalMs <= 900, `legacy iPad roll-to-ready path is too slow ${JSON.stringify(legacyIpadHandoff)}`);
     reports.push({
       viewport: 'ipad-pro-9-7-ios16-production-like',
