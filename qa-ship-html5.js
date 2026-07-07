@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.2';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -2099,6 +2099,7 @@ async function main() {
       assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.ariaLabel === 'Roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       const manualPlaceHandoff = await evalValue(rollPanelHitPage, `window.TrashDiceQA.playerHandoffProbe(2, 'place')`);
       assert(manualPlaceHandoff.expectedHandoffMs <= 180 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hand off to CPU promptly while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.cpuRollCueSeen === true && manualPlaceHandoff.cpuRollCueDuringBusy === true && manualPlaceHandoff.cpuRollCueText === 'CPU ROLL', `${viewport.name}: manual player handoff should show the CPU ROLL overlay over the CPU roll ${JSON.stringify(manualPlaceHandoff)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {
         assert(activeLayout.activeAnimationCount <= 3, `${viewport.name}: tablet game state has too many running animations ${JSON.stringify(activeLayout)}`);
@@ -3652,6 +3653,7 @@ async function main() {
 
     const productionIpadHandoff = await evalValue(productionIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(productionIpadHandoff.expectedHandoffMs <= 180, `production-like iPad CPU handoff constant is too slow ${JSON.stringify(productionIpadHandoff)}`);
+    assert(productionIpadHandoff.cpuRollCueSeen === true && productionIpadHandoff.cpuRollCueDuringBusy === true && productionIpadHandoff.cpuRollCueText === 'CPU ROLL', `production-like iPad CPU handoff should show the CPU ROLL overlay during the CPU roll ${JSON.stringify(productionIpadHandoff)}`);
     assert(productionIpadHandoff.totalMs <= 1300, `production-like iPad roll-to-ready path is too slow ${JSON.stringify(productionIpadHandoff)}`);
     const fullBoardDoRollGuard = await evalValue(productionIpad, `window.TrashDiceQA.fullBoardGuardProbe('doRoll', 'p2')`);
     assert(fullBoardDoRollGuard.after.current === 'p2', `full-board doRoll guard should not flip current ${JSON.stringify(fullBoardDoRollGuard)}`);
@@ -3987,6 +3989,7 @@ async function main() {
 
     const legacyIpadHandoff = await evalValue(legacyIpad, `window.TrashDiceQA.cpuHandoffProbe(2, 'place')`);
     assert(legacyIpadHandoff.expectedHandoffMs <= 130, `legacy iPad CPU handoff constant is too slow ${JSON.stringify(legacyIpadHandoff)}`);
+    assert(legacyIpadHandoff.cpuRollCueSeen === true && legacyIpadHandoff.cpuRollCueDuringBusy === true && legacyIpadHandoff.cpuRollCueText === 'CPU ROLL', `legacy iPad CPU handoff should show the CPU ROLL overlay during the CPU roll ${JSON.stringify(legacyIpadHandoff)}`);
     assert(legacyIpadHandoff.totalMs <= 900, `legacy iPad roll-to-ready path is too slow ${JSON.stringify(legacyIpadHandoff)}`);
     reports.push({
       viewport: 'ipad-pro-9-7-ios16-production-like',
