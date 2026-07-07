@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260702.33';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260702.33';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.1';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -1906,6 +1906,8 @@ async function main() {
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
         const badge = document.querySelector('.milestone-badge');
+        const boardScene = document.querySelector('.board-scene');
+        const boardSceneChild = boardScene ? boardScene.querySelector('.lid, .trash-can, .board-blob') : null;
         const rr = roll.getBoundingClientRect();
         const rlr = rollLabel ? rollLabel.getBoundingClientRect() : null;
         const pr = panel.getBoundingClientRect();
@@ -1919,6 +1921,8 @@ async function main() {
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
         const panelStyle = getComputedStyle(panel);
+        const boardSceneStyle = boardScene ? getComputedStyle(boardScene) : null;
+        const boardSceneChildStyle = boardSceneChild ? getComputedStyle(boardSceneChild) : null;
         const clears = (a, b, gap = 4) => a.bottom <= b.top - gap || a.left >= b.right + gap || a.right <= b.left - gap || a.top >= b.bottom + gap;
         return {
           rollVisible: rr.width > 44 && rr.height > 44 && rr.bottom <= window.innerHeight + 1 && rr.top >= -1,
@@ -1968,6 +1972,8 @@ async function main() {
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
           panelCursor: panelStyle.cursor,
+          boardSceneCursor: boardSceneStyle ? boardSceneStyle.cursor : '',
+          boardSceneChildCursor: boardSceneChildStyle ? boardSceneChildStyle.cursor : '',
           panelTouchAction: panelStyle.touchAction,
           poolCounts: Array.from(document.querySelectorAll('.pool-count')).map(el => {
             const style = getComputedStyle(el);
@@ -2041,6 +2047,7 @@ async function main() {
       }
       assert(activeLayout.disabled === false, `${viewport.name}: roll button disabled after start`);
       assert(activeLayout.panelCursor === 'pointer', `${viewport.name}: roll panel should advertise tappable action surface ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.boardSceneCursor !== 'none' && activeLayout.boardSceneChildCursor !== 'none', `${viewport.name}: center board scene should not hide the desktop cursor ${JSON.stringify(activeLayout)}`);
       const rollPanelHitPage = await openPage(`${baseUrl}?source=qa&qa=1&roll-panel-hit=tagline`, viewport);
       await evalValue(rollPanelHitPage, `document.getElementById('startBtn').click(); true`);
       await waitEval(rollPanelHitPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled && window.TrashDiceQA.state().firstRollPrompt.active === true`, `${viewport.name} roll panel hit target game start`);
