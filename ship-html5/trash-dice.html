@@ -6251,6 +6251,7 @@ body.inline-game-over [role="button"] {
   line-height: 0.86;
   letter-spacing: 0;
   text-align: center;
+  white-space: nowrap;
   text-shadow:
     0 3px 0 #053f24,
     0 5px 0 #d72d22,
@@ -11415,7 +11416,7 @@ body.inline-game-over .roll-panel {
   <!-- Board scene: blob mat + piles + board — MIDDLE -->
   <div class="board-scene">
     <div class="board-blob"></div>
-    <div class="cpu-roll-cue" id="cpuRollCue" hidden aria-live="polite" aria-atomic="true" aria-hidden="true">CPU ROLL</div>
+    <div class="cpu-roll-cue" id="cpuRollCue" hidden aria-live="polite" aria-atomic="true" aria-hidden="true">CPU IS ROLLING</div>
     <svg class="board-ring-text" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <path id="textRing" d="M 150,150 m -108,0 a 108,108 0 1,1 216,0 a 108,108 0 1,1 -216,0"/>
@@ -11794,7 +11795,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.3';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.4';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -19733,6 +19734,10 @@ body.inline-game-over .roll-panel {
         hidden: cue.hidden,
         display: style.display,
         opacity: Math.round(opacity * 100) / 100,
+        whiteSpace: style.whiteSpace,
+        scrollWidth: cue.scrollWidth,
+        clientWidth: cue.clientWidth,
+        fitsText: cue.scrollWidth <= cue.clientWidth + 2,
         rect: {
           width: Math.round(rect.width),
           height: Math.round(rect.height),
