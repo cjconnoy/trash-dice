@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.4';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.4';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.5';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.5';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
@@ -1193,6 +1193,8 @@ function assertStaticShipSourceScan() {
     .filter(item => item.regex.test(source))
     .map(item => item.name);
   assert(hits.length === 0, `forbidden source strings in shipped HTML: ${hits.join(', ')}`);
+  const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
+  assert(firstRollPromptSource.includes('rgba(244,31,30') && firstRollPromptSource.includes('rgba(255,154,25') && !/(43,\s*219,\s*255|#00e5ff|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptSource), 'first-roll TAP TO START glow must stay warm red/orange and must not use the old cyan outline');
   assert(source.includes("const rollAudioProfile = current === 'p1' ? 'player' : 'cpu';"), 'player and CPU roll audio profiles must stay explicitly split by roller');
   assert(source.includes('Audio.rollLoop(ROLL_ANIMATION_MS, rollAudioProfile)'), 'roll loop SFX must receive the captured player/CPU profile');
   assert(source.includes('Audio.rollResolve(value, rollAudioProfile)'), 'roll resolve SFX must receive the captured player/CPU profile');
@@ -1927,6 +1929,8 @@ async function main() {
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
         const gr = badge ? badge.getBoundingClientRect() : null;
+        const rollStyle = getComputedStyle(roll);
+        const rollAfterStyle = getComputedStyle(roll, '::after');
         const panelStyle = getComputedStyle(panel);
         const boardSceneStyle = boardScene ? getComputedStyle(boardScene) : null;
         const boardSceneChildStyle = boardSceneChild ? getComputedStyle(boardSceneChild) : null;
@@ -1947,6 +1951,9 @@ async function main() {
           } : null,
           firstRollPrompt: state.firstRollPrompt,
           firstRollPromptBodyActive: document.body.classList.contains('first-roll-prompt-active'),
+          firstRollPromptOutlineColor: rollStyle.outlineColor,
+          firstRollPromptBoxShadow: rollStyle.boxShadow,
+          firstRollPromptRingBorderColor: rollAfterStyle.borderTopColor,
           firstRollCoachPresent: !!document.getElementById('firstRollCoach'),
           panelVisible: pr.width > 120 && pr.height > 48 && pr.bottom <= window.innerHeight + 1,
           gameTagline: gameTagline ? {
@@ -2026,6 +2033,8 @@ async function main() {
       assert(activeLayout.gameTagline && activeLayout.gameTagline.text === 'ROLL. COLLECT. AVOID THE TRASH.' && activeLayout.gameTagline.visible && activeLayout.gameTagline.belowRoll && activeLayout.gameTagline.inPanel, `${viewport.name}: game tagline should sit under roll button ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.firstRollCoachPresent === false, `${viewport.name}: removed first-roll coach overlay should not be present ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rollText === 'TAP TO START!' && activeLayout.rollAriaLabel === 'Tap to start rolling' && activeLayout.rollPromptClass === true && activeLayout.rollLongCopyClass === true && activeLayout.rollTextFits === true, `${viewport.name}: first-roll button should be the only launch prompt and fit inside ROLL button ${JSON.stringify(activeLayout)}`);
+      const firstRollPromptAccentText = [activeLayout.firstRollPromptOutlineColor, activeLayout.firstRollPromptBoxShadow, activeLayout.firstRollPromptRingBorderColor].join(' | ');
+      assert(/244,\s*31,\s*30/.test(firstRollPromptAccentText) && /255,\s*154,\s*25/.test(firstRollPromptAccentText) && !/(43,\s*219,\s*255|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptAccentText), `${viewport.name}: first-roll prompt should use warm red/orange glow, not the old baby-blue/cyan outline ${JSON.stringify({ firstRollPromptAccentText, activeLayout })}`);
       assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
