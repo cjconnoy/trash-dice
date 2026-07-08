@@ -1218,15 +1218,26 @@ body.inline-game-over .roll-panel {
 }
 .status-bar.bench-praise {
   min-width: clamp(8.6rem, 30vw, 11rem);
-  background: rgba(255,229,78,0.64);
+  z-index: 60;
+  background: rgba(255,229,78,0.92);
   border-color: rgba(15,95,50,0.44);
   box-shadow:
     0 4px 13px rgba(201,160,0,0.22),
     0 0 18px rgba(245,200,0,0.34);
-  animation: benchStatusPraise 0.92s cubic-bezier(.12,.88,.16,1);
+  animation: benchStatusPraise 1.15s cubic-bezier(.12,.88,.16,1);
 }
 .status-bar.bench-praise .status-text {
   color: #0f5f32;
+}
+.status-bar.bench-praise.bench-trash {
+  background: rgba(223,51,37,0.94);
+  border-color: rgba(124,20,16,0.6);
+  box-shadow:
+    0 4px 13px rgba(124,20,16,0.28),
+    0 0 18px rgba(223,51,37,0.34);
+}
+.status-bar.bench-praise.bench-trash .status-text {
+  color: #fff9d9;
 }
 .player-panel.player-payout-fanfare {
   animation: playerPayoutPanelFanfare 0.72s cubic-bezier(.14,.82,.16,1) infinite;
@@ -1634,16 +1645,16 @@ body.inline-game-over .roll-panel {
 }
 @keyframes benchStatusPraise {
   0%, 100% {
-    transform: translateX(-50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
-  28% {
-    transform: translateX(-50%) translateY(-2px) scale(1.16) rotate(-1deg);
+  22% {
+    transform: translate(-50%, -56%) scale(2.35) rotate(-2deg);
   }
-  54% {
-    transform: translateX(-50%) scale(1.06) rotate(1deg);
+  62% {
+    transform: translate(-50%, -53%) scale(2.1) rotate(1deg);
   }
-  76% {
-    transform: translateX(-50%) translateY(1px) scale(0.98);
+  84% {
+    transform: translate(-50%, -50%) scale(1.18);
   }
 }
 @keyframes playerPayoutPanelFanfare {
@@ -11932,7 +11943,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.14';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.15';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -12031,6 +12042,7 @@ body.inline-game-over .roll-panel {
   const MOBILE_VICTORY_SAFE_MODE = MOBILE_ROLL_SMOOTHING;
   const PLAYER_HIT_PRAISE = ['GREAT PLAY!', 'NICE HIT!', "YOU'RE AWESOME!", 'CLEAN HIT!', 'NAILED IT!'];
   const PLAYER_ROUND_WIN_PRAISE = 'YES!';
+  const PLAYER_TRASH_CALLOUT = 'TRASHED!';
   const LAST_OPEN_SLOT_PLAYER_BUFF_CHANCE = 0.44;
   const LAST_OPEN_SLOT_SPINOFF_ASSIST_ROLLS = 6;
   const LAST_OPEN_SLOT_SPINOFF_PLAYER_BUFF_CHANCE = 0.75;
@@ -12118,6 +12130,8 @@ body.inline-game-over .roll-panel {
   const PLAYER_HIT_PRAISE_VISIBLE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 280 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 420 : (FAST_PREVIEW_ENABLED ? 1420 : 1620));
   const CPU_START_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : (FAST_PREVIEW_ENABLED ? 180 : 650));
   const PLAYER_TO_CPU_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 70 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 90 : (FAST_PREVIEW_ENABLED ? 90 : 140));
+  // Readability breath after the player's outcome lands, before the CPU turn begins.
+  const PLAYER_OUTCOME_BREATH_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 140 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 280 : (FAST_PREVIEW_ENABLED ? 410 : 610));
   const CPU_TO_PLAYER_HANDOFF_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 120 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 150 : (FAST_PREVIEW_ENABLED ? 160 : 250));
   const BETA_FIRST_ROLL_START_DELAY_MS = FAST_PREVIEW_ENABLED ? 150 : 360;
   const BETA_FIRST_ROLL_HOST_DELAY_MS = FAST_PREVIEW_ENABLED ? 160 : 280;
@@ -15316,8 +15330,8 @@ body.inline-game-over .roll-panel {
     p2Inventory.classList.add('has-status');
     p1StatusBar.classList.add('active');
     p2StatusBar.classList.add('active');
-    p1StatusBar.classList.remove('bench-praise', 'payout-praise');
-    p2StatusBar.classList.remove('bench-praise', 'payout-praise');
+    p1StatusBar.classList.remove('bench-praise', 'bench-trash', 'payout-praise');
+    p2StatusBar.classList.remove('bench-praise', 'bench-trash', 'payout-praise');
     if (p1StatusText) p1StatusText.textContent = values.p1 ? `PLAYER ${values.p1}` : 'PLAYER ROLL-OFF';
     if (p2StatusText) p2StatusText.textContent = values.p2 ? `CPU ${values.p2}` : 'CPU ROLL-OFF';
     [['p1', values.p1], ['p2', values.p2]].forEach(([player, value]) => {
@@ -15979,7 +15993,7 @@ body.inline-game-over .roll-panel {
       const ui = getPlayerUi(player);
       if (ui.panel) ui.panel.classList.remove('bench-celebrate');
       if (ui.inventory) ui.inventory.classList.remove('bench-celebrate');
-      if (ui.statusBar) ui.statusBar.classList.remove('bench-praise');
+      if (ui.statusBar) ui.statusBar.classList.remove('bench-praise', 'bench-trash');
     });
     if (resetStatus) restorePayoutStatusText(activePlayer);
     document.querySelectorAll('.bench-cheer-die').forEach(die => {
@@ -16062,30 +16076,34 @@ body.inline-game-over .roll-panel {
     return phrase;
   }
 
-  function triggerBenchCelebration(player, isRoundWin = false) {
+  function triggerBenchCelebration(player, isRoundWin = false, outcome = 'praise') {
     if (!isHumanControlledRoundWinner(player)) return;
     const ui = getPlayerUi(player);
     const pile = player === 'p1' ? p1Pile : p2Pile;
     if (!pile || !ui.inventory) return;
+    const isTrash = outcome === 'trash';
     clearBenchCelebration(false);
     clearInventoryMischief();
 
-    if (ui.panel) {
-      void ui.panel.offsetWidth;
-      ui.panel.classList.add('bench-celebrate');
+    if (!isTrash) {
+      if (ui.panel) {
+        void ui.panel.offsetWidth;
+        ui.panel.classList.add('bench-celebrate');
+      }
+      ui.inventory.classList.add('bench-celebrate');
     }
-    ui.inventory.classList.add('bench-celebrate');
     benchCelebrateActive = true;
     benchCelebratePlayer = ui.player;
-    benchCelebrateText = choosePlayerHitPraise(isRoundWin);
+    benchCelebrateText = isTrash ? PLAYER_TRASH_CALLOUT : choosePlayerHitPraise(isRoundWin);
     if (ui.statusText) ui.statusText.textContent = benchCelebrateText;
     if (ui.statusBar) {
-      ui.statusBar.classList.remove('bench-praise');
+      ui.statusBar.classList.remove('bench-praise', 'bench-trash');
       void ui.statusBar.offsetWidth;
       ui.statusBar.classList.add('bench-praise');
+      if (isTrash) ui.statusBar.classList.add('bench-trash');
     }
 
-    const diceCount = applyBenchDiceCelebration(player);
+    const diceCount = isTrash ? 0 : applyBenchDiceCelebration(player);
     const clearDelay = benchCelebrationCycleMs(diceCount);
     benchCelebrateTimer = runLater(() => {
       benchCelebrateTimer = null;
@@ -19377,7 +19395,7 @@ body.inline-game-over .roll-panel {
       runLater(() => gameOverFromDiceExhaustion(winner, 'place-empty'), 520);
     } else {
       if (maybeEndMathematicalGame('post-place-insufficient-dice')) return;
-      const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
+      const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS + PLAYER_OUTCOME_BREATH_MS : CPU_TO_PLAYER_HANDOFF_MS;
       scheduleProgressionWatchdog('post-place', handoffDelay + 4200);
       runLater(nextTurn, handoffDelay);
     }
@@ -19394,6 +19412,7 @@ body.inline-game-over .roll-panel {
     }
 
     setMsg(`TRASH ${value}!`, 'trash');
+    triggerBenchCelebration(current, false, 'trash');
     const canLoad = totalTrashedDice();
     if (!IPAD_GAMEPLAY_PERFORMANCE_MODE) triggerTrashCanImpact(canLoad);
     Audio.trashEntryThunk(canLoad);
@@ -19408,7 +19427,7 @@ body.inline-game-over .roll-panel {
 
     if (maybeEndMathematicalGame('post-trash-insufficient-dice')) return;
 
-    const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS : CPU_TO_PLAYER_HANDOFF_MS;
+    const handoffDelay = current === 'p1' ? PLAYER_TO_CPU_HANDOFF_MS + PLAYER_OUTCOME_BREATH_MS : CPU_TO_PLAYER_HANDOFF_MS;
     scheduleProgressionWatchdog('post-trash', handoffDelay + 4550);
     runLater(nextTurn, handoffDelay);
   }
@@ -21641,7 +21660,7 @@ body.inline-game-over .roll-panel {
                 busy,
                 rollDisabled: rollBtn.disabled,
                 completionMessage,
-                expectedHandoffMs: PLAYER_TO_CPU_HANDOFF_MS,
+                expectedHandoffMs: PLAYER_TO_CPU_HANDOFF_MS + PLAYER_OUTCOME_BREATH_MS,
                 expectedCpuResponseMs: CPU_RESPONSE_MS,
                 totalToCpuRollMs: Math.round(performance.now() - playerCompletedAt),
                 handoffMs: Math.round(cpuHandoffAt - playerCompletedAt),

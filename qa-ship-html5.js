@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.14';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.14';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.15';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.15';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -2263,7 +2263,7 @@ async function main() {
       assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.ariaLabel === 'Roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       const manualPlaceHandoff = await evalValue(rollPanelHitPage, `window.TrashDiceQA.playerHandoffProbe(2, 'place')`);
       const manualRollCueMinWidth = viewport.mobile ? CPU_ROLL_CUE_MIN_WIDTH_PX.mobile : CPU_ROLL_CUE_MIN_WIDTH_PX.desktop;
-      assert(manualPlaceHandoff.expectedHandoffMs <= 180 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hand off to CPU promptly while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.expectedHandoffMs >= 200 && manualPlaceHandoff.expectedHandoffMs <= 800 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.handoffMs >= manualPlaceHandoff.expectedHandoffMs - 160 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hold an outcome breath, then hand off to CPU while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.playerRollCueSeen === true && manualPlaceHandoff.playerRollCueDuringBusy === true && manualPlaceHandoff.playerRollCueText === PLAYER_ROLL_CUE_TEXT, `${viewport.name}: manual player roll should show the YOU ARE ROLLING overlay during the player's roll ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.playerRollCueSnapshot && manualPlaceHandoff.playerRollCueSnapshot.playerCue === true && manualPlaceHandoff.playerRollCueSnapshot.rollCueKind === 'player', `${viewport.name}: manual player roll overlay should use the player color mode ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.playerRollCueSnapshot && manualPlaceHandoff.playerRollCueSnapshot.rect && manualPlaceHandoff.playerRollCueSnapshot.rect.width >= manualRollCueMinWidth, `${viewport.name}: YOU ARE ROLLING overlay should be wide enough to span the board and trash can cluster ${JSON.stringify(manualPlaceHandoff)}`);
