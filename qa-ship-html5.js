@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.5';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.5';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.6';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.6';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
@@ -1195,6 +1195,8 @@ function assertStaticShipSourceScan() {
   assert(hits.length === 0, `forbidden source strings in shipped HTML: ${hits.join(', ')}`);
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
   assert(firstRollPromptSource.includes('rgba(244,31,30') && firstRollPromptSource.includes('rgba(255,154,25') && !/(43,\s*219,\s*255|#00e5ff|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptSource), 'first-roll TAP TO START glow must stay warm red/orange and must not use the old cyan outline');
+  assert(source.includes('const APPROVED_ENDLESS_FEATURED_DICE = Object.freeze([...BASE_REWARD_DICE, VIP_REWARD_DIE]);'), 'endless featured dice pool must stay limited to approved retail reward dice through DISCO');
+  assert(source.includes("selectPostBeatRandomRewardDie('trashed-cpu-next-game')"), 'endless featured die should reroll only after a post-beat YOU TRASHED THE CPU game win');
   assert(source.includes("const rollAudioProfile = current === 'p1' ? 'player' : 'cpu';"), 'player and CPU roll audio profiles must stay explicitly split by roller');
   assert(source.includes('Audio.rollLoop(ROLL_ANIMATION_MS, rollAudioProfile)'), 'roll loop SFX must receive the captured player/CPU profile');
   assert(source.includes('Audio.rollResolve(value, rollAudioProfile)'), 'roll resolve SFX must receive the captured player/CPU profile');
@@ -1449,6 +1451,7 @@ async function main() {
         discoButtonHidden: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display === 'none' : false,
         cosmicSkyHidden: document.querySelector('.vip-cosmic-sky') ? getComputedStyle(document.querySelector('.vip-cosmic-sky')).display === 'none' : false,
         winButton: !!document.getElementById('devWinBtn'),
+        beatGameButton: !!document.getElementById('devBeatGameBtn'),
         loseButton: !!document.getElementById('devLoseBtn'),
         outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
         quitButton: !!document.getElementById('quitGameBtn'),
@@ -1661,6 +1664,7 @@ async function main() {
       assert(initial.discoButtonHidden === true, `${viewport.name}: DISCO debug button should hide on title screen`);
       assert(initial.cosmicSkyHidden === true, `${viewport.name}: VIP cosmic ambience should stay hidden on title screen`);
       assert(initial.winButton === true, `${viewport.name}: win debug button missing`);
+      assert(initial.beatGameButton === true, `${viewport.name}: YOU BEAT THE GAME debug button missing`);
       assert(initial.loseButton === true, `${viewport.name}: lose debug button missing`);
       assert(initial.outcomeButtonsHidden === true, `${viewport.name}: outcome debug buttons should hide on title screen`);
       assert(initial.titleHeroDice.count === 2 && initial.titleHeroDice.state.pair === 'default' && initial.titleHeroDice.rewardSkinned.every(value => value === false), `${viewport.name}: title hero dice should start on default yellow/green dice ${JSON.stringify(initial.titleHeroDice)}`);
@@ -1981,7 +1985,7 @@ async function main() {
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
             (p1r.bottom <= qr.top - 4 || p1r.left >= qr.right + 4 || p1r.right <= qr.left - 4 || p1r.top >= qr.bottom + 4) &&
             (or.bottom <= qr.top - 4 || or.left >= qr.right + 4 || or.right <= qr.left - 4 || or.top >= qr.bottom + 4),
-          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && or.left >= window.innerWidth * 0.62 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
+          debugLowerRight: br.left >= window.innerWidth * 0.62 && p1r.left >= window.innerWidth * 0.62 && or.right >= window.innerWidth - 18 && or.left >= window.innerWidth * 0.5 && br.top >= window.innerHeight * 0.42 && p1r.top >= window.innerHeight * 0.42 && or.top >= window.innerHeight * 0.42,
           badgePresent: !!badge,
           bodyFits: document.body.scrollWidth <= window.innerWidth + 1,
           disabled: roll.disabled,
@@ -2325,6 +2329,71 @@ async function main() {
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
+      const beatDebugPage = await openPage(`${baseUrl}?source=qa&qa=1&debug-beat-game-button=1`, viewport);
+      await evalValue(beatDebugPage, `document.getElementById('startBtn').click(); true`);
+      await waitEval(beatDebugPage, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, `${viewport.name} beat-game debug button game start`);
+      await evalValue(beatDebugPage, `document.getElementById('devBeatGameBtn').click(); true`);
+      await waitEval(beatDebugPage, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === true`, `${viewport.name} beat-game debug button terminal capstone`);
+      await waitEval(beatDebugPage, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === ${rewardCapDie.minWins}`, `${viewport.name} beat-game debug button counter`, 5000);
+      const beatDebug = await evalValue(beatDebugPage, `(() => {
+        const btn = document.getElementById('devBeatGameBtn');
+        const roll = document.getElementById('rollBtn');
+        const title = document.getElementById('inlineResultTitle');
+        const sub = document.getElementById('inlineResultSub');
+        return {
+          buttonVisible: btn && getComputedStyle(btn).display !== 'none',
+          buttonText: btn ? btn.textContent.trim() : '',
+          buttonLabel: btn ? btn.getAttribute('aria-label') : '',
+          title: title ? title.textContent.replace(/\\s+/g, ' ').trim() : '',
+          sub: sub ? sub.textContent.replace(/\\s+/g, ' ').trim() : '',
+          rollText: roll ? roll.textContent.replace(/\\s+/g, ' ').trim() : '',
+          state: window.TrashDiceQA.state(),
+          rewardState: window.TrashDiceQA.rewardDieState(),
+          chip: window.TrashDiceQA.roundWinsWindupState(),
+          dataset: {
+            name: document.body.dataset.postBeatRandomDie || '',
+            tier: document.body.dataset.postBeatRandomDieTier || '',
+            roll: document.body.dataset.postBeatRandomDieRoll || '',
+            reason: document.body.dataset.postBeatRandomDieReason || ''
+          }
+        };
+      })()`);
+      assert(beatDebug.buttonVisible === true && beatDebug.buttonText === 'BEAT' && beatDebug.buttonLabel === 'Beat the game now', `${viewport.name}: beat-game debug button should be visible and labeled in debug play ${JSON.stringify(beatDebug)}`);
+      assert(beatDebug.title === 'YOU BEAT THE GAME!' && beatDebug.sub === 'You unlocked every die. How many more rounds can you win?' && beatDebug.rollText.includes('KEEP PLAYING!') && beatDebug.state.inlineGameOver.autoRestartMs === null, `${viewport.name}: beat-game debug button should trigger the held capstone without timeout ${JSON.stringify(beatDebug)}`);
+      assert(beatDebug.rewardState.totalWins === rewardCapDie.minWins && beatDebug.rewardState.guidedGameCompleted === true && beatDebug.rewardState.postBeatRandomActive === true && beatDebug.rewardState.postBeatRandomDie && beatDebug.dataset.name === beatDebug.rewardState.postBeatRandomDie.name && beatDebug.dataset.reason === 'beat-game-next-game', `${viewport.name}: beat-game debug button should arm endless featured die for the next game ${JSON.stringify(beatDebug)}`);
+      await evalValue(beatDebugPage, `document.getElementById('rollBtn').click(); true`);
+      await waitEval(beatDebugPage, `(() => {
+        const state = window.TrashDiceQA.state();
+        const shell = document.getElementById('terminalRewardNudge');
+        const rect = shell ? shell.getBoundingClientRect() : null;
+        const style = shell ? getComputedStyle(shell) : null;
+        return state.gameStarted === true && !state.inlineGameOver && shell && !shell.hidden && shell.dataset.featuredMode === 'current-game' && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48;
+      })()`, `${viewport.name} beat-game debug button next-game featured die`);
+      const beatDebugNextGame = await evalValue(beatDebugPage, `(() => {
+        const shell = document.getElementById('terminalRewardNudge');
+        const die = document.getElementById('terminalRewardNudgeDie');
+        const style = shell ? getComputedStyle(shell) : null;
+        const rect = shell ? shell.getBoundingClientRect() : null;
+        return {
+          state: window.TrashDiceQA.rewardDieState(),
+          skin: window.TrashDiceQA.rewardSkinProbe(),
+          nudge: {
+            visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
+            rect: rect ? { width: Math.round(rect.width), height: Math.round(rect.height), top: Math.round(rect.top), left: Math.round(rect.left) } : null,
+            display: style ? style.display : '',
+            text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
+            line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
+            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            copyMode: shell ? shell.dataset.copyMode || '' : '',
+            featuredMode: shell ? shell.dataset.featuredMode || '' : '',
+            dieName: die ? die.dataset.rewardName || '' : '',
+            dieSkinned: !!(die && die.classList.contains('reward-skinned'))
+          }
+        };
+      })()`);
+      assert(beatDebugNextGame.state.postBeatRandomActive === true && beatDebugNextGame.skin.activePlayerDie && beatDebugNextGame.skin.activePlayerDie.name === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.visible === true && beatDebugNextGame.nudge.kicker === 'FEATURED DIE' && beatDebugNextGame.nudge.line === `${beatDebug.rewardState.postBeatRandomDie.name} THIS GAME` && beatDebugNextGame.nudge.unlock === 'TRASH CPU TO REROLL' && beatDebugNextGame.nudge.featuredMode === 'current-game' && beatDebugNextGame.nudge.dieName === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.dieSkinned === true, `${viewport.name}: beat-game debug button should reveal the featured die on the next game ${JSON.stringify({ beatDebug, beatDebugNextGame })}`);
+      await send('Target.closeTarget', { targetId: beatDebugPage.targetId });
       const preShipPerf = await evalValue(page, preShipPerfLeakProbeScript({
         cycles: 2,
         sampleMs: viewport.mobile ? 420 : 520,
@@ -2408,10 +2477,28 @@ async function main() {
       const postBeatRandomFirst = await evalValue(page, `(() => ({
         state: window.TrashDiceQA.rewardDieState(),
         skin: window.TrashDiceQA.rewardSkinProbe(),
+        nudge: (() => {
+          const shell = document.getElementById('terminalRewardNudge');
+          const die = document.getElementById('terminalRewardNudgeDie');
+          const style = shell ? getComputedStyle(shell) : null;
+          const rect = shell ? shell.getBoundingClientRect() : null;
+          return {
+            visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
+            text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
+            line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
+            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            copyMode: shell ? shell.dataset.copyMode || '' : '',
+            featuredMode: shell ? shell.dataset.featuredMode || '' : '',
+            dieName: die ? die.dataset.rewardName || '' : '',
+            dieSkinned: !!(die && die.classList.contains('reward-skinned'))
+          };
+        })(),
         dataset: {
           name: document.body.dataset.postBeatRandomDie || '',
           tier: document.body.dataset.postBeatRandomDieTier || '',
-          roll: document.body.dataset.postBeatRandomDieRoll || ''
+          roll: document.body.dataset.postBeatRandomDieRoll || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
         }
       }))()`);
       await evalValue(page, `window.TrashDiceQA.gameStart(); true`);
@@ -2419,10 +2506,87 @@ async function main() {
       const postBeatRandomSecond = await evalValue(page, `(() => ({
         state: window.TrashDiceQA.rewardDieState(),
         skin: window.TrashDiceQA.rewardSkinProbe(),
+        nudge: (() => {
+          const shell = document.getElementById('terminalRewardNudge');
+          const die = document.getElementById('terminalRewardNudgeDie');
+          const style = shell ? getComputedStyle(shell) : null;
+          const rect = shell ? shell.getBoundingClientRect() : null;
+          return {
+            visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
+            text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
+            line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
+            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            copyMode: shell ? shell.dataset.copyMode || '' : '',
+            featuredMode: shell ? shell.dataset.featuredMode || '' : '',
+            dieName: die ? die.dataset.rewardName || '' : '',
+            dieSkinned: !!(die && die.classList.contains('reward-skinned'))
+          };
+        })(),
         dataset: {
           name: document.body.dataset.postBeatRandomDie || '',
           tier: document.body.dataset.postBeatRandomDieTier || '',
-          roll: document.body.dataset.postBeatRandomDieRoll || ''
+          roll: document.body.dataset.postBeatRandomDieRoll || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
+        }
+      }))()`);
+      await evalValue(page, `window.TrashDiceQA.gameWin('p1'); true`);
+      await waitEval(page, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.playerWon === true && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === false`, `${viewport.name} post-beat featured die CPU-trash reroll`);
+      const postBeatRandomAfterTrash = await evalValue(page, `(() => ({
+        inlineGameOver: window.TrashDiceQA.state().inlineGameOver,
+        state: window.TrashDiceQA.rewardDieState(),
+        skin: window.TrashDiceQA.rewardSkinProbe(),
+        nudge: (() => {
+          const shell = document.getElementById('terminalRewardNudge');
+          const die = document.getElementById('terminalRewardNudgeDie');
+          const style = shell ? getComputedStyle(shell) : null;
+          const rect = shell ? shell.getBoundingClientRect() : null;
+          return {
+            visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
+            text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
+            line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
+            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            copyMode: shell ? shell.dataset.copyMode || '' : '',
+            featuredMode: shell ? shell.dataset.featuredMode || '' : '',
+            dieName: die ? die.dataset.rewardName || '' : '',
+            dieSkinned: !!(die && die.classList.contains('reward-skinned'))
+          };
+        })(),
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          tier: document.body.dataset.postBeatRandomDieTier || '',
+          roll: document.body.dataset.postBeatRandomDieRoll || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
+        }
+      }))()`);
+      await evalValue(page, `window.TrashDiceQA.gameStart(); true`);
+      await sleep(90);
+      const postBeatRandomThird = await evalValue(page, `(() => ({
+        state: window.TrashDiceQA.rewardDieState(),
+        skin: window.TrashDiceQA.rewardSkinProbe(),
+        nudge: (() => {
+          const shell = document.getElementById('terminalRewardNudge');
+          const die = document.getElementById('terminalRewardNudgeDie');
+          const style = shell ? getComputedStyle(shell) : null;
+          const rect = shell ? shell.getBoundingClientRect() : null;
+          return {
+            visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
+            text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
+            kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
+            line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
+            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            copyMode: shell ? shell.dataset.copyMode || '' : '',
+            featuredMode: shell ? shell.dataset.featuredMode || '' : '',
+            dieName: die ? die.dataset.rewardName || '' : '',
+            dieSkinned: !!(die && die.classList.contains('reward-skinned'))
+          };
+        })(),
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          tier: document.body.dataset.postBeatRandomDieTier || '',
+          roll: document.body.dataset.postBeatRandomDieRoll || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
         }
       }))()`);
       const postBeatRandomReset = await evalValue(page, `(() => {
@@ -2435,15 +2599,18 @@ async function main() {
           dataset: {
             name: document.body.dataset.postBeatRandomDie || '',
             tier: document.body.dataset.postBeatRandomDieTier || '',
-            roll: document.body.dataset.postBeatRandomDieRoll || ''
+            roll: document.body.dataset.postBeatRandomDieRoll || '',
+            reason: document.body.dataset.postBeatRandomDieReason || ''
           }
         };
       })()`);
       const randomEligibleNames = new Set(rewardConfig.filter(item => item.minWins <= rewardCapDie.minWins + 1).map(item => item.name));
       assert(postBeatRandomBefore.state.postBeatRandomActive === false && postBeatRandomBefore.state.postBeatRandomDie === null && postBeatRandomBefore.skin.activePlayerDie === null, `${viewport.name}: post-beat RNG die should not arm before beat-game completion ${JSON.stringify(postBeatRandomBefore)}`);
-      assert(postBeatRandomFirst.state.totalWins === rewardCapDie.minWins + 1 && postBeatRandomFirst.state.guidedGameCompleted === true && postBeatRandomFirst.state.postBeatRandomActive === true && postBeatRandomFirst.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomFirst.state.postBeatRandomDie.name) && postBeatRandomFirst.skin.activePlayerDie && postBeatRandomFirst.skin.activePlayerDie.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.roll === '1', `${viewport.name}: first post-beat new game should start with a session RNG reward die ${JSON.stringify(postBeatRandomFirst)}`);
-      assert(postBeatRandomSecond.state.postBeatRandomActive === true && postBeatRandomSecond.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomSecond.state.postBeatRandomDie.name) && postBeatRandomSecond.skin.activePlayerDie && postBeatRandomSecond.skin.activePlayerDie.name === postBeatRandomSecond.state.postBeatRandomDie.name && postBeatRandomSecond.state.postBeatRandomRoll === 2 && postBeatRandomSecond.dataset.roll === '2' && postBeatRandomSecond.state.postBeatRandomDie.name !== postBeatRandomFirst.state.postBeatRandomDie.name, `${viewport.name}: each post-beat new game should reroll the session reward die without immediate repeats ${JSON.stringify({ first: postBeatRandomFirst, second: postBeatRandomSecond })}`);
-      assert(postBeatRandomReset.state.totalWins === 2 && postBeatRandomReset.state.guidedGameCompleted === false && postBeatRandomReset.state.postBeatRandomActive === false && postBeatRandomReset.state.postBeatRandomDie === null && postBeatRandomReset.dataset.name === '' && postBeatRandomReset.skin.activePlayerDie && postBeatRandomReset.skin.activePlayerDie.name === rewardConfig.find(item => item.minWins === 2).name, `${viewport.name}: post-beat RNG die should clear with session guided-completion reset ${JSON.stringify(postBeatRandomReset)}`);
+      assert(postBeatRandomFirst.state.totalWins === rewardCapDie.minWins + 1 && postBeatRandomFirst.state.guidedGameCompleted === true && postBeatRandomFirst.state.postBeatRandomActive === true && postBeatRandomFirst.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomFirst.state.postBeatRandomDie.name) && postBeatRandomFirst.skin.activePlayerDie && postBeatRandomFirst.skin.activePlayerDie.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.dataset.roll === '1' && postBeatRandomFirst.dataset.reason === 'new-game-feature' && postBeatRandomFirst.nudge.visible === true && postBeatRandomFirst.nudge.kicker === 'FEATURED DIE' && postBeatRandomFirst.nudge.line === `${postBeatRandomFirst.state.postBeatRandomDie.name} THIS GAME` && postBeatRandomFirst.nudge.unlock === 'TRASH CPU TO REROLL' && postBeatRandomFirst.nudge.copyMode === 'endless-featured' && postBeatRandomFirst.nudge.featuredMode === 'current-game' && postBeatRandomFirst.nudge.dieName === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomFirst.nudge.dieSkinned === true, `${viewport.name}: first post-beat new game should start with a visible featured die from the approved unlocked pool ${JSON.stringify(postBeatRandomFirst)}`);
+      assert(postBeatRandomSecond.state.postBeatRandomActive === true && postBeatRandomSecond.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomSecond.state.postBeatRandomDie.name) && postBeatRandomSecond.skin.activePlayerDie && postBeatRandomSecond.skin.activePlayerDie.name === postBeatRandomSecond.state.postBeatRandomDie.name && postBeatRandomSecond.state.postBeatRandomRoll === 1 && postBeatRandomSecond.dataset.roll === '1' && postBeatRandomSecond.state.postBeatRandomDie.name === postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomSecond.nudge.visible === true && postBeatRandomSecond.nudge.featuredMode === 'current-game', `${viewport.name}: plain post-beat new game should preserve the featured die until the player trashes the CPU ${JSON.stringify({ first: postBeatRandomFirst, second: postBeatRandomSecond })}`);
+      assert(postBeatRandomAfterTrash.state.postBeatRandomActive === true && postBeatRandomAfterTrash.state.postBeatRandomDie && randomEligibleNames.has(postBeatRandomAfterTrash.state.postBeatRandomDie.name) && postBeatRandomAfterTrash.state.postBeatRandomRoll === 2 && postBeatRandomAfterTrash.dataset.roll === '2' && postBeatRandomAfterTrash.dataset.reason === 'trashed-cpu-next-game' && postBeatRandomAfterTrash.state.postBeatRandomDie.name !== postBeatRandomFirst.state.postBeatRandomDie.name && postBeatRandomAfterTrash.nudge.visible === true && postBeatRandomAfterTrash.nudge.kicker === 'ENDLESS BONUS' && postBeatRandomAfterTrash.nudge.line === 'NEXT GAME FEATURED DIE' && postBeatRandomAfterTrash.nudge.unlock === postBeatRandomAfterTrash.state.postBeatRandomDie.name && postBeatRandomAfterTrash.nudge.featuredMode === 'next-game' && postBeatRandomAfterTrash.nudge.dieName === postBeatRandomAfterTrash.state.postBeatRandomDie.name && postBeatRandomAfterTrash.nudge.dieSkinned === true, `${viewport.name}: post-beat YOU TRASHED THE CPU should reroll and show the next game's featured die ${JSON.stringify({ first: postBeatRandomFirst, afterTrash: postBeatRandomAfterTrash })}`);
+      assert(postBeatRandomThird.state.postBeatRandomActive === true && postBeatRandomThird.state.postBeatRandomDie && postBeatRandomThird.state.postBeatRandomDie.name === postBeatRandomAfterTrash.state.postBeatRandomDie.name && postBeatRandomThird.skin.activePlayerDie && postBeatRandomThird.skin.activePlayerDie.name === postBeatRandomAfterTrash.state.postBeatRandomDie.name && postBeatRandomThird.state.postBeatRandomRoll === 2 && postBeatRandomThird.dataset.roll === '2' && postBeatRandomThird.nudge.visible === true && postBeatRandomThird.nudge.kicker === 'FEATURED DIE' && postBeatRandomThird.nudge.line === `${postBeatRandomThird.state.postBeatRandomDie.name} THIS GAME` && postBeatRandomThird.nudge.unlock === 'TRASH CPU TO REROLL' && postBeatRandomThird.nudge.featuredMode === 'current-game' && postBeatRandomThird.nudge.dieName === postBeatRandomThird.state.postBeatRandomDie.name, `${viewport.name}: next post-trash game should show the same featured die selected on the result screen ${JSON.stringify({ afterTrash: postBeatRandomAfterTrash, third: postBeatRandomThird })}`);
+      assert(postBeatRandomReset.state.totalWins === 2 && postBeatRandomReset.state.guidedGameCompleted === false && postBeatRandomReset.state.postBeatRandomActive === false && postBeatRandomReset.state.postBeatRandomDie === null && postBeatRandomReset.dataset.name === '' && postBeatRandomReset.dataset.reason === '' && postBeatRandomReset.skin.activePlayerDie && postBeatRandomReset.skin.activePlayerDie.name === rewardConfig.find(item => item.minWins === 2).name, `${viewport.name}: post-beat RNG die should clear with session guided-completion reset ${JSON.stringify(postBeatRandomReset)}`);
       const rewardSkinFixture = await evalValue(page, `(() => {
         const outlined = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => item.pipOutline) || rewardFirst).minWins)});
         const animated = window.TrashDiceQA.rewardSkinFixture(${JSON.stringify((rewardConfig.find(item => rewardSlotAnimation(item.effect)) || rewardFirst).minWins)});

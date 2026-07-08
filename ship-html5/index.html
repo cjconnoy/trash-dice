@@ -862,6 +862,12 @@ body.debug-controls-enabled[data-game-started="true"] .debug-outcome-controls {
   border-color: rgba(15,95,50,0.36);
 }
 
+.debug-outcome-btn.beat {
+  background: rgba(244,31,30,0.9);
+  color: #fff6ad;
+  border-color: rgba(255,244,163,0.5);
+}
+
 .debug-outcome-btn.lose {
   background: rgba(19,92,48,0.86);
   color: #fff6ad;
@@ -4353,6 +4359,59 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
   height: clamp(58px, 12.4vw, 86px);
   padding: clamp(8px, 1.7vw, 12px);
   animation: terminalRewardDieFlash 0.82s steps(2, end) infinite;
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] {
+  align-self: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: clamp(58px, 12vw, 72px);
+  flex: 0 0 auto;
+  gap: clamp(0.42rem, 1.4vw, 0.62rem);
+  margin: 0;
+  padding: clamp(0.34rem, 1.1vw, 0.48rem) clamp(0.5rem, 1.8vw, 0.72rem);
+  border-width: 2px;
+  border-radius: 8px;
+  animation: none;
+  transform: translate3d(0,0,0);
+  will-change: auto;
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]::before,
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]::after {
+  content: none;
+  animation: none;
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .reward-nudge-die {
+  flex-basis: clamp(42px, 9.4vw, 56px);
+  width: clamp(42px, 9.4vw, 56px);
+  height: clamp(42px, 9.4vw, 56px);
+  padding: clamp(6px, 1.25vw, 8px);
+  animation: none;
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-copy {
+  gap: clamp(0.02rem, 0.26vw, 0.08rem);
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-kicker {
+  font-size: clamp(0.62rem, 1.75vw, 0.78rem);
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-line {
+  font-size: clamp(0.74rem, 2.28vw, 0.96rem);
+}
+.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-unlock {
+  font-size: clamp(0.6rem, 1.72vw, 0.78rem);
+  color: #fff7a8;
+  animation: none;
+}
+body.post-beat-featured-current .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .die.reward-skinned,
+body.post-beat-featured-current .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .die.reward-skinned::before,
+body.post-beat-featured-current .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .die.reward-skinned::after,
+body.post-beat-featured-current .roll-die-stage .die.reward-skinned::before,
+body.post-beat-featured-current .roll-die-stage .die.reward-skinned::after,
+body.post-beat-featured-current .die.travelling-die.reward-skinned::before,
+body.post-beat-featured-current .die.travelling-die.reward-skinned::after,
+body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling):not(.ipad-rolling):not(.roll-resolved):not(.travelling-die),
+body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling):not(.ipad-rolling):not(.roll-resolved):not(.travelling-die)::before,
+body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling):not(.ipad-rolling):not(.roll-resolved):not(.travelling-die)::after {
+  animation: none !important;
 }
 body.inline-game-over.inline-game-over-rest .terminal-reward-nudge,
 body.inline-game-over.inline-game-over-rest .terminal-reward-nudge::before,
@@ -11366,6 +11425,7 @@ body.inline-game-over .roll-panel {
 <button class="debug-reward-die-btn" id="devRewardDieBtn" type="button" aria-label="Preview reward die variants">DIE</button>
 <div class="debug-outcome-controls" id="debugOutcomeControls" aria-label="Debug game outcome controls">
   <button class="debug-outcome-btn win" id="devWinBtn" type="button" aria-label="Win game now">WIN</button>
+  <button class="debug-outcome-btn beat" id="devBeatGameBtn" type="button" aria-label="Beat the game now">BEAT</button>
   <button class="debug-outcome-btn lose" id="devLoseBtn" type="button" aria-label="Lose game now">LOSE</button>
 </div>
 <div class="quit-return-sheet" id="quitReturnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="quitReturnTitle">
@@ -11795,7 +11855,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.5';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.6';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -12008,6 +12068,10 @@ body.inline-game-over .roll-panel {
   const COSMIC_AMBIENT_COPY = 'TRASH VIBES';
   const GUIDED_GAME_COMPLETE_TITLE = ['YOU BEAT', 'THE GAME!'];
   const GUIDED_GAME_COMPLETE_SUBCOPY = 'You unlocked every die. How many more rounds can you win?';
+  const ENDLESS_FEATURED_RESULT_KICKER = 'ENDLESS BONUS';
+  const ENDLESS_FEATURED_RESULT_LINE = 'NEXT GAME FEATURED DIE';
+  const ENDLESS_FEATURED_GAME_KICKER = 'FEATURED DIE';
+  const ENDLESS_FEATURED_REROLL_COPY = 'TRASH CPU TO REROLL';
   const REWARD_DIE_DISPLAY_VALUE = 5;
   const BASE_REWARD_DICE = Object.freeze([
     { id: 'plume', tier: 1, minWins: 1, name: 'FEATHERS', faceColor: '#2CBED6', pipColor: '#FFFFFF', effect: 'featherRipple', pipOutline: true },
@@ -12023,6 +12087,7 @@ body.inline-game-over .roll-panel {
   ]);
   const VIP_REWARD_DIE = Object.freeze({ id: 'disco', tier: 11, minWins: 12, name: 'DISCO', faceColor: '#D4D9E3', pipColor: '#151B34', effect: 'discoBall', pipOutline: false, vip: true });
   const SESSION_REWARD_DICE_REPLACEMENTS = Object.freeze([]);
+  const APPROVED_ENDLESS_FEATURED_DICE = Object.freeze([...BASE_REWARD_DICE, VIP_REWARD_DIE]);
 
   function rewardDiceSessionSeed() {
     const explicit = String(URL_OPTIONS.get('reward-seed') || URL_OPTIONS.get('rewardSeed') || '').trim();
@@ -13423,6 +13488,7 @@ body.inline-game-over .roll-panel {
   const devDiscoBtn = document.getElementById('devDiscoBtn');
   const debugOutcomeControls = document.getElementById('debugOutcomeControls');
   const devWinBtn = document.getElementById('devWinBtn');
+  const devBeatGameBtn = document.getElementById('devBeatGameBtn');
   const devLoseBtn = document.getElementById('devLoseBtn');
   const devStartBtn = document.getElementById('devStartBtn');
 
@@ -13580,11 +13646,13 @@ body.inline-game-over .roll-panel {
     delete document.body.dataset.postBeatRandomDie;
     delete document.body.dataset.postBeatRandomDieTier;
     delete document.body.dataset.postBeatRandomDieRoll;
+    delete document.body.dataset.postBeatRandomDieReason;
   }
 
   function postBeatRandomRewardDice() {
     if (!guidedGameCompleted) return [];
-    return REWARD_DICE.filter(die => normalizeRewardWins(rewardDieWins) >= die.minWins);
+    const wins = normalizeRewardWins(rewardDieWins);
+    return APPROVED_ENDLESS_FEATURED_DICE.filter(die => wins >= die.minWins);
   }
 
   function postBeatRandomIndex(length) {
@@ -13601,13 +13669,14 @@ body.inline-game-over .roll-panel {
     return Math.floor(Math.random() * count);
   }
 
-  function selectPostBeatRandomRewardDieForNewGame() {
+  function selectPostBeatRandomRewardDie(reason = 'trashed-cpu-reroll') {
     const pool = postBeatRandomRewardDice();
     if (!pool.length) {
       postBeatRandomRewardDie = null;
       delete document.body.dataset.postBeatRandomDie;
       delete document.body.dataset.postBeatRandomDieTier;
       delete document.body.dataset.postBeatRandomDieRoll;
+      delete document.body.dataset.postBeatRandomDieReason;
       return null;
     }
     let candidates = pool;
@@ -13623,8 +13692,29 @@ body.inline-game-over .roll-panel {
       document.body.dataset.postBeatRandomDie = selected.name || '';
       document.body.dataset.postBeatRandomDieTier = String(selected.tier || '');
       document.body.dataset.postBeatRandomDieRoll = String(postBeatRandomRewardRoll);
+      document.body.dataset.postBeatRandomDieReason = reason;
     }
     return selected;
+  }
+
+  function ensurePostBeatRandomRewardDieForNewGame(reason = 'new-game-feature') {
+    const pool = postBeatRandomRewardDice();
+    if (!pool.length) {
+      clearPostBeatRandomRewardDie();
+      return null;
+    }
+    const currentFeatured = postBeatRandomRewardDie
+      ? pool.find(die => die.id === postBeatRandomRewardDie.id && die.minWins === postBeatRandomRewardDie.minWins)
+      : null;
+    if (currentFeatured) {
+      postBeatRandomRewardDie = currentFeatured;
+      document.body.dataset.postBeatRandomDie = currentFeatured.name || '';
+      document.body.dataset.postBeatRandomDieTier = String(currentFeatured.tier || '');
+      document.body.dataset.postBeatRandomDieRoll = String(postBeatRandomRewardRoll);
+      if (!document.body.dataset.postBeatRandomDieReason) document.body.dataset.postBeatRandomDieReason = reason;
+      return currentFeatured;
+    }
+    return selectPostBeatRandomRewardDie(reason);
   }
 
   function rewardDieEffectClass(die) {
@@ -13965,7 +14055,14 @@ body.inline-game-over .roll-panel {
   }
 
   function refreshDockedRewardNudges() {
-    if (terminalRewardNudge && !terminalRewardNudge.hidden) dockRewardNudgeToPlayerPanel(terminalRewardNudge);
+    if (
+      terminalRewardNudge &&
+      !terminalRewardNudge.hidden &&
+      document.body.classList.contains('inline-game-over') &&
+      terminalRewardNudge.dataset.featuredMode !== 'current-game'
+    ) {
+      dockRewardNudgeToPlayerPanel(terminalRewardNudge);
+    }
     if (roundLossRewardNudge && !roundLossRewardNudge.hidden) dockRewardNudgeToPlayerPanel(roundLossRewardNudge);
   }
 
@@ -14003,11 +14100,57 @@ body.inline-game-over .roll-panel {
     terminalRewardNudge.removeAttribute('data-rounds-needed');
     terminalRewardNudge.removeAttribute('data-target-wins');
     terminalRewardNudge.removeAttribute('data-copy-mode');
+    terminalRewardNudge.removeAttribute('data-featured-mode');
+    document.body.classList.remove('post-beat-featured-current');
+  }
+
+  function showEndlessFeaturedRewardNudge(mode = 'current-game') {
+    if (!terminalRewardNudge || !guidedGameCompleted) return null;
+    const nextGameMode = mode === 'next-game';
+    const die = nextGameMode
+      ? postBeatRandomRewardDie
+      : ensurePostBeatRandomRewardDieForNewGame('new-game-feature');
+    if (!die) {
+      hideTerminalRewardNudge();
+      return null;
+    }
+    if (nextGameMode) {
+      if (terminalRewardNudge.parentElement !== document.body) document.body.appendChild(terminalRewardNudge);
+    } else if (rollPanel && terminalRewardNudge.parentElement !== rollPanel) {
+      rollPanel.insertBefore(terminalRewardNudge, rollBtn || null);
+    }
+    clearPlayerPanelRewardDock(terminalRewardNudge);
+    if (terminalRewardNudgeKicker) terminalRewardNudgeKicker.textContent = nextGameMode ? ENDLESS_FEATURED_RESULT_KICKER : ENDLESS_FEATURED_GAME_KICKER;
+    if (terminalRewardNudgeLine) terminalRewardNudgeLine.textContent = nextGameMode ? ENDLESS_FEATURED_RESULT_LINE : `${die.name} THIS GAME`;
+    if (terminalRewardNudgeUnlock) terminalRewardNudgeUnlock.textContent = nextGameMode ? die.name : ENDLESS_FEATURED_REROLL_COPY;
+    renderRewardNudgeDie(terminalRewardNudgeDie, die);
+    terminalRewardNudge.dataset.preview = 'featured';
+    terminalRewardNudge.dataset.nextName = die.name || '';
+    terminalRewardNudge.dataset.roundsNeeded = '0';
+    terminalRewardNudge.dataset.targetWins = String(normalizeRewardWins(rewardDieWins));
+    terminalRewardNudge.dataset.copyMode = 'endless-featured';
+    terminalRewardNudge.dataset.featuredMode = nextGameMode ? 'next-game' : 'current-game';
+    document.body.classList.toggle('post-beat-featured-current', !nextGameMode);
+    terminalRewardNudge.hidden = false;
+    if (nextGameMode) dockRewardNudgeToPlayerPanel(terminalRewardNudge);
+    return {
+      mode: nextGameMode ? 'next-game' : 'current-game',
+      die: rewardDieSnapshot(die),
+      roll: postBeatRandomRewardRoll
+    };
   }
 
   function showTerminalRewardNudge() {
     if (!terminalRewardNudge) return null;
     if (guidedGameCompleted) {
+      if (
+        inlineGameOverState &&
+        inlineGameOverState.active &&
+        inlineGameOverState.playerWon &&
+        !inlineGameOverState.guidedCompletionTriggered
+      ) {
+        return showEndlessFeaturedRewardNudge('next-game');
+      }
       hideTerminalRewardNudge();
       return null;
     }
@@ -17626,6 +17769,13 @@ body.inline-game-over .roll-panel {
       ...(finalRewardProgress || getRewardDieState()),
       guidedCompletionTriggered
     };
+    if (playerWon && guidedGameCompleted) {
+      const endlessFeaturedDie = guidedCompletionTriggered
+        ? ensurePostBeatRandomRewardDieForNewGame('beat-game-next-game')
+        : selectPostBeatRandomRewardDie('trashed-cpu-next-game');
+      inlineGameOverState.endlessFeaturedDie = rewardDieSnapshot(endlessFeaturedDie);
+      inlineGameOverState.endlessFeaturedRoll = postBeatRandomRewardRoll;
+    }
 
     gameStarted = true;
     busy = true;
@@ -18909,7 +19059,7 @@ body.inline-game-over .roll-panel {
     document.body.dataset.gameStarted = 'true';
     armFirstSessionRoundOneGuarantee();
     Audio.setMusicActive(true);
-    selectPostBeatRandomRewardDieForNewGame();
+    ensurePostBeatRandomRewardDieForNewGame('new-game-feature');
 
     hideRoundWinBurst();
     overlay.classList.remove('show', 'victory', 'loss', 'winner-yellow', 'winner-green', 'player-win-mega');
@@ -18921,6 +19071,7 @@ body.inline-game-over .roll-panel {
       current = betaMultiplayerActive && betaFirstRoll.winner ? betaFirstRoll.winner : 'p1';
       clearDie(null);
       syncUI();
+      showEndlessFeaturedRewardNudge('current-game');
       if (betaMultiplayerActive) {
         if (betaFirstRoll.active || betaFirstRoll.settling) {
           betaRenderFirstRoll('ROLL FOR FIRST');
@@ -19641,6 +19792,29 @@ body.inline-game-over .roll-panel {
     if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) init();
     gameOver(forcedWinner);
     return { winner: forcedWinner, inlineGameOver: true, autoRestartMs: gameResultAutoAdvanceDelay(forcedWinner === 'p1'), autoRestMs: forcedWinner === 'p1' ? INLINE_GAME_OVER_REST_MS : null };
+  }
+
+  function forceBeatGameDebug() {
+    if (!gameStarted || overlay.classList.contains('show') || isInlineGameOverActive()) init();
+    rewardDiePreviewOverride = null;
+    rewardDieReviewIndex = -1;
+    clearPostBeatRandomRewardDie();
+    writeRewardDieWins(VIP_REWARD_DIE.minWins);
+    guidedGameCompletionPending = true;
+    guidedGameCompleted = false;
+    document.body.dataset.guidedGameCompletionReason = 'debug-beat-game';
+    refreshGuidedGameCompletionState();
+    hideRewardDieUnlock();
+    hideRoundWinBurst();
+    hideTerminalRewardNudge();
+    hideRoundLossRewardNudge();
+    refreshPlayerRewardSkin(true);
+    renderPoolCounts();
+    updatePoolVisual('p1');
+    renderCanLoad();
+    syncHeroIdleState();
+    updateDevDiscoButtonState();
+    return forceTerminalGameOver('p1');
   }
 
   function resetToGameStart() {
@@ -21712,6 +21886,13 @@ body.inline-game-over .roll-panel {
       forceTerminalGameOver('p1');
     });
   }
+  if (devBeatGameBtn) {
+    devBeatGameBtn.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      forceBeatGameDebug();
+    });
+  }
   if (devLoseBtn) {
     devLoseBtn.addEventListener('click', event => {
       event.preventDefault();
@@ -21734,6 +21915,7 @@ body.inline-game-over .roll-panel {
     if (devP1AutoBtn && event.target === devP1AutoBtn) return;
     if (devRewardDieBtn && event.target === devRewardDieBtn) return;
     if (devDiscoBtn && event.target === devDiscoBtn) return;
+    if (devBeatGameBtn && event.target === devBeatGameBtn) return;
     if (debugOutcomeControls && debugOutcomeControls.contains(event.target)) return;
     if (devCheatBar && devCheatBar.contains(event.target)) return;
     event.preventDefault();
@@ -21768,6 +21950,12 @@ body.inline-game-over .roll-panel {
       if (key === 'l') {
         event.preventDefault();
         forceTerminalGameOver('p2');
+        debugKeyBuffer = '';
+        return;
+      }
+      if (key === 'b') {
+        event.preventDefault();
+        forceBeatGameDebug();
         debugKeyBuffer = '';
         return;
       }
@@ -21905,6 +22093,9 @@ body.inline-game-over .roll-panel {
     },
     win(trashLoad = 10) {
       return forceTerminalGameOver('p1');
+    },
+    beatGame() {
+      return forceBeatGameDebug();
     },
     lose(trashLoad = 10) {
       return forceTerminalGameOver('p2');
