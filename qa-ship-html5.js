@@ -654,6 +654,134 @@ function preShipPerfLeakProbeScript(options = {}) {
   })()`;
 }
 
+function postBeatFeaturedPlayerRollPerfProbeScript(sampleMs = 520) {
+  const sampleDuration = Math.max(220, Math.floor(Number(sampleMs) || 520));
+  return `(async () => {
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const waitUntil = async (predicate, timeout = 9000) => {
+      const start = performance.now();
+      while (performance.now() - start < timeout) {
+        if (predicate()) return true;
+        await sleep(40);
+      }
+      return false;
+    };
+    const frameStatsDuring = sampleDurationMs => new Promise(resolve => {
+      const deltas = [];
+      const startedAt = performance.now();
+      let last = startedAt;
+      const tick = now => {
+        deltas.push(now - last);
+        last = now;
+        if (now - startedAt >= sampleDurationMs) {
+          const frames = deltas.slice(1);
+          const sorted = frames.slice().sort((a, b) => a - b);
+          const avg = frames.reduce((sum, value) => sum + value, 0) / Math.max(1, frames.length);
+          const p95Index = sorted.length ? Math.floor((sorted.length - 1) * 0.95) : 0;
+          resolve({
+            frames: frames.length,
+            avgFrameMs: Number(avg.toFixed(2)),
+            p95FrameMs: Number((sorted[p95Index] || 0).toFixed(2)),
+            maxFrameMs: Number((sorted[sorted.length - 1] || 0).toFixed(2)),
+            over34Frames: frames.filter(value => value > 34).length,
+            over50Frames: frames.filter(value => value > 50).length
+          });
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    const slotAnimationSnapshot = label => {
+      const effectNodes = Array.from(document.querySelectorAll('.slot-die.reward-skinned .slot-reward-effect, .slot-die.reward-skinned .slot-reward-pip, .slot-die.reward-skinned .slot-disco-ray'));
+      const slotDice = Array.from(document.querySelectorAll('.slot-die.reward-skinned')).map((el, index) => {
+        const style = getComputedStyle(el);
+        return {
+          index,
+          name: el.dataset.rewardName || '',
+          effect: el.dataset.rewardEffect || '',
+          filter: style.filter || '',
+          animationName: style.animationName || ''
+        };
+      });
+      const runningSlotAnimations = effectNodes.flatMap((el, index) => el.getAnimations({ subtree: false })
+        .filter(animation => animation.playState === 'running')
+        .map(animation => ({
+          index,
+          name: animation.animationName || '',
+          playState: animation.playState,
+          targetClass: el.getAttribute('class') || '',
+          targetTag: el.tagName || ''
+        })));
+      return {
+        label,
+        slotRewardDice: slotDice.length,
+        slotDice,
+        effectNodeCount: effectNodes.length,
+        runningSlotAnimations,
+        bodyClasses: document.body.className,
+        state: window.TrashDiceQA.state()
+      };
+    };
+    const cueSnapshot = () => {
+      const cue = document.getElementById('cpuRollCue');
+      if (!cue) return { exists: false, visible: false, text: '' };
+      const style = getComputedStyle(cue);
+      const rect = cue.getBoundingClientRect();
+      return {
+        exists: true,
+        visible: !cue.hidden && style.display !== 'none' && Number.parseFloat(style.opacity || '0') > 0.2 && rect.width >= 80,
+        text: cue.textContent.trim(),
+        kind: cue.dataset.rollCueKind || '',
+        playerCue: cue.classList.contains('player-roll-cue'),
+        rect: { width: Math.round(rect.width), height: Math.round(rect.height) }
+      };
+    };
+    if (!window.TrashDiceQA || !window.TrashDiceDebug) return { error: 'qa hooks missing' };
+    if (!window.TrashDiceQA.rewardDieState().postBeatRandomActive) return { error: 'post-beat featured die is not active' };
+    window.TrashDiceDebug.gameStart();
+    await waitUntil(() => {
+      const state = window.TrashDiceQA.state();
+      return state.gameStarted === true && state.rewardDie && state.rewardDie.postBeatRandomActive && state.current === 'p1' && !state.busy && !document.getElementById('rollBtn').disabled;
+    });
+    window.TrashDiceQA.queueRolls([1, 2, 3]);
+    const firstStartRolls = window.TrashDiceQA.state().totalRolls;
+    document.getElementById('rollBtn').click();
+    const returnedToPlayer = await waitUntil(() => {
+      const state = window.TrashDiceQA.state();
+      return state.current === 'p1'
+        && state.busy === false
+        && !document.getElementById('rollBtn').disabled
+        && Number(state.totalRolls || 0) >= firstStartRolls + 2
+        && document.querySelectorAll('.slot-die.reward-skinned').length >= 1;
+    });
+    await sleep(120);
+    const ready = slotAnimationSnapshot('ready-with-featured-slot');
+    const beforeSecondRolls = window.TrashDiceQA.state().totalRolls;
+    window.TrashDiceQA.queueRolls([3]);
+    const rollStatsPromise = frameStatsDuring(${sampleDuration});
+    document.getElementById('rollBtn').click();
+    await waitUntil(() => {
+      const state = window.TrashDiceQA.state();
+      return state.current === 'p1' && state.busy === true && Number(state.totalRolls || 0) > beforeSecondRolls;
+    }, 1400);
+    await sleep(96);
+    const duringRoll = slotAnimationSnapshot('during-featured-player-roll');
+    const cue = cueSnapshot();
+    const rollStats = await rollStatsPromise;
+    return {
+      version: document.body.dataset.trashDiceVersion,
+      versionLabel: document.body.dataset.trashDiceVersionLabel,
+      featured: window.TrashDiceQA.rewardDieState().postBeatRandomDie,
+      returnedToPlayer,
+      ready,
+      duringRoll,
+      cue,
+      rollStats
+    };
+  })()`;
+}
+
 function rewardHeroBodySpinProbeScript(totalWins, rollValue = 3, maxMs = 980, intervalMs = 40) {
   return `new Promise(resolve => {
     const samples = [];
@@ -1002,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.10';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.10';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.11';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.11';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1102,6 +1230,17 @@ function assertPreShipPerfLeakProbe(label, result) {
   if (summary.heapGrowthKb !== null && Number.isFinite(summary.heapGrowthKb)) {
     assert(summary.heapGrowthKb <= 8192, `${label}: JS heap grew too much during repeated pre-ship cycles ${JSON.stringify(result)}`);
   }
+}
+
+function assertPostBeatFeaturedPlayerRollPerfProbe(label, result) {
+  assert(result && !result.error, `${label}: post-beat featured player-roll perf probe did not run ${JSON.stringify(result)}`);
+  assert(result.returnedToPlayer === true, `${label}: post-beat featured probe did not return to a playable player turn with a skinned slot ${JSON.stringify(result)}`);
+  assert(result.featured && result.featured.name, `${label}: post-beat featured probe did not retain the featured die ${JSON.stringify(result)}`);
+  assert(result.ready && result.ready.slotRewardDice >= 1 && result.ready.effectNodeCount >= 1, `${label}: post-beat featured ready state did not create a skinned placed player die ${JSON.stringify(result)}`);
+  assert(result.ready.runningSlotAnimations.length === 0, `${label}: placed featured dice should be static while waiting for the next player roll ${JSON.stringify(result)}`);
+  assert(result.duringRoll && result.duringRoll.runningSlotAnimations.length === 0, `${label}: placed featured dice should stay static during the next player roll ${JSON.stringify(result)}`);
+  assert(result.duringRoll.bodyClasses.includes('post-beat-featured-current') && result.duringRoll.bodyClasses.includes('reward-hero-roll-active'), `${label}: post-beat featured player-roll perf probe missed the active reward-roll window ${JSON.stringify(result)}`);
+  assert(result.cue && result.cue.visible === true && result.cue.text === PLAYER_ROLL_CUE_TEXT && result.cue.playerCue === true && result.cue.kind === 'player', `${label}: player roll cue should remain visible while placed featured dice are frozen ${JSON.stringify(result)}`);
 }
 
 function assertRewardHeroRollPerfProbe(label, result) {
@@ -1205,6 +1344,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes("sfxCtx(playerRoll ? 'rollResolvePlayer' : 'rollResolve')"), 'player roll resolve SFX should use the brighter player profile while CPU keeps the original profile');
   assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
   assert(source.includes('else if (humanGestureRoll) showPlayerRollCue();'), 'manual player rolls must show the player roll cue');
+  assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
 }
 
 async function main() {
@@ -2401,6 +2541,8 @@ async function main() {
         };
       })()`);
       assert(beatDebugNextGame.state.postBeatRandomActive === true && beatDebugNextGame.skin.activePlayerDie && beatDebugNextGame.skin.activePlayerDie.name === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.visible === true && beatDebugNextGame.nudge.kicker === 'Featured Die This Game:' && beatDebugNextGame.nudge.line === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.unlock === 'Trash the CPU to Reroll Featured Die' && beatDebugNextGame.nudge.featuredMode === 'current-game' && beatDebugNextGame.nudge.dieName === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.dieSkinned === true, `${viewport.name}: beat-game debug button should reveal the featured die on the next game ${JSON.stringify({ beatDebug, beatDebugNextGame })}`);
+      const postBeatFeaturedPlayerRollPerf = await evalValue(beatDebugPage, postBeatFeaturedPlayerRollPerfProbeScript(viewport.mobile ? 420 : 520));
+      assertPostBeatFeaturedPlayerRollPerfProbe(viewport.name, postBeatFeaturedPlayerRollPerf);
       await send('Target.closeTarget', { targetId: beatDebugPage.targetId });
       const preShipPerf = await evalValue(page, preShipPerfLeakProbeScript({
         cycles: 2,
