@@ -3913,7 +3913,7 @@ body.inline-game-over .roll-panel {
   touch-action: manipulation;
 }
 body.first-roll-prompt-active .roll-btn.p1:not(:disabled) {
-  outline: 4px solid rgba(244,31,30,0.96);
+  outline: 4px solid rgba(13,108,59,0.96);
   outline-offset: 4px;
   box-shadow:
     inset 2px 2px 0 rgba(255,255,255,0.52),
@@ -3921,8 +3921,8 @@ body.first-roll-prompt-active .roll-btn.p1:not(:disabled) {
     0 5px 0 #9c7200,
     0 11px 18px rgba(73,54,18,0.24),
     0 0 0 7px rgba(255,246,154,0.42),
-    0 0 28px rgba(244,31,30,0.62),
-    0 0 50px rgba(255,154,25,0.54);
+    0 0 28px rgba(16,153,74,0.6),
+    0 0 50px rgba(255,214,25,0.54);
   animation: firstRollButtonSpotlight 1.08s cubic-bezier(.16,.82,.18,1) 4;
 }
 body.first-roll-prompt-active .roll-btn.p1:not(:disabled)::after {
@@ -3930,7 +3930,7 @@ body.first-roll-prompt-active .roll-btn.p1:not(:disabled)::after {
   position: absolute;
   inset: -12px;
   z-index: -1;
-  border: 3px solid rgba(244,31,30,0.66);
+  border: 3px solid rgba(13,108,59,0.66);
   border-radius: 13px;
   pointer-events: none;
   animation: firstRollButtonRing 1.08s ease-out 4;
@@ -4641,7 +4641,7 @@ body.inline-game-over.inline-game-over-rest .inline-result-chip::before {
 }
 .roll-btn-label {
   display: block;
-  color: #e3271f;
+  color: #0b5d31;
   font-family: 'Bangers', sans-serif;
   font-size: clamp(2.4rem, 8vw, 4.4rem);
   line-height: 0.85;
@@ -4652,10 +4652,10 @@ body.inline-game-over.inline-game-over-rest .inline-result-chip::before {
   filter: saturate(1.08);
   pointer-events: none;
   text-shadow:
-    -0.8px -0.8px 0 rgba(255,164,88,0.28),
-    1.2px 1.6px 0 #711006,
-    2.6px 3.1px 0 rgba(75,35,0,0.34);
-  -webkit-text-stroke: 0.55px rgba(88,0,0,0.38);
+    -0.8px -0.8px 0 rgba(255,246,154,0.3),
+    1.2px 1.6px 0 #053f24,
+    2.6px 3.1px 0 rgba(9,45,26,0.34);
+  -webkit-text-stroke: 0.55px rgba(4,45,24,0.38);
   transition: transform 0.1s ease, text-shadow 0.18s ease;
 }
 body.player-roll-ready .roll-btn.p1:not(:disabled) .roll-btn-label {
@@ -4690,12 +4690,12 @@ body.inline-game-over .roll-btn.inline-play-again .roll-btn-label {
   white-space: nowrap;
   font-size: clamp(2.05rem, 7.6vw, 4.4rem);
   letter-spacing: 0.04em;
-  color: #e3271f;
+  color: #0b5d31;
   transform: translateX(-1%) rotate(-5deg) skewX(-7deg) scale(0.98, 0.84);
   text-shadow:
-    -0.8px -0.8px 0 rgba(255,164,88,0.3),
-    1.4px 1.8px 0 #711006,
-    3px 3.5px 0 rgba(75,35,0,0.34);
+    -0.8px -0.8px 0 rgba(255,246,154,0.3),
+    1.4px 1.8px 0 #053f24,
+    3px 3.5px 0 rgba(9,45,26,0.34);
 }
 body.inline-game-over .status-bar.active {
   box-shadow:
@@ -6398,10 +6398,10 @@ body.inline-game-over [role="button"] {
 .cpu-roll-cue.player-roll-cue {
   border-color: rgba(7,113,59,0.94);
   background: linear-gradient(180deg, #fff477 0%, #ffd429 54%, #e19103 100%);
-  color: #d72d22;
+  color: #0b5d31;
   text-shadow:
-    0 3px 0 #8f1812,
-    0 6px 10px rgba(0,0,0,0.35);
+    0 3px 0 #053f24,
+    0 6px 10px rgba(0,0,0,0.3);
   box-shadow:
     0 7px 0 rgba(132,80,0,0.56),
     0 0 0 3px rgba(7,113,59,0.4),
@@ -11747,7 +11747,7 @@ body.inline-game-over .roll-panel {
       </div>
     </div>
     <button class="roll-btn p1" id="rollBtn" type="button" aria-label="Roll yellow die"><span class="roll-btn-label">ROLL!</span></button>
-    <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash."><strong>ROLL.</strong> COLLECT. AVOID THE TRASH.</div>
+    <div class="game-tagline" aria-label="Roll. Collect. Avoid the trash.">ROLL. COLLECT. <strong>AVOID THE TRASH.</strong></div>
   </div>
 
 </div>
@@ -11943,7 +11943,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.15';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.16';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);

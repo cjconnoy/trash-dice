@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.15';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.15';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.16';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.16';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1334,7 +1334,10 @@ function assertStaticShipSourceScan() {
     .map(item => item.name);
   assert(hits.length === 0, `forbidden source strings in shipped HTML: ${hits.join(', ')}`);
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
-  assert(firstRollPromptSource.includes('rgba(244,31,30') && firstRollPromptSource.includes('rgba(255,154,25') && !/(43,\s*219,\s*255|#00e5ff|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptSource), 'first-roll TAP TO START glow must stay warm red/orange and must not use the old cyan outline');
+  // Color grammar (approved 2026-07-08): red is reserved for trash/danger; go/action
+  // affordances use brand green. The first-roll spotlight is green + warm gold, never
+  // cyan and never danger red.
+  assert(firstRollPromptSource.includes('rgba(13,108,59') && firstRollPromptSource.includes('rgba(255,214,25') && !/(43,\s*219,\s*255|#00e5ff|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptSource) && !firstRollPromptSource.includes('rgba(244,31,30'), 'first-roll TAP TO START glow must use the brand-green go treatment (not cyan, not danger red)');
   assert(source.includes('const APPROVED_ENDLESS_FEATURED_DICE = Object.freeze([...BASE_REWARD_DICE, VIP_REWARD_DIE]);'), 'endless featured dice pool must stay limited to approved retail reward dice through DISCO');
   assert(source.includes("selectPostBeatRandomRewardDie('trashed-cpu-next-game')"), 'endless featured die should reroll only after a post-beat YOU TRASHED THE CPU game win');
   assert(source.includes("const rollAudioProfile = current === 'p1' ? 'player' : 'cpu';"), 'player and CPU roll audio profiles must stay explicitly split by roller');
@@ -2182,7 +2185,7 @@ async function main() {
       assert(activeLayout.firstRollCoachPresent === false, `${viewport.name}: removed first-roll coach overlay should not be present ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.rollText === 'TAP TO START!' && activeLayout.rollAriaLabel === 'Tap to start rolling' && activeLayout.rollPromptClass === true && activeLayout.rollLongCopyClass === true && activeLayout.rollTextFits === true, `${viewport.name}: first-roll button should be the only launch prompt and fit inside ROLL button ${JSON.stringify(activeLayout)}`);
       const firstRollPromptAccentText = [activeLayout.firstRollPromptOutlineColor, activeLayout.firstRollPromptBoxShadow, activeLayout.firstRollPromptRingBorderColor].join(' | ');
-      assert(/244,\s*31,\s*30/.test(firstRollPromptAccentText) && /255,\s*154,\s*25/.test(firstRollPromptAccentText) && !/(43,\s*219,\s*255|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptAccentText), `${viewport.name}: first-roll prompt should use warm red/orange glow, not the old baby-blue/cyan outline ${JSON.stringify({ firstRollPromptAccentText, activeLayout })}`);
+      assert(/13,\s*108,\s*59/.test(firstRollPromptAccentText) && /255,\s*214,\s*25/.test(firstRollPromptAccentText) && !/(43,\s*219,\s*255|0,\s*229,\s*255|0,\s*255,\s*255)/i.test(firstRollPromptAccentText) && !/244,\s*31,\s*30/.test(firstRollPromptAccentText), `${viewport.name}: first-roll prompt should use the brand-green go glow (not cyan, not danger red per the 2026-07-08 color grammar) ${JSON.stringify({ firstRollPromptAccentText, activeLayout })}`);
       assert(activeLayout.firstRollPrompt && activeLayout.firstRollPrompt.active === true && activeLayout.firstRollPrompt.text === 'TAP TO START!' && activeLayout.firstRollPrompt.seenThisSession === false && activeLayout.firstRollPrompt.eligible === true && activeLayout.firstRollPromptBodyActive === true, `${viewport.name}: first-roll button prompt state should be armed only before the first user roll ${JSON.stringify(activeLayout.firstRollPrompt)}`);
       assert(activeLayout.p0ButtonVisible, `${viewport.name}: P-0 button not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.p1AutoButtonVisible && activeLayout.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && activeLayout.p1AutoButtonTextFits === true && activeLayout.p1AutoButtonAudienceClass === true, `${viewport.name}: AUTO PLAY button not visible, fitting, or audience-facing in viewport ${JSON.stringify(activeLayout)}`);
