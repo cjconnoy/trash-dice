@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.8';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.8';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.9';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.9';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
@@ -4631,10 +4631,10 @@ async function main() {
         assert(roundWinEarly.titleFanfareActive === true, `yellow round-win probe: player round should still pulse the title logo ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinnerStatusSuppressChaseDie === true, `yellow round-win probe: unlock round should suppress the lower winner-pill chase die ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.statusChaseDieVisible === false && roundWinEarly.statusChaseDieName === '', `yellow round-win probe: unlock round should not show the next chase die in the lower winner pill ${JSON.stringify({ rewardSecond, roundWinEarly })}`);
-        assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes('ROUND') && roundWinEarly.roundWinBurstText.includes('WINNER'), `yellow round-win probe: ROUND WINNER burst missing ${JSON.stringify(roundWinEarly)}`);
+        assert(roundWinEarly.roundWinBurstVisible === true && roundWinEarly.roundWinBurstText.includes("YOU'RE THE ROUND WINNER!"), `yellow round-win probe: explicit player round-winner burst missing ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstRewardTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstRewardName === rewardFirst.name, `yellow round-win probe: first round win should attach first active reward to burst ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
-        assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === rewardFirst.name && roundWinEarly.roundWinBurstDieEffect === rewardFirst.effect, `yellow round-win probe: ROUND WINNER burst should show the reward die visual ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
-        assert(roundWinEarly.roundWinBurstPreviewTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstPreviewName === rewardFirst.name, `yellow round-win probe: ROUND WINNER burst preview metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
+        assert(roundWinEarly.roundWinBurstDieVisible === true && roundWinEarly.roundWinBurstDieName === rewardFirst.name && roundWinEarly.roundWinBurstDieEffect === rewardFirst.effect, `yellow round-win probe: explicit round-winner burst should show the reward die visual ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
+        assert(roundWinEarly.roundWinBurstPreviewTier === String(rewardFirst.tier) && roundWinEarly.roundWinBurstPreviewName === rewardFirst.name, `yellow round-win probe: explicit round-winner burst preview metadata wrong ${JSON.stringify({ rewardFirst, roundWinEarly })}`);
         assert(roundWinEarly.roundWinBurstClassName.includes('is-endless-windup') && roundWinEarly.roundWinBurstEndlessRoundWins === '1' && roundWinEarly.roundWinBurstEndlessWindupStart === '0' && roundWinEarly.roundWinBurstEndlessWindupCurrent === '0' && roundWinEarly.roundWinBurstEndlessWindupComplete === 'false' && /x0\s+ROUND WIN/.test(roundWinEarly.roundWinBurstText), `yellow round-win probe: reward burst should start the round-wins fanfare from zero ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstCountText === 'x0' && /11,\s*92,\s*49/.test(roundWinEarly.roundWinBurstCountColor) && !/255,\s*255,\s*255/.test(roundWinEarly.roundWinBurstCountColor) && parseFloat(roundWinEarly.roundWinBurstCountFontSize || '0') >= 20 && parseFloat(roundWinEarly.roundWinBurstCountStrokeWidth || '0') > 0 && roundWinEarly.roundWinBurstCountTextShadow !== 'none', `yellow round-win probe: round-win count should stay high-contrast on the cream pill ${JSON.stringify(roundWinEarly)}`);
         assert(roundWinEarly.roundWinBurstText.includes('DIE SKIN UNLOCKED'), `yellow round-win probe: reward burst should preserve die skin unlock copy alongside the round-wins fanfare ${JSON.stringify(roundWinEarly)}`);
@@ -4682,7 +4682,7 @@ async function main() {
       })()`);
         assert(delayedRewardDie.visible === true && delayedRewardDie.tier === String(rewardFirst.tier) && delayedRewardDie.name === rewardFirst.name, `yellow round-win probe: delayed first reward die reveal missing ${JSON.stringify({ rewardFirst, roundWinEarly, delayedRewardDie })}`);
         assert(delayedRewardDie.sub === 'DIE SKIN UNLOCKED', `yellow round-win probe: delayed reward reveal should include die skin unlocked subtitle ${JSON.stringify(delayedRewardDie)}`);
-        assert(delayedRewardDie.layout === 'round-win-companion' && delayedRewardDie.hasGap === true && delayedRewardDie.clearsRoll === true, `yellow round-win probe: delayed reward reveal should dock between ROUND WINNER and Roll without overlap ${JSON.stringify(delayedRewardDie)}`);
+        assert(delayedRewardDie.layout === 'round-win-companion' && delayedRewardDie.hasGap === true && delayedRewardDie.clearsRoll === true, `yellow round-win probe: delayed reward reveal should dock between the explicit round-winner burst and Roll without overlap ${JSON.stringify(delayedRewardDie)}`);
         assert((delayedRewardDie.scrimMaskImage === 'none' || delayedRewardDie.scrimMaskImage === '') && (parseFloat(delayedRewardDie.scrimBottom || '0') || 0) === 0, `yellow round-win probe: reward scrim should cover the full viewport with no bottom feather gap ${JSON.stringify(delayedRewardDie)}`);
       }
       await sleep(Math.max(0, Math.min(roundWinEarly.fanfareDuration + 120, roundWinEarly.winnerStatusDuration - 120) - roundWinProbeElapsedMs));
