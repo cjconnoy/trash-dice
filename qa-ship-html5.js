@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.16';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.16';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.17';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.17';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1346,7 +1346,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes("sfxCtx(playerRoll ? 'rollLoopPlayer' : 'rollLoop')"), 'player roll loop SFX should use the brighter player profile while CPU keeps the original profile');
   assert(source.includes("sfxCtx(playerRoll ? 'rollResolvePlayer' : 'rollResolve')"), 'player roll resolve SFX should use the brighter player profile while CPU keeps the original profile');
   assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
-  assert(source.includes('else if (humanGestureRoll) showPlayerRollCue();'), 'manual player rolls must show the player roll cue');
+  assert(source.includes('else if (playerVisualRoll) showPlayerRollCue();'), 'player rolls (manual or autoplay) must show the player roll cue');
   assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
   assert(source.includes('.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]') && source.includes('grid-template-columns: 40px minmax(0, 1fr);'), 'current-game featured die card must keep a fixed mobile thumbnail lane');
 }
