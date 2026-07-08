@@ -1002,8 +1002,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.6';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.6';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.7';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.7';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
@@ -4265,6 +4265,7 @@ async function main() {
       badgeText: (document.querySelector('.milestone-badge') || {}).textContent || '',
       betaWipCopyPresent: document.body.textContent.includes('BETA WIP') || document.body.textContent.includes('NOT LIVE'),
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      beatGameDebugEnabled: document.body.classList.contains('beat-game-debug-enabled'),
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonHidden: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display === 'none' : false,
@@ -4282,13 +4283,14 @@ async function main() {
       })()
     }))()`);
     assert(publicInitial.badgeText.trim() === '' && publicInitial.betaWipCopyPresent === false, `public probe: beta badge/copy should be absent ${JSON.stringify(publicInitial)}`);
-    assert(publicInitial.debugControlsEnabled === false && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicInitial.p1AutoButtonAudienceClass === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: hidden pre-play controls should include the audience-facing AUTO PLAY control while reward review is armed ${JSON.stringify(publicInitial)}`);
+    assert(publicInitial.debugControlsEnabled === false && publicInitial.beatGameDebugEnabled === true && publicInitial.rewardReviewEnabled === true && publicInitial.p0ButtonHidden === true && publicInitial.p1AutoButtonHidden === true && publicInitial.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicInitial.p1AutoButtonAudienceClass === true && publicInitial.rewardButtonHidden === true && publicInitial.discoButtonHidden === true && publicInitial.outcomeButtonsHidden === true, `public probe: hidden pre-play controls should include the audience-facing AUTO PLAY control while reward review is armed ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.qaHooksPresent === false, `public probe: QA hooks should not install without qa/qa-hooks ${JSON.stringify(publicInitial)}`);
     assert(publicInitial.guidanceVisible === false, `public probe: legacy guidance should not show on desktop ${JSON.stringify(publicInitial)}`);
     await evalValue(publicProbe, `document.getElementById('startBtn').click(); true`);
     await waitEval(publicProbe, `document.body.dataset.gameStarted === 'true' && !document.getElementById('rollBtn').disabled`, 'public probe game start');
     const publicActive = await evalValue(publicProbe, `(() => ({
       debugControlsEnabled: document.body.classList.contains('debug-controls-enabled'),
+      beatGameDebugEnabled: document.body.classList.contains('beat-game-debug-enabled'),
       rewardReviewEnabled: document.body.classList.contains('reward-review-enabled'),
       p0ButtonHidden: document.getElementById('devP0Btn') ? getComputedStyle(document.getElementById('devP0Btn')).display === 'none' : false,
       p1AutoButtonVisible: document.getElementById('devP1AutoBtn') ? getComputedStyle(document.getElementById('devP1AutoBtn')).display !== 'none' : false,
@@ -4297,10 +4299,31 @@ async function main() {
       rewardButtonVisible: document.getElementById('devRewardDieBtn') ? getComputedStyle(document.getElementById('devRewardDieBtn')).display !== 'none' : false,
       discoButtonVisible: document.getElementById('devDiscoBtn') ? getComputedStyle(document.getElementById('devDiscoBtn')).display !== 'none' : false,
       outcomeButtonsHidden: document.getElementById('debugOutcomeControls') ? getComputedStyle(document.getElementById('debugOutcomeControls')).display === 'none' : false,
+      beatButtonVisible: document.getElementById('devBeatGameBtn') ? getComputedStyle(document.getElementById('devBeatGameBtn')).display !== 'none' : false,
+      beatButtonText: document.getElementById('devBeatGameBtn') ? document.getElementById('devBeatGameBtn').textContent.trim() : '',
+      winButtonVisible: document.getElementById('devWinBtn') ? getComputedStyle(document.getElementById('devWinBtn')).display !== 'none' : false,
+      loseButtonVisible: document.getElementById('devLoseBtn') ? getComputedStyle(document.getElementById('devLoseBtn')).display !== 'none' : false,
       gameStarted: document.body.dataset.gameStarted === 'true'
     }))()`);
     assert(publicActive.gameStarted === true, `public probe: game did not start ${JSON.stringify(publicActive)}`);
-    assert(publicActive.debugControlsEnabled === false && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === false && publicActive.discoButtonVisible === false && publicActive.outcomeButtonsHidden === true, `public probe: AUTO PLAY should show while DIE/DISCO debug buttons stay hidden during public play ${JSON.stringify(publicActive)}`);
+    assert(publicActive.debugControlsEnabled === false && publicActive.beatGameDebugEnabled === true && publicActive.rewardReviewEnabled === true && publicActive.p0ButtonHidden === true && publicActive.p1AutoButtonVisible === true && publicActive.p1AutoButtonText === AUTO_PLAY_IDLE_LABEL && publicActive.p1AutoButtonAudienceClass === true && publicActive.rewardButtonVisible === false && publicActive.discoButtonVisible === false && publicActive.outcomeButtonsHidden === false && publicActive.beatButtonVisible === true && publicActive.beatButtonText === 'BEAT' && publicActive.winButtonVisible === false && publicActive.loseButtonVisible === false, `public probe: AUTO PLAY and default BEAT should show while WIN/LOSE/DIE/DISCO debug controls stay hidden during public play ${JSON.stringify(publicActive)}`);
+    await evalValue(publicProbe, `document.getElementById('devBeatGameBtn').click(); true`);
+    await waitEval(publicProbe, `(() => {
+      const title = document.getElementById('inlineResultTitle');
+      return title && title.textContent.replace(/\\s+/g, ' ').trim() === 'YOU BEAT THE GAME!';
+    })()`, 'public probe default BEAT capstone');
+    const publicBeatCapstone = await evalValue(publicProbe, `(() => {
+      const title = document.getElementById('inlineResultTitle');
+      const sub = document.getElementById('inlineResultSub');
+      const roll = document.getElementById('rollBtn');
+      return {
+        title: title ? title.textContent.replace(/\\s+/g, ' ').trim() : '',
+        sub: sub ? sub.textContent.replace(/\\s+/g, ' ').trim() : '',
+        rollText: roll ? roll.textContent.replace(/\\s+/g, ' ').trim() : '',
+        qaHooksPresent: !!window.TrashDiceQA
+      };
+    })()`);
+    assert(publicBeatCapstone.title === 'YOU BEAT THE GAME!' && publicBeatCapstone.sub === 'You unlocked every die. How many more rounds can you win?' && publicBeatCapstone.rollText.includes('KEEP PLAYING!') && publicBeatCapstone.qaHooksPresent === false, `public probe: default BEAT should trigger capstone without QA hooks ${JSON.stringify(publicBeatCapstone)}`);
 
     const p0Probe = await openPage(`${baseUrl}?source=qa&qa=1`, viewports[0]);
     await evalValue(p0Probe, `document.getElementById('startBtn').click(); true`);
