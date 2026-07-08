@@ -1002,9 +1002,10 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.9';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.9';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.10';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.10';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
+const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
 const AUTO_PLAY_ON_LABEL = 'AUTO ON';
 const RETIRED_VIBES_COPY = ['COSMIC', 'VIBES'].join(' ');
@@ -1202,6 +1203,8 @@ function assertStaticShipSourceScan() {
   assert(source.includes('Audio.rollResolve(value, rollAudioProfile)'), 'roll resolve SFX must receive the captured player/CPU profile');
   assert(source.includes("sfxCtx(playerRoll ? 'rollLoopPlayer' : 'rollLoop')"), 'player roll loop SFX should use the brighter player profile while CPU keeps the original profile');
   assert(source.includes("sfxCtx(playerRoll ? 'rollResolvePlayer' : 'rollResolve')"), 'player roll resolve SFX should use the brighter player profile while CPU keeps the original profile');
+  assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
+  assert(source.includes('else if (humanGestureRoll) showPlayerRollCue();'), 'manual player rolls must show the player roll cue');
 }
 
 async function main() {
@@ -2118,9 +2121,14 @@ async function main() {
       const rollPanelHitReset = await evalValue(rollPanelHitPage, `window.TrashDiceQA.state().firstRollPrompt`);
       assert(rollPanelHitReset.active === false && rollPanelHitReset.text === 'ROLL!' && rollPanelHitReset.ariaLabel === 'Roll yellow die' && rollPanelHitReset.seenThisSession === true && rollPanelHitReset.eligible === false && rollPanelHitReset.dismissReason === 'first-user-roll', `${viewport.name}: first-roll button prompt should not return after a same-session new game reset ${JSON.stringify(rollPanelHitReset)}`);
       const manualPlaceHandoff = await evalValue(rollPanelHitPage, `window.TrashDiceQA.playerHandoffProbe(2, 'place')`);
+      const manualRollCueMinWidth = viewport.mobile ? CPU_ROLL_CUE_MIN_WIDTH_PX.mobile : CPU_ROLL_CUE_MIN_WIDTH_PX.desktop;
       assert(manualPlaceHandoff.expectedHandoffMs <= 180 && manualPlaceHandoff.handoffMs <= manualPlaceHandoff.expectedHandoffMs + 140 && manualPlaceHandoff.cpuResponseMs <= manualPlaceHandoff.expectedCpuResponseMs + 180 && manualPlaceHandoff.totalToCpuRollMs <= manualPlaceHandoff.expectedHandoffMs + manualPlaceHandoff.expectedCpuResponseMs + 260 && manualPlaceHandoff.praiseActive === true && manualPlaceHandoff.praiseText, `${viewport.name}: manual player place should hand off to CPU promptly while praise remains visible ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.playerRollCueSeen === true && manualPlaceHandoff.playerRollCueDuringBusy === true && manualPlaceHandoff.playerRollCueText === PLAYER_ROLL_CUE_TEXT, `${viewport.name}: manual player roll should show the YOU ARE ROLLING overlay during the player's roll ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.playerRollCueSnapshot && manualPlaceHandoff.playerRollCueSnapshot.playerCue === true && manualPlaceHandoff.playerRollCueSnapshot.rollCueKind === 'player', `${viewport.name}: manual player roll overlay should use the player color mode ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.playerRollCueSnapshot && manualPlaceHandoff.playerRollCueSnapshot.rect && manualPlaceHandoff.playerRollCueSnapshot.rect.width >= manualRollCueMinWidth, `${viewport.name}: YOU ARE ROLLING overlay should be wide enough to span the board and trash can cluster ${JSON.stringify(manualPlaceHandoff)}`);
+      assert(manualPlaceHandoff.playerRollCueSnapshot && manualPlaceHandoff.playerRollCueSnapshot.whiteSpace === 'nowrap' && manualPlaceHandoff.playerRollCueSnapshot.fitsText === true, `${viewport.name}: YOU ARE ROLLING overlay text should fit on one line ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.cpuRollCueSeen === true && manualPlaceHandoff.cpuRollCueDuringBusy === true && manualPlaceHandoff.cpuRollCueText === CPU_ROLL_CUE_TEXT, `${viewport.name}: manual player handoff should show the CPU IS ROLLING overlay over the CPU roll ${JSON.stringify(manualPlaceHandoff)}`);
-      assert((manualPlaceHandoff.cpuRollCueSnapshot && manualPlaceHandoff.cpuRollCueSnapshot.rect && manualPlaceHandoff.cpuRollCueSnapshot.rect.width >= (viewport.mobile ? CPU_ROLL_CUE_MIN_WIDTH_PX.mobile : CPU_ROLL_CUE_MIN_WIDTH_PX.desktop)), `${viewport.name}: CPU ROLL overlay should be wide enough to span the board and trash can cluster ${JSON.stringify(manualPlaceHandoff)}`);
+      assert((manualPlaceHandoff.cpuRollCueSnapshot && manualPlaceHandoff.cpuRollCueSnapshot.rect && manualPlaceHandoff.cpuRollCueSnapshot.rect.width >= manualRollCueMinWidth), `${viewport.name}: CPU ROLL overlay should be wide enough to span the board and trash can cluster ${JSON.stringify(manualPlaceHandoff)}`);
       assert(manualPlaceHandoff.cpuRollCueSnapshot && manualPlaceHandoff.cpuRollCueSnapshot.whiteSpace === 'nowrap' && manualPlaceHandoff.cpuRollCueSnapshot.fitsText === true, `${viewport.name}: CPU IS ROLLING overlay text should fit on one line ${JSON.stringify(manualPlaceHandoff)}`);
       await send('Target.closeTarget', { targetId: rollPanelHitPage.targetId });
       if (viewport.mobile && viewport.width > 720) {

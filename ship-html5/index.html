@@ -6336,6 +6336,19 @@ body.inline-game-over [role="button"] {
   contain: layout style paint;
   will-change: transform, opacity;
 }
+.cpu-roll-cue.player-roll-cue {
+  border-color: rgba(7,113,59,0.94);
+  background: linear-gradient(180deg, #fff477 0%, #ffd429 54%, #e19103 100%);
+  color: #08713b;
+  text-shadow:
+    0 2px 0 rgba(255,255,255,0.9),
+    0 5px 0 #df3325,
+    0 7px 8px rgba(0,0,0,0.3);
+  box-shadow:
+    0 7px 0 rgba(132,80,0,0.56),
+    0 0 0 3px rgba(7,113,59,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.58);
+}
 .cpu-roll-cue.show {
   animation: cpuRollCuePop 0.42s cubic-bezier(.12,.88,.16,1) both;
 }
@@ -6349,6 +6362,12 @@ body.mobile-roll-smoothing .cpu-roll-cue {
     0 5px 0 rgba(4,54,30,0.55),
     0 0 0 2px rgba(5,102,53,0.38),
     inset 0 1px 0 rgba(255,255,255,0.26);
+}
+body.mobile-roll-smoothing .cpu-roll-cue.player-roll-cue {
+  box-shadow:
+    0 5px 0 rgba(132,80,0,0.54),
+    0 0 0 2px rgba(7,113,59,0.38),
+    inset 0 1px 0 rgba(255,255,255,0.52);
 }
 body.legacy-ipad-performance .cpu-roll-cue {
   font-size: 2.1rem;
@@ -11866,7 +11885,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.9';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.10';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -12060,6 +12079,8 @@ body.inline-game-over .roll-panel {
   const BETA_FIRST_ROLL_RESULT_HOLD_MS = FAST_PREVIEW_ENABLED ? 420 : 620;
   const CPU_RESPONSE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 160 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 220 : 500);
   const CPU_ROLL_CUE_MIN_VISIBLE_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 620 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 760 : (FAST_PREVIEW_ENABLED ? 840 : 1150));
+  const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
+  const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
   const P0_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 190 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 240 : (FAST_PREVIEW_ENABLED ? 170 : 720));
   const P1_AUTOPLAY_MS = LEGACY_IPAD_PERFORMANCE_MODE ? 220 : (IPAD_GAMEPLAY_PERFORMANCE_MODE ? 260 : (FAST_PREVIEW_ENABLED ? 190 : 680));
   const GAME_RESULT_LOSS_AUTO_ADVANCE_MS = 4000;
@@ -13407,18 +13428,30 @@ body.inline-game-over .roll-panel {
   const canLoadPile = document.getElementById('canLoadPile');
   const boardScene  = document.querySelector('.board-scene');
   const cpuRollCue  = document.getElementById('cpuRollCue');
-  function showCpuRollCue() {
+  function showRollCue(kind = 'cpu') {
     if (!cpuRollCue || betaMultiplayerActive) return;
+    const cueKind = kind === 'player' ? 'player' : 'cpu';
+    const previousKind = cpuRollCue.dataset.rollCueKind || '';
+    const alreadyShowingSameCue = !cpuRollCue.hidden && cpuRollCue.classList.contains('show') && previousKind === cueKind;
     if (cpuRollCueTimer) {
       cancelRuntimeTimer(cpuRollCueTimer);
       cpuRollCueTimer = null;
     }
+    cpuRollCue.textContent = cueKind === 'player' ? PLAYER_ROLL_CUE_TEXT : CPU_ROLL_CUE_TEXT;
+    cpuRollCue.dataset.rollCueKind = cueKind;
+    cpuRollCue.classList.toggle('player-roll-cue', cueKind === 'player');
     cpuRollCue.hidden = false;
     cpuRollCue.setAttribute('aria-hidden', 'false');
-    if (cpuRollCue.classList.contains('show')) return;
+    if (alreadyShowingSameCue) return;
     cpuRollCue.classList.remove('show');
     void cpuRollCue.offsetWidth;
     cpuRollCue.classList.add('show');
+  }
+  function showCpuRollCue() {
+    showRollCue('cpu');
+  }
+  function showPlayerRollCue() {
+    showRollCue('player');
   }
   function hideCpuRollCue() {
     if (!cpuRollCue) return;
@@ -13427,6 +13460,8 @@ body.inline-game-over .roll-panel {
       cpuRollCueTimer = null;
     }
     cpuRollCue.classList.remove('show');
+    cpuRollCue.classList.remove('player-roll-cue');
+    delete cpuRollCue.dataset.rollCueKind;
     cpuRollCue.hidden = true;
     cpuRollCue.setAttribute('aria-hidden', 'true');
   }
@@ -19199,6 +19234,7 @@ body.inline-game-over .roll-panel {
     if (humanGestureRoll) dismissFirstRollPrompt('first-user-roll');
     clearRoundWinAfterglowForRoll();
     if (cpuVisualRoll) showCpuRollCue();
+    else if (humanGestureRoll) showPlayerRollCue();
     else hideCpuRollCue();
     busy = true;
     rollBtn.disabled = true;
@@ -19256,7 +19292,7 @@ body.inline-game-over .roll-panel {
       const idx   = value - 1;
       const taken = board[idx] !== null;
       setMsg(`ROLLED ${value}`);
-      if (cpuVisualRoll) scheduleCpuRollCueHide();
+      if (cpuVisualRoll || humanGestureRoll) scheduleCpuRollCueHide();
       runLater(() => {
         if (IPAD_GAMEPLAY_PERFORMANCE_MODE) {
           clearDie(current);
@@ -19921,6 +19957,8 @@ body.inline-game-over .roll-panel {
         visible,
         text: cue.textContent.trim(),
         hidden: cue.hidden,
+        rollCueKind: cue.dataset.rollCueKind || '',
+        playerCue: cue.classList.contains('player-roll-cue'),
         display: style.display,
         opacity: Math.round(opacity * 100) / 100,
         whiteSpace: style.whiteSpace,
@@ -21515,13 +21553,24 @@ body.inline-game-over .roll-panel {
           let cpuRollCueDuringBusy = false;
           let cpuRollCueText = '';
           let cpuRollCueSnapshot = null;
+          let playerRollCueSeen = false;
+          let playerRollCueDuringBusy = false;
+          let playerRollCueText = '';
+          let playerRollCueSnapshot = null;
           const timeout = runLater(() => {
-            reject(new Error(`timeout CPU roll start after player ${JSON.stringify({ current, busy, rollDisabled: rollBtn.disabled, totalRolls, playerCompleted: !!playerCompletedAt, cpuHandoff: !!cpuHandoffAt, completionMessage, cpuRollCueSeen, cpuRollCueDuringBusy, cpuRollCueText, cpuRollCueSnapshot, events: events.slice(-18) })}`));
+            reject(new Error(`timeout CPU roll start after player ${JSON.stringify({ current, busy, rollDisabled: rollBtn.disabled, totalRolls, playerCompleted: !!playerCompletedAt, cpuHandoff: !!cpuHandoffAt, completionMessage, playerRollCueSeen, playerRollCueDuringBusy, playerRollCueText, playerRollCueSnapshot, cpuRollCueSeen, cpuRollCueDuringBusy, cpuRollCueText, cpuRollCueSnapshot, events: events.slice(-18) })}`));
           }, 7000);
           const tick = () => {
             const message = document.getElementById('message').textContent.trim();
             const cue = qaCpuRollCueSnapshot();
+            const playerRollActive = current === 'p1' && busy && totalRolls === startingRolls + 1;
             const cpuRollActive = current === 'p2' && busy && totalRolls >= startingRolls + 2;
+            if (playerRollActive && (cue.visible || !cue.hidden)) {
+              playerRollCueSeen = playerRollCueSeen || cue.visible;
+              playerRollCueDuringBusy = playerRollCueDuringBusy || (playerRollActive && cue.visible);
+              playerRollCueText = cue.text || playerRollCueText;
+              playerRollCueSnapshot = cue;
+            }
             if (current === 'p2' && (cue.visible || !cue.hidden)) {
               cpuRollCueSeen = cpuRollCueSeen || cue.visible;
               cpuRollCueDuringBusy = cpuRollCueDuringBusy || (cpuRollActive && cue.visible);
@@ -21559,6 +21608,10 @@ body.inline-game-over .roll-panel {
                 totalToCpuRollMs: Math.round(performance.now() - playerCompletedAt),
                 handoffMs: Math.round(cpuHandoffAt - playerCompletedAt),
                 cpuResponseMs: Math.round(performance.now() - cpuHandoffAt),
+                playerRollCueSeen,
+                playerRollCueDuringBusy,
+                playerRollCueText,
+                playerRollCueSnapshot,
                 cpuRollCueSeen,
                 cpuRollCueDuringBusy,
                 cpuRollCueText,
