@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.11';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.11';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260707.12';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260707.12';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1345,6 +1345,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
   assert(source.includes('else if (humanGestureRoll) showPlayerRollCue();'), 'manual player rolls must show the player roll cue');
   assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
+  assert(source.includes('.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]') && source.includes('grid-template-columns: 40px minmax(0, 1fr);'), 'current-game featured die card must keep a fixed mobile thumbnail lane');
 }
 
 async function main() {
@@ -2520,19 +2521,31 @@ async function main() {
       const beatDebugNextGame = await evalValue(beatDebugPage, `(() => {
         const shell = document.getElementById('terminalRewardNudge');
         const die = document.getElementById('terminalRewardNudgeDie');
+        const copy = shell ? shell.querySelector('.terminal-reward-copy') : null;
         const style = shell ? getComputedStyle(shell) : null;
         const rect = shell ? shell.getBoundingClientRect() : null;
+        const dieRect = die ? die.getBoundingClientRect() : null;
+        const copyRect = copy ? copy.getBoundingClientRect() : null;
+        const unlock = document.getElementById('terminalRewardNudgeUnlock');
+        const unlockStyle = unlock ? getComputedStyle(unlock) : null;
+        const unlockRect = unlock ? unlock.getBoundingClientRect() : null;
+        const unlockLineHeight = unlockStyle ? (Number.parseFloat(unlockStyle.lineHeight || '0') || Number.parseFloat(unlockStyle.fontSize || '0') || 0) : 0;
         return {
           state: window.TrashDiceQA.rewardDieState(),
           skin: window.TrashDiceQA.rewardSkinProbe(),
           nudge: {
             visible: !!(shell && !shell.hidden && style && style.display !== 'none' && rect && rect.width >= 160 && rect.height >= 48),
             rect: rect ? { width: Math.round(rect.width), height: Math.round(rect.height), top: Math.round(rect.top), left: Math.round(rect.left) } : null,
+            dieRect: dieRect ? { width: Math.round(dieRect.width), height: Math.round(dieRect.height), top: Math.round(dieRect.top), left: Math.round(dieRect.left), right: Math.round(dieRect.right) } : null,
+            copyRect: copyRect ? { width: Math.round(copyRect.width), height: Math.round(copyRect.height), top: Math.round(copyRect.top), left: Math.round(copyRect.left), right: Math.round(copyRect.right) } : null,
+            dieToCopyGap: dieRect && copyRect ? Math.round(copyRect.left - dieRect.right) : null,
+            unlockLineCount: unlockRect && unlockLineHeight ? Math.ceil(unlockRect.height / unlockLineHeight) : null,
+            displayMode: style ? style.display : '',
             display: style ? style.display : '',
             text: shell ? shell.textContent.replace(/\\s+/g, ' ').trim() : '',
             kicker: (document.getElementById('terminalRewardNudgeKicker') || {}).textContent || '',
             line: (document.getElementById('terminalRewardNudgeLine') || {}).textContent || '',
-            unlock: (document.getElementById('terminalRewardNudgeUnlock') || {}).textContent || '',
+            unlock: unlock ? unlock.textContent || '' : '',
             copyMode: shell ? shell.dataset.copyMode || '' : '',
             featuredMode: shell ? shell.dataset.featuredMode || '' : '',
             dieName: die ? die.dataset.rewardName || '' : '',
@@ -2541,6 +2554,9 @@ async function main() {
         };
       })()`);
       assert(beatDebugNextGame.state.postBeatRandomActive === true && beatDebugNextGame.skin.activePlayerDie && beatDebugNextGame.skin.activePlayerDie.name === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.visible === true && beatDebugNextGame.nudge.kicker === 'Featured Die This Game:' && beatDebugNextGame.nudge.line === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.unlock === 'Trash the CPU to Reroll Featured Die' && beatDebugNextGame.nudge.featuredMode === 'current-game' && beatDebugNextGame.nudge.dieName === beatDebug.rewardState.postBeatRandomDie.name && beatDebugNextGame.nudge.dieSkinned === true, `${viewport.name}: beat-game debug button should reveal the featured die on the next game ${JSON.stringify({ beatDebug, beatDebugNextGame })}`);
+      assert(beatDebugNextGame.nudge.displayMode === 'grid' && beatDebugNextGame.nudge.dieToCopyGap >= (viewport.mobile ? 9 : 8) && beatDebugNextGame.nudge.copyRect.left > beatDebugNextGame.nudge.dieRect.right, `${viewport.name}: current-game featured die copy should clear the preview die shadow lane ${JSON.stringify(beatDebugNextGame.nudge)}`);
+      assert(!viewport.mobile || beatDebugNextGame.nudge.unlockLineCount <= 2, `${viewport.name}: mobile current-game featured die card should keep the reroll copy to two readable lines ${JSON.stringify(beatDebugNextGame.nudge)}`);
+      assert(!(viewport.mobile && viewport.width <= 480) || beatDebugNextGame.nudge.dieRect.width <= 42, `${viewport.name}: narrow mobile current-game featured die card should keep the thumbnail compact ${JSON.stringify(beatDebugNextGame.nudge)}`);
       const postBeatFeaturedPlayerRollPerf = await evalValue(beatDebugPage, postBeatFeaturedPlayerRollPerfProbeScript(viewport.mobile ? 420 : 520));
       assertPostBeatFeaturedPlayerRollPerfProbe(viewport.name, postBeatFeaturedPlayerRollPerf);
       await send('Target.closeTarget', { targetId: beatDebugPage.targetId });

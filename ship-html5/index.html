@@ -4367,12 +4367,15 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
   animation: terminalRewardDieFlash 0.82s steps(2, end) infinite;
 }
 .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] {
+  display: grid;
+  grid-template-columns: clamp(38px, 8.2vw, 50px) minmax(0, 1fr);
   align-self: stretch;
+  align-items: center;
   box-sizing: border-box;
   width: 100%;
   min-height: clamp(58px, 12vw, 72px);
   flex: 0 0 auto;
-  gap: clamp(0.42rem, 1.4vw, 0.62rem);
+  gap: clamp(0.58rem, 2.3vw, 0.82rem);
   margin: 0;
   padding: clamp(0.34rem, 1.1vw, 0.48rem) clamp(0.5rem, 1.8vw, 0.72rem);
   border-width: 2px;
@@ -4387,13 +4390,23 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
   animation: none;
 }
 .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .reward-nudge-die {
-  flex-basis: clamp(42px, 9.4vw, 56px);
-  width: clamp(42px, 9.4vw, 56px);
-  height: clamp(42px, 9.4vw, 56px);
-  padding: clamp(6px, 1.25vw, 8px);
+  justify-self: center;
+  flex-basis: auto;
+  width: clamp(38px, 8.2vw, 50px);
+  height: clamp(38px, 8.2vw, 50px);
+  padding: clamp(5px, 1vw, 7px);
+  box-shadow:
+    2px 3px 0 var(--reward-edge),
+    4px 5px 0 rgba(0,0,0,0.2),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
   animation: none;
 }
 .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-copy {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: clamp(0.06rem, 0.7vw, 0.18rem);
   gap: clamp(0.02rem, 0.26vw, 0.08rem);
 }
 .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-kicker {
@@ -4403,9 +4416,36 @@ body.inline-game-over .terminal-reward-nudge .reward-nudge-die {
   font-size: clamp(0.74rem, 2.28vw, 0.96rem);
 }
 .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-unlock {
-  font-size: clamp(0.6rem, 1.72vw, 0.78rem);
+  font-size: clamp(0.56rem, 1.35vw, 0.68rem);
+  line-height: 0.98;
   color: #fff7a8;
   animation: none;
+}
+@media (max-width: 480px) {
+  .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 0.62rem;
+    padding: 0.31rem 0.46rem;
+  }
+  .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .reward-nudge-die {
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    box-shadow:
+      2px 2px 0 var(--reward-edge),
+      3px 4px 0 rgba(0,0,0,0.18),
+      inset 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-kicker {
+    font-size: 0.58rem;
+  }
+  .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-line {
+    font-size: 0.72rem;
+  }
+  .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .terminal-reward-unlock {
+    font-size: 0.56rem;
+    line-height: 0.96;
+  }
 }
 body.post-beat-featured-current .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .die.reward-skinned,
 body.post-beat-featured-current .roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"] .die.reward-skinned::before,
@@ -11893,7 +11933,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-dev-20260707.11';
+  const TD_SHIP_VERSION = 'td-retail-dev-20260707.12';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
