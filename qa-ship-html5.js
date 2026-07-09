@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260708.23';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260708.23';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260709.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260709.1';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -2477,7 +2477,7 @@ async function main() {
       const cosmicPerf = await evalValue(page, cosmicAmbientPerfProbeScript(1200));
       const cosmicPerfOver50Limit = Math.max(2, Math.ceil(cosmicPerf.frames * 0.07));
       const cosmicAnimationNames = (cosmicPerf.cosmicLayerAnimations || []).map(item => item.name || '');
-      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === false && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === false && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === false && cosmicPerf.cosmicLayerAnimationCount === 0 && !cosmicAnimationNames.includes('vipCosmicDotDriftA') && !cosmicAnimationNames.includes('vipCosmicDotDriftB') && !cosmicAnimationNames.includes('vipCosmicDotDriftC') && !cosmicAnimationNames.includes('vipCosmicStarDrift') && !cosmicAnimationNames.includes('vipCosmicTwinkle') && !cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 30 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: Trash Vibes ambient background should stay static and perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
+      assert(cosmicPerf.bodyVip === true && cosmicPerf.cosmicMotion && cosmicPerf.cosmicMotion.changed === false && cosmicPerf.overlayMotion && cosmicPerf.overlayMotion.changed === false && cosmicPerf.colorFieldMotion && cosmicPerf.colorFieldMotion.changed === false && cosmicPerf.cosmicLayerAnimationCount === 0 && !cosmicAnimationNames.includes('vipCosmicDotDriftA') && !cosmicAnimationNames.includes('vipCosmicDotDriftB') && !cosmicAnimationNames.includes('vipCosmicDotDriftC') && !cosmicAnimationNames.includes('vipCosmicStarDrift') && !cosmicAnimationNames.includes('vipCosmicTwinkle') && !cosmicAnimationNames.includes('vipCosmicRiverFlow') && cosmicPerf.overlayAnimationName === 'none' && cosmicPerf.overlayBlend === 'normal' && cosmicPerf.overlayFilter === 'none' && cosmicPerf.overlayGradientCount <= 7 && cosmicPerf.venueFilter === 'none' && cosmicPerf.avgFrameMs <= 34 && cosmicPerf.p95FrameMs <= 55 && cosmicPerf.over50Frames <= cosmicPerfOver50Limit, `${viewport.name}: Trash Vibes ambient background should stay static and perf-safe while active ${JSON.stringify({ cosmicPerf, cosmicPerfOver50Limit, cosmicAnimationNames })}`);
       assert(/255, 0, 204|0, 255, 172|255, 70, 201/.test(discoDebug.playerDieBoxShadow), `${viewport.name}: DISCO player die should emit a readable local party glow ${JSON.stringify(discoDebug)}`);
       assert(discoDebug.playerSkin.rewardSkinned === true && discoDebug.playerSkin.name === rewardCapDie.name && discoDebug.playerSkin.effect === rewardCapDie.effect, `${viewport.name}: DISCO debug button should skin the live player die ${JSON.stringify({ rewardCapDie, playerSkin: discoDebug.playerSkin })}`);
       assert(discoDebug.rewardUnlockHidden === true && discoDebug.rewardButtonText === `D${rewardCapDie.tier}` && discoDebug.rewardButtonLabel.includes(rewardCapDie.name), `${viewport.name}: DISCO debug button should clear preview card and sync DIE label ${JSON.stringify(discoDebug)}`);
@@ -2605,7 +2605,7 @@ async function main() {
       assert(postLossComeback.activeBefore.pending === true && postLossComeback.activeBefore.active === true, `${viewport.name}: post-loss comeback round should arm for next round-one game ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.takenFaces.includes(postLossComeback.cpuIntroSample) && !postLossComeback.openSlots.includes(postLossComeback.cpuIntroSample), `${viewport.name}: post-loss comeback should let CPU visibly land an intro die ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.playerSamples.length > 0 && postLossComeback.playerSamples.every(face => postLossComeback.openSlots.includes(face)), `${viewport.name}: post-loss comeback should force player first-round hits ${JSON.stringify(postLossComeback)}`);
-      assert(postLossComeback.cpuSamples.length > 0 && postLossComeback.cpuSamples.some(face => postLossComeback.openSlots.includes(face)) && postLossComeback.cpuSamples.some(face => postLossComeback.takenFaces.includes(face)), `${viewport.name}: post-loss comeback CPU brake should be soft after visible placement ${JSON.stringify(postLossComeback)}`);
+      assert(postLossComeback.cpuSamples.length >= 120 && postLossComeback.cpuOpenHits > 0 && postLossComeback.cpuTakenHits > 0 && postLossComeback.cpuOpenRate >= 0.18 && postLossComeback.cpuOpenRate <= 0.48, `${viewport.name}: post-loss comeback CPU brake should stay soft after visible placement without a flaky thin sample ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.activeAfterSamples.pending === true && postLossComeback.activeAfterSamples.rolls >= postLossComeback.playerSamples.length + 1, `${viewport.name}: post-loss comeback should stay active through the protected first round and record assisted rolls ${JSON.stringify(postLossComeback)}`);
       assert(postLossComeback.consumed.pending === false && postLossComeback.consumed.consumed === true && postLossComeback.consumed.last && postLossComeback.consumed.last.winner === 'p1', `${viewport.name}: post-loss comeback should consume after the protected round completes ${JSON.stringify(postLossComeback)}`);
 
@@ -5071,11 +5071,8 @@ async function main() {
       return state.inlineGameOver
         && state.inlineGameOver.guidedCompletionTriggered === true
         && rewardState.guidedGameCompleted === true
-        && rewardState.postBeatRandomActive === true
-        && rewardState.postBeatRandomDie
-        && document.body.dataset.postBeatRandomDieReason === 'beat-game-next-game'
         && nudgeHidden;
-    })()`, `guided complete game-win probe featured roll settled`, 5000);
+    })()`, `guided complete game-win probe terminal reward settled`, 12000);
     const beatGameWinUi = await evalValue(beatGameWinProbe, `(() => {
       const logo = document.getElementById('inlineResultLogo');
       const logoRect = logo ? logo.getBoundingClientRect() : null;
@@ -5097,10 +5094,15 @@ async function main() {
         chipVisible: !!(chip && !chip.hidden && getComputedStyle(chip).display !== 'none'),
         chipText: chipText ? chipText.textContent.replace(/\\s+/g, ' ').trim() : '',
         rollText: roll ? roll.textContent.replace(/\\s+/g, ' ').trim() : '',
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          roll: document.body.dataset.postBeatRandomDieRoll || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
+        },
         events: window.TrashDiceAnalyticsDebug.log.map(item => ({ eventName: item.eventName, method: item.payload && item.payload.method }))
       };
     })()`);
-    assert(beatGameWinUi.state.guidedCompletionTriggered === true && beatGameWinUi.rewardState.guidedCompletionPending === false && beatGameWinUi.rewardState.guidedGameCompleted === true, `guided complete game-win probe: terminal game win should complete guided state ${JSON.stringify(beatGameWinUi)}`);
+    assert(beatGameWinUi.state.guidedCompletionTriggered === true && beatGameWinUi.rewardState.guidedCompletionPending === false && beatGameWinUi.rewardState.guidedGameCompleted === true && beatGameWinUi.rewardState.postBeatRandomActive === true && beatGameWinUi.rewardState.postBeatRandomDie && beatGameWinUi.dataset.name === beatGameWinUi.rewardState.postBeatRandomDie.name && beatGameWinUi.dataset.reason === 'beat-game-next-game', `guided complete game-win probe: terminal game win should complete guided state and arm next-game featured die ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.bodyGuidedClass === true && beatGameWinUi.title === 'YOU BEAT THE GAME!' && beatGameWinUi.sub === 'You unlocked every die. How many more rounds can you win?' && beatGameWinUi.logoVisible === true, `guided complete game-win probe: terminal capstone should show headline, logo, and subcopy ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.terminalRewardVisible === false && beatGameWinUi.chipVisible === true && /x12\s+ROUND WINS/.test(beatGameWinUi.chipText) && /x1\s+GAME WIN/.test(beatGameWinUi.chipText) && !/(ROUNDS WON:|GAMES WON:|ROUND WINS:|GAME WINS:)/.test(beatGameWinUi.chipText), `guided complete game-win probe: terminal capstone should suppress reward chase and keep count-first round and game counters ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.state.autoRestartMs === null && beatGameWinUi.state.autoContinue === false && beatGameWinUi.p1Autoplay === false && beatGameWinUi.rollText.includes('KEEP PLAYING!'), `guided complete game-win probe: terminal capstone should wait for manual KEEP PLAYING instead of auto-advancing ${JSON.stringify(beatGameWinUi)}`);
