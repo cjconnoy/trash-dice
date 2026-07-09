@@ -1130,8 +1130,8 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260708.19';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260708.19';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-dev-20260708.20';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail DEV 20260708.20';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -5062,6 +5062,20 @@ async function main() {
     await evalValue(beatGameWinProbe, `window.TrashDiceQA.setRewardWins(12); window.TrashDiceQA.setGuidedCompletion({ pending: true, completed: false, reason: 'qa-game-win' }); window.TrashDiceQA.gameWin('p1'); true`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === true`, `guided complete game-win probe terminal capstone`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === 12`, `guided complete game-win probe round counter`, 5000);
+    await waitEval(beatGameWinProbe, `(() => {
+      const state = window.TrashDiceQA.state();
+      const rewardState = window.TrashDiceQA.rewardDieState();
+      const nudge = document.getElementById('terminalRewardNudge');
+      const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
+      const nudgeHidden = !nudge || nudge.hidden || !nudgeStyle || nudgeStyle.display === 'none';
+      return state.inlineGameOver
+        && state.inlineGameOver.guidedCompletionTriggered === true
+        && rewardState.guidedGameCompleted === true
+        && rewardState.postBeatRandomActive === true
+        && rewardState.postBeatRandomDie
+        && document.body.dataset.postBeatRandomDieReason === 'beat-game-next-game'
+        && nudgeHidden;
+    })()`, `guided complete game-win probe featured roll settled`, 5000);
     const beatGameWinUi = await evalValue(beatGameWinProbe, `(() => {
       const logo = document.getElementById('inlineResultLogo');
       const logoRect = logo ? logo.getBoundingClientRect() : null;
