@@ -1,0 +1,2 @@
+# Preserve frozen release artifacts as exact bytes for hash-based QA.
+releases/alpha-complete/*.html -text
