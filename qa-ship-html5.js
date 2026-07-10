@@ -1140,9 +1140,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.1+20260709.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail LIVE 1.0.1';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.1+20260709.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = '1.0.1';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = '1.0.1';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -2161,7 +2161,7 @@ async function main() {
             display: gameplayBuildVersionStyle.display,
             whiteSpace: gameplayBuildVersionStyle.whiteSpace,
             fontSize: Number.parseFloat(gameplayBuildVersionStyle.fontSize || '0') || 0,
-            visible: gameplayBuildVersionStyle.display !== 'none' && vr.width > 60 && vr.height > 8 && vr.left >= -1 && vr.right <= window.innerWidth + 1 && vr.top >= -1 && vr.bottom <= window.innerHeight + 1,
+            visible: gameplayBuildVersionStyle.display !== 'none' && vr.width > 20 && vr.height > 8 && vr.left >= -1 && vr.right <= window.innerWidth + 1 && vr.top >= -1 && vr.bottom <= window.innerHeight + 1,
             lowerLeft: vr.left <= Math.max(24, window.innerWidth * 0.08) && vr.top >= window.innerHeight * 0.78,
             clearsRoll: clears(vr, rr, 6),
             clearsRollPanel: clears(vr, pr, 6),
