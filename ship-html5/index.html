@@ -11490,6 +11490,7 @@ body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
 
 body.inline-game-over .terminal-reward-nudge[data-layout="player-panel-dock"] {
   transform: translate3d(-50%, -50%, 0);
+  max-width: calc(100vw - 36px);
   animation:
     terminalRewardDockedAttract 0.82s cubic-bezier(.12,.86,.16,1) infinite,
     terminalRewardAttractGlow 0.82s steps(2, end) infinite;
@@ -11993,7 +11994,7 @@ body.inline-game-over .roll-panel {
   const PLAYER_NAME = { p1: 'Player', p2: 'CPU' };
   const URL_OPTIONS = new URLSearchParams(window.location.search);
   const URL_HASH = window.location.hash.toLowerCase();
-  const TD_SHIP_VERSION = 'td-retail-live-1.0.0+20260709.5';
+  const TD_SHIP_VERSION = 'td-retail-live-1.0.1+20260709.1';
   const TD_SHIP_CHANNEL = 'phase1-html5';
   function formatTrashDiceVersion(version) {
     const devMatch = String(version).match(/^td-retail-dev-(\d{8}\.\d+)$/i);
@@ -12002,13 +12003,8 @@ body.inline-game-over .roll-panel {
     if (liveMatch) return `TD Retail LIVE ${liveMatch[1]}`;
     return String(version || '');
   }
-  function formatTrashDiceClipVersion(version) {
-    const liveMatch = String(version).match(/^td-retail-live-(\d+\.\d+\.\d+)\+(\d{8}\.\d+)$/i);
-    if (liveMatch) return `TD Retail LIVE ${liveMatch[1]}+${liveMatch[2]}`;
-    return formatTrashDiceVersion(version);
-  }
   const TD_SHIP_VERSION_LABEL = formatTrashDiceVersion(TD_SHIP_VERSION);
-  const TD_SHIP_CLIP_VERSION_LABEL = formatTrashDiceClipVersion(TD_SHIP_VERSION);
+  const TD_SHIP_CLIP_VERSION_LABEL = TD_SHIP_VERSION_LABEL;
   const ROLL_BUTTON_DEFAULT_LABEL = 'ROLL!';
   const ROLL_BUTTON_DEFAULT_ARIA_LABEL = 'Roll yellow die';
   const FIRST_ROLL_PROMPT_LABEL = 'TAP TO START!';
@@ -12148,7 +12144,7 @@ body.inline-game-over .roll-panel {
   const titleBuildVersion = document.getElementById('titleBuildVersion');
   if (titleBuildVersion) titleBuildVersion.textContent = TD_SHIP_VERSION_LABEL;
   const gameplayBuildVersion = document.getElementById('gameplayBuildVersion');
-  if (gameplayBuildVersion) gameplayBuildVersion.textContent = TD_SHIP_CLIP_VERSION_LABEL;
+  if (gameplayBuildVersion) gameplayBuildVersion.textContent = TD_SHIP_VERSION_LABEL;
   const orientationLockScreen = document.getElementById('orientationLockScreen');
   function getOrientationViewportSize() {
     const vv = window.visualViewport;
@@ -14183,16 +14179,17 @@ body.inline-game-over .roll-panel {
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || panelRect.right;
     const scrollX = window.scrollX || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
     const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const maxWidth = Math.max(0, viewportWidth - 20);
-    const minWidth = Math.min(220, maxWidth);
     const terminalAttract = el === terminalRewardNudge && document.body.classList.contains('inline-game-over');
+    const edgeInset = terminalAttract ? 18 : 10;
+    const maxWidth = Math.max(0, viewportWidth - edgeInset * 2);
+    const minWidth = Math.min(220, maxWidth);
     const inset = panelRect.width >= 520 ? 18 : 12;
     const widthBonus = terminalAttract ? Math.min(38, Math.max(16, panelRect.width * 0.045)) : 0;
     const width = clamp(panelRect.width - inset + widthBonus, minWidth, maxWidth);
     const minHeight = Math.max(terminalAttract ? 70 : 58, Math.round(panelRect.height - (terminalAttract ? 4 : 16)));
     let left = panelRect.left + scrollX + panelRect.width / 2;
     let top = panelRect.top + scrollY + panelRect.height / 2;
-    left = clamp(left, scrollX + width / 2 + 10, scrollX + viewportWidth - width / 2 - 10);
+    left = clamp(left, scrollX + width / 2 + edgeInset, scrollX + viewportWidth - width / 2 - edgeInset);
 
     el.dataset.layout = 'player-panel-dock';
     el.style.setProperty('--player-nudge-left', `${Math.round(left)}px`);
@@ -17968,6 +17965,7 @@ body.inline-game-over .roll-panel {
     clearRollGatedRewardUi();
     startInlineEndingVisuals(playerWon, inlineGameOverState.rewardDie);
     showTerminalRewardNudge();
+    if (guidedCompletionTriggered) hideTerminalRewardNudge();
     updatePwaInstallHint();
 
     p1Inventory.classList.add('has-status');

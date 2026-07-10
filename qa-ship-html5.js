@@ -765,7 +765,17 @@ function postBeatFeaturedPlayerRollPerfProbeScript(sampleMs = 520) {
       const state = window.TrashDiceQA.state();
       return state.current === 'p1' && state.busy === true && Number(state.totalRolls || 0) > beforeSecondRolls;
     }, 1400);
-    await sleep(96);
+    await waitUntil(() => {
+      const state = window.TrashDiceQA.state();
+      const cue = cueSnapshot();
+      return state.current === 'p1'
+        && state.busy === true
+        && document.body.classList.contains('reward-hero-roll-active')
+        && cue.visible === true
+        && cue.text === ${JSON.stringify(PLAYER_ROLL_CUE_TEXT)}
+        && cue.kind === 'player'
+        && cue.playerCue === true;
+    }, 640);
     const duringRoll = slotAnimationSnapshot('during-featured-player-roll');
     const cue = cueSnapshot();
     const rollStats = await rollStatsPromise;
@@ -1130,9 +1140,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.0+20260709.5';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail LIVE 1.0.0';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.0+20260709.5';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.1+20260709.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail LIVE 1.0.1';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.1';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1340,7 +1350,7 @@ function assertStaticShipSourceScan() {
   assert(!/td-retail-dev-/i.test(EXPECTED_TRASH_DICE_VERSION) && !/\bDEV\b/i.test(EXPECTED_TRASH_DICE_VERSION_LABEL), 'retail candidate QA output must not use a DEV version stamp');
   assert(!/const\s+TD_SHIP_VERSION\s*=\s*['"]td-retail-dev-/i.test(source), 'retail candidate TD_SHIP_VERSION must not use a DEV stamp');
   assert(!/\bid=["']devBeatGameBtn["']/i.test(source), 'retail candidate must not ship a visible/default BEAT debug control');
-  assert(source.includes('id="gameplayBuildVersion"') && source.includes('TD_SHIP_CLIP_VERSION_LABEL'), 'gameplay clips must carry a visible exact build stamp');
+  assert(source.includes('id="gameplayBuildVersion"') && /gameplayBuildVersion\)\s+gameplayBuildVersion\.textContent\s*=\s*TD_SHIP_VERSION_LABEL/.test(source), 'gameplay screen must display the same semver version stamp as the title screen');
   assert(/Remove-ThirdPartyAnalytics/i.test(packageScript) && /Compress-Archive/i.test(packageScript) && /Select-String/i.test(packageScript) && /umami/i.test(packageScript), 'client handoff package script must strip and verify third-party analytics before zipping');
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
   // Color grammar (approved 2026-07-08): red is reserved for trash/danger; go/action
@@ -2228,7 +2238,7 @@ async function main() {
       assert(activeLayout.discoButtonVisible === false, `${viewport.name}: DISCO debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
-      assert(activeLayout.gameplayBuildVersion && activeLayout.gameplayBuildVersion.text === EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL && activeLayout.gameplayBuildVersion.visible === true && activeLayout.gameplayBuildVersion.whiteSpace === 'nowrap' && activeLayout.gameplayBuildVersion.lowerLeft === true, `${viewport.name}: gameplay build stamp should be visible for clip/version tracing ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
+      assert(activeLayout.gameplayBuildVersion && activeLayout.gameplayBuildVersion.text === EXPECTED_TRASH_DICE_VERSION_LABEL && activeLayout.gameplayBuildVersion.text === initial.titleLayout.buildVersionText && activeLayout.gameplayBuildVersion.visible === true && activeLayout.gameplayBuildVersion.whiteSpace === 'nowrap' && activeLayout.gameplayBuildVersion.lowerLeft === true, `${viewport.name}: gameplay build stamp should match the title screen semver version for clip/version tracing ${JSON.stringify({ gameplayBuildVersion: activeLayout.gameplayBuildVersion, titleBuildVersion: initial.titleLayout.buildVersionText })}`);
       const minGameplayBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 12 : 10.3) : 10.5;
       const minGameplayBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 12 : 10) : 10;
       assert(activeLayout.gameplayBuildVersion.fontSize >= minGameplayBuildVersionFontSize && activeLayout.gameplayBuildVersion.rect.height >= minGameplayBuildVersionHeight, `${viewport.name}: gameplay build stamp should stay readable in shared clips ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
@@ -5097,9 +5107,14 @@ async function main() {
       const nudge = document.getElementById('terminalRewardNudge');
       const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
       const nudgeHidden = !nudge || nudge.hidden || !nudgeStyle || nudgeStyle.display === 'none';
+      const featuredSettled = rewardState.postBeatRandomActive
+        && rewardState.postBeatRandomDie
+        && document.body.dataset.postBeatRandomDie === rewardState.postBeatRandomDie.name
+        && document.body.dataset.postBeatRandomDieReason === 'beat-game-next-game';
       return state.inlineGameOver
         && state.inlineGameOver.guidedCompletionTriggered === true
         && rewardState.guidedGameCompleted === true
+        && featuredSettled
         && nudgeHidden;
     })()`, `guided complete game-win probe terminal reward settled`, 12000);
     const beatGameWinUi = await evalValue(beatGameWinProbe, `(() => {
