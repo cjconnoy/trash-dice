@@ -1130,8 +1130,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.0+20260709.3';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.0+20260709.4';
 const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail LIVE 1.0.0';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.0+20260709.4';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1339,6 +1340,7 @@ function assertStaticShipSourceScan() {
   assert(!/td-retail-dev-/i.test(EXPECTED_TRASH_DICE_VERSION) && !/\bDEV\b/i.test(EXPECTED_TRASH_DICE_VERSION_LABEL), 'retail candidate QA output must not use a DEV version stamp');
   assert(!/const\s+TD_SHIP_VERSION\s*=\s*['"]td-retail-dev-/i.test(source), 'retail candidate TD_SHIP_VERSION must not use a DEV stamp');
   assert(!/\bid=["']devBeatGameBtn["']/i.test(source), 'retail candidate must not ship a visible/default BEAT debug control');
+  assert(source.includes('id="gameplayBuildVersion"') && source.includes('TD_SHIP_CLIP_VERSION_LABEL'), 'gameplay clips must carry a visible exact build stamp');
   assert(/Remove-ThirdPartyAnalytics/i.test(packageScript) && /Compress-Archive/i.test(packageScript) && /Select-String/i.test(packageScript) && /umami/i.test(packageScript), 'client handoff package script must strip and verify third-party analytics before zipping');
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
   // Color grammar (approved 2026-07-08): red is reserved for trash/danger; go/action
@@ -2073,6 +2075,7 @@ async function main() {
         const discoButton = document.getElementById('devDiscoBtn');
         const outcomeControls = document.getElementById('debugOutcomeControls');
         const quitButton = document.getElementById('quitGameBtn');
+        const gameplayBuildVersion = document.getElementById('gameplayBuildVersion');
         const badge = document.querySelector('.milestone-badge');
         const boardScene = document.querySelector('.board-scene');
         const boardSceneChild = boardScene ? boardScene.querySelector('.lid, .trash-can, .board-blob') : null;
@@ -2087,10 +2090,12 @@ async function main() {
         const dr = discoButton.getBoundingClientRect();
         const or = outcomeControls.getBoundingClientRect();
         const qr = quitButton.getBoundingClientRect();
+        const vr = gameplayBuildVersion ? gameplayBuildVersion.getBoundingClientRect() : null;
         const gr = badge ? badge.getBoundingClientRect() : null;
         const rollStyle = getComputedStyle(roll);
         const rollAfterStyle = getComputedStyle(roll, '::after');
         const panelStyle = getComputedStyle(panel);
+        const gameplayBuildVersionStyle = gameplayBuildVersion ? getComputedStyle(gameplayBuildVersion) : null;
         const boardSceneStyle = boardScene ? getComputedStyle(boardScene) : null;
         const boardSceneChildStyle = boardSceneChild ? getComputedStyle(boardSceneChild) : null;
         const clears = (a, b, gap = 4) => a.bottom <= b.top - gap || a.left >= b.right + gap || a.right <= b.left - gap || a.top >= b.bottom + gap;
@@ -2136,6 +2141,19 @@ async function main() {
           discoClearsRollPanel: clears(dr, pr, 6),
           outcomeButtonsVisible: getComputedStyle(outcomeControls).display !== 'none' && or.width > 32 && or.height > 22 && or.right <= window.innerWidth + 1 && or.top >= -1,
           quitButtonVisible: getComputedStyle(quitButton).display !== 'none' && qr.width >= 88 && qr.height >= 42 && qr.right <= window.innerWidth - 6 && qr.left >= 0 && qr.top >= -1 && qr.bottom <= window.innerHeight + 1,
+          gameplayBuildVersion: gameplayBuildVersion && gameplayBuildVersionStyle && vr ? {
+            text: gameplayBuildVersion.textContent.trim(),
+            display: gameplayBuildVersionStyle.display,
+            whiteSpace: gameplayBuildVersionStyle.whiteSpace,
+            visible: gameplayBuildVersionStyle.display !== 'none' && vr.width > 60 && vr.height > 8 && vr.left >= -1 && vr.right <= window.innerWidth + 1 && vr.top >= -1 && vr.bottom <= window.innerHeight + 1,
+            lowerLeft: vr.left <= Math.max(24, window.innerWidth * 0.08) && vr.top >= window.innerHeight * 0.78,
+            clearsRoll: clears(vr, rr, 6),
+            clearsRollPanel: clears(vr, pr, 6),
+            clearsAuto: clears(vr, p1r, 6),
+            clearsQuit: clears(vr, qr, 6),
+            clearsOutcome: clears(vr, or, 6),
+            rect: { top: vr.top, bottom: vr.bottom, left: vr.left, right: vr.right, width: vr.width, height: vr.height }
+          } : null,
           quitClearsRoll: qr.bottom <= rr.top - 4 || qr.left >= rr.right + 4 || qr.right <= rr.left - 4 || qr.top >= rr.bottom + 4,
           debugClearsQuit: (br.bottom <= qr.top - 4 || br.left >= qr.right + 4 || br.right <= qr.left - 4 || br.top >= qr.bottom + 4) &&
             (p1r.bottom <= qr.top - 4 || p1r.left >= qr.right + 4 || p1r.right <= qr.left - 4 || p1r.top >= qr.bottom + 4) &&
@@ -2204,6 +2222,8 @@ async function main() {
       assert(activeLayout.discoButtonVisible === false, `${viewport.name}: DISCO debug button should be removed from the visible game screen ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
+      assert(activeLayout.gameplayBuildVersion && activeLayout.gameplayBuildVersion.text === EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL && activeLayout.gameplayBuildVersion.visible === true && activeLayout.gameplayBuildVersion.whiteSpace === 'nowrap' && activeLayout.gameplayBuildVersion.lowerLeft === true, `${viewport.name}: gameplay build stamp should be visible for clip/version tracing ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
+      assert(activeLayout.gameplayBuildVersion.clearsRoll === true && activeLayout.gameplayBuildVersion.clearsRollPanel === true && activeLayout.gameplayBuildVersion.clearsAuto === true && activeLayout.gameplayBuildVersion.clearsQuit === true && activeLayout.gameplayBuildVersion.clearsOutcome === true, `${viewport.name}: gameplay build stamp overlaps active controls ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.debugClearsQuit, `${viewport.name}: debug controls overlap Done ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.debugLowerRight, `${viewport.name}: debug controls are not in the lower-right tool corner ${JSON.stringify(activeLayout)}`);
