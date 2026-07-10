@@ -1130,9 +1130,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.0+20260709.4';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.0+20260709.5';
 const EXPECTED_TRASH_DICE_VERSION_LABEL = 'TD Retail LIVE 1.0.0';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.0+20260709.4';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'TD Retail LIVE 1.0.0+20260709.5';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1772,6 +1772,8 @@ async function main() {
             copyrightFitsViewport: copyrightRect.left >= -1 && copyrightRect.right <= window.innerWidth + 1,
             buildVersionText: buildVersion ? buildVersion.textContent.trim() : '',
             buildVersionWhiteSpace: buildVersionStyle ? buildVersionStyle.whiteSpace : '',
+            buildVersionFontSize: buildVersionStyle ? Number.parseFloat(buildVersionStyle.fontSize || '0') || 0 : 0,
+            buildVersionHeight: buildVersionRect ? buildVersionRect.height : 0,
             buildVersionFitsViewport: buildVersionRect ? buildVersionRect.left >= -1 && buildVersionRect.right <= window.innerWidth + 1 && buildVersionRect.top >= -1 && buildVersionRect.bottom <= window.innerHeight + 1 : false,
             buildVersionLowerLeft: buildVersionRect ? buildVersionRect.left <= Math.max(24, window.innerWidth * 0.08) && buildVersionRect.top >= window.innerHeight * 0.62 : false,
             buildVersionClearLegal: !overlaps(buildVersionRect, legalRect),
@@ -1852,6 +1854,9 @@ async function main() {
       assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
       assert(!/\bDEV\b/i.test(initial.version) && !/\bDEV\b/i.test(initial.versionLabel) && !/\bDEV\b/i.test(initial.titleLayout.buildVersionText), `${viewport.name}: retail candidate version stamp must not say DEV ${JSON.stringify({ version: initial.version, versionLabel: initial.versionLabel, buildVersionText: initial.titleLayout.buildVersionText })}`);
       assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
+      const minTitleBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 12 : 9.25) : 10;
+      const minTitleBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 12 : 9) : 10;
+      assert(initial.titleLayout.buildVersionFontSize >= minTitleBuildVersionFontSize && initial.titleLayout.buildVersionHeight >= minTitleBuildVersionHeight, `${viewport.name}: title build version should stay readable on iPhone/iPad capture devices ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true && initial.titleLayout.buildVersionBelowStartCard === true, `${viewport.name}: title build version should stay in the lower-left footer zone without touching the hero die panel ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.timings && initial.timings.playerToCpuHandoffMs <= 180 && initial.timings.playerPlaceCelebrateHandoffMs === initial.timings.playerToCpuHandoffMs, `${viewport.name}: manual player-to-CPU handoff should stay tight after a player hit ${JSON.stringify(initial.timings)}`);
       assert(initial.timings && initial.timings.playerHitPraiseVisibleMs >= 900 && initial.timings.playerHitPraiseVisibleMs >= initial.timings.playerToCpuHandoffMs + 700, `${viewport.name}: player hit praise should stay readable without lengthening CPU handoff ${JSON.stringify(initial.timings)}`);
@@ -2145,6 +2150,7 @@ async function main() {
             text: gameplayBuildVersion.textContent.trim(),
             display: gameplayBuildVersionStyle.display,
             whiteSpace: gameplayBuildVersionStyle.whiteSpace,
+            fontSize: Number.parseFloat(gameplayBuildVersionStyle.fontSize || '0') || 0,
             visible: gameplayBuildVersionStyle.display !== 'none' && vr.width > 60 && vr.height > 8 && vr.left >= -1 && vr.right <= window.innerWidth + 1 && vr.top >= -1 && vr.bottom <= window.innerHeight + 1,
             lowerLeft: vr.left <= Math.max(24, window.innerWidth * 0.08) && vr.top >= window.innerHeight * 0.78,
             clearsRoll: clears(vr, rr, 6),
@@ -2223,6 +2229,9 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameplayBuildVersion && activeLayout.gameplayBuildVersion.text === EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL && activeLayout.gameplayBuildVersion.visible === true && activeLayout.gameplayBuildVersion.whiteSpace === 'nowrap' && activeLayout.gameplayBuildVersion.lowerLeft === true, `${viewport.name}: gameplay build stamp should be visible for clip/version tracing ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
+      const minGameplayBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 12 : 10.3) : 10.5;
+      const minGameplayBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 12 : 10) : 10;
+      assert(activeLayout.gameplayBuildVersion.fontSize >= minGameplayBuildVersionFontSize && activeLayout.gameplayBuildVersion.rect.height >= minGameplayBuildVersionHeight, `${viewport.name}: gameplay build stamp should stay readable in shared clips ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
       assert(activeLayout.gameplayBuildVersion.clearsRoll === true && activeLayout.gameplayBuildVersion.clearsRollPanel === true && activeLayout.gameplayBuildVersion.clearsAuto === true && activeLayout.gameplayBuildVersion.clearsQuit === true && activeLayout.gameplayBuildVersion.clearsOutcome === true, `${viewport.name}: gameplay build stamp overlaps active controls ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.debugClearsQuit, `${viewport.name}: debug controls overlap Done ${JSON.stringify(activeLayout)}`);
