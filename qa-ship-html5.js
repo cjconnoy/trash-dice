@@ -1140,9 +1140,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.1+20260709.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = '1.0.1';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = '1.0.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.2+20260709.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = '1.0.2';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = '1.0.2';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1864,8 +1864,8 @@ async function main() {
       assert(initial.versionLabel === EXPECTED_TRASH_DICE_VERSION_LABEL, `${viewport.name}: version label data missing ${JSON.stringify(initial)}`);
       assert(!/\bDEV\b/i.test(initial.version) && !/\bDEV\b/i.test(initial.versionLabel) && !/\bDEV\b/i.test(initial.titleLayout.buildVersionText), `${viewport.name}: retail candidate version stamp must not say DEV ${JSON.stringify({ version: initial.version, versionLabel: initial.versionLabel, buildVersionText: initial.titleLayout.buildVersionText })}`);
       assert(initial.titleLayout.buildVersionText === EXPECTED_TRASH_DICE_VERSION_LABEL && initial.titleLayout.buildVersionWhiteSpace === 'nowrap' && initial.titleLayout.buildVersionFitsViewport === true, `${viewport.name}: title build version should render visibly ${JSON.stringify(initial.titleLayout)}`);
-      const minTitleBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 12 : 9.25) : 10;
-      const minTitleBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 12 : 9) : 10;
+      const minTitleBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 34 : 24) : 32;
+      const minTitleBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 34 : 24) : 32;
       assert(initial.titleLayout.buildVersionFontSize >= minTitleBuildVersionFontSize && initial.titleLayout.buildVersionHeight >= minTitleBuildVersionHeight, `${viewport.name}: title build version should stay readable on iPhone/iPad capture devices ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.titleLayout.buildVersionLowerLeft === true && initial.titleLayout.buildVersionClearLegal === true && initial.titleLayout.buildVersionClearStartCard === true && initial.titleLayout.buildVersionBelowStartCard === true, `${viewport.name}: title build version should stay in the lower-left footer zone without touching the hero die panel ${JSON.stringify(initial.titleLayout)}`);
       assert(initial.timings && initial.timings.playerToCpuHandoffMs <= 180 && initial.timings.playerPlaceCelebrateHandoffMs === initial.timings.playerToCpuHandoffMs, `${viewport.name}: manual player-to-CPU handoff should stay tight after a player hit ${JSON.stringify(initial.timings)}`);
@@ -2239,8 +2239,8 @@ async function main() {
       assert(activeLayout.outcomeButtonsVisible, `${viewport.name}: outcome buttons not visible in viewport ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitButtonVisible, `${viewport.name}: quit button not visible or not large enough in active game ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.gameplayBuildVersion && activeLayout.gameplayBuildVersion.text === EXPECTED_TRASH_DICE_VERSION_LABEL && activeLayout.gameplayBuildVersion.text === initial.titleLayout.buildVersionText && activeLayout.gameplayBuildVersion.visible === true && activeLayout.gameplayBuildVersion.whiteSpace === 'nowrap' && activeLayout.gameplayBuildVersion.lowerLeft === true, `${viewport.name}: gameplay build stamp should match the title screen semver version for clip/version tracing ${JSON.stringify({ gameplayBuildVersion: activeLayout.gameplayBuildVersion, titleBuildVersion: initial.titleLayout.buildVersionText })}`);
-      const minGameplayBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 12 : 10.3) : 10.5;
-      const minGameplayBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 12 : 10) : 10;
+      const minGameplayBuildVersionFontSize = viewport.mobile ? (viewport.width > 720 ? 34 : 28) : 34;
+      const minGameplayBuildVersionHeight = viewport.mobile ? (viewport.width > 720 ? 34 : 28) : 34;
       assert(activeLayout.gameplayBuildVersion.fontSize >= minGameplayBuildVersionFontSize && activeLayout.gameplayBuildVersion.rect.height >= minGameplayBuildVersionHeight, `${viewport.name}: gameplay build stamp should stay readable in shared clips ${JSON.stringify(activeLayout.gameplayBuildVersion)}`);
       assert(activeLayout.gameplayBuildVersion.clearsRoll === true && activeLayout.gameplayBuildVersion.clearsRollPanel === true && activeLayout.gameplayBuildVersion.clearsAuto === true && activeLayout.gameplayBuildVersion.clearsQuit === true && activeLayout.gameplayBuildVersion.clearsOutcome === true, `${viewport.name}: gameplay build stamp overlaps active controls ${JSON.stringify(activeLayout)}`);
       assert(activeLayout.quitClearsRoll, `${viewport.name}: quit button overlaps roll/play action ${JSON.stringify(activeLayout)}`);
