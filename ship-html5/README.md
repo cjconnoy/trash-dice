@@ -5,6 +5,7 @@ Source lane for the Phase 1 instant-play digital companion.
 - Status: Beta Complete as of 2026-06-18. Use `..\TRASH_DICE_RETAIL_HANDOFF.md` for the current live-shipping checklist.
 - Baseline: Beta v3, with ship-safe QoL fixes preserved.
 - Target public URL: `https://playonedaygames.com/trash-dice/play/`
+- Canonical launch / "Play free" product URL: `https://bigdiscoveries.com/products/trash-dice`
 - Mode: one-player only.
 - No PWA: no manifest, install prompt, service worker, or home-screen flow.
 - No two-player: no room UI, room code flow, QR flow, or WebSocket connection.

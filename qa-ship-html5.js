@@ -1140,9 +1140,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.2+20260710.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.2';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.2';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.3+20260711.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.3';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.3';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1351,6 +1351,7 @@ function assertStaticShipSourceScan() {
   assert(!/const\s+TD_SHIP_VERSION\s*=\s*['"]td-retail-dev-/i.test(source), 'retail candidate TD_SHIP_VERSION must not use a DEV stamp');
   assert(!/\bid=["']devBeatGameBtn["']/i.test(source), 'retail candidate must not ship a visible/default BEAT debug control');
   assert(source.includes('id="gameplayBuildVersion"') && /gameplayBuildVersion\)\s+gameplayBuildVersion\.textContent\s*=\s*TD_SHIP_VERSION_LABEL/.test(source), 'gameplay screen must display the same semver version stamp as the title screen');
+  assert(source.includes('id="quitBigDiscoveriesLink"') && source.includes('href="https://bigdiscoveries.com/products/trash-dice"') && source.includes('target="_blank"') && source.includes('rel="noopener noreferrer"'), 'quit fallback screen must include the secondary Big Discoveries product link with safe new-tab behavior');
   assert(/Remove-ThirdPartyAnalytics/i.test(packageScript) && /Compress-Archive/i.test(packageScript) && /Select-String/i.test(packageScript) && /umami/i.test(packageScript), 'client handoff package script must strip and verify third-party analytics before zipping');
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
   // Color grammar (approved 2026-07-08): red is reserved for trash/danger; go/action
@@ -2043,17 +2044,58 @@ async function main() {
         const sheet = document.getElementById('quitReturnSheet');
         return !!(sheet && !sheet.hidden && document.body.classList.contains('quit-return-open'));
       })()`, `${viewport.name} title quit fallback visible`);
-      const titleQuit = await evalValue(page, `(() => ({
-        sheetVisible: !document.getElementById('quitReturnSheet').hidden,
-        copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
-        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName),
-        analyticsSource: window.TrashDiceAnalyticsDebug.source,
-        firstPartyEndpoint: window.TrashDiceAnalyticsDebug.firstPartyEndpoint,
-        completedGames: window.TrashDiceAnalyticsDebug.getCompletedGames()
-      }))()`);
+      const titleQuit = await evalValue(page, `(() => {
+        const link = document.getElementById('quitBigDiscoveriesLink');
+        const primary = document.getElementById('quitKeepPlayingBtn');
+        const card = document.querySelector('.quit-return-card');
+        const linkRect = link ? link.getBoundingClientRect() : null;
+        const primaryRect = primary ? primary.getBoundingClientRect() : null;
+        const readColor = value => {
+          const match = String(value || '').match(/rgba?\\(([^)]+)\\)/);
+          if (!match) return null;
+          const parts = match[1].split(',').map(item => Number.parseFloat(item.trim()));
+          return { r: parts[0], g: parts[1], b: parts[2], a: Number.isFinite(parts[3]) ? parts[3] : 1 };
+        };
+        const channel = value => {
+          const normalized = value / 255;
+          return normalized <= 0.03928 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+        };
+        const luminance = color => color ? (0.2126 * channel(color.r)) + (0.7152 * channel(color.g)) + (0.0722 * channel(color.b)) : 0;
+        const contrast = (fg, bg) => {
+          const a = luminance(fg);
+          const b = luminance(bg);
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        const linkStyle = link ? getComputedStyle(link) : null;
+        const primaryStyle = primary ? getComputedStyle(primary) : null;
+        return {
+          sheetVisible: !document.getElementById('quitReturnSheet').hidden,
+          copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
+          events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName),
+          analyticsSource: window.TrashDiceAnalyticsDebug.source,
+          firstPartyEndpoint: window.TrashDiceAnalyticsDebug.firstPartyEndpoint,
+          completedGames: window.TrashDiceAnalyticsDebug.getCompletedGames(),
+          productLink: link && primary && card && linkRect && primaryRect ? {
+            tag: link.tagName,
+            text: link.textContent.trim(),
+            href: link.href,
+            target: link.target,
+            rel: link.getAttribute('rel') || '',
+            topBelowPrimary: linkRect.top >= primaryRect.bottom + 5,
+            smallerThanPrimary: linkRect.height < primaryRect.height && Number.parseFloat(linkStyle.fontSize) < Number.parseFloat(primaryStyle.fontSize),
+            widthNoLargerThanPrimary: linkRect.width <= primaryRect.width,
+            visible: getComputedStyle(link).display !== 'none' && linkRect.width > 0 && linkRect.height > 0,
+            textDecoration: linkStyle.textDecorationLine,
+            contrastAgainstGreenCard: contrast(readColor(linkStyle.color), { r: 16, g: 70, b: 43, a: 1 })
+          } : null
+        };
+      })()`);
       assert(titleQuit.sheetVisible === true, `${viewport.name}: title quit fallback did not show`);
       assert(titleQuit.copy.length > 20, `${viewport.name}: title quit fallback copy missing`);
       assert(!titleQuit.copy.includes('TD launcher'), `${viewport.name}: title quit fallback leaked internal TD launcher wording ${JSON.stringify(titleQuit)}`);
+      assert(titleQuit.productLink && titleQuit.productLink.tag === 'A' && titleQuit.productLink.text === 'Get Trash Dice at Big Discoveries \u2192' && titleQuit.productLink.href === 'https://bigdiscoveries.com/products/trash-dice' && titleQuit.productLink.target === '_blank' && titleQuit.productLink.rel.includes('noopener') && titleQuit.productLink.rel.includes('noreferrer'), `${viewport.name}: title quit fallback Big Discoveries link contract wrong ${JSON.stringify(titleQuit.productLink)}`);
+      assert(titleQuit.productLink.visible === true && titleQuit.productLink.topBelowPrimary === true && titleQuit.productLink.smallerThanPrimary === true && titleQuit.productLink.widthNoLargerThanPrimary === true, `${viewport.name}: Big Discoveries link should stay secondary below KEEP PLAYING ${JSON.stringify(titleQuit.productLink)}`);
+      assert(titleQuit.productLink.contrastAgainstGreenCard >= 4.5, `${viewport.name}: Big Discoveries link contrast is too low on the green card ${JSON.stringify(titleQuit.productLink)}`);
       assert(titleQuit.events.includes('td_quit_click'), `${viewport.name}: missing title quit click analytics`);
       assert(titleQuit.events.includes('td_quit_fallback'), `${viewport.name}: missing title quit fallback analytics`);
       await evalValue(page, `document.getElementById('quitKeepPlayingBtn').click(); window.__tdForceQuitFallback = false; true`);
@@ -3897,13 +3939,45 @@ async function main() {
         const sheet = document.getElementById('quitReturnSheet');
         return !!(sheet && !sheet.hidden && document.body.classList.contains('quit-return-open'));
       })()`, `${viewport.name} quit fallback visible`);
-      const quitFallback = await evalValue(page, `(() => ({
-        sheetVisible: !document.getElementById('quitReturnSheet').hidden,
-        copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
-        events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName)
-      }))()`);
+      const quitFallback = await evalValue(page, `(() => {
+        const link = document.getElementById('quitBigDiscoveriesLink');
+        const primary = document.getElementById('quitKeepPlayingBtn');
+        const linkRect = link ? link.getBoundingClientRect() : null;
+        const primaryRect = primary ? primary.getBoundingClientRect() : null;
+        const readColor = value => {
+          const match = String(value || '').match(/rgba?\\(([^)]+)\\)/);
+          if (!match) return null;
+          const parts = match[1].split(',').map(item => Number.parseFloat(item.trim()));
+          return { r: parts[0], g: parts[1], b: parts[2], a: Number.isFinite(parts[3]) ? parts[3] : 1 };
+        };
+        const channel = value => {
+          const normalized = value / 255;
+          return normalized <= 0.03928 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+        };
+        const luminance = color => color ? (0.2126 * channel(color.r)) + (0.7152 * channel(color.g)) + (0.0722 * channel(color.b)) : 0;
+        const contrast = (fg, bg) => {
+          const a = luminance(fg);
+          const b = luminance(bg);
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        const linkStyle = link ? getComputedStyle(link) : null;
+        const primaryStyle = primary ? getComputedStyle(primary) : null;
+        return {
+          sheetVisible: !document.getElementById('quitReturnSheet').hidden,
+          copy: (document.getElementById('quitReturnCopy') || {}).textContent || '',
+          events: window.TrashDiceAnalyticsDebug.log.map(item => item.eventName),
+          productLink: link && primary && linkRect && primaryRect ? {
+            text: link.textContent.trim(),
+            topBelowPrimary: linkRect.top >= primaryRect.bottom + 5,
+            smallerThanPrimary: linkRect.height < primaryRect.height && Number.parseFloat(linkStyle.fontSize) < Number.parseFloat(primaryStyle.fontSize),
+            visible: getComputedStyle(link).display !== 'none' && linkRect.width > 0 && linkRect.height > 0,
+            contrastAgainstGreenCard: contrast(readColor(linkStyle.color), { r: 16, g: 70, b: 43, a: 1 })
+          } : null
+        };
+      })()`);
       assert(quitFallback.sheetVisible === true, `${viewport.name}: quit fallback did not show`);
       assert(quitFallback.copy.length > 20, `${viewport.name}: quit fallback copy missing`);
+      assert(quitFallback.productLink && quitFallback.productLink.text === 'Get Trash Dice at Big Discoveries \u2192' && quitFallback.productLink.visible === true && quitFallback.productLink.topBelowPrimary === true && quitFallback.productLink.smallerThanPrimary === true && quitFallback.productLink.contrastAgainstGreenCard >= 4.5, `${viewport.name}: gameplay quit fallback Big Discoveries link should stay secondary and legible ${JSON.stringify(quitFallback.productLink)}`);
       assert(quitFallback.events.includes('td_quit_click'), `${viewport.name}: missing quit click analytics`);
       assert(quitFallback.events.includes('td_quit_fallback'), `${viewport.name}: missing quit fallback analytics`);
 
