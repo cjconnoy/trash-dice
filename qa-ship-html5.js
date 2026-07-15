@@ -723,6 +723,28 @@ function postBeatFeaturedPlayerRollPerfProbeScript(sampleMs = 520) {
         state: window.TrashDiceQA.state()
       };
     };
+    const animationList = (...values) => values
+      .flatMap(value => String(value || '').split(','))
+      .map(value => value.trim())
+      .filter(value => value && value !== 'none');
+    const heroEffectSnapshot = label => {
+      const el = document.getElementById('p1Die');
+      if (!el) return { label, present: false, animationNames: [], animationDurations: [] };
+      const style = getComputedStyle(el);
+      const before = getComputedStyle(el, '::before');
+      const after = getComputedStyle(el, '::after');
+      return {
+        label,
+        present: true,
+        className: el.className,
+        rewardSkinned: el.classList.contains('reward-skinned'),
+        name: el.dataset.rewardName || '',
+        effect: el.dataset.rewardEffect || '',
+        animationNames: animationList(style.animationName, before.animationName, after.animationName),
+        animationDurations: animationList(style.animationDuration, before.animationDuration, after.animationDuration),
+        bodyClasses: document.body.className
+      };
+    };
     const cueSnapshot = () => {
       const cue = document.getElementById('cpuRollCue');
       if (!cue) return { exists: false, visible: false, text: '' };
@@ -757,6 +779,7 @@ function postBeatFeaturedPlayerRollPerfProbeScript(sampleMs = 520) {
     });
     await sleep(120);
     const ready = slotAnimationSnapshot('ready-with-featured-slot');
+    const readyHero = heroEffectSnapshot('ready-featured-hero');
     const beforeSecondRolls = window.TrashDiceQA.state().totalRolls;
     window.TrashDiceQA.queueRolls([3]);
     const rollStatsPromise = frameStatsDuring(${sampleDuration});
@@ -785,6 +808,7 @@ function postBeatFeaturedPlayerRollPerfProbeScript(sampleMs = 520) {
       featured: window.TrashDiceQA.rewardDieState().postBeatRandomDie,
       returnedToPlayer,
       ready,
+      readyHero,
       duringRoll,
       cue,
       rollStats
@@ -1140,9 +1164,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.3+20260711.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.3';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.3';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.4+20260714.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.4';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.4';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1248,6 +1272,8 @@ function assertPostBeatFeaturedPlayerRollPerfProbe(label, result) {
   assert(result.returnedToPlayer === true, `${label}: post-beat featured probe did not return to a playable player turn with a skinned slot ${JSON.stringify(result)}`);
   assert(result.featured && result.featured.name, `${label}: post-beat featured probe did not retain the featured die ${JSON.stringify(result)}`);
   assert(result.ready && result.ready.slotRewardDice >= 1 && result.ready.effectNodeCount >= 1, `${label}: post-beat featured ready state did not create a skinned placed player die ${JSON.stringify(result)}`);
+  assert(result.readyHero && result.readyHero.rewardSkinned === true && result.readyHero.name === result.featured.name, `${label}: post-beat featured hero die should keep the current featured skin in ready state ${JSON.stringify(result)}`);
+  assert(Array.isArray(result.readyHero.animationNames) && result.readyHero.animationNames.length >= 1 && hasNonZeroAnimationDuration(result.readyHero), `${label}: post-beat featured hero die should keep its visible reward animation in ready state ${JSON.stringify(result.readyHero)}`);
   assert(result.ready.runningSlotAnimations.length === 0, `${label}: placed featured dice should be static while waiting for the next player roll ${JSON.stringify(result)}`);
   assert(result.duringRoll && result.duringRoll.runningSlotAnimations.length === 0, `${label}: placed featured dice should stay static during the next player roll ${JSON.stringify(result)}`);
   assert(result.duringRoll.bodyClasses.includes('post-beat-featured-current') && result.duringRoll.bodyClasses.includes('reward-hero-roll-active'), `${label}: post-beat featured player-roll perf probe missed the active reward-roll window ${JSON.stringify(result)}`);
@@ -1368,6 +1394,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
   assert(source.includes('else if (playerVisualRoll) showPlayerRollCue();'), 'player rolls (manual or autoplay) must show the player roll cue');
   assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
+  assert(!source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned::before') && !source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling)'), 'post-beat current-game mode must not suppress live hero die reward animations');
   assert(source.includes('.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]') && source.includes('grid-template-columns: 40px minmax(0, 1fr);'), 'current-game featured die card must keep a fixed mobile thumbnail lane');
 }
 
