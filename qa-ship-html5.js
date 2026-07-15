@@ -1164,9 +1164,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.4+20260714.1';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.4';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.4';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.5+20260714.2';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.5';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.5';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1395,6 +1395,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes('else if (playerVisualRoll) showPlayerRollCue();'), 'player rolls (manual or autoplay) must show the player roll cue');
   assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
   assert(!source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned::before') && !source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling)'), 'post-beat current-game mode must not suppress live hero die reward animations');
+  assert(source.includes('terminalRewardSettled') && source.includes('terminalRewardSuppressed'), 'guided-complete terminal reward should expose deterministic QA settle state');
   assert(source.includes('.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]') && source.includes('grid-template-columns: 40px minmax(0, 1fr);'), 'current-game featured die card must keep a fixed mobile thumbnail lane');
 }
 
@@ -5202,21 +5203,37 @@ async function main() {
     await evalValue(beatGameWinProbe, `window.TrashDiceQA.setRewardWins(12); window.TrashDiceQA.setGuidedCompletion({ pending: true, completed: false, reason: 'qa-game-win' }); window.TrashDiceQA.gameWin('p1'); true`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === true`, `guided complete game-win probe terminal capstone`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === 12`, `guided complete game-win probe round counter`, 5000);
-    await waitEval(beatGameWinProbe, `(() => {
+    const beatGameWinSettled = await waitEval(beatGameWinProbe, `(() => {
       const state = window.TrashDiceQA.state();
       const rewardState = window.TrashDiceQA.rewardDieState();
+      const chip = window.TrashDiceQA.roundWinsWindupState();
       const nudge = document.getElementById('terminalRewardNudge');
       const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
       const nudgeHidden = !nudge || nudge.hidden || !nudgeStyle || nudgeStyle.display === 'none';
+      const terminal = state.inlineGameOver || {};
       const featuredSettled = rewardState.postBeatRandomActive
         && rewardState.postBeatRandomDie
         && document.body.dataset.postBeatRandomDie === rewardState.postBeatRandomDie.name
         && document.body.dataset.postBeatRandomDieReason === 'beat-game-next-game';
-      return state.inlineGameOver
-        && state.inlineGameOver.guidedCompletionTriggered === true
+      const ready = terminal
+        && terminal.guidedCompletionTriggered === true
+        && terminal.terminalRewardSettled === true
+        && terminal.terminalRewardSuppressed === true
         && rewardState.guidedGameCompleted === true
+        && chip.complete === true
         && featuredSettled
         && nudgeHidden;
+      return ready ? {
+        terminal,
+        rewardState,
+        chip,
+        featuredSettled,
+        nudgeHidden,
+        dataset: {
+          name: document.body.dataset.postBeatRandomDie || '',
+          reason: document.body.dataset.postBeatRandomDieReason || ''
+        }
+      } : false;
     })()`, `guided complete game-win probe terminal reward settled`, 12000);
     const beatGameWinUi = await evalValue(beatGameWinProbe, `(() => {
       const logo = document.getElementById('inlineResultLogo');
@@ -5228,6 +5245,7 @@ async function main() {
       const roll = document.getElementById('rollBtn');
       const debugState = window.TrashDiceQA.state();
       return {
+        settled: ${JSON.stringify(beatGameWinSettled)},
         state: debugState.inlineGameOver,
         p1Autoplay: debugState.p1Autoplay,
         rewardState: window.TrashDiceQA.rewardDieState(),
@@ -5248,6 +5266,7 @@ async function main() {
       };
     })()`);
     assert(beatGameWinUi.state.guidedCompletionTriggered === true && beatGameWinUi.rewardState.guidedCompletionPending === false && beatGameWinUi.rewardState.guidedGameCompleted === true && beatGameWinUi.rewardState.postBeatRandomActive === true && beatGameWinUi.rewardState.postBeatRandomDie && beatGameWinUi.dataset.name === beatGameWinUi.rewardState.postBeatRandomDie.name && beatGameWinUi.dataset.reason === 'beat-game-next-game', `guided complete game-win probe: terminal game win should complete guided state and arm next-game featured die ${JSON.stringify(beatGameWinUi)}`);
+    assert(beatGameWinUi.state.terminalRewardSettled === true && beatGameWinUi.state.terminalRewardSuppressed === true && beatGameWinUi.state.terminalRewardHidden === true, `guided complete game-win probe: terminal reward suppression should settle through deterministic QA state ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.bodyGuidedClass === true && beatGameWinUi.title === 'YOU BEAT THE GAME!' && beatGameWinUi.sub === 'You unlocked every die. How many more rounds can you win?' && beatGameWinUi.logoVisible === true, `guided complete game-win probe: terminal capstone should show headline, logo, and subcopy ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.terminalRewardVisible === false && beatGameWinUi.chipVisible === true && /x12\s+ROUND WINS/.test(beatGameWinUi.chipText) && /x1\s+GAME WIN/.test(beatGameWinUi.chipText) && !/(ROUNDS WON:|GAMES WON:|ROUND WINS:|GAME WINS:)/.test(beatGameWinUi.chipText), `guided complete game-win probe: terminal capstone should suppress reward chase and keep count-first round and game counters ${JSON.stringify(beatGameWinUi)}`);
     assert(beatGameWinUi.state.autoRestartMs === null && beatGameWinUi.state.autoContinue === false && beatGameWinUi.p1Autoplay === false && beatGameWinUi.rollText.includes('KEEP PLAYING!'), `guided complete game-win probe: terminal capstone should wait for manual KEEP PLAYING instead of auto-advancing ${JSON.stringify(beatGameWinUi)}`);
