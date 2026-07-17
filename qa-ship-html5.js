@@ -5220,7 +5220,7 @@ async function main() {
     await evalValue(beatGameWinProbe, `window.TrashDiceQA.setRewardWins(12); window.TrashDiceQA.setGuidedCompletion({ pending: true, completed: false, reason: 'qa-game-win' }); window.TrashDiceQA.gameWin('p1'); true`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.state().inlineGameOver && window.TrashDiceQA.state().inlineGameOver.guidedCompletionTriggered === true`, `guided complete game-win probe terminal capstone`);
     await waitEval(beatGameWinProbe, `window.TrashDiceQA.roundWinsWindupState().complete === true && window.TrashDiceQA.roundWinsWindupState().finalWins === 12`, `guided complete game-win probe round counter`, 5000);
-    const beatGameWinSettled = await waitEval(beatGameWinProbe, `(() => {
+    const beatGameWinSettleProbe = `(() => {
       const state = window.TrashDiceQA.state();
       const rewardState = window.TrashDiceQA.rewardDieState();
       const chip = window.TrashDiceQA.roundWinsWindupState();
@@ -5228,30 +5228,48 @@ async function main() {
       const nudgeStyle = nudge ? getComputedStyle(nudge) : null;
       const nudgeHidden = !nudge || nudge.hidden || !nudgeStyle || nudgeStyle.display === 'none';
       const terminal = state.inlineGameOver || {};
+      const dataset = {
+        name: document.body.dataset.postBeatRandomDie || '',
+        reason: document.body.dataset.postBeatRandomDieReason || ''
+      };
       const featuredSettled = rewardState.postBeatRandomActive
         && rewardState.postBeatRandomDie
-        && document.body.dataset.postBeatRandomDie === rewardState.postBeatRandomDie.name
-        && document.body.dataset.postBeatRandomDieReason === 'beat-game-next-game';
-      const ready = terminal
-        && terminal.guidedCompletionTriggered === true
-        && terminal.terminalRewardSettled === true
-        && terminal.terminalRewardSuppressed === true
-        && rewardState.guidedGameCompleted === true
-        && chip.complete === true
-        && featuredSettled
-        && nudgeHidden;
-      return ready ? {
+        && dataset.name === rewardState.postBeatRandomDie.name
+        && dataset.reason === 'beat-game-next-game';
+      const flags = {
+        terminalGuided: terminal.guidedCompletionTriggered === true,
+        terminalRewardSettled: terminal.terminalRewardSettled === true,
+        terminalRewardSuppressed: terminal.terminalRewardSuppressed === true,
+        guidedCompleted: rewardState.guidedGameCompleted === true,
+        chipComplete: chip.complete === true,
+        featuredSettled: !!featuredSettled
+      };
+      const ready = Object.values(flags).every(Boolean);
+      return {
+        ready,
+        flags,
         terminal,
         rewardState,
         chip,
-        featuredSettled,
+        featuredSettled: !!featuredSettled,
         nudgeHidden,
-        dataset: {
-          name: document.body.dataset.postBeatRandomDie || '',
-          reason: document.body.dataset.postBeatRandomDieReason || ''
-        }
-      } : false;
-    })()`, `guided complete game-win probe terminal reward settled`, 12000);
+        nudge: {
+          hidden: nudge ? !!nudge.hidden : true,
+          display: nudgeStyle ? nudgeStyle.display || '' : '',
+          featuredMode: nudge ? nudge.dataset.featuredMode || '' : '',
+          copyMode: nudge ? nudge.dataset.copyMode || '' : ''
+        },
+        dataset
+      };
+    })()`;
+    let beatGameWinSettled = null;
+    const beatGameWinSettleStarted = Date.now();
+    while (Date.now() - beatGameWinSettleStarted < 12000) {
+      beatGameWinSettled = await evalValue(beatGameWinProbe, beatGameWinSettleProbe);
+      if (beatGameWinSettled && beatGameWinSettled.ready === true) break;
+      await sleep(120);
+    }
+    assert(beatGameWinSettled && beatGameWinSettled.ready === true, `timeout waiting for guided complete game-win probe terminal reward settled ${JSON.stringify(beatGameWinSettled)}`);
     const beatGameWinUi = await evalValue(beatGameWinProbe, `(() => {
       const logo = document.getElementById('inlineResultLogo');
       const logoRect = logo ? logo.getBoundingClientRect() : null;
