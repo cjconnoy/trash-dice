@@ -1052,13 +1052,28 @@ function roundWinRecoveryProbeScript(options = {}) {
       }
       return false;
     };
-    const animationNames = () => document.getAnimations()
+    const activeAnimations = () => document.getAnimations()
       .filter(animation => animation.playState === 'running')
-      .map(animation => animation.animationName || '')
-      .filter(Boolean);
-    const staleNames = names => Array.from(new Set(names.filter(name =>
-      /^inlineRoundWins|^roundWinBurst|^rewardDieWiggle|^rewardPrism|^playerPayout|^poolPayout|^panelPayout|^canPayout|^lidPayout|^payoutDie|^payoutComet|^claimBadge|^playerWinBadge/i.test(name)
-    ))).sort();
+      .map(animation => ({
+        name: animation.animationName || '',
+        target: animation.effect && animation.effect.target ? animation.effect.target : null
+      }))
+      .filter(entry => entry.name);
+    const staleNamePattern = /^inlineRoundWins|^roundWinBurst|^rewardDieWiggle|^rewardPrism|^playerPayout|^poolPayout|^panelPayout|^canPayout|^lidPayout|^payoutDie|^payoutComet|^claimBadge|^playerWinBadge/i;
+    const isRoundWinOwnedAnimation = entry => {
+      if (!entry || !staleNamePattern.test(entry.name)) return false;
+      const target = entry.target;
+      if (!target || !target.closest) return true;
+      return !!(
+        target.closest('#roundWinBurst, #rewardDieUnlock, #roundLossRewardNudge') ||
+        target.closest('.player-panel.player-payout-fanfare, .status-bar.round-winner-praise') ||
+        target.closest('.can-pour-die, .lid-payout-die, .payout-comet-trail, .claim-badge')
+      );
+    };
+    const staleNames = animations => Array.from(new Set(animations
+      .filter(isRoundWinOwnedAnimation)
+      .map(entry => entry.name)
+    )).sort();
     const isVisible = el => {
       const style = el ? getComputedStyle(el) : null;
       const rect = el ? el.getBoundingClientRect() : null;
@@ -1069,7 +1084,8 @@ function roundWinRecoveryProbeScript(options = {}) {
       const reward = document.getElementById('rewardDieUnlock');
       const panel = document.getElementById('p1Inventory').closest('.player-panel');
       const state = window.TrashDiceQA.state();
-      const names = animationNames();
+      const animations = activeAnimations();
+      const names = animations.map(entry => entry.name);
       return {
         label,
         probeLabel: ${labelJson},
@@ -1078,7 +1094,7 @@ function roundWinRecoveryProbeScript(options = {}) {
         bodyClasses: document.body.className,
         activeAnimationCount: names.length,
         activeAnimationNames: Array.from(new Set(names)).sort(),
-        staleAnimationNames: staleNames(names),
+        staleAnimationNames: staleNames(animations),
         burstVisible: isVisible(burst) && burst.classList.contains('show'),
         burstHidden: !burst || burst.hidden,
         burstClassName: burst ? burst.className || '' : '',
@@ -1101,9 +1117,10 @@ function roundWinRecoveryProbeScript(options = {}) {
         const delta = now - last;
         frames.push(delta);
         last = now;
-        const names = animationNames();
+        const animations = activeAnimations();
+        const names = animations.map(entry => entry.name);
         activeCounts.push(names.length);
-        stale.push(...staleNames(names));
+        stale.push(...staleNames(animations));
         const snap = snapshot('sample');
         if (snap.burstVisible || snap.rewardVisible || snap.titleFanfare || snap.payoutFanfare || snap.statusFanfare) {
           anyRoundWinUiVisible = true;
