@@ -1181,7 +1181,7 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.6+20260719.1';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.6+20260719.2';
 const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.6';
 const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.6';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
@@ -1397,6 +1397,14 @@ function assertStaticShipSourceScan() {
   assert(source.includes('id="gameplayBuildVersion"') && /gameplayBuildVersion\)\s+gameplayBuildVersion\.textContent\s*=\s*TD_SHIP_VERSION_LABEL/.test(source), 'gameplay screen must display the same semver version stamp as the title screen');
   assert(source.includes('id="quitBigDiscoveriesLink"') && source.includes('href="https://bigdiscoveries.com/products/trash-dice"') && source.includes('target="_blank"') && source.includes('rel="noopener noreferrer"'), 'quit fallback screen must include the secondary Big Discoveries product link with safe new-tab behavior');
   assert(/Remove-ThirdPartyAnalytics/i.test(packageScript) && /Compress-Archive/i.test(packageScript) && /Select-String/i.test(packageScript) && /umami/i.test(packageScript), 'client handoff package script must strip and verify third-party analytics before zipping');
+  const firstPartyEventSource = (source.match(/const TD_FIRST_PARTY_TELEMETRY_EVENTS = new Set\(\[([\s\S]*?)\]\);/) || [])[1] || '';
+  const firstPartyEvents = new Set(Array.from(firstPartyEventSource.matchAll(/'([^']+)'/g), match => match[1]));
+  ['td_session_start', 'td_return_visit', 'td_game_start', 'td_game_complete', 'td_play_again', 'td_first_roll', 'td_round_complete', 'td_game_win', 'td_game_loss', 'td_reward_unlock'].forEach(eventName => {
+    assert(firstPartyEvents.has(eventName), `first-party telemetry allowlist missing ${eventName}`);
+  });
+  ['td_quit_click', 'td_quit_fallback', 'td_quit_keep_playing', 'td_exit_checkpoint'].forEach(eventName => {
+    assert(!firstPartyEvents.has(eventName), `first-party telemetry allowlist must not include diagnostic/funnel event ${eventName}`);
+  });
   const firstRollPromptSource = (source.match(/body\.first-roll-prompt-active \.roll-btn\.p1:not\(:disabled\)[\s\S]*?@media \(prefers-reduced-motion: reduce\)/) || [''])[0];
   // Color grammar (approved 2026-07-08): red is reserved for trash/danger; go/action
   // affordances use brand green. The first-roll spotlight is green + warm gold, never
