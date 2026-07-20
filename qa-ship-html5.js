@@ -1181,9 +1181,9 @@ function roundWinRecoveryProbeScript(options = {}) {
 const REWARD_BASE_NAMES = ['FEATHERS', 'TOXIC', 'BUBBLEGUM', 'ZAP', 'TIE-DYE', 'SUNRISE', 'DIAMOND', 'PRISM', 'CAMO', 'LAVA', 'DISCO'];
 const REWARD_SPECIAL_NAMES = ['LETHAL CHICKEN', 'BIG DISCOVERIES'];
 const REWARD_MILESTONES = '1|2|3|4|5|6|7|9|10|11|12';
-const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.5+20260714.2';
-const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.5';
-const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.5';
+const EXPECTED_TRASH_DICE_VERSION = 'td-retail-live-1.0.6+20260719.1';
+const EXPECTED_TRASH_DICE_VERSION_LABEL = 'v1.0.6';
+const EXPECTED_TRASH_DICE_CLIP_VERSION_LABEL = 'v1.0.6';
 const CPU_ROLL_CUE_TEXT = 'CPU IS ROLLING';
 const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';
 const AUTO_PLAY_IDLE_LABEL = 'AUTO PLAY';
@@ -1291,7 +1291,8 @@ function assertPostBeatFeaturedPlayerRollPerfProbe(label, result) {
   assert(result.ready && result.ready.slotRewardDice >= 1 && result.ready.effectNodeCount >= 1, `${label}: post-beat featured ready state did not create a skinned placed player die ${JSON.stringify(result)}`);
   assert(result.readyHero && result.readyHero.rewardSkinned === true && result.readyHero.name === result.featured.name, `${label}: post-beat featured hero die should keep the current featured skin in ready state ${JSON.stringify(result)}`);
   assert(Array.isArray(result.readyHero.animationNames) && result.readyHero.animationNames.length >= 1 && hasNonZeroAnimationDuration(result.readyHero), `${label}: post-beat featured hero die should keep its visible reward animation in ready state ${JSON.stringify(result.readyHero)}`);
-  assert(result.ready.runningSlotAnimations.length === 0, `${label}: placed featured dice should be static while waiting for the next player roll ${JSON.stringify(result)}`);
+  const expectedReadySlotAnimation = rewardSlotAnimation(result.featured.effect || '');
+  assert(result.ready.runningSlotAnimations.length >= 1 && (!expectedReadySlotAnimation || result.ready.runningSlotAnimations.some(animation => animation.name === expectedReadySlotAnimation)), `${label}: placed featured dice should animate/glow after landing in ready state ${JSON.stringify(result)}`);
   assert(result.duringRoll && result.duringRoll.runningSlotAnimations.length === 0, `${label}: placed featured dice should stay static during the next player roll ${JSON.stringify(result)}`);
   assert(result.duringRoll.bodyClasses.includes('post-beat-featured-current') && result.duringRoll.bodyClasses.includes('reward-hero-roll-active'), `${label}: post-beat featured player-roll perf probe missed the active reward-roll window ${JSON.stringify(result)}`);
   assert(result.cue && result.cue.visible === true && result.cue.text === PLAYER_ROLL_CUE_TEXT && result.cue.playerCue === true && result.cue.kind === 'player', `${label}: player roll cue should remain visible while placed featured dice are frozen ${JSON.stringify(result)}`);
@@ -1410,7 +1411,7 @@ function assertStaticShipSourceScan() {
   assert(source.includes("sfxCtx(playerRoll ? 'rollResolvePlayer' : 'rollResolve')"), 'player roll resolve SFX should use the brighter player profile while CPU keeps the original profile');
   assert(source.includes("const PLAYER_ROLL_CUE_TEXT = 'YOU ARE ROLLING!';"), 'player roll cue text contract changed');
   assert(source.includes('else if (playerVisualRoll) showPlayerRollCue();'), 'player rolls (manual or autoplay) must show the player roll cue');
-  assert(source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect'), 'post-beat current-game featured slot dice must suppress decorative animations');
+  assert(!source.includes('body.post-beat-featured-current .slot-die.reward-skinned .slot-reward-effect') && source.includes('body.reward-hero-roll-active .slot-die.reward-skinned .slot-reward-effect'), 'settled post-beat featured slot dice must animate in ready state and suppress only during active hero roll perf windows');
   assert(!source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned::before') && !source.includes('body.post-beat-featured-current .roll-die-stage .die.reward-skinned:not(.rolling)'), 'post-beat current-game mode must not suppress live hero die reward animations');
   assert(source.includes('terminalRewardSettled') && source.includes('terminalRewardSuppressed'), 'guided-complete terminal reward should expose deterministic QA settle state');
   assert(source.includes('.roll-panel > .terminal-reward-nudge[data-featured-mode="current-game"]') && source.includes('grid-template-columns: 40px minmax(0, 1fr);'), 'current-game featured die card must keep a fixed mobile thumbnail lane');
