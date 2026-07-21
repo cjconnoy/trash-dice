@@ -67,7 +67,7 @@ function Remove-ThirdPartyFontNames([string]$Html) {
     return $result
 }
 
-function Remove-ThirdPartyAnalytics([string]$Path) {
+function Remove-NoFlyHtmlRuntimeReferences([string]$Path) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $html = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $html = [regex]::Replace($html, '(?is)\s*<script\s+defer\s+src=["'']https://cloud\.umami\.is/script\.js["''][^>]*></script>\s*', "`r`n")
@@ -75,12 +75,16 @@ function Remove-ThirdPartyAnalytics([string]$Path) {
     $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_URL\s*=\s*'[^']*';", "const TD_FIRST_PARTY_TELEMETRY_URL = '';")
     $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_EVENTS\s*=\s*new\s+Set\(\[[\s\S]*?\]\);", "const TD_FIRST_PARTY_TELEMETRY_EVENTS = new Set();")
     $html = Remove-ThirdPartyFontNames $html
+    $html = $html.Replace("TD_SOURCE === 'qr'", "false")
+    $html = $html.Replace("betaQr", "betaInvitePreview")
+    $html = $html.Replace("QR code", "invite link")
+    $html = $html.Replace("QR unavailable.", "Invite preview unavailable.")
     $html = $html.Replace("sendUmamiEvent", "sendSecondaryAnalyticsEvent")
     $html = $html.Replace("window.umami", "window.__trashDiceNoThirdPartyAnalytics")
     [System.IO.File]::WriteAllText($Path, $html, $utf8NoBom)
 }
 
-function Remove-ThirdPartyAnalyticsTextReferences([string]$Path) {
+function Remove-NoFlyTextReferences([string]$Path) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $text = [regex]::Replace($text, '(?i)cloud\.umami\.is', 'third-party-analytics-host')
@@ -88,6 +92,8 @@ function Remove-ThirdPartyAnalyticsTextReferences([string]$Path) {
     $text = [regex]::Replace($text, '(?i)fonts\.googleapis\.com', 'third-party-font-host')
     $text = [regex]::Replace($text, '(?i)fonts\.gstatic\.com', 'third-party-font-files-host')
     $text = [regex]::Replace($text, '(?i)odg-intake\.play-onedaygames\.workers\.dev', 'first-party-telemetry-host')
+    $text = [regex]::Replace($text, '(?i)\bQR\b', 'invite')
+    $text = [regex]::Replace($text, '(?i)quickchart\.io', 'third-party-invite-image-host')
     [System.IO.File]::WriteAllText($Path, $text, $utf8NoBom)
 }
 
@@ -105,6 +111,8 @@ function Assert-NoFlyDeliverySurface([string]$StageRoot, [string[]]$TextExtensio
         @{ Label = "Google font name"; Pattern = "Chewy" },
         @{ Label = "Google font name"; Pattern = "Fredoka" },
         @{ Label = "QuickChart QR service"; Pattern = "quickchart.io" },
+        @{ Label = "QR token"; Pattern = "QR" },
+        @{ Label = "QR token"; Pattern = "qr" },
         @{ Label = "Capacitor native wrapper"; Pattern = "Capacitor" },
         @{ Label = "Capacitor npm package"; Pattern = "@capacitor" },
         @{ Label = "Sharp image tool"; Pattern = "require('sharp')" },
@@ -155,7 +163,7 @@ try {
         if (-not (Test-Path -LiteralPath $file)) {
             throw "Missing staged handoff HTML: $file"
         }
-        Remove-ThirdPartyAnalytics $file
+        Remove-NoFlyHtmlRuntimeReferences $file
     }
 
     $textExtensions = @(".html", ".js", ".css", ".json", ".txt", ".md", ".xml")
@@ -164,7 +172,7 @@ try {
     })
     foreach ($file in $stagedTextFiles) {
         if ($htmlFiles -notcontains $file.FullName) {
-            Remove-ThirdPartyAnalyticsTextReferences $file.FullName
+            Remove-NoFlyTextReferences $file.FullName
         }
     }
 
