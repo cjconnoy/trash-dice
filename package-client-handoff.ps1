@@ -48,10 +48,33 @@ console.log(`script parse ok (${files.length} files)`);
     }
 }
 
+function Remove-ThirdPartyFontNames([string]$Html) {
+    $result = $Html
+    $fontNames = @(
+        "Fredoka One",
+        "Bangers",
+        "Chewy",
+        "Fredoka"
+    )
+    foreach ($fontName in $fontNames) {
+        $escaped = [regex]::Escape($fontName)
+        $result = [regex]::Replace($result, "(?i)'$escaped'\s*,\s*", "")
+        $result = [regex]::Replace($result, "(?i)`"$escaped`"\s*,\s*", "")
+        $result = [regex]::Replace($result, "(?i)\b$escaped\s*,\s*", "")
+        $result = [regex]::Replace($result, "(?i),\s*'$escaped'", "")
+        $result = [regex]::Replace($result, "(?i),\s*`"$escaped`"", "")
+    }
+    return $result
+}
+
 function Remove-ThirdPartyAnalytics([string]$Path) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $html = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $html = [regex]::Replace($html, '(?is)\s*<script\s+defer\s+src=["'']https://cloud\.umami\.is/script\.js["''][^>]*></script>\s*', "`r`n")
+    $html = [regex]::Replace($html, '(?is)\s*<link\b(?=[^>]*https://fonts\.googleapis\.com/)[^>]*>\s*', "`r`n")
+    $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_URL\s*=\s*'[^']*';", "const TD_FIRST_PARTY_TELEMETRY_URL = '';")
+    $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_EVENTS\s*=\s*new\s+Set\(\[[\s\S]*?\]\);", "const TD_FIRST_PARTY_TELEMETRY_EVENTS = new Set();")
+    $html = Remove-ThirdPartyFontNames $html
     $html = $html.Replace("sendUmamiEvent", "sendSecondaryAnalyticsEvent")
     $html = $html.Replace("window.umami", "window.__trashDiceNoThirdPartyAnalytics")
     [System.IO.File]::WriteAllText($Path, $html, $utf8NoBom)
@@ -62,7 +85,56 @@ function Remove-ThirdPartyAnalyticsTextReferences([string]$Path) {
     $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $text = [regex]::Replace($text, '(?i)cloud\.umami\.is', 'third-party-analytics-host')
     $text = [regex]::Replace($text, '(?i)umami', 'third-party analytics')
+    $text = [regex]::Replace($text, '(?i)fonts\.googleapis\.com', 'third-party-font-host')
+    $text = [regex]::Replace($text, '(?i)fonts\.gstatic\.com', 'third-party-font-files-host')
+    $text = [regex]::Replace($text, '(?i)odg-intake\.play-onedaygames\.workers\.dev', 'first-party-telemetry-host')
     [System.IO.File]::WriteAllText($Path, $text, $utf8NoBom)
+}
+
+function Assert-NoFlyDeliverySurface([string]$StageRoot, [string[]]$TextExtensions) {
+    $scanFiles = @(Get-ChildItem -LiteralPath $StageRoot -Recurse -File | Where-Object {
+        $TextExtensions -contains $_.Extension.ToLowerInvariant()
+    })
+
+    $patterns = @(
+        @{ Label = "Umami analytics"; Pattern = "umami" },
+        @{ Label = "Umami host"; Pattern = "cloud.umami.is" },
+        @{ Label = "Google Fonts CSS"; Pattern = "fonts.googleapis.com" },
+        @{ Label = "Google Fonts files"; Pattern = "fonts.gstatic.com" },
+        @{ Label = "Google font name"; Pattern = "Bangers" },
+        @{ Label = "Google font name"; Pattern = "Chewy" },
+        @{ Label = "Google font name"; Pattern = "Fredoka" },
+        @{ Label = "QuickChart QR service"; Pattern = "quickchart.io" },
+        @{ Label = "Capacitor native wrapper"; Pattern = "Capacitor" },
+        @{ Label = "Capacitor npm package"; Pattern = "@capacitor" },
+        @{ Label = "Sharp image tool"; Pattern = "require('sharp')" },
+        @{ Label = "Sharp image tool"; Pattern = 'require("sharp")' },
+        @{ Label = "Sharp package path"; Pattern = "node_modules/sharp" },
+        @{ Label = "Pillow image tool"; Pattern = "from PIL" },
+        @{ Label = "Pillow image tool"; Pattern = "import PIL" },
+        @{ Label = "NumPy image tool"; Pattern = "import numpy" },
+        @{ Label = "AI poster concept note"; Pattern = "AI-generated" },
+        @{ Label = "ODG telemetry endpoint"; Pattern = "odg-intake.play-onedaygames.workers.dev" }
+    )
+
+    $hits = @()
+    foreach ($entry in $patterns) {
+        $entryHits = @($scanFiles | Select-String -Pattern ([string]$entry.Pattern) -SimpleMatch)
+        foreach ($hit in $entryHits) {
+            $relative = Get-RelativePathFromBase $StageRoot $hit.Path
+            $hits += [PSCustomObject][ordered]@{
+                label = [string]$entry.Label
+                pattern = [string]$entry.Pattern
+                path = $relative
+                line = $hit.LineNumber
+            }
+        }
+    }
+
+    if ($hits.Count -gt 0) {
+        $details = $hits | Select-Object -First 12 | ForEach-Object { "$($_.label) '$($_.pattern)' at $($_.path):$($_.line)" }
+        throw "Staged handoff package still contains no-fly delivery references: $($details -join '; ')"
+    }
 }
 
 try {
@@ -125,18 +197,15 @@ try {
         createdAtUtc = (Get-Date).ToUniversalTime().ToString("o")
         packagedRoot = "ship-html5"
         thirdPartyAnalyticsStripped = $true
+        thirdPartyFontsStripped = $true
+        firstPartyTelemetryDisabled = $true
+        noFlyDeliveryScanPassed = $true
+        partnerBrandingIncluded = $true
         htmlSha256 = $fileHashes
     }
     $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
 
-    $scanFiles = @(Get-ChildItem -LiteralPath $stageRoot -Recurse -File | Where-Object {
-        $textExtensions -contains $_.Extension.ToLowerInvariant()
-    })
-    $thirdPartyHits = @($scanFiles | Select-String -Pattern "umami" -SimpleMatch)
-    if ($thirdPartyHits.Count -gt 0) {
-        $details = $thirdPartyHits | Select-Object -First 8 | ForEach-Object { "$($_.Path):$($_.LineNumber)" }
-        throw "Staged handoff package still contains third-party analytics references: $($details -join ', ')"
-    }
+    Assert-NoFlyDeliverySurface $stageRoot $textExtensions
 
     $safeVersion = $version -replace '[^A-Za-z0-9._+-]', '_'
     $zipName = "trash-dice-client-handoff-$safeVersion-$commit.zip"
