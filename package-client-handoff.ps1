@@ -71,6 +71,9 @@ function Remove-NoFlyHtmlRuntimeReferences([string]$Path) {
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $html = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
     $html = [regex]::Replace($html, '(?is)\s*<script\s+defer\s+src=["'']https://cloud\.umami\.is/script\.js["''][^>]*></script>\s*', "`r`n")
+    # The analytics head comment describes telemetry this package strips; a client
+    # reviewer reading "Analytics" invites questions about a system that is not there.
+    $html = [regex]::Replace($html, '(?is)\s*<!--\s*One Day Games Analytics:.*?-->\s*', "`r`n")
     $html = [regex]::Replace($html, '(?is)\s*<link\b(?=[^>]*https://fonts\.googleapis\.com/)[^>]*>\s*', "`r`n")
     $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_URL\s*=\s*'[^']*';", "const TD_FIRST_PARTY_TELEMETRY_URL = '';")
     $html = [regex]::Replace($html, "const\s+TD_FIRST_PARTY_TELEMETRY_EVENTS\s*=\s*new\s+Set\(\[[\s\S]*?\]\);", "const TD_FIRST_PARTY_TELEMETRY_EVENTS = new Set();")
@@ -122,7 +125,11 @@ function Assert-NoFlyDeliverySurface([string]$StageRoot, [string[]]$TextExtensio
         @{ Label = "Pillow image tool"; Pattern = "import PIL" },
         @{ Label = "NumPy image tool"; Pattern = "import numpy" },
         @{ Label = "AI poster concept note"; Pattern = "AI-generated" },
-        @{ Label = "ODG telemetry endpoint"; Pattern = "odg-intake.play-onedaygames.workers.dev" }
+        @{ Label = "ODG telemetry endpoint"; Pattern = "odg-intake.play-onedaygames.workers.dev" },
+        @{ Label = "Analytics head comment"; Pattern = "One Day Games Analytics" },
+        @{ Label = "Internal lane doc reference"; Pattern = "TRASH_DICE_RETAIL_HANDOFF" },
+        @{ Label = "Internal QA tooling reference"; Pattern = "qa-ship-html5" },
+        @{ Label = "Internal hosting reference"; Pattern = "playonedaygames.com" }
     )
 
     $hits = @()
@@ -153,6 +160,47 @@ try {
     New-Item -ItemType Directory -Force -Path $stageRoot | Out-Null
     New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     Copy-Item -LiteralPath $shipDir -Destination $stageRoot -Recurse -Force
+
+    # Replace internal lane docs with client-facing READMEs. The repo copies are
+    # engineering docs (QA gates, internal routes, lane status) and are not meant
+    # for the client artifact; leaving them in creates review questions about
+    # systems this package deliberately strips.
+    $clientReadme = @'
+# Trash Dice - Digital Companion (HTML5)
+
+Instant-play, one-player browser build of Trash Dice, the digital companion to
+the Big Discoveries tabletop game.
+
+- Contents: `index.html` is the complete game in a single self-contained file
+  (`trash-dice.html` is an identical copy). `assets/brand/` holds the logo art
+  the page displays.
+- Hosting: serve the `ship-html5/` folder from any static web host. No build
+  step, no server code, no database.
+- Requirements: a modern browser, desktop or mobile (portrait).
+- Network and privacy: the game makes no third-party network calls and collects
+  no personal information. No accounts, no login, no purchases.
+- Official product page: https://bigdiscoveries.com/products/trash-dice
+
+Trash Dice(TM) (c) 2026 Big Discoveries. Digital companion by One Day Games.
+'@
+    $clientBrandReadme = @'
+# Brand Assets
+
+Logo and label art displayed by the game page:
+
+- `trash-dice-logo.png` - full Trash Dice logo
+- `trash-dice-logo-title.webp` - optimized title/header derivative
+- `trash-dice-logo-can.png` - small can-label derivative
+- `trash-dice-label.png` - can label art
+- `big-discoveries-secondary-logo.png` - Big Discoveries logo
+- `odg-logo-charcoal.png` - One Day Games logo
+
+All artwork (c) 2026 Big Discoveries / One Day Games. Referenced by the game
+page in the folder above.
+'@
+    $utf8NoBomDocs = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText((Join-Path $stageShipDir "README.md"), $clientReadme, $utf8NoBomDocs)
+    [System.IO.File]::WriteAllText((Join-Path $stageShipDir "assets\brand\README.md"), $clientBrandReadme, $utf8NoBomDocs)
 
     $htmlFiles = @(
         (Join-Path $stageShipDir "index.html"),
@@ -209,6 +257,7 @@ try {
         firstPartyTelemetryDisabled = $true
         noFlyDeliveryScanPassed = $true
         partnerBrandingIncluded = $true
+        clientDocsRewritten = $true
         htmlSha256 = $fileHashes
     }
     $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
