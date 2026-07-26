@@ -3777,31 +3777,31 @@ body.inline-game-over .roll-panel {
 }
 @keyframes rewardDieRollPerf {
   0% {
-    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(0deg) scale(1);
+    transform: translate3d(0,0,0) rotate(0deg) scale(1);
   }
   12% {
-    transform: perspective(540px) rotateX(18deg) rotateY(-24deg) rotateZ(135deg) scale(1.04);
+    transform: translate3d(0,-3px,0) rotate(150deg) scale(1.035);
   }
   24% {
-    transform: perspective(540px) rotateX(-26deg) rotateY(30deg) rotateZ(285deg) scale(0.99);
+    transform: translate3d(0,-1px,0) rotate(300deg) scale(1);
   }
   38% {
-    transform: perspective(540px) rotateX(24deg) rotateY(-18deg) rotateZ(475deg) scale(1.04);
+    transform: translate3d(0,-2px,0) rotate(465deg) scale(1.025);
   }
   52% {
-    transform: perspective(540px) rotateX(-18deg) rotateY(28deg) rotateZ(650deg) scale(1);
+    transform: translate3d(0,-1px,0) rotate(630deg) scale(1);
   }
   66% {
-    transform: perspective(540px) rotateX(16deg) rotateY(-22deg) rotateZ(810deg) scale(1.03);
+    transform: translate3d(0,-2px,0) rotate(795deg) scale(1.018);
   }
   82% {
-    transform: perspective(540px) rotateX(-12deg) rotateY(16deg) rotateZ(1015deg) scale(1.01);
+    transform: translate3d(0,0,0) rotate(990deg) scale(1.008);
   }
   92% {
-    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(1072deg) scale(1.04);
+    transform: translate3d(0,0,0) rotate(1062deg) scale(1.018,0.992);
   }
   100% {
-    transform: perspective(540px) rotateX(-10deg) rotateY(10deg) rotateZ(1080deg) scale(1);
+    transform: translate3d(0,0,0) rotate(1080deg) scale(1);
   }
 }
 @keyframes dieRollMobile {
@@ -7296,6 +7296,15 @@ body.reward-hero-roll-active:not(.mobile-roll-smoothing):not(.tablet-effects-lit
   contain: paint style;
   backface-visibility: hidden;
   will-change: transform;
+}
+body.reward-hero-roll-active .roll-die-stage.active,
+body.reward-hero-roll-active .cpu-roll-cue.show {
+  animation: none !important;
+  will-change: auto !important;
+}
+body.reward-hero-roll-active .cpu-roll-cue.show {
+  opacity: 1;
+  transform: translate(-50%, -52%) rotate(-2deg) scale(1);
 }
 body.reward-hero-roll-active .roll-die-stage .die.reward-skinned.rolling::before,
 body.reward-hero-roll-active .roll-die-stage .die.reward-skinned.rolling::after,
@@ -17240,33 +17249,8 @@ body.inline-game-over .roll-panel {
     }
   }
 
-  const rewardRollBodySpinFrames = { p1: null, p2: null };
-
-  function rewardRollBodySpinTransform(progress) {
-    const t = clamp(Number(progress) || 0, 0, 1);
-    const spin = Math.round(t * 1080);
-    const waveA = Math.sin(t * Math.PI * 6);
-    const waveB = Math.cos(t * Math.PI * 5);
-    const rx = (-10 + waveA * 22).toFixed(2);
-    const ry = (10 + waveB * 24).toFixed(2);
-    const scale = (1 + Math.sin(t * Math.PI * 8) * 0.045).toFixed(3);
-    return `perspective(540px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${spin}deg) scale(${scale})`;
-  }
-
-  function rewardRollBodySpinTransformMobile(progress) {
-    const t = clamp(Number(progress) || 0, 0, 1);
-    const spin = Math.round(t * 900);
-    const lift = Math.sin(t * Math.PI * 4) * -2;
-    const scale = (1 + Math.sin(t * Math.PI * 7) * 0.025).toFixed(3);
-    return `translate3d(0,${lift.toFixed(2)}px,0) rotate(${spin}deg) scale(${scale})`;
-  }
-
   function stopRewardRollBodySpin(player, clearTransform = false) {
     const key = player === 'p2' ? 'p2' : 'p1';
-    if (rewardRollBodySpinFrames[key]) {
-      cancelAnimationFrame(rewardRollBodySpinFrames[key]);
-      rewardRollBodySpinFrames[key] = null;
-    }
     document.body.classList.remove('reward-hero-roll-active');
     if (clearTransform) {
       const die = getDie(key);
@@ -17280,25 +17264,6 @@ body.inline-game-over .roll-panel {
     stopRewardRollBodySpin(key);
     if (!die || !die.classList.contains('reward-skinned') || !die.classList.contains('rolling')) return;
     document.body.classList.add('reward-hero-roll-active');
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const startedAt = performance.now();
-    const duration = Math.max(220, ROLL_ANIMATION_MS);
-    const transformForProgress = MOBILE_ROLL_SMOOTHING
-      ? rewardRollBodySpinTransformMobile
-      : rewardRollBodySpinTransform;
-    const tick = now => {
-      if (!die.classList.contains('rolling') || !die.classList.contains('reward-skinned')) {
-        stopRewardRollBodySpin(key, true);
-        return;
-      }
-      const progress = clamp((now - startedAt) / duration, 0, 1);
-      die.style.setProperty('transform', transformForProgress(progress), 'important');
-      if (progress < 1) {
-        rewardRollBodySpinFrames[key] = requestAnimationFrame(tick);
-      }
-    };
-    die.style.setProperty('transform', transformForProgress(0), 'important');
-    rewardRollBodySpinFrames[key] = requestAnimationFrame(tick);
   }
 
   function clearDie(player) {
